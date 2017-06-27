@@ -1,0 +1,12 @@
+#ifndef FMTDBGHELP_GLOBAL_H
+#define FMTDBGHELP_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(FMTDBGHELP_LIBRARY)
+#  define FMTDBGHELPSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define FMTDBGHELPSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // FMTDBGHELP_GLOBAL_H

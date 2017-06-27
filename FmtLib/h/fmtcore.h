@@ -1,0 +1,180 @@
+#ifndef FMTCORE_H
+#define FMTCORE_H
+
+#include <QtCore>
+#include <QSettings>
+#include <QSqlQuery>
+#include <QSqlDatabase>
+#include <QSharedPointer>
+#include <functional>
+#include "fmtlib_global.h"
+
+#define AutoIncType 15
+#define BTNS_OFFSET 25
+#define COLOR_GOLDEN_RATIO 0.618033988749895
+
+enum FmtNamesColumn
+{
+    fnc_Id,
+    fnc_Name,
+    fnc_CacheSize,
+    fnc_Owner,
+    fnc_Comment,
+    fnc_PkIndx,
+    fnc_BlobType,
+    fcn_BlobLen,
+    fnc_Flags
+};
+
+enum FmtKeysColumn
+{
+    fkc_FmtId,
+    fkc_KeyNum,
+    fkc_SegNum,
+    fkc_FmtFld,
+    fkc_Flags,
+    fkc_Type,
+    fkc_NullVal,
+    fkc_IsReal,
+    fkc_Comment
+};
+
+enum FmtNamesFlags
+{
+    fmtnf_NoFlags = 0,
+    fmtnf_Temp = 1 << 4,
+    fmtnf_Rec  = 1 << 5,
+};
+
+enum FmtKeyFlags
+{
+    fmtkf_Duplicates = 0x0001,
+    fmtkf_Modifiable = 0x0002,
+    fmtkf_Binary     = 0x0004,
+    fmtkf_NullVal    = 0x0008,
+    fmtkf_Segment    = 0x0010,
+    fmtkf_Alternate  = 0x0020,
+    fmtkf_Descending = 0x0040,
+    fmtkf_Supplement = 0x0080,
+    fmtkf_Extended   = 0x0100,
+    fmtkf_Manual     = 0x0200,
+    fmtkf_Local      = 0x4000,
+};
+
+enum fmtTypes
+{
+    fmtt_INT = 0,
+    fmtt_LONG = 1,
+    fmtt_BIGINT = 26,
+    fmtt_FLOAT = 2,
+    fmtt_DOUBLE = 4,
+    fmtt_MONEY = 14,
+    fmtt_STRING = 7,
+    fmtt_SNR = 8,
+    fmtt_DATE = 9,
+    fmtt_TIME = 10,
+    fmtt_CHR = 12,
+    fmtt_UCHR = 13,
+    fmtt_NUMERIC = 25,
+};
+
+enum FmtKeyTypes
+{
+    fmtk_Estring   = 0x0,
+    fmtk_Einteger  = 0x1,
+    fmtk_Efloat    = 0x2,
+    fmtk_Edate     = 0x3,
+    fmtk_Etime     = 0x4,
+    fmtk_Edecimal  = 0x5,
+    fmtk_Emoney    = 0x6,
+    fmtk_Elogical  = 0x7,
+    fmtk_Enumeric  = 0x8,
+    fmtk_Ebfloat   = 0x9,
+    fmtk_Elstring  = 0xA,
+    fmtk_Ezstring  = 0xB,
+    fmtk_Eunbin    = 0xE,
+    fmtk_Eautoinc  = 0xF,
+    fmtk_Ecurrency = 0x13
+};
+
+enum FmtMetrics
+{
+    fmtm_TableNameMaxSize         = 30,  // максимальная длина имени таблицы
+    fmtm_TableOwnerMaxSize        = 9,   // максимальная длина имени владельца таблицы
+    fmtm_TableCommentMaxSize      = 40,  // максимальная длина коментария таблицы
+    fmtm_FieldNameMaxSize         = 128, // максимальная длина имени поля таблицы
+    fmtm_FieldCommentMaxSize      = 128, // максимальная длина коментария поля таблицы
+    fmtm_IndexCommentMaxSize      = 128, // максимальная длина коментария индекса таблицы
+};
+
+enum FmtBlobType
+{
+    BT_BLOB_NO = 0,
+    BT_BLOB_VAR,
+    BT_BLOB_STREAM,
+    BT_CLOB
+};
+
+class FmtTable;
+class ConnectionInfo;
+
+void FmtInit();
+bool hasTemporaryFlag(const quint32 &flag);
+bool hasRecordFlag(const quint32 &flag);
+
+int ExecuteQuery(QSqlQuery *query);
+
+QString ConfigOraFilePath();
+
+QString PlusButtonCss();
+QString MinusButtonCss();
+QString CheckSymbol();
+QString NullString(const int &index);
+
+QSettings *settings();
+
+QStringList fmtTypes();
+QString fmtTypeForId(const quint32 &id);
+QString fmtOracleDecl(const quint32 &Type);
+QString fmtCppStructTypeName(const quint32 &Type);
+bool fmtTypeCanHaveCustomSize(const quint32 &Type);
+
+quint32 fmtTypeIndexForId(const quint32 &id);
+quint16 fmtTypeFromIndex(const quint32 &id);
+quint32 fmtIndexForType(const quint32 &id);
+quint16 fmtIndexFromFmtType(const quint32 &id);
+QString fmtTypeNameForType(const quint32 &type);
+
+quint16 fmtTypeSize(const quint32 &Type);
+quint16 fmtTypeIndexSize(const quint32 &id);
+
+int trn(QSqlDatabase &db, std::function<int(void)> func);
+
+QString DatasourceFromService(const QString &service);
+
+QString DbInitTextError(const quint16 &id);
+
+QString BlobTypeToString(int type);
+QString BoolToString(bool value);
+
+QColor GenerateColor();
+
+void ExportFmtToXml(ConnectionInfo *connection, const QStringList &file, const QString &dir, bool ShowProgress, bool ShowReport, QWidget *parent = NULL);
+void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent);
+
+void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent);
+QString FmtTableSqlText(QSharedPointer<FmtTable> pTable);
+void FmtHotFixCreate(QSharedPointer<FmtTable> pTable);
+//QString GenerateTableXML(const FmtTable *pTable);
+
+QString FmtTableStructName(const QString &table);
+QStringList FmtTableStringList(const QString &table);
+QString FmtGetTableExtension(const QString &table);
+
+FMTLIBSHARED_EXPORT QString GetProcessErrorText(const QProcess::ProcessError &error);
+QString GetVersionNumberString();
+
+FMTLIBSHARED_EXPORT QString ConstrType1RegExp();
+FMTLIBSHARED_EXPORT bool ParseConnectionString(const QString &connString, QString &user, QString &pass, QString &service);
+
+#endif // FMTCORE_H

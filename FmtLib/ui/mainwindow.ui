@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1164</width>
+    <height>618</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>16</width>
+    <height>16</height>
+   </size>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1164</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;Файл</string>
+    </property>
+    <property name="separatorsCollapsible">
+     <bool>true</bool>
+    </property>
+    <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport"/>
+    <addaction name="actionImportDir"/>
+    <addaction name="actionExport"/>
+    <addaction name="actionImpExpPrm"/>
+    <addaction name="separator"/>
+    <addaction name="actionRsexpDir"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuService">
+    <property name="title">
+     <string>Сервис</string>
+    </property>
+    <addaction name="actionCreate"/>
+    <addaction name="actionCreateFromText"/>
+    <addaction name="separator"/>
+    <addaction name="actionCopyTable"/>
+    <addaction name="separator"/>
+    <addaction name="actionInit"/>
+    <addaction name="actionSql"/>
+    <addaction name="actionUnloadDbf"/>
+    <addaction name="separator"/>
+    <addaction name="actionHotFix"/>
+    <addaction name="actionEditGroups"/>
+   </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="tearOffEnabled">
+     <bool>false</bool>
+    </property>
+    <property name="title">
+     <string>Окно</string>
+    </property>
+    <addaction name="actionNextWnd"/>
+    <addaction name="actionPrevWnd"/>
+    <addaction name="separator"/>
+    <addaction name="actionCascadeWnd"/>
+    <addaction name="actionTileWnd"/>
+    <addaction name="separator"/>
+    <addaction name="actionCloseWnd"/>
+    <addaction name="actionCloseAllWnd"/>
+    <addaction name="separator"/>
+    <addaction name="actionWindowList"/>
+   </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Справка</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>Вид</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuService"/>
+   <addaction name="menuWindow"/>
+   <addaction name="menu"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>Стандартная</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="tabToolBar">
+   <property name="windowTitle">
+    <string>Подключения</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="windowToolBar">
+   <property name="windowTitle">
+    <string>Окно</string>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="actionConnect">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/db</normaloff>:/db</iconset>
+   </property>
+   <property name="text">
+    <string>Новое подключение</string>
+   </property>
+  </action>
+  <action name="actionCreate">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/table</normaloff>:/table</iconset>
+   </property>
+   <property name="text">
+    <string>Создать запись</string>
+   </property>
+  </action>
+  <action name="actionInit">
+   <property name="text">
+    <string>Инициализировать</string>
+   </property>
+  </action>
+  <action name="actionRebuildOffset">
+   <property name="text">
+    <string>Перестроить смещения</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="text">
+    <string>Закрыть подключение</string>
+   </property>
+  </action>
+  <action name="actionCreateFromText">
+   <property name="text">
+    <string>Создать из текста</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/import.png</normaloff>:/img/import.png</iconset>
+   </property>
+   <property name="text">
+    <string>Импорт из xml файлов</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/export.png</normaloff>:/img/export.png</iconset>
+   </property>
+   <property name="text">
+    <string>Экспорт в xml файл</string>
+   </property>
+  </action>
+  <action name="actionImpExpPrm">
+   <property name="text">
+    <string>Параметры импорта/экспорта</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Выход</string>
+   </property>
+  </action>
+  <action name="actionImportDir">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/import_dir.png</normaloff>:/img/import_dir.png</iconset>
+   </property>
+   <property name="text">
+    <string>Импорт xml из каталога</string>
+   </property>
+  </action>
+  <action name="actionNextWnd">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/nextwin.png</normaloff>:/img/nextwin.png</iconset>
+   </property>
+   <property name="text">
+    <string>Следующее</string>
+   </property>
+  </action>
+  <action name="actionPrevWnd">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/prevwin.png</normaloff>:/img/prevwin.png</iconset>
+   </property>
+   <property name="text">
+    <string>Предыдущее</string>
+   </property>
+  </action>
+  <action name="actionCascadeWnd">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/CascadeWindowsHS.png</normaloff>:/img/CascadeWindowsHS.png</iconset>
+   </property>
+   <property name="text">
+    <string>Каскад</string>
+   </property>
+  </action>
+  <action name="actionTileWnd">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/TileWindowsHorizontallyHS.png</normaloff>:/img/TileWindowsHorizontallyHS.png</iconset>
+   </property>
+   <property name="text">
+    <string>Разделить</string>
+   </property>
+  </action>
+  <action name="actionWindowSeparator">
+   <property name="text">
+    <string>windowSeparator</string>
+   </property>
+  </action>
+  <action name="actionCloseWnd">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/closewnd.png</normaloff>:/img/closewnd.png</iconset>
+   </property>
+   <property name="text">
+    <string>Закрыть</string>
+   </property>
+  </action>
+  <action name="actionCloseAllWnd">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/closewnds.png</normaloff>:/img/closewnds.png</iconset>
+   </property>
+   <property name="text">
+    <string>Закрыть все</string>
+   </property>
+  </action>
+  <action name="actionWindowList">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/WindowsHS.png</normaloff>:/img/WindowsHS.png</iconset>
+   </property>
+   <property name="text">
+    <string>Список</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>О программе...</string>
+   </property>
+  </action>
+  <action name="actionSql">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/savesql.png</normaloff>:/img/savesql.png</iconset>
+   </property>
+   <property name="text">
+    <string>Создать sql скрипт таблицы</string>
+   </property>
+  </action>
+  <action name="actionHotFix">
+   <property name="text">
+    <string>HotFix</string>
+   </property>
+  </action>
+  <action name="actionEditGroups">
+   <property name="text">
+    <string>Редактировать группы</string>
+   </property>
+  </action>
+  <action name="actionCopyTable">
+   <property name="text">
+    <string>Копировать таблицу</string>
+   </property>
+  </action>
+  <action name="actionRsexpDir">
+   <property name="text">
+    <string>Параметры выгрузки содержания </string>
+   </property>
+  </action>
+  <action name="actionUnloadDbf">
+   <property name="text">
+    <string>Выгрузить содержимое</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="../res/fmt.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>581</x>
+     <y>308</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

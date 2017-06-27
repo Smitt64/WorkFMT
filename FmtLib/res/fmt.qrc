@@ -1,0 +1,60 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="db">img/base_cylinder_32.png</file>
+        <file>img/Book_angleHS.png</file>
+        <file>img/FindHS.png</file>
+        <file>img/FindNextHS.png</file>
+        <file>img/rfsh.png</file>
+        <file alias="table">img/Table_32.png</file>
+        <file alias="tablet">img/Table_tmp.png</file>
+        <file alias="cplusplus">img/cplusplus.png</file>
+        <file alias="cpprfrsh">img/cpprfrsh.png</file>
+        <file alias="tmptablefound">img/Table_tmp_found.png</file>
+        <file alias="tablefound">img/TableFound.png</file>
+        <file alias="sql">img/SQL.png</file>
+        <file alias="icon">img/icon.png</file>
+        <file alias="save">img/saveHS.png</file>
+        <file alias="addtable">img/AddTableHS.png</file>
+        <file>img/Filter2HS.png</file>
+        <file>img/minus-icon.png</file>
+        <file>img/minus-icon-hover.png</file>
+        <file>img/minus-icon-pressed.png</file>
+        <file>img/plus-icon.png</file>
+        <file>img/plus-icon-hover.png</file>
+        <file>img/plus-icon-pressed.png</file>
+        <file>img/DataContainer_MoveFirstHS.png</file>
+        <file>img/DataContainer_MoveLastHS.png</file>
+        <file>img/DataContainer_MoveNextHS.png</file>
+        <file>img/DataContainer_MovePreviousHS.png</file>
+        <file>img/import.png</file>
+        <file>img/export.png</file>
+        <file>img/import_dir.png</file>
+        <file>img/savexml.png</file>
+        <file>img/openfolderHS.png</file>
+        <file>img/LeftArrow2HS.png</file>
+        <file>img/RightArrow2HS.png</file>
+        <file>img/DoubleLeftArrowHS.png</file>
+        <file>img/DoubleRightArrowHS.png</file>
+        <file>img/LeftArrowHS.png</file>
+        <file>img/RightArrowHS.png</file>
+        <file>img/edittable.png</file>
+        <file>img/CascadeWindowsHS.png</file>
+        <file>img/TileWindowsHorizontallyHS.png</file>
+        <file>img/WindowsHS.png</file>
+        <file>img/nextwin.png</file>
+        <file>img/prevwin.png</file>
+        <file>img/closewnd.png</file>
+        <file>img/closewnds.png</file>
+        <file>img/savesql.png</file>
+        <file>about.html</file>
+        <file alias="create_table_groups">sql/create_table_groups.sql</file>
+        <file alias="create_table_in_group">sql/create_table_in_group.sql</file>
+        <file>img/text.png</file>
+        <file>img/CopyHS.png</file>
+        <file>img/Properties.png</file>
+        <file>img/FormRunHS.png</file>
+        <file>sql_keys.txt</file>
+        <file>img/Edit_RedoHS.png</file>
+        <file>img/Edit_UndoHS.png</file>
+    </qresource>
+</RCC>
