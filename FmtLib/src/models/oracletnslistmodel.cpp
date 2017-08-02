@@ -30,6 +30,10 @@ OracleTnsListModel::OracleTnsListModel(QObject *parent)
     }
 }
 
+OracleTnsListModel::~OracleTnsListModel()
+{
+
+}
 
 QStringList OracleTnsListModel::getOracleHomes()
 {

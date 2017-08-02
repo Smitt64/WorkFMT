@@ -15,11 +15,18 @@ class FMTLIBSHARED_EXPORT ConnectionInfo
     /// @private
     friend class OracleAuthDlg;
 public:
+    enum ConnectionType
+    {
+        CON_NON = 0,
+        CON_ORA,
+        CON_SQLITE
+    };
     /**
      * @brief ConnectionInfo
      * @param dbalias
      */
-    ConnectionInfo(const QString &dbalias);
+    ConnectionInfo(const QString &dbalias = QString());
+    virtual ~ConnectionInfo();
 
     FmtTablesModel *tablesModel();
     QSqlDatabase db();
@@ -50,6 +57,9 @@ public:
     void updateFmtList();
 
     bool isOpen() const;
+    int type() const;
+
+    bool openSqlite(const QString &filename);
 
 protected:
     QString m_Alias, m_SchemeName, m_Host, m_Service, m_User, m_Password, m_DSN;
@@ -58,6 +68,7 @@ protected:
     FmtTablesModel *pModel;
     QColor m_Color;
     QIcon m_Icon;
+    ConnectionType m_Type;
 };
 
 #endif // CONNECTIONINFO_H

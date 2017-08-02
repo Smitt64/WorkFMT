@@ -171,6 +171,14 @@ void FmtImpExpWrp::parseProtocol(FmtErrors *ptr)
               message += line;
         }
 
+        if (!message.isEmpty())
+        {
+            if (IsError)
+                ptr->appendError(message);
+            else
+                ptr->appendMessage(message);
+        }
+
         f.close();
     }
 }

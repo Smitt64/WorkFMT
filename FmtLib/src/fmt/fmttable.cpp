@@ -1290,7 +1290,7 @@ int FmtTable::dbInit(const QString &log)
     arguments << QString("%1:%2@%3")
                  .arg(db.userName())
                  .arg(db.password())
-                 .arg(DatasourceFromService(service))
+                 .arg(pConnection->dsn())
               << "-DT:ORA" << "-OP:IDX"
               << "-O" <<  QString("-TBLI:%1").arg(tablelist);
 

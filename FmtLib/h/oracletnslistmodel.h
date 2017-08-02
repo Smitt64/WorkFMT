@@ -19,6 +19,7 @@ public:
         mtns_TnsNamesFilePath,
     };
     OracleTnsListModel(QObject *parent = NULL);
+    virtual ~OracleTnsListModel();
 
     static QStringList getOracleHomes();
     static QString getOracleHomePath(QString OracleHomeRegistryKey);

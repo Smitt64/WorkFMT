@@ -60,7 +60,6 @@ private slots:
     void CopyAction();
     void UpdateCopyMenu(const QString &table);
 
-    void on_rebuildOffsetsBtn_clicked();
     void undoActionChanged();
     void isTemporaryTableChanged(bool value);
 
@@ -86,6 +85,7 @@ private:
     QPushButton *pAddIndex;
 
     QMenu *pCopyMenu, *pActionsMenu;
+    QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets;
 
     FmtWorkWndGen *pCodeGenWidget;
 

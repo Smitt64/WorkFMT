@@ -19,6 +19,7 @@
 #include "windowslistdlg.h"
 #include "tablesgroupsdlg.h"
 #include "fmtdbftoolwrp.h"
+#include "selectconnectiondlg.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -83,8 +84,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
     connect(ui->actionEditGroups, SIGNAL(triggered(bool)), SLOT(EditGroups()));
     connect(ui->actionCopyTable, SIGNAL(triggered(bool)), SLOT(CopyTable()));
+    connect(ui->actionCopyTableAs, SIGNAL(triggered(bool)), SLOT(CopyTableTo()));
     connect(ui->actionRsexpDir, SIGNAL(triggered(bool)), SLOT(RsExpExportDir()));
     connect(ui->actionUnloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadDbf()));
+    connect(ui->action_FMT_sqlite, SIGNAL(triggered(bool)), SLOT(UnloadSqlite()));
+    connect(ui->actionOpenConnection, SIGNAL(triggered(bool)), SLOT(OpenConnection()));
 
     connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
 #ifdef QT_NO_DEBUG
@@ -186,6 +190,9 @@ void MainWindow::ExportXmlAction()
     if (!cur)
         return;
 
+    if (!CheckConnectionType(cur, ConnectionInfo::CON_ORA, true, this))
+        return;
+
     ExportToXmlWizard wizard(cur, this);
     if (wizard.exec() == QDialog::Accepted)
     {
@@ -197,6 +204,9 @@ void MainWindow::ImpDirAction()
 {
     ConnectionInfo *current = currentConnection();
     if (!current)
+        return;
+
+    if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
         return;
 
     FmtImpExpWrp imp(current, this);
@@ -231,6 +241,9 @@ void MainWindow::ImportAction()
 {
     ConnectionInfo *current = currentConnection();
     if (!current)
+        return;
+
+    if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
         return;
 
     FmtImpExpWrp imp(current, this);
@@ -319,6 +332,7 @@ QAction *MainWindow::CreateConnectionActio(const QString &ShemeName, ConnectionI
     pWindowsModel->addConnection(info);
 
     info->updateFmtList();
+    m_pConnections.append(info);
     pTablesDock->setModel(info->tablesModel());
 
     return a;
@@ -479,6 +493,7 @@ void MainWindow::actionDisconnectTriggered()
                     actions[0]->setChecked(true);
                     conActionTriggered(actions[0]);
                 }
+                m_pConnections.removeOne(current);
                 pWindowsModel->removeConnection(current);
 
                 delete active;
@@ -510,6 +525,9 @@ void MainWindow::actionExportTableXml()
     if (!current)
         return;
 
+    if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
+        return;
+
     QString table = actionExport->data().toString();
 
     FmtImpExpWrp tmp(current);
@@ -526,6 +544,9 @@ void MainWindow::actionInit()
     ConnectionInfo *current = currentConnection();
 
     if (!current)
+        return;
+
+    if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
         return;
 
     QListView *view = pTablesDock->tablesWidget()->listView();
@@ -629,6 +650,7 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.addAction(ui->actionInit);
     menu.addSeparator();
     menu.addAction(ui->actionCopyTable);
+    menu.addAction(ui->actionCopyTableAs);
     menu.addSeparator();
     menu.addAction(actionExport);
     menu.setDefaultAction(actionEdit);
@@ -761,6 +783,36 @@ void MainWindow::CopyTable()
     }
 }
 
+void MainWindow::CopyTableTo()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            SelectConnectionDlg dlg(m_pConnections, this);
+            dlg.setWindowTitle(tr("Копировать в..."));
+            if (dlg.exec() == QDialog::Accepted)
+            {
+                QList<ConnectionInfo*> checkedItems = dlg.сheckedItems();
+                foreach (ConnectionInfo *info, checkedItems) {
+                    QSharedPointer<FmtTable> cTable(new FmtTable(info));
+                    table->copyTo(cTable);
+                    CreateDocument(cTable)->show();
+                }
+            }
+        }
+    }
+}
+
 void MainWindow::RsExpExportDir()
 {
     QString path = QFileDialog::getExistingDirectory(this);
@@ -796,5 +848,49 @@ void MainWindow::UnloadDbf()
         connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
         wrp.unload(settings()->value("RsExpUnlDir").toString(), table);
         //dlg.close();
+    }
+}
+
+void MainWindow::UnloadSqlite()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QSqlDatabase sqliteDB = QSqlDatabase::addDatabase("QSQLITE", "sqliteDBexport");
+    QString fname = QFileDialog::getSaveFileName(this, QString(), QString(), QString("Sqlite db (*.sqlite *.db)"));
+
+    if (!fname.isEmpty())
+    {
+        sqliteDB.setDatabaseName(fname);
+        if (sqliteDB.open())
+        {
+            if (!CloneFmtFromConnection(current->db(), sqliteDB, this))
+            {
+
+            }
+            sqliteDB.close();
+            QSqlDatabase::removeDatabase(fname);
+        }
+    }
+}
+
+void MainWindow::OpenConnection()
+{
+    QString filename = QFileDialog::getOpenFileName(this, tr("Открыть файл подключения"), QString(),
+                                                    tr("Sqlite db, rsreqi.ini (*.sqlite *.db rsreqi.ini);;Sqlite db(*.sqlite *.db);;rsreqi.ini(rsreqi.ini)"));
+
+    if (!filename.isEmpty())
+    {
+        ConnectionInfo *info = new ConnectionInfo();
+
+        if (!info->openSqlite(filename))
+            delete info;
+        else
+        {
+            CreateConnectionActio(info->schemeName(), info);
+            info->updateFmtList();
+        }
     }
 }

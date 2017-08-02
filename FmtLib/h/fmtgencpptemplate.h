@@ -39,6 +39,10 @@ private:
     void createOpenFunc(const QSharedPointer<FmtTable> &pTable, QTextStream &stream);
     void createFindFunctions(const QSharedPointer<FmtTable> &pTable, QTextStream &stream);
     void createSkfDeclFunctions(const QSharedPointer<FmtTable> &pTable, QTextStream &stream);
+    void createSkfFunctions(const QSharedPointer<FmtTable> &pTable, QTextStream &stream);
+
+    void createSkfKfReturnSegment(const QString &fldName, const QString &keyNam, QTextStream &stream, bool asString = false, bool descOrder = false);
+    void createSkfKfFunctions(FmtIndex *pIndex, QTextStream &stream);
 
     qint16 calcMaxCppLenght(qint16 *maxfieldname, const QSharedPointer<FmtTable> &pTable);
     QString normalizeFieldName(const QString &m_Name);
@@ -48,6 +52,7 @@ private:
 
     void CreateBlocks(const QSharedPointer<FmtTable> &pTable);
     GenCppTemplateBlock *getTemplateBlock(const QSharedPointer<FmtTable> &pTable);
+    GenCppTemplateBlock *getTemplateBlock(const FmtTable *pTable);
     QString FormatName(QString &Mask, const GenCppTemplateBlock *block);
     GenCppSettingsParams prm;
 

@@ -6,6 +6,7 @@
 #include "fmtgeninterface.h"
 #include "fmtgentablessql.h"
 #include "fmtgencpptemplate.h"
+#include "fmtgenhotfix.h"
 #include "loggingcategories.h"
 #include <fmtdbghelp.h>
 #include <QDebug>
@@ -48,7 +49,7 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     m_logFile.data()->open(QFile::Append | QFile::Text);
     qInstallMessageHandler(messageHandler);*/
 
-    Q_INIT_RESOURCE(fmt);
+    //Q_INIT_RESOURCE(fmt);
     qRegisterMetaType<RecentList>("RecentList");
 
     qDebug() << QStyleFactory::keys();
@@ -87,6 +88,7 @@ void FmtApplication::init()
 
     registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql");
     registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate");
+    registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix");
 }
 
 void FmtApplication::initDbgHelp()

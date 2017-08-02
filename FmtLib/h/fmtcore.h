@@ -123,6 +123,8 @@ bool hasTemporaryFlag(const quint32 &flag);
 bool hasRecordFlag(const quint32 &flag);
 
 int ExecuteQuery(QSqlQuery *query);
+int ExecuteQuery(const QString &query, QSqlDatabase &db = QSqlDatabase());
+int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase &db = QSqlDatabase());
 
 QString ConfigOraFilePath();
 
@@ -176,5 +178,9 @@ QString GetVersionNumberString();
 
 FMTLIBSHARED_EXPORT QString ConstrType1RegExp();
 FMTLIBSHARED_EXPORT bool ParseConnectionString(const QString &connString, QString &user, QString &pass, QString &service);
+
+FMTLIBSHARED_EXPORT QString ReadTextFileContent(const QString &filename);
+FMTLIBSHARED_EXPORT int CloneFmtFromConnection(QSqlDatabase &source, QSqlDatabase &dest, QWidget *parent);
+FMTLIBSHARED_EXPORT bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg = false, QWidget *parent = Q_NULLPTR);
 
 #endif // FMTCORE_H

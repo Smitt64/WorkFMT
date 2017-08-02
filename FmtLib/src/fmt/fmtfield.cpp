@@ -174,7 +174,10 @@ void FmtField::setSize(const qint32 &v)
     else
     {
         m_Size = v;
+        bool old = pTable->m_IgnoreUndoStack;
+        pTable->m_IgnoreUndoStack = true;
         pTable->rebuildOffsets();
+        pTable->m_IgnoreUndoStack = old;
     }
 }
 
@@ -209,7 +212,11 @@ void FmtField::setType(const qint32 &v)
 
         if (v != fmtt_STRING && v != fmtt_CHR && v != fmtt_UCHR && v != fmtt_SNR)
             setSize(fmtTypeSize(v));
+
+        bool old = pTable->m_IgnoreUndoStack;
+        pTable->m_IgnoreUndoStack = true;
         pTable->rebuildOffsets();
+        pTable->m_IgnoreUndoStack = old;
     }
 }
 

@@ -40,6 +40,7 @@
      <bool>true</bool>
     </property>
     <addaction name="actionConnect"/>
+    <addaction name="actionOpenConnection"/>
     <addaction name="actionDisconnect"/>
     <addaction name="separator"/>
     <addaction name="actionImport"/>
@@ -48,6 +49,7 @@
     <addaction name="actionImpExpPrm"/>
     <addaction name="separator"/>
     <addaction name="actionRsexpDir"/>
+    <addaction name="action_FMT_sqlite"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -60,6 +62,7 @@
     <addaction name="actionCreateFromText"/>
     <addaction name="separator"/>
     <addaction name="actionCopyTable"/>
+    <addaction name="actionCopyTableAs"/>
     <addaction name="separator"/>
     <addaction name="actionInit"/>
     <addaction name="actionSql"/>
@@ -320,6 +323,21 @@
   <action name="actionUnloadDbf">
    <property name="text">
     <string>Выгрузить содержимое</string>
+   </property>
+  </action>
+  <action name="action_FMT_sqlite">
+   <property name="text">
+    <string>Выгрузить FMT в sqlite базу</string>
+   </property>
+  </action>
+  <action name="actionOpenConnection">
+   <property name="text">
+    <string>Открыть подключение</string>
+   </property>
+  </action>
+  <action name="actionCopyTableAs">
+   <property name="text">
+    <string>Копировать таблицу в...</string>
    </property>
   </action>
  </widget>

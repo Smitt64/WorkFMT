@@ -25,6 +25,7 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     pTable(NULL),
     pParentWnd(NULL)
 {
+
     ui->setupUi(this);
     pMapper = new QDataWidgetMapper(this);
 
@@ -54,9 +55,9 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     ui->copyTool->setMenu(pCopyMenu);
 
     pActionsMenu = new QMenu(this);
-    QAction *saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
-    QAction *createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
-    QAction *rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
+    m_saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
+    m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
+    m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
     ui->pushActions->setMenu(pActionsMenu);
 
     pCodeGenWidget = new FmtWorkWndGen(this);
@@ -71,9 +72,9 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     connect(ui->pushButton, SIGNAL(clicked(bool)), SLOT(InitDB()));
     connect(pTableView, SIGNAL(clicked(QModelIndex)), SLOT(Clicked(QModelIndex)));
     connect(ui->checkButton, SIGNAL(clicked(bool)), SLOT(CheckTable()));
-    connect(saveToXml, SIGNAL(triggered(bool)), SLOT(ExportXml()));
-    connect(createTableSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
-    connect(rebuildOffsets, SIGNAL(triggered(bool)), SLOT(on_rebuildOffsetsBtn_clicked()));
+    connect(m_saveToXml, SIGNAL(triggered(bool)), SLOT(ExportXml()));
+    connect(m_createTableSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
+    //connect(m_rebuildOffsets, SIGNAL(triggered(bool)), SLOT(rebuildOffsets()));
 }
 
 FmtWorkWindow::~FmtWorkWindow()
@@ -137,6 +138,12 @@ void FmtWorkWindow::setFmtTable(QSharedPointer<FmtTable> &table)
     dcolor = info->color().darker();
     color = info->color();
 
+    if (info->type() != ConnectionInfo::CON_ORA)
+    {
+        ui->pushButton->setEnabled(false);
+        m_saveToXml->setEnabled(false);
+    }
+
     connect(pTable->indecesModel(), SIGNAL(modelReset()), SLOT(indexModelReseted()));
     connect(pTable->indecesModel(), SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(indexModelInserted(QModelIndex,int,int)));
     connect(pTable.data(), SIGNAL(indexAdded(FmtIndex*)), SLOT(FillIndecesList()));
@@ -145,6 +152,7 @@ void FmtWorkWindow::setFmtTable(QSharedPointer<FmtTable> &table)
     connect(pTable.data(), SIGNAL(nameChanged(QString)), SLOT(UpdateCopyMenu(QString)));
     connect(fieldsModel, SIGNAL(AddedToLast(FmtField*, const QModelIndex&)), SLOT(AddedToLast(FmtField*,QModelIndex)));
     connect(pTable.data(), SIGNAL(isTemporaryChanged(bool)), SLOT(isTemporaryTableChanged(bool)));
+    connect(m_rebuildOffsets, SIGNAL(triggered(bool)), pTable.data(), SLOT(rebuildOffsets()));
 }
 
 void FmtWorkWindow::setupUndoRedo()
@@ -409,10 +417,12 @@ void FmtWorkWindow::CopyAction()
 void FmtWorkWindow::paintEvent(QPaintEvent *paintEvent)
 {
     QPainter p(this);
-    //p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::Antialiasing, true);
     p.save();
     QPen pen(dcolor);
     pen.setWidth(2);
+    if (!pTable->id())
+        pen.setStyle(Qt::DotLine);
     p.setPen(pen);
     p.setBrush(Qt::NoBrush);
 
@@ -437,11 +447,6 @@ void FmtWorkWindow::paintEvent(QPaintEvent *paintEvent)
     p.fillRect(startx + 50, 0, width(), tmpy / 2 - 1, color);
 
     QDialog::paintEvent(paintEvent);
-}
-
-void FmtWorkWindow::on_rebuildOffsetsBtn_clicked()
-{
-    pTable->rebuildOffsets();
 }
 
 QUndoStack *FmtWorkWindow::tableUndoStack()

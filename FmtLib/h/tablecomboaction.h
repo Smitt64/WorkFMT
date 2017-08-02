@@ -16,6 +16,9 @@ public:
 signals:
     void activated(const int &id);
 
+private slots:
+    void onComboSelected();
+
 protected:
     void deleteWidget(QWidget *widget);
     QWidget *createWidget(QWidget *parent);

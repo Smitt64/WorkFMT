@@ -301,6 +301,23 @@ int ExecuteQuery(QSqlQuery *query)
     return stat;
 }
 
+int ExecuteQuery(const QString &query, QSqlDatabase &db)
+{
+    QSqlQuery q(db);
+    q.prepare(query);
+    return ExecuteQuery(&q);
+}
+
+int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase &db)
+{
+    QString content = ReadTextFileContent(queryFileName);
+
+    if (content.isEmpty())
+        return -1;
+
+    return ExecuteQuery(content, db);
+}
+
 int trn(QSqlDatabase &db, std::function<int(void)> func)
 {
     int stat = 0;
@@ -334,11 +351,18 @@ QString DatasourceFromService(const QString &service)
 {
     OracleTnsListModel *model = ((FmtApplication*)qApp)->getOracleTnsModel();
     QString str;
-    for (int i = 0; i < model->rowCount(); i++)
+
+    if (model)
     {
-        if (model->item(i, 1)->text() == service)
-            str = model->item(i, 0)->text();
+        QModelIndexList lst = model->match(model->index(0, OracleTnsListModel::mtns_ServiceName), Qt::DisplayRole, service.simplified());
+        if (lst.size())
+        {
+            QModelIndex first = lst.at(0);
+            QModelIndex index = model->index(first.row(), OracleTnsListModel::mtns_Name);
+            str = index.data().toString();
+        }
     }
+
     return OracleTnsListModel::clearString(str);
 }
 /*
@@ -702,5 +726,165 @@ bool ParseConnectionString(const QString &connString, QString &user, QString &pa
         pass = match.captured(match_pswd);
     }
 
+    return hr;
+}
+
+QString ReadTextFileContent(const QString &filename)
+{
+    QString content;
+    QFile f(filename, qApp);
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        content = f.readAll();
+        f.close();
+    }
+    return content;
+}
+
+static bool isSqliteObjectExists(QSqlDatabase &source, const QString &type, const QString &table)
+{
+    bool hr = false;
+    QSqlQuery q(source);
+    q.prepare("SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?");
+    q.bindValue(0, type);
+    q.bindValue(1, table);
+
+    if (!ExecuteQuery(&q))
+    {
+        if (q.next() && q.value(0).toInt())
+            hr = true;
+    }
+
+    return hr;
+}
+
+static int CountRecordsInTable(const QString &table, QSqlDatabase &source)
+{
+    int count = 0;
+    QSqlQuery q(source);
+    q.prepare(QString("select count(*) from %1").arg(table));
+    if (!ExecuteQuery(&q))
+    {
+        if (q.next())
+            count = q.value(0).toInt();
+    }
+    return count;
+}
+
+static int CloneFmtCopyTable(QSqlDatabase &source, QSqlDatabase &dest, QProgressDialog &dlg, const QString &table)
+{
+    int stat = 0;
+    int i = 0;
+    int fields = 0;
+    int namsecount = CountRecordsInTable(table, source);
+    dlg.setMaximum(namsecount);
+    dlg.setMinimum(0);
+
+    QString mask;
+    QSqlQuery namesquery(source);
+    namesquery.prepare(QString("select * from %1").arg(table));
+    stat = ExecuteQuery(&namesquery);
+
+    while (namesquery.next() && !stat)
+    {
+        if (mask.isEmpty())
+        {
+            fields = namesquery.record().count();
+            for (int k = 0; k < fields; k++)
+            {
+                if (k == 0) mask = "?";
+                else mask += ",?";
+            }
+            if (mask.isEmpty()) stat = 1;
+        }
+
+        if (!stat)
+        {
+            dlg.setValue(++ i);
+            stat = dlg.wasCanceled();
+            dlg.setLabelText(QObject::tr("Копирование таблицы %3: %1 из %2...").arg(i).arg(namsecount).arg(table));
+            qApp->processEvents();
+
+            if (!stat)
+            {
+                QSqlQuery insert(dest);
+                insert.prepare(QString("insert into %1 values(%2)").arg(table).arg(mask));
+                for (int j = 0; j < fields; j++)
+                    insert.bindValue(j, namesquery.value(j));
+                stat = ExecuteQuery(&insert);
+            }
+        }
+    }
+    return stat;
+}
+
+int CloneFmtFromConnection(QSqlDatabase &source, QSqlDatabase &dest, QWidget *parent)
+{
+    QProgressDialog dlg(parent);
+    dlg.setLabelText(QObject::tr("Подготовка к выгрузке словаря в sqlite..."));
+    dlg.open();
+
+    return trn(dest, [&source,&dest,&dlg]()
+    {
+        int stat = 0;
+        if (!isSqliteObjectExists(dest, "table", "FMT_NAMES"))
+        {
+            dlg.setLabelText(QObject::tr("Создание таблицы FMT_NAMES..."));
+            qApp->processEvents();
+            stat = ExecuteQueryFile(":/fmt_names", dest);
+            if (!stat) stat = ExecuteQueryFile(":/fmt_names_index", dest);
+        }
+        else
+            stat = ExecuteQuery("DELETE FROM FMT_NAMES", dest);
+
+        if(!stat)
+        {
+            if (!isSqliteObjectExists(dest, "table", "FMT_FIELDS"))
+            {
+                dlg.setLabelText(QObject::tr("Создание таблицы FMT_FIELDS..."));
+                qApp->processEvents();
+                stat = ExecuteQueryFile(":/fmt_fields", dest);
+                if (!stat) stat = ExecuteQueryFile(":/fmt_field_index", dest);
+            }
+            else
+                stat = ExecuteQuery("DELETE FROM FMT_FIELDS", dest);
+        }
+
+        if (!stat)
+        {
+            if (!isSqliteObjectExists(dest, "table", "FMT_KEYS"))
+            {
+                dlg.setLabelText(QObject::tr("Создание таблицы FMT_KEYS..."));
+                qApp->processEvents();
+                stat = ExecuteQueryFile(":/fmt_keys", dest);
+                if (!stat) stat = ExecuteQueryFile(":/fmt_keys_index", dest);
+            }
+            else
+                stat = ExecuteQuery("DELETE FROM FMT_KEYS", dest);
+        }
+
+        if (!stat)
+            stat = CloneFmtCopyTable(source, dest, dlg, "FMT_NAMES");
+
+        if (!stat)
+            stat = CloneFmtCopyTable(source, dest, dlg, "FMT_FIELDS");
+
+        if (!stat)
+            stat = CloneFmtCopyTable(source, dest, dlg, "FMT_KEYS");
+
+        return stat;
+    });
+}
+
+bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg, QWidget *parent)
+{
+    bool hr = true;
+    if (pInfo->type() != Type)
+    {
+        hr = false;
+
+        if (ShowMsg)
+            QMessageBox::information(parent, QObject::tr("Информация"), QObject::tr("Это действие не доступно для данного вида подключения"));
+    }
     return hr;
 }

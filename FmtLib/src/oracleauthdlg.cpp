@@ -83,9 +83,13 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
     quint32 index = pModel->getIndexByDsn(DSN);
     QString host = pModel->index(index, OracleTnsListModel::mtns_Host).data().toString();
     QString service = pModel->index(index, OracleTnsListModel::mtns_ServiceName).data().toString();
+    QString dsn = DSN;
     int port = pModel->index(index, OracleTnsListModel::mtns_Port).data().toInt();
 
-    return OraCreateConnection(username, passw, host, service, username, DSN, port, info);
+    if (DSN.isEmpty())
+        dsn = pModel->index(index, OracleTnsListModel::mtns_Name).data().toString();
+
+    return OraCreateConnection(username, passw, host, service, username, dsn, port, info);
 }
 
 QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
@@ -97,6 +101,13 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
                                                 const int &port,
                                                 ConnectionInfo **info)
 {
+    QString dsn = DSN;
+    if (DSN.isEmpty())
+        dsn = DatasourceFromService(service);
+
+    if (dsn.isEmpty())
+        qCWarning(logCore()) << "DSN not found for service" << service;
+    //OracleTnsListModel *pModel = ((FmtApplication*)qApp)->getOracleTnsModel();
     QString _connectionname = QString("%1@%2#%3").arg(username, service, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     QSqlDatabase db =
 #ifndef HELPER_SQLITE
@@ -118,6 +129,12 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
 #else
     db.setDatabaseName("./fmt_emulator.sqlite");
 #endif
+    if (db.open())
+    {
+        qCInfo(logCore()) << "Connected to " << sOracleDBString << "";
+    }
+    else
+        qCInfo(logCore()) << "" << sOracleDBString << ": " << db.lastError().text();
 
     if (info)
     {
@@ -127,18 +144,13 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
         (*info)->m_SchemeName = sheme;
         (*info)->m_User = username;
         (*info)->m_Password = passw;
-        (*info)->m_DSN = DSN;
+        (*info)->m_DSN = dsn;
         (*info)->m_Port = port;
+        (*info)->m_Type = ConnectionInfo::CON_ORA;
 
         (*info)->_db = db;
+        //qDebug() << "OraCreateConnection" << (*info)->_db.databaseName() << (*info)->_db.isOpen();
     }
-
-    if (db.open())
-    {
-        qCInfo(logCore()) << "Connected to " << sOracleDBString << "";
-    }
-    else
-        qCInfo(logCore()) << "" << sOracleDBString << ": " << db.lastError().text();
 
     return db;
 }
@@ -394,6 +406,15 @@ ConnectionInfo *OracleAuthDlg::createConnectionInfo()
     info->m_Password = ui.lineEdit_passw->text();
     info->m_DSN = ui.comboBox->currentText();
     info->m_Port = ui.spinBox->value();
+    info->m_Type = ConnectionInfo::CON_ORA;
+
+    qCInfo(logCore()) << "ConnectionInfo:";
+    qCInfo(logCore()) << "Host:" << info->m_Host;
+    qCInfo(logCore()) << "Service:" << info->m_Service;
+    qCInfo(logCore()) << "SchemeName:" << info->m_SchemeName;
+    qCInfo(logCore()) << "User:" << info->m_User;
+    qCInfo(logCore()) << "DSN:" << info->m_DSN;
+    qCInfo(logCore()) << "Port:" << info->m_Port;
 
     return info;
 }

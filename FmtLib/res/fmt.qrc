@@ -56,5 +56,11 @@
         <file>sql_keys.txt</file>
         <file>img/Edit_RedoHS.png</file>
         <file>img/Edit_UndoHS.png</file>
+        <file alias="fmt_names">sql/fmt_names.sql</file>
+        <file alias="fmt_fields">sql/fmt_fields.sql</file>
+        <file alias="fmt_field_index">sql/fmt_fields_index.sql</file>
+        <file alias="fmt_keys">sql/fmt_keys.sql</file>
+        <file alias="fmt_keys_index">sql/fmt_keys_index.sql</file>
+        <file alias="fmt_names_index">sql/fmt_names_index.sql</file>
     </qresource>
 </RCC>

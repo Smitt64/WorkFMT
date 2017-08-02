@@ -3,23 +3,34 @@
 #include "fmtcore.h"
 #include <QPainter>
 
-ConnectionInfo::ConnectionInfo(const QString &dbalias)
+ConnectionInfo::ConnectionInfo(const QString &dbalias) :
+    pModel(Q_NULLPTR)
 {
     m_Alias = dbalias;
-    _db = QSqlDatabase::database(m_Alias);
-    pModel = new FmtTablesModel(this);
+    if (!dbalias.isEmpty())
+        _db = QSqlDatabase::database(m_Alias);
+    //pModel = new FmtTablesModel(this);
     //pModel->updateFmtList();
     m_Color = GenerateColor();
+    m_Type = CON_NON;
+}
+
+ConnectionInfo::~ConnectionInfo()
+{
+    delete pModel;
 }
 
 FmtTablesModel *ConnectionInfo::tablesModel()
 {
+    if (pModel == Q_NULLPTR)
+        pModel = new FmtTablesModel(this);
     return pModel;
 }
 
 void ConnectionInfo::updateFmtList()
 {
-    pModel->updateFmtList();
+    //pModel->updateFmtList();
+    tablesModel()->updateFmtList();
 }
 
 bool ConnectionInfo::isOpen() const
@@ -60,4 +71,20 @@ QIcon ConnectionInfo::colorIcon()
         m_Icon = QIcon(pix);
     }
     return m_Icon;
+}
+
+int ConnectionInfo::type() const
+{
+    return m_Type;
+}
+
+bool ConnectionInfo::openSqlite(const QString &filename)
+{
+    QFileInfo fi(filename);
+    m_Alias = QString("%1%2").arg(filename, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    _db = QSqlDatabase::addDatabase("QSQLITE", m_Alias);
+    _db.setDatabaseName(filename);
+    m_SchemeName = fi.fileName();
+    bool hr = _db.open();
+    return hr;
 }

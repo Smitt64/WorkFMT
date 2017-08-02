@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QUuid>
 #include "fmtcore.h"
+#include "loggingcategories.h"
 #include <QDebug>
 
 TablesGroupProvider *TablesGroupProvider::m_pInstance = NULL;
@@ -15,7 +16,7 @@ TablesGroupProvider::TablesGroupProvider(QObject *parent) : QObject(parent)
 bool TablesGroupProvider::Init()
 {
     bool result = true;
-    _db = QSqlDatabase::addDatabase("QSQLITE");
+    _db = QSqlDatabase::addDatabase("QSQLITE", "TablesGroupProvider");
     _db.setDatabaseName(QString("%1/tables.dat").arg(QDir::currentPath()));
 
     result = _db.open();
@@ -35,10 +36,14 @@ bool TablesGroupProvider::Init()
             _db.commit();
         }
 
-        m_pGroupsModel = new QSqlTableModel(this);
+        m_pGroupsModel = new QSqlTableModel(this, _db);
         m_pGroupsModel->setTable("table_groups");
-        m_pGroupsModel->select();
+
+        if (!m_pGroupsModel->select())
+            qCWarning(logCore()) << "Can't select groups:" << _db.lastError().text();
     }
+    else
+        qCWarning(logCore()) << "Can't load tables groups:" << _db.lastError().text();
 
     return result;
 }
@@ -58,14 +63,14 @@ QString TablesGroupProvider::ReadFileContent(const QString &filename)
 void TablesGroupProvider::CreateTableGroupsTable()
 {
     QSqlQuery q(_db);
-    q.prepare(ReadFileContent(":/create_table_groups"));
+    q.prepare(this->ReadFileContent(":/create_table_groups"));
     ExecuteQuery(&q);
 }
 
 void TablesGroupProvider::CreateTablesInGroupTable()
 {
     QSqlQuery q(_db);
-    q.prepare(ReadFileContent(":/create_table_in_group"));
+    q.prepare(this->ReadFileContent(":/create_table_in_group"));
     ExecuteQuery(&q);
 }
 

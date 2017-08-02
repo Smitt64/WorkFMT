@@ -4,17 +4,19 @@
 #include <QDebug>
 
 FmtTablesModel::FmtTablesModel(ConnectionInfo *ConInfo, QObject *parent) :
-    QSqlQueryModel(parent)
+    QSqlQueryModel(parent),
+    pQuery(Q_NULLPTR)
 {
     pInfo = ConInfo;
-    pQuery = new QSqlQuery(pInfo->_db);
-
     tableIcon = QIcon(":/table");
     tmpTableIcon = QIcon(":/tablet");
 }
 
 void FmtTablesModel::updateFmtList()
 {
+    if (pQuery == Q_NULLPTR)
+        pQuery = new QSqlQuery(pInfo->_db);
+
     if (!m_FilterString.contains(","))
     {
         QString str = "%" + m_FilterString + "%";

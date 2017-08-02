@@ -54,8 +54,11 @@ private slots:
     void EditGroups();
     void OpenRecentConnection();
     void CopyTable();
+    void CopyTableTo();
     void RsExpExportDir();
     void UnloadDbf();
+    void UnloadSqlite();
+    void OpenConnection();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
@@ -79,6 +82,7 @@ private:
     TreeComboBox *pWindowsComboBox;
 
     QMap<ConnectionInfo*, WorkWindowList> m_Windows;
+    QList<ConnectionInfo*> m_pConnections;
 
     QAction *actionEdit, *actionExport;
     QToolButton *toolConnect;
