@@ -18,8 +18,10 @@
 #include "tablesgroupprovider.h"
 #include "windowslistdlg.h"
 #include "tablesgroupsdlg.h"
-#include "fmtdbftoolwrp.h"
 #include "selectconnectiondlg.h"
+#include "stringlistdlg.h"
+#include "fmttablelistdelegate.h"
+#include "logsettingsdlg.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -35,7 +37,11 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon(QIcon("://icon"));
     pTablesDock = new TablesDock(tr("Таблицы"), this);
     addDockWidget(Qt::LeftDockWidgetArea, pTablesDock);
-    pTablesDock->tablesWidget()->installEventFilter(this);
+    //pTablesDock->tablesWidget()->installEventFilter(this);
+    pTablesDock->setEventFilter(this);
+
+    pTableListDelegate = new FmtTableListDelegate(this);
+    pTablesDock->setItemDelegate(pTableListDelegate);
 
     pMdi = new QMdiArea(this);
     pMdi->setDocumentMode(true);
@@ -48,10 +54,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionCreateFromText->setShortcut(QKeySequence(Qt::SHIFT + Qt::CTRL + Qt::Key_N));
 
     m_ConnectionsGroup = new QActionGroup(this);
+    pLogButton = new QPushButton(this);
+    pLogButton->setToolTip(tr("Параметры трассы"));
+    pLogButton->setIcon(QIcon(":/img/book_notebook.png"));
+    pLogButton->setFlat(true);
+    ui->statusBar->addPermanentWidget(pLogButton);
 
     CreateWindowsCombo();
     CreateMainToolBar();
     CreateWindowFunctional();
+    CreateSearchToolBar();
     CreateViewMenu();
 
     ui->tabToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -62,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     actionEdit = new QAction(QIcon(":/img/edittable.png"), tr("Редактировать"), this);
     actionExport = new QAction(QIcon(":/img/savexml.png"), tr("Экспорт в xml файл"), this);
+    actionDeleteTable = new QAction(QIcon(":/img/removetable.png"), tr("Удалить запись"), this);
 
     connect(ui->actionConnect, SIGNAL(triggered(bool)), SLOT(actionConnectTriggered()));
     connect(ui->actionDisconnect, SIGNAL(triggered(bool)), SLOT(actionDisconnectTriggered()));
@@ -87,10 +100,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionCopyTableAs, SIGNAL(triggered(bool)), SLOT(CopyTableTo()));
     connect(ui->actionRsexpDir, SIGNAL(triggered(bool)), SLOT(RsExpExportDir()));
     connect(ui->actionUnloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadDbf()));
+    connect(ui->actionLoadDbf, SIGNAL(triggered(bool)), SLOT(LoadDbf()));
     connect(ui->action_FMT_sqlite, SIGNAL(triggered(bool)), SLOT(UnloadSqlite()));
     connect(ui->actionOpenConnection, SIGNAL(triggered(bool)), SLOT(OpenConnection()));
+    connect(actionDeleteTable, SIGNAL(triggered(bool)), SLOT(RemoveFmtTable()));
+    connect(pLogButton, SIGNAL(clicked(bool)), SLOT(LoggingSettings()));
+    connect(ui->actionEditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
+    connect(ui->actionGenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
+    connect(ui->actionGenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
+    connect(ui->actionGenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
+    connect(ui->actionGenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
 
-    connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
 #ifdef QT_NO_DEBUG
     connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
     ui->actionHotFix->setVisible(false);
@@ -133,6 +153,7 @@ void MainWindow::CreateMainToolBar()
     }
 
     ui->mainToolBar->addWidget(toolConnect);
+    ui->mainToolBar->addAction(ui->actionOpenConnection);
     ui->mainToolBar->addAction(ui->actionCreate);
     ui->mainToolBar->addSeparator();
     ui->mainToolBar->addAction(ui->actionImport);
@@ -170,7 +191,7 @@ void MainWindow::subWindowIndexChanged(const QModelIndex &index)
     QMdiSubWindow *wnd = pWindowsModel->window(index);
 
     if (wnd)
-        pMdi->setActiveSubWindow(wnd);
+        SetActiveFmtWindow(wnd);
 }
 
 void MainWindow::UpdateActions()
@@ -293,7 +314,7 @@ void MainWindow::OpenConnection(const QString &connectionString)
 
     if (ParseConnectionString(connectionString, user, pswd, dsn))
     {
-        ConnectionInfo *info = NULL;
+        ConnectionInfo *info = Q_NULLPTR;
         OracleAuthDlg::OraCreateConnection(user, pswd, dsn, &info);
 
         if (info->isOpen())
@@ -333,14 +354,15 @@ QAction *MainWindow::CreateConnectionActio(const QString &ShemeName, ConnectionI
 
     info->updateFmtList();
     m_pConnections.append(info);
-    pTablesDock->setModel(info->tablesModel());
+    //pTablesDock->setModel(info->tablesModel());
+    pTablesDock->setConnection(info);
 
     return a;
 }
 
 ConnectionInfo *MainWindow::currentConnection()
 {
-    ConnectionInfo *cur = NULL;
+    ConnectionInfo *cur = Q_NULLPTR;
 
     foreach (QAction *act, m_ConnectionsGroup->actions()) {
         if (act->isChecked())
@@ -354,43 +376,68 @@ ConnectionInfo *MainWindow::currentConnection()
 void MainWindow::actionEditFmt()
 {
     ConnectionInfo *current = currentConnection();
-    QSharedPointer<FmtTable> table(new FmtTable(current));
 
     if (!current)
         return;
 
     QString ntable = actionEdit->data().toString();
-    if (table->load(ntable))
+    QMdiSubWindow *wnd = hasTableWindow(ntable);
+
+    if (wnd == Q_NULLPTR)
     {
-        CreateDocument(table)->show();
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+        if (table->load(ntable))
+        {
+            QMdiSubWindow *window = CreateDocument(table);
+            window->show();
+        }
     }
+    else
+       SetActiveFmtWindow(wnd);
 }
 
 void MainWindow::tableClicked(const quint32 &id)
 {
     ConnectionInfo *current = currentConnection();
-    QSharedPointer<FmtTable> table(new FmtTable(current));
 
     if (!current)
         return;
 
-    if (table->load(id))
+    QMdiSubWindow *wnd = hasTableWindow(id);
+    if (wnd == Q_NULLPTR)
     {
-        CreateDocument(table)->show();
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+        if (table->load(id))
+        {
+            CreateDocument(table)->show();
+        }
     }
+    else
+       SetActiveFmtWindow(wnd);
 }
 
-QMdiSubWindow *MainWindow::CreateDocument(QSharedPointer<FmtTable> &table)
+void MainWindow::SetActiveFmtWindow(QMdiSubWindow *wnd)
+{
+    wnd->setWindowState(Qt::WindowNoState);
+    pMdi->setActiveSubWindow(wnd);
+}
+
+void MainWindow::OnTableChangeUpdtList()
+{
+    TablesDockWidget *list = pTablesDock->tablesWidget();
+
+    if (list->isFiltered())
+        list->updateList();
+}
+
+QMdiSubWindow *MainWindow::CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow)
 {
     FmtWorkWindow *window = new FmtWorkWindow;
     m_Windows[table->connection()].push_back(window);
 
-    QString schemeName = table->connection()->schemeName();
     QMdiSubWindow *wnd = pMdi->addSubWindow(window);
     wnd->setAttribute(Qt::WA_DeleteOnClose);
-    wnd->setWindowTitle(QString("%1@%2")
-                        .arg(schemeName.trimmed())
-                        .arg(table->name()));
+    wnd->setWindowTitle(window->makeWindowTitle(table));
     wnd->setWindowIcon(QIcon(":/table"));
     window->setParentWnd(wnd);
     window->setFmtTable(table);
@@ -400,15 +447,17 @@ QMdiSubWindow *MainWindow::CreateDocument(QSharedPointer<FmtTable> &table)
     connect(window, SIGNAL(accepted()), wnd, SLOT(deleteLater()));
     connect(window, SIGNAL(rejected()), wnd, SLOT(deleteLater()));
     connect(window, SIGNAL(destroyed(QObject*)), SLOT(WorkWindowDestroyed(QObject*)));
-    //connect(window, SIGNAL(windowIconChanged(QIcon)), SLOT(setSubWindowIcon(QIcon)));
-            //std::bind(&QMdiSubWindow::setWindowIcon, wnd, std::placeholders::_1));
+    connect(window, SIGNAL(needUpdateTableList()), SLOT(OnTableChangeUpdtList()));
+
+    if (pWindow)
+        *pWindow = window;
 
     return wnd;
 }
 
 void MainWindow::WorkWindowDestroyed(QObject *wnd)
 {
-    FmtWorkWindow *window = qobject_cast<FmtWorkWindow*>(wnd);
+    const FmtWorkWindow *window = static_cast<const FmtWorkWindow*>(wnd);
 
     if (window)
     {
@@ -430,7 +479,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::conActionTriggered(QAction *action)
 {
     ConnectionInfo *info = reinterpret_cast<ConnectionInfo*>(action->data().toInt());
-    pTablesDock->setModel(info->tablesModel());
+    pTablesDock->setConnection(info);
+            //->setModel(info->tablesModel());
 }
 
 void MainWindow::actionCreate()
@@ -653,11 +703,18 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.addAction(ui->actionCopyTableAs);
     menu.addSeparator();
     menu.addAction(actionExport);
+
+    menu.addAction(ui->actionEditContent);
+    menu.addAction(ui->actionUnloadDbf);
+    menu.addAction(ui->actionLoadDbf);
+    menu.addSeparator();
     menu.setDefaultAction(actionEdit);
     menu.addAction(ui->actionSql);
+    menu.addMenu(ui->menuUpdateScripts);
 
     menu.addSeparator();
     menu.addAction(ui->actionCreate);
+    menu.addAction(actionDeleteTable);
 
     if (view->selectionModel()->hasSelection())
     {
@@ -705,8 +762,27 @@ void MainWindow::CreateViewMenu()
     ui->menuView->addAction(ui->mainToolBar->toggleViewAction());
     ui->menuView->addAction(ui->tabToolBar->toggleViewAction());
     ui->menuView->addAction(ui->windowToolBar->toggleViewAction());
+    ui->menuView->addAction(pSearch->toggleViewAction());
     ui->menuView->addSeparator();
     ui->menuView->addAction(pTablesDock->toggleViewAction());
+}
+
+void MainWindow::CreateSearchToolBar()
+{
+    pSearch = addToolBar(tr("Поиск"));
+    pSearch->setObjectName("SearchToolBar");
+    pSearchLine = new QLineEdit(pSearch);
+    pSearchLine->setPlaceholderText(tr("Введите текст для поиска..."));
+    pSearchLine->setMaximumWidth(350);
+    pSearchLine->setClearButtonEnabled(true);
+
+    pSearch->addWidget(pSearchLine);
+
+    pFindShortcut = new QShortcut(QKeySequence::Find, this);
+
+    connect(pSearchLine, SIGNAL(textChanged(QString)), pTableListDelegate, SLOT(setHighlightText(QString)));
+    connect(pSearchLine, SIGNAL(textChanged(QString)), pTablesDock->tablesWidget()->listView()->viewport(), SLOT(repaint()));
+    connect(pFindShortcut, SIGNAL(activated()), pSearchLine, SLOT(setFocus()));
 }
 
 void MainWindow::showWindowList()
@@ -745,7 +821,7 @@ void MainWindow::OpenRecentConnection()
     {
         RecentList item = qvariant_cast<RecentList>(action->data());
 
-        ConnectionInfo *info = NULL;
+        ConnectionInfo *info = Q_NULLPTR;
         QSqlDatabase db = OracleAuthDlg::OraCreateConnection(item.user,
                                            item.pass,
                                            item.host,
@@ -755,9 +831,7 @@ void MainWindow::OpenRecentConnection()
                                            item.port,
                                            &info);
         if (db.isOpen() && info)
-        {
             CreateConnectionActio(item.database, info);
-        }
     }
 }
 
@@ -836,18 +910,28 @@ void MainWindow::UnloadDbf()
         QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
         QString table = index.data(Qt::UserRole).toString();
 
-        ErrorDlg dlg(ErrorDlg::mode_Widget, this);
-        dlg.setMessage(tr("Экспорт содержимого таблицы %1").arg(table));
-        /*QProgressDialog dlg(this);
-        dlg.open();*/
-        dlg.setModal(false);
-        FmtDbfToolWrp wrp(current, this);
-        dlg.setErrors(wrp.fmterrors());
-        //dlg.exec();
-        connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
-        connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
-        wrp.unload(settings()->value("RsExpUnlDir").toString(), table);
-        //dlg.close();
+        StartUnloadDbf(current, table, this);
+    }
+}
+
+void MainWindow::LoadDbf()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QString table = index.data(Qt::UserRole).toString();
+
+        QString RsExpUnlDir = settings()->value("RsExpUnlDir").toString();
+        QString file = QFileDialog::getOpenFileName(this, QString(), RsExpUnlDir, QString("%1.dat (%1.dat)").arg(table));
+
+        if (!file.isEmpty())
+            StartLoadDbf(current, file, this);
     }
 }
 
@@ -878,19 +962,250 @@ void MainWindow::UnloadSqlite()
 
 void MainWindow::OpenConnection()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Открыть файл подключения"), QString(),
-                                                    tr("Sqlite db, rsreqi.ini (*.sqlite *.db rsreqi.ini);;Sqlite db(*.sqlite *.db);;rsreqi.ini(rsreqi.ini)"));
+    QSettings *s = settings();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Открыть файл подключения"), s->value("LastOpenConnectionDir", QString()).toString(),
+                                                    tr("Sqlite db, rsreq.ini (*.sqlite *.db rsreq.ini);;Sqlite db(*.sqlite *.db);;rsreq.ini(rsreq.ini)"));
 
     if (!filename.isEmpty())
     {
         ConnectionInfo *info = new ConnectionInfo();
 
-        if (!info->openSqlite(filename))
-            delete info;
-        else
+        QFileInfo finfo(filename);
+        QString suffix = finfo.suffix();
+        if (suffix == "db" || suffix == "sqlite")
         {
-            CreateConnectionActio(info->schemeName(), info);
-            info->updateFmtList();
+            if (!info->openSqlite(filename))
+                delete info;
+            else
+            {
+                CreateConnectionActio(info->schemeName(), info);
+                info->updateFmtList();
+                s->setValue("LastOpenConnectionDir", finfo.absolutePath());
+                s->sync();
+            }
+        }
+        else if (suffix == "ini")
+        {
+            QString constrtype1regexp = ConstrType1RegExp();
+            QString rsreq = ReadTextFileContent(filename);
+            QRegExp rx(constrtype1regexp);
+
+            QStringList list;
+            int pos = 0;
+
+            while ((pos = rx.indexIn(rsreq, pos)) != -1) {
+                list << rx.cap(0);
+                pos += rx.matchedLength();
+            }
+
+            if (!list.isEmpty())
+            {
+                StringListDlg dlg(this);
+                dlg.setWindowTitle(tr("Открыть подключение"));
+                dlg.setList(list);
+                if (dlg.exec() == QDialog::Accepted)
+                    OpenConnection(dlg.selected());
+            }
+
+            s->setValue("LastOpenConnectionDir", finfo.absolutePath());
+            s->sync();
+        }
+    }
+}
+
+void MainWindow::RemoveFmtTable()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            if (table->removeFmtTable())
+                QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось удалить запись о таблице <b>%1</b> из FMT словаря")
+                                      .arg(table->name()));
+            else
+                current->updateFmtList();
+        }
+    }
+}
+
+void MainWindow::LoggingSettings()
+{
+    LogSettingsDlg dlg(this);
+    dlg.exec();
+}
+
+QMdiSubWindow *MainWindow::hasTableWindow(const QString &tableName)
+{
+    QMdiSubWindow *find = Q_NULLPTR;
+    QList<QWidget*> lst = m_Windows[currentConnection()];
+
+    QList<QWidget*>::Iterator iter = lst.begin();
+    while(iter != lst.end())
+    {
+        FmtWorkWindow *wnd = dynamic_cast<FmtWorkWindow*>(*iter);
+
+        if (wnd)
+        {
+            if (wnd->table()->name().toLower() == tableName.toLower())
+            {
+                find = wnd->mdiWindow();
+                break;
+            }
+        }
+        ++iter;
+    }
+
+    return find;
+}
+
+QMdiSubWindow *MainWindow::hasTableWindow(const FmtRecId &tableID)
+{
+    QMdiSubWindow *find = Q_NULLPTR;
+    QList<QWidget*> lst = m_Windows[currentConnection()];
+
+    QList<QWidget*>::Iterator iter = lst.begin();
+    while(iter != lst.end())
+    {
+        FmtWorkWindow *wnd = dynamic_cast<FmtWorkWindow*>(*iter);
+
+        if (wnd)
+        {
+            if (wnd->table()->id() == tableID)
+            {
+                find = wnd->mdiWindow();
+                break;
+            }
+        }
+        ++iter;
+    }
+
+    return find;
+}
+
+void MainWindow::EditContent()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    const QListView *view = pTablesDock->tablesWidget()->listView();
+    QItemSelectionModel *selectionModel = view->selectionModel();
+    if (selectionModel->hasSelection())
+    {
+        QModelIndex index = selectionModel->selectedIndexes().at(0);
+        QString tableName = index.data(Qt::UserRole).toString();
+        QMdiSubWindow *wnd = hasTableWindow(tableName);
+
+        if (wnd == Q_NULLPTR)
+        {
+            QSharedPointer<FmtTable> table(new FmtTable(current));
+
+            if (table->load(tableName))
+            {
+                FmtWorkWindow *window = Q_NULLPTR;
+                CreateDocument(table, &window)->show();
+                window->EditContent();
+            }
+        }
+        else
+            SetActiveFmtWindow(wnd);
+    }
+}
+
+void MainWindow::GenCreateTableScript()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            FmtWorkWindow *window = Q_NULLPTR;
+            CreateDocument(table, &window)->show();
+            window->GenCreateTableScript();
+        }
+    }
+}
+
+void MainWindow::GenModifyTableFields()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            FmtWorkWindow *window = Q_NULLPTR;
+            CreateDocument(table, &window)->show();
+            window->GenModifyTableFields();
+        }
+    }
+}
+
+void MainWindow::GenAddFiledsScript()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            FmtWorkWindow *window = Q_NULLPTR;
+            CreateDocument(table, &window)->show();
+            window->GenAddFiledsScript();
+        }
+    }
+}
+
+void MainWindow::GenDeleteFiledsScript()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            FmtWorkWindow *window = Q_NULLPTR;
+            CreateDocument(table, &window)->show();
+            window->GenDeleteFiledsScript();
         }
     }
 }

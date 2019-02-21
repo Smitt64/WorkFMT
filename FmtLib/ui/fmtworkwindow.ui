@@ -246,6 +246,9 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <property name="tabsClosable">
+      <bool>true</bool>
+     </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>Столбцы</string>
@@ -286,6 +289,20 @@
       <widget class="QPushButton" name="pushActions">
        <property name="text">
         <string>Действия</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="scriptButton">
+       <property name="text">
+        <string>Скрипт</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../res/fmt.qrc">
+         <normaloff>:/img/script.png</normaloff>:/img/script.png</iconset>
        </property>
        <property name="autoDefault">
         <bool>false</bool>

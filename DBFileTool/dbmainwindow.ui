@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Create INSERT statement for table</string>
+   <string>Обработка наполения таблиц</string>
   </property>
   <property name="documentMode">
    <bool>true</bool>
@@ -62,7 +62,7 @@
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
+            <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0">
              <item>
               <widget class="QLabel" name="label_3">
                <property name="text">
@@ -74,6 +74,17 @@
               <widget class="QComboBox" name="serviceBox">
                <property name="editable">
                 <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="openConnection">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../FmtLib/res/fmt.qrc">
+                 <normaloff>:/db</normaloff>:/db</iconset>
                </property>
               </widget>
              </item>
@@ -105,8 +116,17 @@
         </item>
         <item>
          <widget class="QListView" name="listView">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
           <property name="editTriggers">
            <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::MultiSelection</enum>
+          </property>
+          <property name="uniformItemSizes">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -146,6 +166,26 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Действия</string>
+    </property>
+    <addaction name="actionUnload"/>
+    <addaction name="actionLoad"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Список</string>
+    </property>
+    <addaction name="actionListAdd"/>
+    <addaction name="actionListClear"/>
+    <addaction name="actionListDelete"/>
+    <addaction name="separator"/>
+    <addaction name="actionSaveList"/>
+    <addaction name="actionLoadList"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -165,7 +205,44 @@
     <bool>false</bool>
    </attribute>
   </widget>
+  <action name="actionUnload">
+   <property name="text">
+    <string>Выгрузить</string>
+   </property>
+  </action>
+  <action name="actionListAdd">
+   <property name="text">
+    <string>Добавить</string>
+   </property>
+  </action>
+  <action name="actionListClear">
+   <property name="text">
+    <string>Очистить</string>
+   </property>
+  </action>
+  <action name="actionListDelete">
+   <property name="text">
+    <string>Удалить</string>
+   </property>
+  </action>
+  <action name="actionLoad">
+   <property name="text">
+    <string>Загрузить</string>
+   </property>
+  </action>
+  <action name="actionSaveList">
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+  </action>
+  <action name="actionLoadList">
+   <property name="text">
+    <string>Загрузить</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../FmtLib/res/fmt.qrc"/>
+ </resources>
  <connections/>
 </ui>

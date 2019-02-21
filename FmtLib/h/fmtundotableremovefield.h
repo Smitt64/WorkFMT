@@ -3,6 +3,7 @@
 
 #include <QUndoCommand>
 #include <QByteArray>
+#include "fmttable.h"
 
 class FmtTable;
 class FmtUndoTableRemoveField : public QUndoCommand
@@ -12,14 +13,14 @@ public:
     ~FmtUndoTableRemoveField();
 
     QByteArray *storedDataPtr();
-    void setFieldRow(const quint16 &row);
+    void setFieldRow(const FmtFldIndex &row);
 
     virtual void undo();
     virtual void redo();
 private:
     FmtTable *pTable;
     QByteArray m_StoredData;
-    quint16 m_Row;
+    FmtFldIndex m_Row;
 };
 
 #endif // FMTUNDOTABLEREMOVEFIELD_H

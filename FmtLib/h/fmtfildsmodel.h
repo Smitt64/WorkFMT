@@ -30,7 +30,14 @@ public:
         fld_FmtId,
         fld_TypeIndex
     };
+    enum FindSubText
+    {
+        FindSubTextRole = Qt::UserRole + 1
+    };
+
     FmtFildsModel(FmtTable *parent);
+    virtual ~FmtFildsModel();
+    bool isInsertRow(const QModelIndex &index) const;
 
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
     virtual QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const;
@@ -47,13 +54,15 @@ public:
 
     void beginRemoveField(int row);
     void endRemoveField();
-    //void setFieldChanged(const int &row, const int &column);
+
     FmtTable *fmtTable();
+    QVariant ProcessHighlightFields(const QModelIndex &index, int role, const QString &HighlightText = QString()) const;
+
 signals:
     void AddedToLast(FmtField *fld, const QModelIndex &index);
 
 private:
-    void setFieldPropertyChanged(const FmtField *fld, const quint16 &prop);
+    void setFieldPropertyChanged(const FmtField *fld, const FmtFldIndex &prop);
     FmtTable *pTable;
 };
 

@@ -2,16 +2,16 @@
 #include "connectioninfo.h"
 #include "fmterrors.h"
 #include "fmtcore.h"
+#include <QTextStream>
 
 FmtDbfToolWrp::FmtDbfToolWrp(ConnectionInfo *info, QObject *parent) : QObject(parent)
 {
     codec = QTextCodec::codecForName("IBM 866");
     pInfo = info;
     err = new FmtErrors(this);
-    QDir d(qApp->applicationDirPath());
+    QDir d = QDir::current();
+            //(qApp->applicationDirPath());
     proc.setProgram(d.absoluteFilePath("DBFileTool.exe"));
-
-    qDebug() << d.absoluteFilePath("DBFileTool.exe");
     connect(&proc, SIGNAL(readyReadStandardError()), SLOT(readyReadStandardError()));
     connect(&proc, SIGNAL(readyReadStandardOutput()), SLOT(readyReadStandardOutput()));
 }
@@ -58,11 +58,61 @@ void FmtDbfToolWrp::unload(const QString &ExportDir, const QString &dbt)
     args << "--e" << "--dbt" << dbt;
 
     proc.setArguments(args);
-    proc.start();
+    CoreStartProcess(&proc, proc.program(), proc.arguments());
+    //proc.start();
 
     if (proc.waitForStarted())
     {
         emit started();
-        //loop.exec();
+    }
+    else
+    {
+        QByteArray data;
+        QTextStream stream(&data, QIODevice::WriteOnly);
+        stream << proc.program() << endl;
+
+        QString errstr = proc.errorString() + "\n" + proc.program() + "\n";
+        foreach (const QString &arg, args) {
+            errstr += arg + "\n";
+        }
+        err->appendError(errstr);
+        emit startError();
     }
 }
+
+void FmtDbfToolWrp::load(const QString &dbt)
+{
+    err->clear();
+    QEventLoop loop;
+    connect(&proc, SIGNAL(finished(int)), &loop, SLOT(quit()));
+
+    QStringList args;
+    args << "--cs" << QString("dsn=%1;user id=%2;password=%3")
+            .arg(DatasourceFromService(pInfo->service()),
+                 pInfo->user(),
+                 pInfo->password());
+    args << "--i" << "--dbt" << dbt;
+
+    proc.setArguments(args);
+    CoreStartProcess(&proc, proc.program(), proc.arguments());
+    //proc.start();
+
+    if (proc.waitForStarted())
+    {
+        emit started();
+    }
+    else
+    {
+        QByteArray data;
+        QTextStream stream(&data, QIODevice::WriteOnly);
+        stream << proc.program() << endl;
+
+        QString errstr = proc.errorString() + "\n" + proc.program() + "\n";
+        foreach (const QString &arg, args) {
+            errstr += arg + "\n";
+        }
+        err->appendError(errstr);
+        emit startError();
+    }
+}
+

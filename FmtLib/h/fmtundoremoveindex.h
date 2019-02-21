@@ -2,6 +2,7 @@
 #define FMTUNDOREMOVEINDEX_H
 
 #include <QUndoCommand>
+#include "fmttable.h"
 
 class FmtTable;
 class FmtUndoRemoveIndex : public QUndoCommand
@@ -9,15 +10,15 @@ class FmtUndoRemoveIndex : public QUndoCommand
 public:
     FmtUndoRemoveIndex(FmtTable *table, QUndoCommand *parent);
     virtual ~FmtUndoRemoveIndex();
-    void setIndexRow(const quint16 &row);
+    void setIndexRow(const FmtFldIndex &row);
 
     virtual void undo();
     virtual void redo();
 
 private:
     FmtTable *pTable;
-    quint16 m_Row;
-    quint32 m_PkIndex;
+    FmtFldIndex m_Row;
+    FmtNumber5 m_PkIndex;
     QByteArray m_storedData;
 };
 

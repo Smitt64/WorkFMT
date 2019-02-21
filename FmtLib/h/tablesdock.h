@@ -7,20 +7,37 @@
 
 class FmtTablesModel;
 class TablesDockWidget;
+class ConnectionInfo;
 class FMTLIBSHARED_EXPORT TablesDock : public QDockWidget
 {
     Q_OBJECT
 public:
-    TablesDock(const QString & title, QWidget * parent = 0, Qt::WindowFlags flags = 0);
+    TablesDock(const QString & title, QWidget * parent = Q_NULLPTR, Qt::WindowFlags flags = 0);
     virtual ~TablesDock();
     void setModel(FmtTablesModel *model);
     TablesDockWidget *tablesWidget();
 
+    void setConnection(ConnectionInfo *info);
+    void setItemDelegate(QAbstractItemDelegate *delegate);
+
+    void setEventFilter(QObject *objEventFilter);
+
 signals:
     void tableDbClicked(quint32);
 
+private slots:
+    void tabCloseRequested(const int &index);
+
 private:
-    TablesDockWidget *pWidget;
+    void addFilterTab();
+    QTabWidget *pTabBar;
+    ConnectionInfo *pInfo;
+    QAbstractItemDelegate *pDelegate;
+    QPushButton *pAddButton;
+    QFrame *pBtnContainer;
+    QHBoxLayout *pLayout;
+    QList<TablesDockWidget*> pWidget;
+    QObject *pEventFilter;
 };
 
 #endif // TABLESDOCK_H

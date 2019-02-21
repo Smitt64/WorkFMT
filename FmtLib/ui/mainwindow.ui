@@ -58,6 +58,15 @@
     <property name="title">
      <string>Сервис</string>
     </property>
+    <widget class="QMenu" name="menuUpdateScripts">
+     <property name="title">
+      <string>Скрипты обновления</string>
+     </property>
+     <addaction name="actionGenCreateTbSql"/>
+     <addaction name="actionGenAddScript"/>
+     <addaction name="actionGenModifyScript"/>
+     <addaction name="actionGenDelScript"/>
+    </widget>
     <addaction name="actionCreate"/>
     <addaction name="actionCreateFromText"/>
     <addaction name="separator"/>
@@ -66,9 +75,13 @@
     <addaction name="separator"/>
     <addaction name="actionInit"/>
     <addaction name="actionSql"/>
-    <addaction name="actionUnloadDbf"/>
     <addaction name="separator"/>
-    <addaction name="actionHotFix"/>
+    <addaction name="actionEditContent"/>
+    <addaction name="actionUnloadDbf"/>
+    <addaction name="actionLoadDbf"/>
+    <addaction name="separator"/>
+    <addaction name="menuUpdateScripts"/>
+    <addaction name="separator"/>
     <addaction name="actionEditGroups"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
@@ -331,6 +344,10 @@
    </property>
   </action>
   <action name="actionOpenConnection">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/openconfile.png</normaloff>:/img/openconfile.png</iconset>
+   </property>
    <property name="text">
     <string>Открыть подключение</string>
    </property>
@@ -338,6 +355,36 @@
   <action name="actionCopyTableAs">
    <property name="text">
     <string>Копировать таблицу в...</string>
+   </property>
+  </action>
+  <action name="actionLoadDbf">
+   <property name="text">
+    <string>Загрузить содержимое</string>
+   </property>
+  </action>
+  <action name="actionEditContent">
+   <property name="text">
+    <string>Редактировать содержимое</string>
+   </property>
+  </action>
+  <action name="actionGenCreateTbSql">
+   <property name="text">
+    <string>Создание таблицы</string>
+   </property>
+  </action>
+  <action name="actionGenAddScript">
+   <property name="text">
+    <string>Добавление полей</string>
+   </property>
+  </action>
+  <action name="actionGenModifyScript">
+   <property name="text">
+    <string>Изменение полей</string>
+   </property>
+  </action>
+  <action name="actionGenDelScript">
+   <property name="text">
+    <string>Удаления полей</string>
    </property>
   </action>
  </widget>

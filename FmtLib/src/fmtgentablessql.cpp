@@ -8,7 +8,12 @@ FmtGenTablesSql::FmtGenTablesSql()
 
 }
 
-QByteArray FmtGenTablesSql::makeContent(QSharedPointer<FmtTable> pTable)
+FmtGenTablesSql::~FmtGenTablesSql()
+{
+
+}
+
+QByteArray FmtGenTablesSql::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
@@ -17,7 +22,7 @@ QByteArray FmtGenTablesSql::makeContent(QSharedPointer<FmtTable> pTable)
     stream << pTable->getCommentSql();
     stream << ";" << endl;
 
-    for (int i = 0; i < pTable->fieldsCount(); i++)
+    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *fld = pTable->field(i);
         stream << fld->getCommentSql() << ";" << endl;

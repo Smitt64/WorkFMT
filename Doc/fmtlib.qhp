@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <QtHelpProject version="1.0">
+      <namespace>ru.FmtLib.core</namespace>
+      <virtualFolder>fmtdoc</virtualFolder>
+      <customFilter name="WorkFMT">
+          <filterAttribute>workfmt</filterAttribute>
+          <filterAttribute>1.0</filterAttribute>
+      </customFilter>
+      <filterSection>
+          <filterAttribute>workfmt</filterAttribute>
+          <filterAttribute>1.0</filterAttribute>
+          <toc>
+              <section title="My Application Manual" ref="index.html">
+                  <section title="Chapter 1" ref="doc.html#chapter1"/>
+                  <section title="Chapter 2" ref="doc.html#chapter2"/>
+                  <section title="Chapter 3" ref="doc.html#chapter3"/>
+              </section>
+          </toc>
+          <keywords>
+              <keyword name="CJsFmtTable" id="CJsFmtTable" ref="help\cjsfmttable.html"/>
+          </keywords>
+          <files>
+              <file>help\style\*.css</file>
+              <file>help\images\*.*</file>
+              <file>help\*.html</file>
+              <file>help\*.index</file>
+          </files>
+      </filterSection>
+  </QtHelpProject>

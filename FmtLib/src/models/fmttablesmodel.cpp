@@ -68,6 +68,11 @@ ConnectionInfo *FmtTablesModel::connection()
     return pInfo;
 }
 
+QString FmtTablesModel::filterString()
+{
+    return m_FilterString;
+}
+
 QVariant FmtTablesModel::data(const QModelIndex &item, int role) const
 {
     if (role == Qt::DisplayRole)

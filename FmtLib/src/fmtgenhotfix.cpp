@@ -11,6 +11,11 @@ FmtGenHotFix::FmtGenHotFix()
 
 }
 
+FmtGenHotFix::~FmtGenHotFix()
+{
+
+}
+
 QByteArray FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
 {
     QByteArray data;
@@ -105,9 +110,8 @@ QByteArray FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
     stream << endl;
     stream << "COMMIT;" << endl;
     stream << endl;
-
     stream << QString::fromUtf8("-- блок создания таблицы ") << endl;
-    WrapSqlBlock(stream, pTable->generateCreateTableSql());
+    WrapSqlBlockObjectExists(stream, pTable->generateCreateTableSql());
     for(int i = 0; i < pTable->indecesCount(); i++)
     {
         FmtIndex *f = pTable->tableIndex(i);
@@ -120,7 +124,7 @@ QByteArray FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
             stream << endl;
             stream << QString::fromUtf8("-- блок создания ключа") << endl;
             QString str = q.value(0).toString().split(QRegExp("\n|\r\n|\r")).at(1);
-            WrapSqlBlock(stream, str);
+            WrapSqlBlockObjectExists(stream, str);
             stream << endl;
         }
     }
@@ -141,7 +145,7 @@ QByteArray FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
                 stream << QString::fromUtf8("-- блок создания посоледовательностей") << endl;
                 QString str = q.value(0).toString();
                 str = str.mid(0, str.indexOf("START WITH"));
-                WrapSqlBlock(stream, str);
+                WrapSqlBlockObjectExists(stream, str);
                 stream << endl;
             }
         }
@@ -171,42 +175,4 @@ QByteArray FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
     }
 
     return data;
-}
-
-void FmtGenHotFix::WrapSqlBlock(QTextStream &stream, const QString &block)
-{
-    stream << "DECLARE " << endl;
-    stream << "    e_object_exists EXCEPTION;" << endl;
-    stream << "    PRAGMA EXCEPTION_INIT(e_object_exists, -955); " << endl;
-    stream << "BEGIN" << endl;
-    stream << "    EXECUTE IMMEDIATE " << endl;
-
-    QStringList lines = block.split(QRegExp("\n|\r\n|\r"));
-    for (int i = 0; i < lines.count(); i++)
-    {
-        QString str = Simplify(lines.at(i));
-
-        if (!str.isEmpty())
-        {
-            stream << "        '" << str << "'";
-            if (i != lines.count() - 1)
-                stream << " || " << endl;
-        }
-    }
-    stream << ";" << endl;
-
-    stream << endl;
-    stream << "EXCEPTION " << endl;
-    stream << "    WHEN e_object_exists THEN NULL; " << endl;
-    stream << "END;" << endl;
-    stream << "/" << endl;
-}
-
-QString FmtGenHotFix::Simplify(QString line)
-{
-    QString str = line;
-    str = str.remove(QRegExp("(\\\"([\\w]+)\\\")\\."));
-    line.replace("'", "''");
-    str = str.remove("\"");
-    return str.simplified();
 }

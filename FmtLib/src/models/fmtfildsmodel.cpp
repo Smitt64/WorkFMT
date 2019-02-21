@@ -11,6 +11,11 @@ FmtFildsModel::FmtFildsModel(FmtTable *parent) :
     pTable = parent;
 }
 
+FmtFildsModel::~FmtFildsModel()
+{
+
+}
+
 int FmtFildsModel::columnCount(const QModelIndex &parent) const
 {
     return 5 + 1;
@@ -24,7 +29,7 @@ QVariant FmtFildsModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     FmtField *fld = pTable->m_pFields[index.row()];
-    if (role != Qt::DisplayRole && role != Qt::EditRole)
+    if (role != Qt::DisplayRole && role != Qt::EditRole && role != FindSubTextRole)
     {
         bool isValidName = true; int pos = 0;
         QRegExpValidator validator(QRegExp("([a-zA-Z_][a-zA-Z0-9]*)*"));
@@ -44,19 +49,18 @@ QVariant FmtFildsModel::data(const QModelIndex &index, int role) const
             if (!isValidName)
                 return tr("Имя таблицы имеет недопустимое значение");
         }
+
         return QVariant();
     }
 
     switch(index.column())
     {
     case FmtFildsModel::fld_Name:
-        value =  fld->undecorateName();
+    case FmtFildsModel::fld_Comment:
+        value = ProcessHighlightFields(index, role);
         break;
     case FmtFildsModel::fld_DbName:
         value = fld->name();
-        break;
-    case FmtFildsModel::fld_Comment:
-        value = fld->comment();
         break;
     case FmtFildsModel::fld_Size:
         value = fld->size();
@@ -88,6 +92,36 @@ QVariant FmtFildsModel::data(const QModelIndex &index, int role) const
     case FmtFildsModel::fld_TypeIndex:
         value = fld->typeIndex();
         break;
+    }
+
+    return value;
+}
+
+QVariant FmtFildsModel::ProcessHighlightFields(const QModelIndex &index, int role, const QString &HighlightText) const
+{
+    if (index.row() >= pTable->m_pFields.size())
+        return QVariant();
+
+    QVariant value;
+    FmtField *fld = pTable->m_pFields[index.row()];
+
+    switch(index.column())
+    {
+    case FmtFildsModel::fld_Name:
+        value =  fld->undecorateName();
+        break;
+    case FmtFildsModel::fld_Comment:
+        value = fld->comment();
+        break;
+    }
+
+    if (role == FindSubTextRole && !HighlightText.isEmpty())
+    {
+        QString str = value.toString();
+        QString rxstring = QString("(%1)").arg(HighlightText);
+        QRegExp rx(rxstring);
+        rx.setCaseSensitivity(Qt::CaseInsensitive);
+        value = str.replace(rx, QString("<span style=\" background-color:#9BFF9B;\">\\1</span>"));
     }
 
     return value;
@@ -155,7 +189,7 @@ bool FmtFildsModel::setData(const QModelIndex &index, const QVariant &value, int
     return QAbstractItemModel::setData(index, value, role);
 }
 
-void FmtFildsModel::setFieldPropertyChanged(const FmtField *fld, const quint16 &prop)
+void FmtFildsModel::setFieldPropertyChanged(const FmtField *fld, const FmtFldIndex &prop)
 {
     int row = fld->index();
     //quint16 col = -1;
@@ -214,9 +248,14 @@ QModelIndex FmtFildsModel::parent(const QModelIndex &index) const
 int FmtFildsModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
-        return 1;
+        return 0;
 
     return pTable->m_pFields.size() + 1;
+}
+
+bool FmtFildsModel::isInsertRow(const QModelIndex &index) const
+{
+    return index.row() == pTable->m_pFields.size();
 }
 
 Qt::ItemFlags FmtFildsModel::flags(const QModelIndex &index) const
@@ -242,20 +281,30 @@ Qt::ItemFlags FmtFildsModel::flags(const QModelIndex &index) const
 QVariant FmtFildsModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     static QStringList headers = QStringList()
-            << "Имя столбца" << "Тип" << "Длина" << "Комментарий" << "Имя столбца в БД" << "⚙";
+            << "Имя столбца" << "Тип" << "Длина" << "Комментарий" << "Имя столбца в БД" << "";//<< "⚙";
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
-    {
         return headers.at(section);
-    }
 
     if (orientation == Qt::Vertical)
     {
         if (section >= pTable->m_pFields.size())
         {
             if (role == Qt::DisplayRole)
-                return QString("✳");
+                return QString();//QString("✳");
+            if (role == Qt::DecorationRole)
+                return QPixmap(":/img/new.png");
             if (role == Qt::FontRole)
                 return QFont("Arial", 10);
+        }
+    }
+    else
+    {
+        if (section == 5)
+        {
+            if (role == Qt::DecorationRole)
+                return QPixmap(":/img/dialog1.png");
+            else if(role == Qt::TextAlignmentRole)
+                return Qt::AlignCenter;
         }
     }
 

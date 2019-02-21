@@ -9,8 +9,6 @@ FmtIndecesModel::FmtIndecesModel(FmtTable *parent) :
 {
     pTable = parent;
     rootItem = new FmtSegment(NULL);
-
-    //connect(pTable, SIGNAL(fieldRemoved()), SLOT(fieldRemoved()));
 }
 
 int FmtIndecesModel::columnCount(const QModelIndex &parent) const
@@ -86,7 +84,7 @@ QVariant FmtIndecesModel::headerData(int section, Qt::Orientation orientation,
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
     {
-        return /*headers.at(section)*/FmtIndexPropertyTextByFieldId(section);
+        return FmtIndexPropertyTextByFieldId(section);
     }
 
     return QVariant();
@@ -198,6 +196,7 @@ bool FmtIndecesModel::insertRows(int row, int count, const QModelIndex &parent)
     if (parentItem == rootItem)
     {
         FmtIndex *pIndex = pTable->addIndex();
+        Q_UNUSED(pIndex)
         parentItem->insertItem(row);
     }
     else
@@ -207,7 +206,7 @@ bool FmtIndecesModel::insertRows(int row, int count, const QModelIndex &parent)
         else
         {
             FmtIndex *pIndex = dynamic_cast<FmtIndex*>(parentItem->parent());
-            pIndex->insertItem(row);
+            pIndex->insertItem(row + 1);
         }
     }
 

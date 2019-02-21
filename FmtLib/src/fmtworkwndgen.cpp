@@ -7,8 +7,6 @@
 #include <QFile>
 #include <QTextStream>
 
-#define TABSTOP 4
-
 FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::FmtWorkWndGen),
@@ -28,18 +26,8 @@ FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
     connect(pActionRun, SIGNAL(triggered(bool)), SLOT(generate()));
     pGenType->addItems(fmtGenInterfaces());
 
-    QFont f("Courier");
-    f.setPointSize(10);
-    f.setStyleHint(QFont::Monospace);
-    f.setFixedPitch(true);
-
-    QFontMetrics metrics(f);
-    int tabWidth = TABSTOP * metrics.width(' ');
-
     pEditor = new CodeEditor(this);
-    pEditor->document()->setDefaultFont(f);
     pEditor->setReadOnly(true);
-    pEditor->setTabStopWidth(tabWidth);
     setCentralWidget(pEditor);
     UpdateSaveAction();
 

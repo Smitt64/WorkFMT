@@ -3,10 +3,12 @@
 #include "fmtcore.h"
 #include "fmtundofieldproperty.h"
 #include "fmtfildsmodel.h"
+#include "fmtindex.h"
+#include "connectioninfo.h"
 #include <QDataStream>
 #include <QUndoStack>
 
-QString FmtFieldPropertyTextById(const quint16 &fld)
+QString FmtFieldPropertyTextById(const FmtFldIndex &fld)
 {
     QString name;
 
@@ -47,11 +49,18 @@ QString FmtFieldPropertyTextById(const quint16 &fld)
     return name;
 }
 
+/*!
+    \class FmtField
+    \brief FmtField класс, обеспечивающий работу с полем таблицы FMT
+
+    \ingroup tools
+*/
+
 FmtField::FmtField(QObject *parent) : QObject(parent)
 {
     m_Id = 0;
     m_Size = 0;
-    m_Type = -1;
+    m_Type = fmtt_INT;
     m_Offset = 0;
     m_Outlen = 0;
     m_Decpoint = 0;
@@ -59,13 +68,18 @@ FmtField::FmtField(QObject *parent) : QObject(parent)
     m_Name = "";
     m_Comment = "";
 
-    pTable = (FmtTable*)parent;
+    pTable = dynamic_cast<FmtTable*>(parent);
     pUndoStack = pTable->undoStack();
-    pLastCommand = NULL;
+    pLastCommand = Q_NULLPTR;
     pFieldsModel = pTable->fieldsModel();
     m_IgnoreUndoStack = false;
 }
 
+/*!
+      \property FmtField::Comment
+
+      Хранит информацию поля FmtField.T_COMMENT. Содержит описание поля
+*/
 QString FmtField::comment() const
 {
     return m_Comment;
@@ -89,7 +103,7 @@ void FmtField::setComment(const QString &v)
             pLastCommand = cmd;
 
         if (!hasParentCommand)
-            pLastCommand = NULL;
+            pLastCommand = Q_NULLPTR;
 
         pUndoStack->push(cmd);
     }
@@ -102,14 +116,14 @@ QString FmtField::name() const
     return m_Name;
 }
 
-quint32 FmtField::tableId() const
+FmtRecId FmtField::tableId() const
 {
     return pTable->id();
 }
 
-qint32 FmtField::index() const
+FmtFldIndex FmtField::index() const
 {
-    return pTable->m_pFields.indexOf((FmtField *const)this);
+    return static_cast<FmtFldIndex>(pTable->m_pFields.indexOf(const_cast<FmtField *const>(this)));
 }
 
 void FmtField::setName(const QString &v)
@@ -130,7 +144,7 @@ void FmtField::setName(const QString &v)
             pLastCommand = cmd;
 
         if (!hasParentCommand)
-            pLastCommand = NULL;
+            pLastCommand = Q_NULLPTR;
 
         pUndoStack->push(cmd);
     }
@@ -138,7 +152,7 @@ void FmtField::setName(const QString &v)
         m_Name = value;
 }
 
-void FmtField::setSize(const qint32 &v)
+void FmtField::setSize(const FmtNumber10 &v)
 {
     if (m_Size == v)
         return;
@@ -161,12 +175,12 @@ void FmtField::setSize(const qint32 &v)
         pTable->rebuildOffsets(pLastCommand);
 
         if (m_Type == fmtt_STRING || m_Type == fmtt_CHR || m_Type == fmtt_UCHR || m_Type == fmtt_SNR)
-            setDecpoint(v);
+            setDecpoint(static_cast<FmtNumber5>(v));
         else
             setDecpoint(0);
 
         if (!hasParentCommand)
-            pLastCommand = NULL;
+            pLastCommand = Q_NULLPTR;
 
         if (!hasParentCommand)
             pUndoStack->endMacro();
@@ -181,7 +195,7 @@ void FmtField::setSize(const qint32 &v)
     }
 }
 
-void FmtField::setType(const qint32 &v)
+void FmtField::setType(const FmtFldType &v)
 {
     if (m_Type == v)
         return;
@@ -202,7 +216,7 @@ void FmtField::setType(const qint32 &v)
 
         if (v != fmtt_STRING && v != fmtt_CHR && v != fmtt_UCHR && v != fmtt_SNR)
             setSize(fmtTypeSize(v));
-        pLastCommand = NULL;
+        pLastCommand = Q_NULLPTR;
 
         pUndoStack->endMacro();
     }
@@ -222,12 +236,12 @@ void FmtField::setType(const qint32 &v)
 
 void FmtField::load(const QSqlRecord &rec)
 {
-    m_Id = rec.value(FmtField::fld_Id).toInt();
+    m_Id = static_cast<quint32>(rec.value(FmtField::fld_Id).toInt());
     m_Size = rec.value(FmtField::fld_Size).toInt();
-    m_Type = rec.value(FmtField::fld_Type).toInt();
+    m_Type = static_cast<FmtFldType>(rec.value(FmtField::fld_Type).toInt());
     m_Offset = rec.value(FmtField::fld_Offset).toInt();
-    m_Outlen = rec.value(FmtField::fld_Outlen).toInt();
-    m_Decpoint = rec.value(FmtField::fld_DecPoint).toInt();
+    m_Outlen = static_cast<FmtNumber5>(rec.value(FmtField::fld_Outlen).toInt());
+    m_Decpoint = static_cast<FmtNumber5>(rec.value(FmtField::fld_DecPoint).toInt());
     m_isHidden = rec.value(FmtField::fld_Hidden).toBool();
 
     m_Name = rec.value(FmtField::fld_Name).toString();
@@ -243,12 +257,12 @@ QString FmtField::undecorateName() const
     return str;
 }
 
-qint32 FmtField::offset() const
+FmtNumber10 FmtField::offset() const
 {
     return m_Offset;
 }
 
-void FmtField::setOffset(const qint32 &v)
+void FmtField::setOffset(const FmtNumber10 &v)
 {
     if (m_Offset == v)
         return;
@@ -265,7 +279,7 @@ void FmtField::setOffset(const qint32 &v)
             pLastCommand = cmd;
 
         if (!hasParentCommand)
-            pLastCommand = NULL;
+            pLastCommand = Q_NULLPTR;
 
         pUndoStack->push(cmd);
     }
@@ -273,12 +287,12 @@ void FmtField::setOffset(const qint32 &v)
         m_Offset = v;
 }
 
-quint32 FmtField::outlen() const
+FmtNumber5 FmtField::outlen() const
 {
     return m_Outlen;
 }
 
-void FmtField::setOutlen(const qint32 &v)
+void FmtField::setOutlen(const FmtNumber5 &v)
 {
     if (m_Outlen == v)
         return;
@@ -295,7 +309,7 @@ void FmtField::setOutlen(const qint32 &v)
             pLastCommand = cmd;
 
         if (!hasParentCommand)
-            pLastCommand = NULL;
+            pLastCommand = Q_NULLPTR;
 
         pUndoStack->push(cmd);
     }
@@ -303,12 +317,12 @@ void FmtField::setOutlen(const qint32 &v)
         m_Outlen = v;
 }
 
-quint32 FmtField::decpoint() const
+FmtNumber5 FmtField::decpoint() const
 {
     return m_Decpoint;
 }
 
-void FmtField::setDecpoint(const qint32 &v)
+void FmtField::setDecpoint(const FmtNumber5 &v)
 {
     if (m_Decpoint == v)
         return;
@@ -325,7 +339,7 @@ void FmtField::setDecpoint(const qint32 &v)
             pLastCommand = cmd;
 
         if (!hasParentCommand)
-            pLastCommand = NULL;
+            pLastCommand = Q_NULLPTR;
 
         pUndoStack->push(cmd);
     }
@@ -355,7 +369,7 @@ void FmtField::setHidden(const bool &v)
             pLastCommand = cmd;
 
         if (!hasParentCommand)
-            pLastCommand = NULL;
+            pLastCommand = Q_NULLPTR;
 
         pUndoStack->push(cmd);
     }
@@ -363,7 +377,7 @@ void FmtField::setHidden(const bool &v)
         m_isHidden = v;
 }
 
-int FmtField::FindFirstEmptyID()
+FmtRecId FmtField::FindFirstEmptyID()
 {
     int id = 1;
     QSqlQuery q(pTable->db);
@@ -372,7 +386,7 @@ int FmtField::FindFirstEmptyID()
     if (q.exec() && q.next())
         id = q.value(0).toInt();
 
-    return id;
+    return static_cast<FmtRecId>(id);
 }
 
 int FmtField::save()
@@ -404,10 +418,35 @@ QString FmtField::getOraName() const
     return QString();
 }
 
+bool FmtField::isAutoInc() const
+{
+    bool hr = false;
+    FmtField *pThis = const_cast<FmtField*>(this);
+    for (FmtNumber5 i = 0; i < pThis->table()->indecesCount(); i++)
+    {
+        FmtIndex *indx = pThis->table()->tableIndex(i);
+        if (indx->isAutoInc() && indx->hasField(pThis))
+            hr = true;
+    }
+    return hr;
+}
+
+/*!
+   \fn QString FmtField::getOraDecl() const
+    Возвращает описание поля в БД Oracle.
+    \code
+var fld = table.addField("Simple", CJsFmtTable.ftLONG);
+print(fld.getOraDecl());
+    \endcode
+    Вывод:
+    \code
+NUMBER(10)
+    \endcode
+*/
 QString FmtField::getOraDecl() const
 {
     QString _oraDecl;
-    if (m_Type == fmtt_STRING || m_Type == fmtt_SNR)
+    if (m_Type == fmtt_STRING || m_Type == fmtt_SNR || (m_Type == fmtt_UCHR && m_Size > 1))
     {
         _oraDecl = QString("%1(%2)")
                 .arg(getOraTypeName())
@@ -427,24 +466,71 @@ QString FmtField::getOraDecl() const
     return _oraDecl;
 }
 
+/*!
+   \fn QString FmtField::getOraTypeName() const
+    Возвращает наименование типа поля в БД Oracle.
+    \code
+var fld = table.addField("Simple", CJsFmtTable.ftDATE);
+print(fld.getOraTypeName());
+    \endcode
+    Вывод:
+    \code
+DATE
+    \endcode
+*/
 QString FmtField::getOraTypeName() const
 {
     return fmtOracleDecl(m_Type);
 }
 
+/*!
+   \fn QString FmtField::getCppTypeName(bool Short) const
+    Возвращает тип поля в с++.
+    \code
+var pConnection = CreateConnection("user", "password", "DSN");
+var table = new CJsFmtTable(pConnection);
+
+var fld = table.addField("SimpleField", CJsFmtTable.ftLONG);
+print(fld.getCppTypeName());
+print(fld.getCppTypeName(true));
+    \endcode
+    Вывод:
+    \code
+db_int32
+int32
+    \endcode
+*/
 QString FmtField::getCppTypeName(bool Short) const
 {
-    QString _name = fmtCppStructTypeName(m_Type);
+    QString _name = fmtCppStructDbTypeName(m_Type);
     if (Short)
-        _name = _name.remove("db_");
+        _name = fmtCppStructTypeName(m_Type);
     return _name;
 }
 
+/*!
+   \fn QString FmtField::getCppDecl(bool funcPrm = false) const
+    Возвращает описание поля в с++. \tt funcPrm установлен в true, функция вернет описание поля, если бы оно использовалось как параметр функции:
+    \code
+var pConnection = CreateConnection("user", "password", "DSN");
+var table = new CJsFmtTable(pConnection);
+
+var fld = table.addField("SimpleString", CJsFmtTable.ftSTRING);
+fld.Size = 50;
+print(fld.getCppDecl());
+print(fld.getCppDecl(true));
+    \endcode
+    Вывод:
+    \code
+SimpleString[50]
+*SimpleString
+    \endcode
+*/
 QString FmtField::getCppDecl(bool funcPrm) const
 {
     QString _cppDecl;
     QString name = m_Name.mid(0,2).toLower() == "t_" ? m_Name.mid(2) : m_Name;
-    if (m_Type == fmtt_STRING || m_Type == fmtt_SNR)
+    if (m_Type == fmtt_STRING || m_Type == fmtt_SNR || (m_Type == fmtt_UCHR && m_Size > 1))
     {
         if (!funcPrm)
         {
@@ -459,18 +545,72 @@ QString FmtField::getCppDecl(bool funcPrm) const
         }
     }
     else
-    {
         _cppDecl = name;
-    }
+
     return _cppDecl;
+}
+
+/*!
+   \fn QString FmtField::getOraDefaultVal() const
+    Возвращает значение по умолчанию для поля в БД Oracle.
+    \code
+var fld = table.addField("Simple", CJsFmtTable.ftDATE);
+print(fld.getOraDefaultVal());
+    \endcode
+    Вывод:
+    \code
+TO_DATE(''01/01/0001'', ''MM/DD/YYYY'')
+    \endcode
+*/
+QString FmtField::getOraDefaultVal() const
+{
+    QString t;
+    if (isStringType() && m_Type != fmtt_UCHR)
+        t = "CHR(1)";
+    else
+    {
+       switch(m_Type)
+       {
+       case fmtt_INT:
+       case fmtt_LONG:
+       case fmtt_BIGINT:
+           t = "0";
+           break;
+       case fmtt_FLOAT:
+       case fmtt_DOUBLE:
+       case fmtt_NUMERIC:
+       case fmtt_MONEY:
+           t = "0.0";
+           break;
+       case fmtt_DATE:
+           t = "TO_DATE(''01/01/0001'', ''MM/DD/YYYY'')";
+           break;
+       case fmtt_TIME:
+           t = "TO_DATE(''01/01/0001 00:00:00'',''MM/DD/YYYY HH24:MI:SS'')";
+           break;
+       case fmtt_CHR:
+           t = "CHR(0)";
+           break;
+       case fmtt_UCHR:
+           t = "UTL_RAW.CAST_TO_RAW(CHR(0))";
+           break;
+       }
+    }
+
+    return t;
 }
 
 QString FmtField::getCommentSql() const
 {
-    QString sql = QString("COMMENT ON COLUMN %1.%2 IS '%3'")
+    QSqlDriver *driver = pTable->connection()->driver();
+    QSqlField fld;
+    fld.setType(QVariant::String);
+    fld.setValue(m_Comment);
+
+    QString sql = QString("COMMENT ON COLUMN %1.%2 IS %3")
             .arg(pTable->name().toUpper())
             .arg(m_Name.toUpper())
-            .arg(m_Comment);
+            .arg(driver->formatValue(fld, true));
 
     return sql;
 }
@@ -480,13 +620,26 @@ qint32 FmtField::typeIndex() const
     return fmtIndexForType(m_Type);
 }
 
-void FmtField::setTypeIndex(const qint32 &v)
+void FmtField::setTypeIndex(const FmtFldIndex &v)
 {
     setType(fmtTypeFromIndex(v));
     emit typeChanged(m_Type);
 }
 
-bool FmtField::setDataPrivate(const quint16 &fld, const QVariant &value)
+bool FmtField::isStringType() const
+{
+    bool hr = false;
+    if (m_Type == fmtt_STRING || m_Type == fmtt_SNR)
+        hr = true;
+    else if (m_Type == fmtt_CHR || m_Type == fmtt_UCHR)
+    {
+        if (m_Size > 1)
+            hr = true;
+    }
+    return hr;
+}
+
+bool FmtField::setDataPrivate(const FmtFldIndex &fld, const QVariant &value)
 {
     switch(fld)
     {
@@ -498,7 +651,7 @@ bool FmtField::setDataPrivate(const quint16 &fld, const QVariant &value)
         m_Name = value.toString();
         break;
     case fld_Type:
-        m_Type = value.toInt();
+        m_Type = static_cast<FmtFldType>(value.toInt());
         break;
     case fld_Size:
         m_Size = value.toInt();
@@ -507,10 +660,10 @@ bool FmtField::setDataPrivate(const quint16 &fld, const QVariant &value)
         m_Offset = value.toInt();
         break;
     case fld_Outlen:
-        m_Outlen = value.toInt();
+        m_Outlen = static_cast<FmtNumber5>(value.toInt());
         break;
     case fld_DecPoint:
-        m_Decpoint = value.toInt();
+        m_Decpoint = static_cast<FmtNumber5>(value.toInt());
         break;
     case fld_Hidden:
         m_isHidden = value.toBool();
@@ -527,7 +680,7 @@ void FmtField::stroreData(QByteArray *data)
 {
     QMap<quint16,QVariant> fldDataMap;
 
-    for (int fld = 0; fld < fld_MAXCOUNT; fld++)
+    for (quint16 fld = 0; fld < fld_MAXCOUNT; fld++)
     {
         switch(fld)
         {
@@ -570,14 +723,75 @@ void FmtField::stroreData(QByteArray *data)
 
 void FmtField::restoreData(QByteArray *data)
 {
-    QMap<quint16,QVariant> fldDataMap;
+    QMap<FmtFldIndex,QVariant> fldDataMap;
     QDataStream stream(data, QIODevice::ReadOnly);
     stream >> fldDataMap;
 
-    QMapIterator<quint16,QVariant> iterator(fldDataMap);
+    QMapIterator<FmtFldIndex,QVariant> iterator(fldDataMap);
     while(iterator.hasNext())
     {
         iterator.next();
         setDataPrivate(iterator.key(), iterator.value());
     }
+}
+
+FmtTable *FmtField::table()
+{
+    return pTable;
+}
+
+bool FmtField::isNumber() const
+{
+    bool hr = false;
+    switch(m_Type)
+    {
+    case fmtt_INT:
+    case fmtt_LONG:
+    case fmtt_BIGINT:
+    case fmtt_FLOAT:
+    case fmtt_DOUBLE:
+    case fmtt_MONEY:
+    case fmtt_NUMERIC:
+        hr = true;
+        break;
+    }
+
+    return hr;
+}
+
+bool FmtField::isRealNumber() const
+{
+    bool hr = false;
+
+    if (isNumber())
+    {
+        switch(m_Type)
+        {
+        case fmtt_FLOAT:
+        case fmtt_DOUBLE:
+        case fmtt_MONEY:
+        case fmtt_NUMERIC:
+            hr = true;
+            break;
+        }
+    }
+
+    return hr;
+}
+
+bool FmtField::isString() const
+{
+    bool hr = false;
+    switch(m_Type)
+    {
+    case fmtt_STRING:
+    case fmtt_SNR:
+        hr = true;
+        break;
+    }
+
+    if (m_Type == fmtt_UCHR && m_Size > 1)
+        hr = true;
+
+    return hr;
 }

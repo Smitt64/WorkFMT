@@ -61,5 +61,6 @@ void registerFmtGenInterface(const QString &alias)
 
 FmtGenInterface *fmtGenInterfaceCreate(const QString &alias);
 QStringList fmtGenInterfaces();
+QTextStream &tab(QTextStream &s);
 
 #endif // FMTGENINTERFACE_H

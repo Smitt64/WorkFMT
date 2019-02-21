@@ -18,25 +18,35 @@ class FMTLIBSHARED_EXPORT FmtIndex : public FmtIndecesModelItem
     friend class FmtUndoRemoveSegment;
     friend class FmtUndoIndexAddSegment;
     friend class FmtUndoIndexProperty;
+
+    Q_PROPERTY(QString Name READ name WRITE setName)
+    Q_PROPERTY(int NullValue READ nullValue WRITE setNullValue)
+    Q_PROPERTY(qint32 IndexNumber READ indexNumber)
+    Q_PROPERTY(qint32 SegmentsCount READ segmentsCount)
+    Q_PROPERTY(bool isDup READ isDup WRITE setDup)
+    Q_PROPERTY(bool isAutoInc READ isAutoInc WRITE setAutoInc)
+    Q_PROPERTY(bool isUnique READ isUnique)
+    Q_PROPERTY(bool isLocal READ isLocal WRITE setLocal)
 public:
     explicit FmtIndex(FmtTable *table, QObject *parent = 0);
     ~FmtIndex();
-    void addField(FmtField *fld);
 
     QString name() const { return m_Name; }
     int nullValue() const { return m_NullValue; }
-    bool isAutoInc() const;
-    bool isUnique() const;
-    bool isDup() const;
-    bool isLocal() const;
-    qint32 indexNumber() const;
-    qint32 segmentsCount() const;
     FmtTable *table();
 
     void setDup(bool use);
     void setNullValue(const quint16 &val);
     void setAutoInc(bool use);
     void setLocal(bool use);
+    void setFlags(const FmtNumber10 &flags);
+    void setName(const QString &n);
+    void setType(const FmtNumber5 &n);
+
+    bool isAutoInc() const;
+    bool isUnique() const;
+    bool isDup() const;
+    bool isLocal() const;
 
     virtual QVariant data(int column, int role = Qt::DisplayRole) const;
     virtual bool setData(int column, const QVariant &value);
@@ -46,17 +56,16 @@ signals:
 
 public slots:
     void NormalizeFlags();
-    void setFlags(const quint32 &flags);
-    void setName(const QString &n);
-    void setType(const quint16 &n);
+    void addField(FmtField *fld);
     void removeField(FmtField *pFld);
-
     void removeSegment(const quint16 &segmentIndex);
-
+    qint32 indexNumber() const;
+    qint32 segmentsCount() const;
     void copyTo(FmtIndex *other);
 
     FmtSegment *segment(const qint32 &index);
     FmtSegment *addSegment(const quint32 &row);
+    bool hasField(FmtField *pFld);
 
 private slots:
     void UpdateIndexName(const QString &value);
@@ -72,8 +81,8 @@ private:
     FmtSegment *addSegmentPrivate(const quint32 &row);
     void removeSegmentPrivate(const quint32 &index, bool AutoDelete);
     int save();
-    quint32 m_Flags;
-    quint16 m_Type;
+    FmtNumber10 m_Flags;
+    FmtNumber5 m_Type;
     bool m_fDup, m_fAutoInc;
     bool m_fIgnoreStack;
     int m_NullValue;

@@ -3,6 +3,10 @@
 
 #include <QPlainTextEdit>
 #include <QObject>
+#include "highlighter.h"
+#include "fmtcore.h"
+
+#define TABSTOP 4
 
 class QPaintEvent;
 class QResizeEvent;
@@ -11,7 +15,7 @@ class QWidget;
 
 class LineNumberArea;
 class QAbstractItemModel;
-class CodeEditor : public QPlainTextEdit
+class FMTLIBSHARED_EXPORT CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
 

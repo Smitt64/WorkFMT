@@ -1,0 +1,1 @@
+for /r ".\img"  %%i in (*.png) do  pngcrushw32 -ow -rem allb -reduce %%i

@@ -62,5 +62,24 @@
         <file alias="fmt_keys">sql/fmt_keys.sql</file>
         <file alias="fmt_keys_index">sql/fmt_keys_index.sql</file>
         <file alias="fmt_names_index">sql/fmt_names_index.sql</file>
+        <file>img/removetable.png</file>
+        <file>img/openconfile.png</file>
+        <file>img/remove.png</file>
+        <file>img/script.png</file>
+        <file>txt/samplescript.js</file>
+        <file>img/NewDocumentHS.png</file>
+        <file>img/rundebug.png</file>
+        <file>img/DataContainer_NewRecordHS.png</file>
+        <file>img/XSDSchema_RemoveAllButSelectionFromWorkspaceCmd.png</file>
+        <file>img/RepeatHS.png</file>
+        <file>img/book_notebook.png</file>
+        <file>img/base_checkmark_32.png</file>
+        <file>img/new.png</file>
+        <file>img/DiscardChanges.png</file>
+        <file>img/dialog1.png</file>
+        <file>img/addtab.png</file>
+        <file>img/addtab-icon.png</file>
+        <file>img/addtab-icon-hover.png</file>
+        <file>img/addtab-icon-pressed.png</file>
     </qresource>
 </RCC>

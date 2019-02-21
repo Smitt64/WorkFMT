@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- jsfmttable.cpp -->
+  <title>CJsFmtTable Class | FmtLib</title>
+<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body>
+<p class="header"><small>[My awesome documentation]</small></p><hr/><li>CJsFmtTable</li>
+<div class="sidebar">
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#public-types">Public Types</a></li>
+<li class="level1"><a href="#properties">Properties</a></li>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#public-slots">Public Slots</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">CJsFmtTable Class</h1>
+<!-- $$$CJsFmtTable-brief -->
+<p>FmtTable класс, обеспечивающий работу с записью Fmt словаря <a href="#details">More...</a></p>
+<!-- @@@CJsFmtTable -->
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> Header:</td><td class="memItemRight bottomAlign"> <span class="preprocessor">#include &lt;CJsFmtTable&gt;</span>
+</td></tr></table></div><ul>
+<li><a href="cjsfmttable-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="public-types"></a>
+<h2 id="public-types">Public Types</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> enum </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#FmtFieldTypes-enum">FmtFieldTypes</a></b> { ftINT, ftLONG, ftBIGINT, ftFLOAT, ..., ftNUMERIC }</td></tr>
+</table></div>
+<a name="properties"></a>
+<h2 id="properties">Properties</h2>
+<div class="table"><table class="propsummary">
+<tr><td class="topAlign"><ul>
+<li class="fn"><b><a href="cjsfmttable.html#BlobLen-prop">BlobLen</a></b> : quint32</li>
+<li class="fn"><b><a href="cjsfmttable.html#BlobType-prop">BlobType</a></b> : quint16</li>
+<li class="fn"><b><a href="cjsfmttable.html#CacheSize-prop">CacheSize</a></b> : quint32</li>
+<li class="fn"><b><a href="cjsfmttable.html#Comment-prop">Comment</a></b> : QString</li>
+<li class="fn"><b><a href="cjsfmttable.html#DbtName-prop">DbtName</a></b> : const QString</li>
+<li class="fn"><b><a href="cjsfmttable.html#FieldsCount-prop">FieldsCount</a></b> : const quint32</li>
+<li class="fn"><b><a href="cjsfmttable.html#Id-prop">Id</a></b> : const quint32</li>
+</ul></td><td class="topAlign"><ul>
+<li class="fn"><b><a href="cjsfmttable.html#Name-prop">Name</a></b> : QString</li>
+<li class="fn"><b><a href="cjsfmttable.html#Owner-prop">Owner</a></b> : QString</li>
+<li class="fn"><b><a href="cjsfmttable.html#PkIDx-prop">PkIDx</a></b> : quint32</li>
+<li class="fn"><b><a href="cjsfmttable.html#isExists-prop">isExists</a></b> : const bool</li>
+<li class="fn"><b><a href="cjsfmttable.html#isExistsInDb-prop">isExistsInDb</a></b> : const bool</li>
+<li class="fn"><b><a href="cjsfmttable.html#isRecord-prop">isRecord</a></b> : bool</li>
+<li class="fn"><b><a href="cjsfmttable.html#isTemporary-prop">isTemporary</a></b> : bool</li>
+</ul>
+</td></tr>
+</table></div>
+<a name="public-functions"></a>
+<h2 id="public-functions">Public Functions</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#CJsFmtTable">CJsFmtTable</a></b>(QSharedPointer&lt;FmtTable&gt; <i>Table</i>, QObject *<i>parent</i> = Q_NULLPTR)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#BlobLen-prop">blobLen</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint16 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#BlobType-prop">blobType</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#CacheSize-prop">cacheSize</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#Comment-prop">comment</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#DbtName-prop">dbtName</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#Id-prop">id</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#indecesCount">indecesCount</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#isExists-prop">isExists</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#isExistsInDb-prop">isExistsInDb</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#isRecord-prop">isRecord</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#isTemporary-prop">isTemporary</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#Name-prop">name</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#Owner-prop">owner</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#PkIDx-prop">pkIDx</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#BlobLen-prop">setBlobLen</a></b>(const quint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#BlobType-prop">setBlobType</a></b>(const quint16 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#CacheSize-prop">setCacheSize</a></b>(const quint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#Comment-prop">setComment</a></b>(const QString &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#isRecord-prop">setIsRecord</a></b>(const bool &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#isTemporary-prop">setIsTemporary</a></b>(const bool &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#Name-prop">setName</a></b>(const QString &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#Owner-prop">setOwner</a></b>(const QString &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#PkIDx-prop">setPkIDx</a></b>(const quint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#tableFlags">tableFlags</a></b>() const</td></tr>
+</table></div>
+<a name="public-slots"></a>
+<h2 id="public-slots">Public Slots</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> FmtField *</td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#addField">addField</a></b>(const QString &amp;<i>name</i>, const qint16 &amp;<i>type</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtIndex *</td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#addIndex">addIndex</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtErrors *</td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#checkErrors">checkErrors</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtField *</td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#field">field</a></b>(const qint32 &amp;<i>index</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#fieldNum">fieldNum</a></b>(FmtField *<i>fld</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#FieldsCount-prop">fieldsCount</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtField *</td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#insertField">insertField</a></b>(const int &amp;<i>befor</i>, const QString &amp;<i>name</i>, const qint16 &amp;<i>type</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#load">load</a></b>(const QString &amp;<i>table</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#load-1">load</a></b>(const quint32 &amp;<i>id</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#removeIndex">removeIndex</a></b>(const quint32 &amp;<i>index</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtIndex *</td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#tableIndex">tableIndex</a></b>(const qint32 &amp;<i>index</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#tableIndexNum">tableIndexNum</a></b>(FmtIndex *<i>pIndex</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QStringList </td><td class="memItemRight bottomAlign"><b><a href="cjsfmttable.html#uniqueIndeces">uniqueIndeces</a></b>() const</td></tr>
+</table></div>
+<a name="details"></a>
+<!-- $$$CJsFmtTable-description -->
+<div class="descr">
+<h2 id="details">Detailed Description</h2>
+<p>FmtTable класс, обеспечивающий работу с записью Fmt словаря</p>
+<pre class="cpp">var pConnection <span class="operator">=</span> CreateConnection(<span class="string">&quot;user&quot;</span><span class="operator">,</span> <span class="string">&quot;password&quot;</span><span class="operator">,</span> <span class="string">&quot;DSN&quot;</span>);
+var table <span class="operator">=</span> <span class="keyword">new</span> FmtTable(pConnection);
+<span class="keyword">if</span> (table<span class="operator">.</span>load(<span class="string">&quot;dparty_dbt&quot;</span>))
+{
+    <span class="keyword">for</span> (var i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> table<span class="operator">.</span>FieldsCount; i<span class="operator">+</span><span class="operator">+</span>)
+    {
+        var fld <span class="operator">=</span> table<span class="operator">.</span>field(i);
+        print(fld<span class="operator">.</span>Name<span class="operator">,</span> <span class="string">&quot;: &quot;</span><span class="operator">,</span> fld<span class="operator">.</span>Comment);
+    }
+}</pre>
+</div>
+<!-- @@@CJsFmtTable -->
+<div class="types">
+<h2>Member Type Documentation</h2>
+<!-- $$$FmtFieldTypes$$$ftINT$$$ftLONG$$$ftBIGINT$$$ftFLOAT$$$ftDOUBLE$$$ftMONEY$$$ftSTRING$$$ftSNR$$$ftDATE$$$ftTIME$$$ftCHR$$$ftUCHR$$$ftNUMERIC -->
+<h3 class="fn" id="FmtFieldTypes-enum"><a name="FmtFieldTypes-enum"></a>enum CJsFmtTable::<span class="name">FmtFieldTypes</span></h3>
+<p>This enum type specifies a corner in a rectangle:</p>
+<div class="table"><table class="valuelist"><tr valign="top" class="odd"><th class="tblConst">Constant</th><th class="tblval">Value</th><th class="tbldscr">Description</th></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftINT</code></td><td class="topAlign tblval"><code>fmtt_INT</code></td><td class="topAlign">db_int16</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftLONG</code></td><td class="topAlign tblval"><code>fmtt_LONG</code></td><td class="topAlign">db_int32</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftBIGINT</code></td><td class="topAlign tblval"><code>fmtt_BIGINT</code></td><td class="topAlign">int64_t</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftFLOAT</code></td><td class="topAlign tblval"><code>fmtt_FLOAT</code></td><td class="topAlign">db_float</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftDOUBLE</code></td><td class="topAlign tblval"><code>fmtt_DOUBLE</code></td><td class="topAlign">db_double</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftMONEY</code></td><td class="topAlign tblval"><code>fmtt_MONEY</code></td><td class="topAlign">&nbsp;</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftSTRING</code></td><td class="topAlign tblval"><code>fmtt_STRING</code></td><td class="topAlign">char[]</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftSNR</code></td><td class="topAlign tblval"><code>fmtt_SNR</code></td><td class="topAlign">char[]</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftDATE</code></td><td class="topAlign tblval"><code>fmtt_DATE</code></td><td class="topAlign">bdate</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftTIME</code></td><td class="topAlign tblval"><code>fmtt_TIME</code></td><td class="topAlign">btime</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftCHR</code></td><td class="topAlign tblval"><code>fmtt_CHR</code></td><td class="topAlign">char</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftUCHR</code></td><td class="topAlign tblval"><code>fmtt_UCHR</code></td><td class="topAlign">char</td></tr>
+<tr><td class="topAlign"><code>CJsFmtTable::ftNUMERIC</code></td><td class="topAlign tblval"><code>fmtt_NUMERIC</code></td><td class="topAlign">db_lmoney, db_decimal,DBNumeric</td></tr>
+</table></div>
+<!-- @@@FmtFieldTypes -->
+</div>
+<div class="prop">
+<h2>Property Documentation</h2>
+<!-- $$$BlobLen-prop$$$blobLen$$$setBlobLenconstquint32& -->
+<h3 class="fn" id="BlobLen-prop"><a name="BlobLen-prop"></a><span class="name">BlobLen</span> : <span class="type">quint32</span></h3>
+<p>Хранит информацию поля FMT_NAMES.T_BLOBLEN</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>blobLen</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setBlobLen</b></span>(const quint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@BlobLen -->
+<!-- $$$BlobType-prop$$$blobType$$$setBlobTypeconstquint16& -->
+<h3 class="fn" id="BlobType-prop"><a name="BlobType-prop"></a><span class="name">BlobType</span> : <span class="type">quint16</span></h3>
+<p>Хранит информацию поля FMT_NAMES.T_BLOBTYPE. Содержит информацию о типе блоба</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint16 </td><td class="memItemRight bottomAlign"><span class="name"><b>blobType</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setBlobType</b></span>(const quint16 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@BlobType -->
+<!-- $$$CacheSize-prop$$$cacheSize$$$setCacheSizeconstquint32& -->
+<h3 class="fn" id="CacheSize-prop"><a name="CacheSize-prop"></a><span class="name">CacheSize</span> : <span class="type">quint32</span></h3>
+<p>Хранит информацию поля FMT_NAMES.T_CACHESIZE</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>cacheSize</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setCacheSize</b></span>(const quint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@CacheSize -->
+<!-- $$$Comment-prop$$$comment$$$setCommentconstQString& -->
+<h3 class="fn" id="Comment-prop"><a name="Comment-prop"></a><span class="name">Comment</span> : <span class="type">QString</span></h3>
+<p>Хранит информацию поля FMT_NAMES.T_COMMENT. Содержит описание таблицы</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>comment</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setComment</b></span>(const QString &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@Comment -->
+<!-- $$$DbtName-prop$$$dbtName -->
+<h3 class="fn" id="DbtName-prop"><a name="DbtName-prop"></a><span class="name">DbtName</span> : const <span class="type">QString</span></h3>
+<p>Содержит информацию о наименовании таблицы вида party.dbt</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>dbtName</b></span>() const</td></tr>
+</table></div>
+<!-- @@@DbtName -->
+<!-- $$$FieldsCount-prop$$$fieldsCount -->
+<h3 class="fn" id="FieldsCount-prop"><a name="FieldsCount-prop"></a><span class="name">FieldsCount</span> : const <span class="type">quint32</span></h3>
+<p>Содержит информацию о количестве полей в таблице Является чисто информативным и недоступен для редактирования.</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>fieldsCount</b></span>() const</td></tr>
+</table></div>
+<!-- @@@FieldsCount -->
+<!-- $$$Id-prop$$$id -->
+<h3 class="fn" id="Id-prop"><a name="Id-prop"></a><span class="name">Id</span> : const <span class="type">quint32</span></h3>
+<p>Идентификатор таблицы в БД Является чисто информативным и недоступен для редактирования.</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>id</b></span>() const</td></tr>
+</table></div>
+<!-- @@@Id -->
+<!-- $$$Name-prop$$$name$$$setNameconstQString& -->
+<h3 class="fn" id="Name-prop"><a name="Name-prop"></a><span class="name">Name</span> : <span class="type">QString</span></h3>
+<p>Хранит информацию поля FMT_NAMES.T_NAME. Содержит информацию о наименовании таблицы</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>name</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setName</b></span>(const QString &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@Name -->
+<!-- $$$Owner-prop$$$owner$$$setOwnerconstQString& -->
+<h3 class="fn" id="Owner-prop"><a name="Owner-prop"></a><span class="name">Owner</span> : <span class="type">QString</span></h3>
+<p>Хранит информацию поля FMT_NAMES.T_OWNER.</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>owner</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setOwner</b></span>(const QString &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@Owner -->
+<!-- $$$PkIDx-prop$$$pkIDx$$$setPkIDxconstquint32& -->
+<h3 class="fn" id="PkIDx-prop"><a name="PkIDx-prop"></a><span class="name">PkIDx</span> : <span class="type">quint32</span></h3>
+<p>Хранит информацию поля FMT_NAMES.T_PKIDX. Содержит информацию о первичном ключе таблицы</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>pkIDx</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setPkIDx</b></span>(const quint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@PkIDx -->
+<!-- $$$isExists-prop$$$isExists -->
+<h3 class="fn" id="isExists-prop"><a name="isExists-prop"></a><span class="name">isExists</span> : const <span class="type">bool</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isExists</b></span>() const</td></tr>
+</table></div>
+<!-- @@@isExists -->
+<!-- $$$isExistsInDb-prop$$$isExistsInDb -->
+<h3 class="fn" id="isExistsInDb-prop"><a name="isExistsInDb-prop"></a><span class="name">isExistsInDb</span> : const <span class="type">bool</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isExistsInDb</b></span>() const</td></tr>
+</table></div>
+<!-- @@@isExistsInDb -->
+<!-- $$$isRecord-prop$$$isRecord$$$setIsRecordconstbool& -->
+<h3 class="fn" id="isRecord-prop"><a name="isRecord-prop"></a><span class="name">isRecord</span> : <span class="type">bool</span></h3>
+<p>Возвращает <code>true</code> если запись является структурой.</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isRecord</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setIsRecord</b></span>(const bool &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@isRecord -->
+<!-- $$$isTemporary-prop$$$isTemporary$$$setIsTemporaryconstbool& -->
+<h3 class="fn" id="isTemporary-prop"><a name="isTemporary-prop"></a><span class="name">isTemporary</span> : <span class="type">bool</span></h3>
+<p>Возвращает <code>true</code> если таблица является временной.</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isTemporary</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setIsTemporary</b></span>(const bool &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@isTemporary -->
+</div>
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$CJsFmtTable[overload1]$$$CJsFmtTableQSharedPointer<FmtTable>QObject* -->
+<h3 class="fn" id="CJsFmtTable"><a name="CJsFmtTable"></a>CJsFmtTable::<span class="name">CJsFmtTable</span>(<span class="type">QSharedPointer</span>&lt;<span class="type">FmtTable</span>&gt; <i>Table</i>, <span class="type">QObject</span> *<i>parent</i> = Q_NULLPTR)</h3>
+<p>Default constructs an instance of CJsFmtTable.</p><!-- @@@CJsFmtTable -->
+<!-- $$$addField[overload1]$$$addFieldconstQString&constqint16& -->
+<h3 class="fn" id="addField"><a name="addField"></a><code>[slot] </code><span class="type"><a href="fmtfield.html">FmtField</a></span> *CJsFmtTable::<span class="name">addField</span>(const <span class="type">QString</span> &amp;<i>name</i>, const <span class="type">qint16</span> &amp;<i>type</i>)</h3>
+<p>Добавляет поле в таблицу с именем <code>name</code> типа <code>type</code> (<code><a href="cjsfmttable.html#FmtFieldTypes-enum">FmtFieldTypes</a></code>). Возвращает объект, описывающий свойства поля</p>
+<pre class="cpp">var fld1 <span class="operator">=</span> table<span class="operator">.</span>addField(<span class="string">&quot;ID&quot;</span><span class="operator">,</span> FmtTable<span class="operator">.</span>ftLONG);
+fld1<span class="operator">.</span>Comment <span class="operator">=</span> <span class="string">&quot;Системный ID записи для ссылок.&quot;</span>;</pre>
+<!-- @@@addField -->
+<!-- $$$addIndex[overload1]$$$addIndex -->
+<h3 class="fn" id="addIndex"><a name="addIndex"></a><code>[slot] </code><span class="type"><a href="fmtindex.html">FmtIndex</a></span> *CJsFmtTable::<span class="name">addIndex</span>()</h3>
+<!-- @@@addIndex -->
+<!-- $$$checkErrors[overload1]$$$checkErrors -->
+<h3 class="fn" id="checkErrors"><a name="checkErrors"></a><code>[slot] </code><span class="type">FmtErrors</span> *CJsFmtTable::<span class="name">checkErrors</span>()</h3>
+<p>Возвращает результат проверки таблицы на ошибки (список ошибок и предупреждений).</p>
+<pre class="cpp">function ErrorType(e) {
+    var str <span class="operator">=</span> <span class="string">&quot;&quot;</span>;
+    <span class="keyword">if</span> (e<span class="operator">.</span>type <span class="operator">=</span><span class="operator">=</span> FmtErrors<span class="operator">.</span>fmtet_Error)
+        str <span class="operator">=</span> <span class="string">&quot;Error&quot;</span>;
+    <span class="keyword">else</span> <span class="keyword">if</span> (e<span class="operator">.</span>type <span class="operator">=</span><span class="operator">=</span> FmtErrors<span class="operator">.</span>fmtet_Warning)
+        str <span class="operator">=</span> <span class="string">&quot;Warning&quot;</span>;
+    <span class="keyword">return</span> str;
+}
+
+var pConnection <span class="operator">=</span> CreateConnection(<span class="string">&quot;user&quot;</span><span class="operator">,</span> <span class="string">&quot;password&quot;</span><span class="operator">,</span> <span class="string">&quot;DSN&quot;</span>);
+var table <span class="operator">=</span> <span class="keyword">new</span> CJsFmtTable(pConnection);
+var err <span class="operator">=</span> table<span class="operator">.</span>checkErrors();
+
+<span class="keyword">while</span>(err<span class="operator">.</span>next())
+    print(ErrorType(err)<span class="operator">,</span> <span class="string">&quot;: &quot;</span><span class="operator">,</span> err<span class="operator">.</span>text());</pre>
+<p>Вывод:</p>
+<pre class="cpp">Error: И<span class="operator">м</span>я табл<span class="number">ицы</span> <span class="operator">н</span><span class="number">е</span> с<span class="operator">о</span><span class="operator">о</span>тветствует шабл<span class="operator">о</span><span class="operator">н</span>у: (d)name_(dbt<span class="operator">|</span>tmp<span class="operator">|</span>rec)
+Warning: <span class="string">Таблица не содержит комментария
+Error: Т</span><span class="number">аб</span>л<span class="number">ица</span> <span class="operator">н</span><span class="number">е</span> с<span class="operator">о</span><span class="number">де</span>р<span class="number">жит</span> <span class="operator">п</span><span class="operator">о</span>л<span class="number">ей</span>
+Warning: <span class="string">Таблица не содержит индексов
+</span></pre>
+<!-- @@@checkErrors -->
+<!-- $$$field[overload1]$$$fieldconstqint32& -->
+<h3 class="fn" id="field"><a name="field"></a><code>[slot] </code><span class="type"><a href="fmtfield.html">FmtField</a></span> *CJsFmtTable::<span class="name">field</span>(const <span class="type">qint32</span> &amp;<i>index</i>)</h3>
+<p>Возвращает объект, описывающий свойства поля, стоящий на позиции <code>index</code></p>
+<pre class="cpp">var fld <span class="operator">=</span> table<span class="operator">.</span>field(i);</pre>
+<!-- @@@field -->
+<!-- $$$fieldNum[overload1]$$$fieldNumFmtField* -->
+<h3 class="fn" id="fieldNum"><a name="fieldNum"></a><code>[slot] </code><span class="type">qint32</span> CJsFmtTable::<span class="name">fieldNum</span>(<span class="type"><a href="fmtfield.html">FmtField</a></span> *<i>fld</i>)</h3>
+<p>Возвращает позицию объекта <code>fld</code>, описывающего свойства поля</p>
+<!-- @@@fieldNum -->
+<!-- $$$indecesCount[overload1]$$$indecesCount -->
+<h3 class="fn" id="indecesCount"><a name="indecesCount"></a><span class="type">quint32</span> CJsFmtTable::<span class="name">indecesCount</span>() const</h3>
+<!-- @@@indecesCount -->
+<!-- $$$insertField[overload1]$$$insertFieldconstint&constQString&constqint16& -->
+<h3 class="fn" id="insertField"><a name="insertField"></a><code>[slot] </code><span class="type"><a href="fmtfield.html">FmtField</a></span> *CJsFmtTable::<span class="name">insertField</span>(const <span class="type">int</span> &amp;<i>befor</i>, const <span class="type">QString</span> &amp;<i>name</i>, const <span class="type">qint16</span> &amp;<i>type</i>)</h3>
+<p>Добавляет поле в таблицу с именем <code>name</code>, в позицию <code>befor</code> и типа <code>type</code> (<code><a href="cjsfmttable.html#FmtFieldTypes-enum">FmtFieldTypes</a></code>). Возвращает объект, описывающий свойства поля</p>
+<!-- @@@insertField -->
+<!-- $$$load[overload1]$$$loadconstQString& -->
+<h3 class="fn" id="load"><a name="load"></a><code>[slot] </code><span class="type">bool</span> CJsFmtTable::<span class="name">load</span>(const <span class="type">QString</span> &amp;<i>table</i>)</h3>
+<p>Загружает таблицу из FMT_NAMES в память. Возвращает true в случаее успеха, и fasle если произошла ошибка</p>
+<!-- @@@load -->
+<!-- $$$load$$$loadconstquint32& -->
+<h3 class="fn" id="load-1"><a name="load-1"></a><code>[slot] </code><span class="type">bool</span> CJsFmtTable::<span class="name">load</span>(const <span class="type">quint32</span> &amp;<i>id</i>)</h3>
+<p>Загружает таблицу из FMT_NAMES в память. Возвращает true в случаее успеха, и fasle если произошла ошибка</p>
+<!-- @@@load -->
+<!-- $$$removeIndex[overload1]$$$removeIndexconstquint32& -->
+<h3 class="fn" id="removeIndex"><a name="removeIndex"></a><code>[slot] </code><span class="type">void</span> CJsFmtTable::<span class="name">removeIndex</span>(const <span class="type">quint32</span> &amp;<i>index</i>)</h3>
+<!-- @@@removeIndex -->
+<!-- $$$tableFlags[overload1]$$$tableFlags -->
+<h3 class="fn" id="tableFlags"><a name="tableFlags"></a><span class="type">quint32</span> CJsFmtTable::<span class="name">tableFlags</span>() const</h3>
+<!-- @@@tableFlags -->
+<!-- $$$tableIndex[overload1]$$$tableIndexconstqint32& -->
+<h3 class="fn" id="tableIndex"><a name="tableIndex"></a><code>[slot] </code><span class="type"><a href="fmtindex.html">FmtIndex</a></span> *CJsFmtTable::<span class="name">tableIndex</span>(const <span class="type">qint32</span> &amp;<i>index</i>)</h3>
+<!-- @@@tableIndex -->
+<!-- $$$tableIndexNum[overload1]$$$tableIndexNumFmtIndex* -->
+<h3 class="fn" id="tableIndexNum"><a name="tableIndexNum"></a><code>[slot] </code><span class="type">quint32</span> CJsFmtTable::<span class="name">tableIndexNum</span>(<span class="type"><a href="fmtindex.html">FmtIndex</a></span> *<i>pIndex</i>)</h3>
+<!-- @@@tableIndexNum -->
+<!-- $$$uniqueIndeces[overload1]$$$uniqueIndeces -->
+<h3 class="fn" id="uniqueIndeces"><a name="uniqueIndeces"></a><code>[slot] </code><span class="type">QStringList</span> CJsFmtTable::<span class="name">uniqueIndeces</span>() const</h3>
+<p>Возвращает <code>список</code> индексов, являющихся иникальными для данной таблицы</p>
+<pre class="cpp">var pConnection <span class="operator">=</span> CreateConnection(<span class="string">&quot;user&quot;</span><span class="operator">,</span> <span class="string">&quot;password&quot;</span><span class="operator">,</span> <span class="string">&quot;DSN&quot;</span>);
+var table <span class="operator">=</span> <span class="keyword">new</span> CJsFmtTable(pConnection);
+<span class="keyword">if</span> (table<span class="operator">.</span>load(<span class="string">&quot;dparty_dbt&quot;</span>))
+{
+    print(<span class="string">&quot;uniqueIndeces:&quot;</span>);
+    var uniqueIndeces <span class="operator">=</span> table<span class="operator">.</span>uniqueIndeces();
+
+    <span class="keyword">for</span> (var i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> uniqueIndeces<span class="operator">.</span>length; i<span class="operator">+</span><span class="operator">+</span>)
+        print(<span class="string">&quot;Index: &quot;</span><span class="operator">,</span> uniqueIndeces<span class="operator">[</span>i<span class="operator">]</span>);
+}</pre>
+<!-- @@@uniqueIndeces -->
+</div>
+<hr/><p class="footer"><small>[some footer and whatnot information]</small></p></body>
+</html>

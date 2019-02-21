@@ -8,6 +8,8 @@
 #include "fmtgencpptemplate.h"
 #include "fmtgenhotfix.h"
 #include "loggingcategories.h"
+#include "fmtgeninputservicecpptemplate.h"
+#include "fmtgencppclasstemplate.h"
 #include <fmtdbghelp.h>
 #include <QDebug>
 #include <functional>
@@ -36,23 +38,12 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     QApplication::setApplicationName("WorkFMT");
     QApplication::setApplicationVersion(GetVersionNumberString());
     pSettings = new QSettings("fmtopt.ini", QSettings::IniFormat, this);
-    /*QDir logDir(applicationDirPath());
-    if (!logDir.cd("logs"))
-    {
-        logDir.mkdir("logs");
-        logDir.cd("logs");
-    }
-
-    QLoggingCategory::setFilterRules("Info=false");
-    QString logFileName = QString("%1.txt").arg(logDir.absoluteFilePath(QDateTime::currentDateTime().toString("dd_MM_yyyy_hh_mm_ss_zzz")));
-    m_logFile.reset(new QFile(logFileName));
-    m_logFile.data()->open(QFile::Append | QFile::Text);
-    qInstallMessageHandler(messageHandler);*/
-
-    //Q_INIT_RESOURCE(fmt);
+    addLibraryPath(QFileInfo(QCoreApplication::applicationFilePath()).path());
+    addLibraryPath(QDir::current().path());
     qRegisterMetaType<RecentList>("RecentList");
 
-    qDebug() << QStyleFactory::keys();
+    //qDebug() << QStyleFactory::keys();
+    m_fLogging = false;
 }
 
 FmtApplication::~FmtApplication()
@@ -88,6 +79,8 @@ void FmtApplication::init()
 
     registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql");
     registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate");
+    registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate");
+    registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate");
     registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix");
 }
 
@@ -189,6 +182,8 @@ bool FmtApplication::notify(QObject *receiver, QEvent *e)
 
     try
     {
+        if (e->type() == QEvent::KeyPress)
+            ShowObjectStackMsg(qApp->focusWidget(), (QKeyEvent*)e);
         hr = QApplication::notify(receiver, e);
     }
     catch(std::exception &e)
@@ -199,11 +194,46 @@ bool FmtApplication::notify(QObject *receiver, QEvent *e)
     {
         qCCritical(logCore()) << "Exception code: " << e;
     }
-
     return hr;
 }
 
-void FmtApplication::initLogging(const QString &rules)
+void FmtApplication::ShowObjectStackMsg(QObject *receiver, QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_F12 && ((e->modifiers() & Qt::ControlModifier) == Qt::ControlModifier))
+    {
+        if (lastCtrlF12Msg.isEmpty())
+        {
+            QString msg;
+            QObject *cur = qobject_cast<QObject*>(receiver);
+
+            while(cur)
+            {
+                QString className = cur->metaObject()->className();
+
+                //if (className[0] != QChar('Q'))
+                {
+                    if (cur == receiver)
+                        msg = QString("%1").arg(className);
+                    else
+                        msg = QString("%1/").arg(className) + msg;
+                }
+                cur = cur->parent();
+            }
+            QWidget *parentWidget = qobject_cast<QWidget*>(receiver);
+            QMessageBox dlg(parentWidget);
+            dlg.setWindowTitle(tr("Иерархия объектов"));
+            dlg.setText(msg);
+            dlg.exec();
+
+            lastCtrlF12Msg = msg;
+        }
+        else
+            lastCtrlF12Msg = "";
+        //e->accept();
+    }
+}
+
+bool FmtApplication::initLogging(const QString &rules)
 {
     QDir logDir(applicationDirPath());
     if (!logDir.cd("logs"))
@@ -212,16 +242,55 @@ void FmtApplication::initLogging(const QString &rules)
         logDir.cd("logs");
     }
 
+    QString logFileName = QString("%1.txt").arg(logDir.absoluteFilePath(QDateTime::currentDateTime().toString("dd_MM_yyyy_hh_mm_ss_zzz")));
+    m_logFile.reset(new QFile(logFileName));
+
+    if (m_logFile.data()->open(QFile::Append | QFile::Text))
+    {
+        setLoggingRules(rules);
+        qInstallMessageHandler(messageHandler);
+        m_fLogging = true;
+    }
+    else
+    {
+        m_logFile.reset(Q_NULLPTR);
+        m_fLogging = false;
+    }
+
+    return m_fLogging;
+}
+
+void FmtApplication::setLoggingRules(const QString &rules)
+{
     if (!rules.isEmpty())
     {
         QString r = rules;
         QLoggingCategory::setFilterRules(r.replace(";", "\n"));
     }
+}
 
-    QString logFileName = QString("%1.txt").arg(logDir.absoluteFilePath(QDateTime::currentDateTime().toString("dd_MM_yyyy_hh_mm_ss_zzz")));
-    m_logFile.reset(new QFile(logFileName));
-    m_logFile.data()->open(QFile::Append | QFile::Text);
-    qInstallMessageHandler(messageHandler);
+void FmtApplication::disableLogging()
+{
+    if (!m_logFile.isNull() && m_logFile->isOpen())
+    {
+        m_logFile->close();
+        m_logFile.reset(Q_NULLPTR);
+        qInstallMessageHandler(0);
+        m_fLogging = false;
+    }
+}
+
+bool FmtApplication::isLoggingEnabled() const
+{
+    return m_fLogging;
+}
+
+QString FmtApplication::logginFileName() const
+{
+    if (!m_logFile.isNull() && m_logFile->isOpen())
+        return m_logFile->fileName();
+
+    return QString();
 }
 
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)

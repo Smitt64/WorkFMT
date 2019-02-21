@@ -4,12 +4,14 @@
 #include <QPainter>
 
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
-    pModel(Q_NULLPTR)
+    QObject(Q_NULLPTR),
+    pModel(Q_NULLPTR),
+    Index(0)
 {
     m_Alias = dbalias;
     if (!dbalias.isEmpty())
         _db = QSqlDatabase::database(m_Alias);
-    //pModel = new FmtTablesModel(this);
+    pModel = addModel();
     //pModel->updateFmtList();
     m_Color = GenerateColor();
     m_Type = CON_NON;
@@ -18,6 +20,8 @@ ConnectionInfo::ConnectionInfo(const QString &dbalias) :
 ConnectionInfo::~ConnectionInfo()
 {
     delete pModel;
+    qDeleteAll(pModels);
+    pModels.clear();
 }
 
 FmtTablesModel *ConnectionInfo::tablesModel()
@@ -41,6 +45,11 @@ bool ConnectionInfo::isOpen() const
 QSqlDatabase ConnectionInfo::db()
 {
     return _db;
+}
+
+QSqlDriver *ConnectionInfo::driver()
+{
+    return _db.driver();
 }
 
 QColor ConnectionInfo::color()
@@ -87,4 +96,41 @@ bool ConnectionInfo::openSqlite(const QString &filename)
     m_SchemeName = fi.fileName();
     bool hr = _db.open();
     return hr;
+}
+
+FmtTablesModel *ConnectionInfo::addModel()
+{
+    FmtTablesModel *model = new FmtTablesModel(this);
+    pModels.append(model);
+    Index ++;
+    m_Index.append(Index);
+    return model;
+}
+
+int ConnectionInfo::getFilterIndex(const int &index)
+{
+    return m_Index[index];
+}
+
+int ConnectionInfo::lastIndex() const
+{
+    return Index;
+}
+
+void ConnectionInfo::deleteModel(const int &index)
+{
+    FmtTablesModel *model = pModels.takeAt(index);
+    delete model;
+}
+
+FmtTablesModel *ConnectionInfo::getModel(const int &index)
+{
+    if (index < 0 || index >= pModels.size())
+        return Q_NULLPTR;
+    return pModels[index];
+}
+
+int ConnectionInfo::modelCount() const
+{
+    return pModels.size();
 }

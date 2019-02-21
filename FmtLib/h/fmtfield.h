@@ -12,13 +12,13 @@ class FmtFildsModel;
 class FMTLIBSHARED_EXPORT FmtField : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(quint32 Id READ id NOTIFY idChanged)
+    Q_PROPERTY(FmtRecId Id READ id NOTIFY idChanged)
     Q_PROPERTY(quint32 TableId READ tableId NOTIFY tableIdChanged)
-    Q_PROPERTY(qint32 Size READ size WRITE setSize NOTIFY sizeChanged)
-    Q_PROPERTY(qint32 Type READ type WRITE setType NOTIFY typeChanged)
-    Q_PROPERTY(qint32 Offset READ offset WRITE setOffset)
-    Q_PROPERTY(qint32 Outlen READ outlen WRITE setOutlen)
-    Q_PROPERTY(qint32 Decpoint READ decpoint WRITE setDecpoint)
+    Q_PROPERTY(FmtNumber10 Size READ size WRITE setSize NOTIFY sizeChanged)
+    Q_PROPERTY(FmtFldType Type READ type WRITE setType NOTIFY typeChanged)
+    Q_PROPERTY(FmtNumber10 Offset READ offset WRITE setOffset)
+    Q_PROPERTY(FmtNumber5 Outlen READ outlen WRITE setOutlen)
+    Q_PROPERTY(FmtNumber5 Decpoint READ decpoint WRITE setDecpoint)
     Q_PROPERTY(bool Hidden READ isHidden WRITE setHidden)
     Q_PROPERTY(qint32 Index READ index)
 
@@ -48,32 +48,38 @@ public:
 
         fld_MAXCOUNT
     };
-
+    explicit FmtField(QObject *parent = Q_NULLPTR);
     void load(const QSqlRecord &rec);
 
-    quint32 id() const { return m_Id; }
-    qint32 size() const { return m_Size; }
-    qint32 type() const { return m_Type; }
-    quint32 tableId() const;
-    quint32 outlen() const;
-    quint32 decpoint() const;
+    FmtRecId id() const { return m_Id; }
+    FmtNumber10 size() const { return m_Size; }
+    FmtFldType type() const { return m_Type; }
+    FmtRecId tableId() const;
+    FmtNumber5 outlen() const;
+    FmtNumber5 decpoint() const;
     bool isHidden() const;
+
+    bool isStringType() const;
 
     QString name() const;
     QString comment() const;
     QString undecorateName() const;
 
-    qint32 offset() const;
-    qint32 index() const;
+    FmtNumber10 offset() const;
+    FmtFldIndex index() const;
     qint32 typeIndex() const;
 
-    QString getOraName() const;
-    QString getOraDecl() const;
-    QString getOraTypeName() const;
-    QString getCppTypeName(bool Short = false) const;
-    QString getCppDecl(bool funcPrm = false) const;
+    void setName(const QString &v);
+    void setComment(const QString &v);
+    void setSize(const FmtNumber10 &v);
+    void setOffset(const FmtNumber10 &v);
+    void setOutlen(const FmtNumber5 &v);
+    void setType(const FmtFldType &v);
+    void setDecpoint(const FmtNumber5 &v);
+    void setHidden(const bool &v);
+    void setTypeIndex(const FmtFldIndex &v);
 
-    QString getCommentSql() const;
+    FmtTable *table();
 
 signals:
     void tableIdChanged(quint32);
@@ -83,27 +89,31 @@ signals:
     void sizeChanged(quint32);
     void typeChanged(quint32);
 
-public slots:
-    void setName(const QString &v);
-    void setComment(const QString &v);
-    void setSize(const qint32 &v);
-    void setOffset(const qint32 &v);
-    void setOutlen(const qint32 &v);
-    void setType(const qint32 &v);
-    void setDecpoint(const qint32 &v);
-    void setHidden(const bool &v);
-    void setTypeIndex(const qint32 &v);
+public slots:    
+    QString getOraName() const;
+    QString getOraDecl() const;
+    QString getOraTypeName() const;
+    QString getCppTypeName(bool Short = false) const;
+    QString getCppDecl(bool funcPrm = false) const;
+    QString getOraDefaultVal() const;
+    QString getCommentSql() const;
+
+    bool isNumber() const;
+    bool isRealNumber() const;
+    bool isString() const;
+    bool isAutoInc() const;
 
 private:
-    explicit FmtField(QObject *parent = 0);
-    int FindFirstEmptyID();
+    FmtRecId FindFirstEmptyID();
     int save();
     void stroreData(QByteArray *data);
     void restoreData(QByteArray *data);
-    bool setDataPrivate(const quint16 &fld, const QVariant &value);
+    bool setDataPrivate(const FmtFldIndex &fld, const QVariant &value);
     FmtTable *pTable;
-    quint32 m_Id;
-    qint32 m_Size, m_Type, m_Offset, m_Outlen, m_Decpoint;
+    FmtRecId m_Id;
+    FmtNumber10 m_Size, m_Offset;
+    FmtNumber5 m_Outlen, m_Decpoint;
+    FmtFldType m_Type;
     QString m_Name, m_Comment;
     bool m_isHidden;
 
@@ -114,5 +124,5 @@ private:
     FmtFildsModel *pFieldsModel;
 };
 
-QString FmtFieldPropertyTextById(const quint16 &fld);
+QString FmtFieldPropertyTextById(const FmtFldIndex &fld);
 #endif // FMTFIELD_H

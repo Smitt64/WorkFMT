@@ -1,0 +1,1 @@
+qhelpgenerator fmtlib.qhp -o fmtlib.qch

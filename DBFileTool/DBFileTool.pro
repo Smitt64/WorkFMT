@@ -6,6 +6,7 @@
 
 QT       += core  sql
 CONFIG   += console
+CONFIG   += force_debug_info
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

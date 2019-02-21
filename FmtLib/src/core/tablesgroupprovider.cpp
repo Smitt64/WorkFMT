@@ -1,11 +1,12 @@
 #include "tablesgroupprovider.h"
+#include "fmtcore.h"
+#include "loggingcategories.h"
+#include <QDebug>
+#include <QtXml>
 #include <QDebug>
 #include <QCoreApplication>
 #include <QFile>
 #include <QUuid>
-#include "fmtcore.h"
-#include "loggingcategories.h"
-#include <QDebug>
 
 TablesGroupProvider *TablesGroupProvider::m_pInstance = NULL;
 TablesGroupProvider::TablesGroupProvider(QObject *parent) : QObject(parent)

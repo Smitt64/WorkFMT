@@ -16,6 +16,7 @@ public:
     void updateFmtList();
     void setFilterString(const QString &str);
     ConnectionInfo *connection();
+    QString filterString();
 
     virtual Qt::ItemFlags flags(const QModelIndex &index) const;
     virtual QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;

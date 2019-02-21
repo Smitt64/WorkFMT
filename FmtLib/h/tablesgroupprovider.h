@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QtSql>
-#include <QtXml>
 #include "fmtlib_global.h"
 
 class FMTLIBSHARED_EXPORT TablesGroupProvider : public QObject

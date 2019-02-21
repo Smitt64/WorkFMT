@@ -14,6 +14,8 @@ Task::Task(int argc, char *argv[], QObject *parent) : QObject(parent)
                                                 QApplication::translate("main", "constring")));
     exportOption.reset(new QCommandLineOption(QStringList() << "e" << "export",
                                               QApplication::translate("main", "Export tables mode")));
+    importOption.reset(new QCommandLineOption(QStringList() << "i" << "import",
+                                              QApplication::translate("main", "Import tables mode")));
     dirOption.reset(new QCommandLineOption(QStringList() << "d" << "edir",
                                    QApplication::translate("main", "Export to directory <exportdir>"),
                                    QApplication::translate("main", "exportdir")));
@@ -23,6 +25,7 @@ Task::Task(int argc, char *argv[], QObject *parent) : QObject(parent)
 
     parser.addOption(*connectionStringOption.data());
     parser.addOption(*exportOption.data());
+    parser.addOption(*importOption.data());
     parser.addOption(*dirOption.data());
     parser.addOption(*dbtOption.data());
 
@@ -39,9 +42,22 @@ void Task::processError(const QString &str)
     sterr->flush();
 }
 
+void Task::processInfo(const QString &str)
+{
+    *stout << str << endl;
+    stout->flush();
+}
+
 void Task::exportTableStart(const QString &str)
 {
-    *stout << QString("Начат экспорт таблицы %1")
+    *stout << tr("Начат экспорт таблицы %1")
+           .arg(str) << endl;
+    stout->flush();
+}
+
+void Task::importTableStart(const QString &str)
+{
+    *stout << tr("Начат импорт таблицы %1")
            .arg(str) << endl;
     stout->flush();
 }
@@ -50,16 +66,23 @@ void Task::run()
 {
     parser.process(args);
 
-    if (!parser.isSet(*exportOption.data()))
+    bool fExport = parser.isSet(*exportOption.data());
+    bool fImport = parser.isSet(*importOption.data());
+    if (!fExport && !fImport)
     {
         w = new DbMainWindow();
         w->setAttribute(Qt::WA_DeleteOnClose);
         connect(w, SIGNAL(destroyed(QObject*)), SIGNAL(finished()));
         w->show();
     }
-    else
+    else if (fExport)
     {
         exportTable();
+        emit finished();
+    }
+    else if (fImport)
+    {
+        importTable();
         emit finished();
     }
 }
@@ -67,12 +90,12 @@ void Task::run()
 void Task::exportTable()
 {
     int stat = 0;
-    *stout << QString("Запуск экспорта таблиц...") << endl;
+    *stout << tr("Запуск экспорта таблиц...") << endl;
     stout->flush();
 
     if (!parser.isSet(*connectionStringOption.data()))
     {
-        *sterr << QString("Не задана строка подключения.") << endl;
+        *sterr << tr("Не задана строка подключения.") << endl;
         sterr->flush();
         return;
     }
@@ -85,14 +108,14 @@ void Task::exportTable()
 
     if (!stat && !parser.isSet(*dirOption.data()))
     {
-        *sterr << QString("Не указан каталог экспорта") << endl;
+        *sterr << tr("Не указан каталог экспорта") << endl;
         sterr->flush();
         stat = 1;
     }
 
     if (!stat && !parser.isSet(*dbtOption.data()))
     {
-        *sterr << QString("Не заданы таблицы для экспорта") << endl;
+        *sterr << tr("Не заданы таблицы для экспорта") << endl;
         sterr->flush();
         stat = 1;
     }
@@ -100,11 +123,11 @@ void Task::exportTable()
     if (!stat)
     {
         QString path = parser.value(*dirOption.data());
-        *stout << QString("Параметры подключения: %1/%2@%3")
+        *stout << tr("Параметры подключения: %1/%2@%3")
                .arg(user, pswd, dsn) << endl;
         stout->flush();
 
-        *stout << QString("Каталог экспорта: %1")
+        *stout << tr("Каталог экспорта: %1")
                .arg(path) << endl;
         stout->flush();
 
@@ -115,10 +138,67 @@ void Task::exportTable()
         QStringList dbts = parser.value(*dbtOption.data()).split(";");
         w->unload(user, pswd, dsn, path, dbts);
 
-        *stout << QString("Обработка завершена: %1")
+        *stout << tr("Обработка завершена: %1")
                .arg(parser.value(*dbtOption.data())) << endl;
         stout->flush();
     }
 }
 
+void Task::importTable()
+{
+    int stat = 0;
+    *stout << tr("Запуск импорта таблиц...") << endl;
+    stout->flush();
+
+    if (!parser.isSet(*connectionStringOption.data()))
+    {
+        *sterr << tr("Не задана строка подключения.") << endl;
+        sterr->flush();
+        return;
+    }
+
+    QString dsn;
+    QString user;
+    QString pswd;
+    QString connectionString = parser.value(*connectionStringOption.data());
+    stat = !ParseConnectionString(connectionString, user, pswd, dsn);
+
+    /*if (!stat && !parser.isSet(*dirOption.data()))
+    {
+        *sterr << QString("Не указан каталог экспорта") << endl;
+        sterr->flush();
+        stat = 1;
+    }*/
+
+    if (!stat && !parser.isSet(*dbtOption.data()))
+    {
+        *sterr << tr("Не заданы файлы таблиц для импорта") << endl;
+        sterr->flush();
+        stat = 1;
+    }
+
+    if (!stat)
+    {
+        //QString path = parser.value(*dirOption.data());
+        *stout << tr("Параметры подключения: %1/%2@%3")
+               .arg(user, pswd, dsn) << endl;
+        stout->flush();
+
+        /**stout << tr("Каталог экспорта: %1")
+               .arg(path) << endl;
+        stout->flush();*/
+
+        QScopedPointer<DBFileObject> w(new DBFileObject);
+        connect(w.data(), SIGNAL(procError(QString)), SLOT(processError(QString)));
+        connect(w.data(), SIGNAL(procInfo(QString)), SLOT(processInfo(QString)));
+        connect(w.data(), SIGNAL(importTableStart(QString)), SLOT(importTableStart(QString)));
+
+        QStringList dbts = parser.value(*dbtOption.data()).split(";");
+        w->load(user, pswd, dsn, dbts);
+
+        *stout << tr("Обработка завершена: %1")
+               .arg(parser.value(*dbtOption.data())) << endl;
+        stout->flush();
+    }
+}
 

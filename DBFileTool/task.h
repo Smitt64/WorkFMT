@@ -20,16 +20,20 @@ signals:
 public slots:
     void run();
     void exportTable();
+    void importTable();
 
 private slots:
     void processError(const QString &str);
+    void processInfo(const QString &str);
     void exportTableStart(const QString &str);
+    void importTableStart(const QString &str);
 
 private:
     QStringList args;
     QCommandLineParser parser;
     QScopedPointer<QCommandLineOption> connectionStringOption;
     QScopedPointer<QCommandLineOption> exportOption;
+    QScopedPointer<QCommandLineOption> importOption;
     QScopedPointer<QCommandLineOption> dirOption;
     QScopedPointer<QCommandLineOption> dbtOption;
 

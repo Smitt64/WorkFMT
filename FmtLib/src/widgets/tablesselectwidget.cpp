@@ -5,8 +5,8 @@
 
 TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *parent) : QWidget(parent)
 {
-    pAddFunc = NULL;
-    pRemFunc = NULL;
+    pAddFunc = Q_NULLPTR;
+    pRemFunc = Q_NULLPTR;
     pDstModel = new QStandardItemModel(this);
     pSourceModel = new FmtTablesModel(connection, this);
     pSourceModel->updateFmtList();
@@ -62,7 +62,7 @@ TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *pare
     dstListView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     horizontalLayout->addWidget(dstListView);
-    pUserAddDlg = NULL;
+    pUserAddDlg = Q_NULLPTR;
 
     setLayout(horizontalLayout);
 

@@ -32,6 +32,9 @@ public:
 
 private slots:
     void onActivated(const QModelIndex &index);
+    void errorsCountChanged(const quint32 &value);
+    void warningsCountChanged(const quint32 &value);
+    void infoCountChanged(const quint32 &value);
 
 private:
     Ui::ErrorDlg *ui;

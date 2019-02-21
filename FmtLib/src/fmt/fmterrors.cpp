@@ -5,6 +5,14 @@
 FmtErrors::FmtErrors(QObject *parent)
     : QAbstractItemModel(parent)
 {
+    m_errorsCount = 0;
+    m_warningsCount = 0;
+    m_infoCount = 0;
+    m_Iterator = QList<FmtErrorStruct>::iterator();
+}
+
+FmtErrors::~FmtErrors()
+{
 
 }
 
@@ -84,63 +92,32 @@ QVariant FmtErrors::headerData(int section, Qt::Orientation orientation, int rol
         return headers.at(section);
     }
 
-    /*if (orientation == Qt::Vertical)
-    {
-        if (section >= pTable->m_pFields.size())
-        {
-            if (role == Qt::DisplayRole)
-                return QString("✳");
-            if (role == Qt::FontRole)
-                return QFont("Arial", 10);
-        }
-    }*/
-
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
 bool FmtErrors::hasErrors()
 {
-    auto iter = std::find_if(m_errors.begin(), m_errors.end(), [](const FmtErrorStruct &err)
-    {
-        return err.type == FmtErrors::fmtet_Error;
-    });
-
-    return iter != m_errors.end();
-    //return !m_errors.isEmpty();
+    return !m_errorsCount;
 }
 
 bool FmtErrors::hasWarnings()
 {
-    auto iter = std::find_if(m_errors.begin(), m_errors.end(), [](const FmtErrorStruct &err)
-    {
-        return err.type == FmtErrors::fmtet_Warning;
-    });
-
-    return iter != m_errors.end();
+    return !m_warningsCount;
 }
 
 int FmtErrors::errorsCount()
 {
-    return std::count_if(m_errors.begin(), m_errors.end(), [](const FmtErrorStruct &err)
-    {
-        return err.type == FmtErrors::fmtet_Error;
-    });
+    return m_errorsCount;
 }
 
 int FmtErrors::warningsCount()
 {
-    return std::count_if(m_errors.begin(), m_errors.end(), [](const FmtErrorStruct &err)
-    {
-        return err.type == FmtErrors::fmtet_Warning;
-    });
+    return m_warningsCount;
 }
 
 int FmtErrors::infoCount()
 {
-    return std::count_if(m_errors.begin(), m_errors.end(), [](const FmtErrorStruct &err)
-    {
-        return err.type == FmtErrors::fmtet_Info;
-    });
+    return m_infoCount;
 }
 
 bool FmtErrors::isEmpty()
@@ -153,6 +130,22 @@ void FmtErrors::appendError(const QString &text, const qint16 &type, const QDate
     FmtErrorStruct err;
     err.text = text;
     err.type = type;
+
+    if (type == fmtet_Error)
+    {
+        m_errorsCount ++;
+        emit errorsCountChanged(m_errorsCount);
+    }
+    else if (type == fmtet_Warning)
+    {
+        m_warningsCount ++;
+        emit warningsCountChanged(m_warningsCount);
+    }
+    else
+    {
+        m_infoCount ++;
+        emit infoCountChanged(m_infoCount);
+    }
 
     if (dateTime.isNull())
         err.time = QDateTime::currentDateTime();
@@ -170,6 +163,8 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
     FmtErrorStruct err;
     err.text = text;
     err.type = FmtErrors::fmtet_Info;
+    m_infoCount ++;
+    emit infoCountChanged(m_infoCount);
 
     if (dateTime.isNull())
         err.time = QDateTime::currentDateTime();
@@ -184,12 +179,12 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
 
 bool FmtErrors::next()
 {
-    if (m_Iterator == m_errors.end())
+    if (m_Iterator == QList<FmtErrorStruct>::iterator())
     {
         return first();
     }
     ++ m_Iterator;
-    return true;
+    return m_Iterator != m_errors.end();
 }
 
 bool FmtErrors::first()
@@ -222,5 +217,8 @@ void FmtErrors::clear()
 {
     beginResetModel();
     m_errors.clear();
+    m_errorsCount = 0;
+    m_warningsCount = 0;
+    m_infoCount = 0;
     endResetModel();
 }

@@ -1,4 +1,5 @@
 #include "oracleauthdlg.h"
+#include "ui_oracleauthdlg.h"
 #include <QFile>
 #include <QSqlDatabase>
 #include <QSqlError>
@@ -8,6 +9,7 @@
 #include <QDir>
 #include <QDataStream>
 #include <QScopedPointer>
+#include <QtSql>
 #include "connectioninfo.h"
 #include "oracletnslistmodel.h"
 #include "fmtcore.h"
@@ -49,37 +51,57 @@ bool operator ==(RecentList &list, const RecentList &other)
             list.service == other.service &&
             list.user == other.user);
 }
-
+//BEQ  TCP
 const QString sOracleDatabaseString ="(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=@host@)(PORT=@port@)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=@service@)))";
 
 OracleAuthDlg::OracleAuthDlg(QWidget *parent)
-	: QDialog(parent)
+    : QDialog(parent),
+      ui(new Ui::OracleAuthDlg())
 {
-	ui.setupUi(this);
+    ui->setupUi(this);
 
     QByteArray oradir = qgetenv("");
     sConfigOraFilePath = ConfigOraFilePath();
 
     model = ((FmtApplication*)qApp)->getOracleTnsModel();
 
-    ui.comboBox->setModel(model);
-    ui.comboBox->setCurrentIndex(-1);
+    ui->comboBox->setModel(model);
+    ui->comboBox->setCurrentIndex(-1);
 
     LoadPrefs();
-    qDebug() << sConfigOraFilePath;
+}
+
+OracleAuthDlg::OracleAuthDlg(OracleTnsListModel *tnsmodel, QWidget *parent)
+    : QDialog(parent),
+      ui(new Ui::OracleAuthDlg())
+{
+    ui->setupUi(this);
+    sConfigOraFilePath = ConfigOraFilePath();
+    model = tnsmodel;
+
+    ui->comboBox->setModel(model);
+    ui->comboBox->setCurrentIndex(-1);
+
+    LoadPrefs();
 }
 
 OracleAuthDlg::~OracleAuthDlg()
 {
-
+    delete ui;
 }
 
 QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
                                                 const QString &passw,
                                                 const QString &DSN,
-                                                ConnectionInfo **info)
+                                                ConnectionInfo **info,
+                                                OracleTnsListModel *tnsmodel)
 {
-    OracleTnsListModel *pModel = ((FmtApplication*)qApp)->getOracleTnsModel();
+    OracleTnsListModel *pModel = Q_NULLPTR;
+    if (tnsmodel != Q_NULLPTR)
+        pModel = tnsmodel;
+    else
+        pModel = ((FmtApplication*)qApp)->getOracleTnsModel();
+
     quint32 index = pModel->getIndexByDsn(DSN);
     QString host = pModel->index(index, OracleTnsListModel::mtns_Host).data().toString();
     QString service = pModel->index(index, OracleTnsListModel::mtns_ServiceName).data().toString();
@@ -157,13 +179,13 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
 
 bool OracleAuthDlg::authirizate()
 {
-    QSqlDatabase db = OraCreateConnection(ui.lineEdit_username->text(),
-                                          ui.lineEdit_passw->text(),
-                                          ui.lineEdit_host->text(),
-                                          ui.lineEdit_service->text(),
-                                          ui.lineEdit_base->text(),
-                                          ui.comboBox->currentText(),
-                                          ui.spinBox->value(),
+    QSqlDatabase db = OraCreateConnection(ui->lineEdit_username->text(),
+                                          ui->lineEdit_passw->text(),
+                                          ui->lineEdit_host->text(),
+                                          ui->lineEdit_service->text(),
+                                          ui->lineEdit_username->text(),
+                                          ui->comboBox->currentText(),
+                                          ui->spinBox->value(),
                                           NULL);
     connectionname = db.connectionName();
 
@@ -173,7 +195,7 @@ bool OracleAuthDlg::authirizate()
     }
     else
     {
-        sheme = ui.lineEdit_base->text();
+        sheme = ui->lineEdit_username->text();
     }
     return db.isOpen();
 }
@@ -206,24 +228,24 @@ void OracleAuthDlg::LoadPrefs()
 			QString sUsername = lst.at(3);
 			QString sService = lst.at(4);
 			
-			ui.lineEdit_base->setText(sDatabase);
-			ui.lineEdit_host->setText(sHostname);
-			ui.lineEdit_username->setText(sUsername);
-			ui.lineEdit_service->setText(sService);
-			ui.spinBox->setValue(sPort.toInt());
-            ui.comboBox->setCurrentText(lst.at(5));
+            //ui->lineEdit_base->setText(sDatabase);
+            ui->lineEdit_host->setText(sHostname);
+            ui->lineEdit_username->setText(sUsername);
+            ui->lineEdit_service->setText(sService);
+            ui->spinBox->setValue(sPort.toInt());
+            ui->comboBox->setCurrentText(lst.at(5));
 
             if(lst.count() == 7)
             {
-                ui.lineEdit_passw->setText( lst.at(6) );
-				ui.checkBox_savePass->setChecked(true);
+                ui->lineEdit_passw->setText( lst.at(6) );
+                ui->checkBox_savePass->setChecked(true);
 			}
 		}
 
         foreach (RecentList recent, recentList)
         {
-            int row = ui.tableWidget->rowCount();
-            ui.tableWidget->setRowCount(row + 1);
+            int row = ui->tableWidget->rowCount();
+            ui->tableWidget->setRowCount(row + 1);
 
             QString toolTop = OraRecentConnectionToolTip(recent);
 
@@ -232,10 +254,16 @@ void OracleAuthDlg::LoadPrefs()
             userItem->setToolTip(toolTop);
             serviceItem->setToolTip(toolTop);
 
-            ui.tableWidget->setItem(row, 0, userItem);
-            ui.tableWidget->setItem(row, 1, serviceItem);
+            ui->tableWidget->setItem(row, 0, userItem);
+            ui->tableWidget->setItem(row, 1, serviceItem);
         }
 	}
+
+#ifndef _DEBUG
+    ui->tabWidget->removeTab(2);
+#else
+    ui->tnsNamesTable->setModel(model);
+#endif
 }
 
 QString OracleAuthDlg::OraRecentConnectionToolTip(const RecentList &item)
@@ -263,16 +291,16 @@ void OracleAuthDlg::PumpPrefs(const int &id)
     QString sUsername = list.user;
     QString sService = list.service;
 
-    ui.lineEdit_base->setText(sDatabase);
-    ui.lineEdit_host->setText(sHostname);
-    ui.lineEdit_username->setText(sUsername);
-    ui.lineEdit_service->setText(sService);
-    ui.spinBox->setValue(sPort);
-    ui.comboBox->setCurrentText(list.dsn);
+    //ui->lineEdit_base->setText(sDatabase);
+    ui->lineEdit_host->setText(sHostname);
+    ui->lineEdit_username->setText(sUsername);
+    ui->lineEdit_service->setText(sService);
+    ui->spinBox->setValue(sPort);
+    ui->comboBox->setCurrentText(list.dsn);
 
     if(!list.pass.isEmpty())
     {
-        ui.lineEdit_passw->setText(list.pass);
+        ui->lineEdit_passw->setText(list.pass);
     }
 }
 
@@ -283,24 +311,24 @@ void OracleAuthDlg::SavePrefs(bool Append)
     {
         QDataStream stream(&f);
 		QStringList lstValues;
-		lstValues << ui.lineEdit_host->text() 
-			<< QString::number(ui.spinBox->value())
-			<< ui.lineEdit_base->text()
-            << ui.lineEdit_username->text()
-            << ui.lineEdit_service->text()
-            << ui.comboBox->currentText();
+        lstValues << ui->lineEdit_host->text()
+            << QString::number(ui->spinBox->value())
+            << ui->lineEdit_username->text()
+            << ui->lineEdit_username->text()
+            << ui->lineEdit_service->text()
+            << ui->comboBox->currentText();
 
-        if(ui.checkBox_savePass->isChecked())
-            lstValues << ui.lineEdit_passw->text();
+        if(ui->checkBox_savePass->isChecked())
+            lstValues << ui->lineEdit_passw->text();
 
         RecentList list;
-        list.database = ui.lineEdit_base->text();
-        list.host = ui.lineEdit_host->text();
-        list.pass = ui.lineEdit_passw->text();
-        list.port = ui.spinBox->value();
-        list.service = ui.lineEdit_service->text();
-        list.user = ui.lineEdit_username->text();
-        list.dsn = ui.comboBox->currentText();
+        list.database = ui->lineEdit_username->text();
+        list.host = ui->lineEdit_host->text();
+        list.pass = ui->lineEdit_passw->text();
+        list.port = ui->spinBox->value();
+        list.service = ui->lineEdit_service->text();
+        list.user = ui->lineEdit_username->text();
+        list.dsn = ui->comboBox->currentText();
 
         if (!recentList.contains(list))
         {
@@ -328,16 +356,16 @@ void OracleAuthDlg::on_pushButton_accept_clicked()
 
 void OracleAuthDlg::on_tableWidget_doubleClicked(const QModelIndex &index)
 {
-    ui.lineEdit_base->setText(recentList[index.row()].database);
-    ui.lineEdit_host->setText(recentList[index.row()].host);
-    ui.lineEdit_username->setText(recentList[index.row()].user);
-    ui.lineEdit_service->setText(recentList[index.row()].service);
-    ui.spinBox->setValue(recentList[index.row()].port);
-    ui.comboBox->setCurrentText(recentList[index.row()].dsn);
+    //ui->lineEdit_base->setText(recentList[index.row()].database);
+    ui->lineEdit_host->setText(recentList[index.row()].host);
+    ui->lineEdit_username->setText(recentList[index.row()].user);
+    ui->lineEdit_service->setText(recentList[index.row()].service);
+    ui->spinBox->setValue(recentList[index.row()].port);
+    ui->comboBox->setCurrentText(recentList[index.row()].dsn);
 
-    if(ui.checkBox_savePass->isChecked())
+    if(ui->checkBox_savePass->isChecked())
     {
-        ui.lineEdit_passw->setText(recentList[index.row()].pass);
+        ui->lineEdit_passw->setText(recentList[index.row()].pass);
     }
 
     on_pushButton_accept_clicked();
@@ -345,9 +373,9 @@ void OracleAuthDlg::on_tableWidget_doubleClicked(const QModelIndex &index)
 
 void OracleAuthDlg::on_comboBox_currentIndexChanged(int index)
 {
-    ui.lineEdit_host->setText(model->index(index, OracleTnsListModel::mtns_Host).data().toString());
-    ui.lineEdit_service->setText(model->index(index, OracleTnsListModel::mtns_ServiceName).data().toString());
-    ui.spinBox->setValue(model->index(index, OracleTnsListModel::mtns_Port).data().toInt());
+    ui->lineEdit_host->setText(model->index(index, OracleTnsListModel::mtns_Host).data().toString());
+    ui->lineEdit_service->setText(model->index(index, OracleTnsListModel::mtns_ServiceName).data().toString());
+    ui->spinBox->setValue(model->index(index, OracleTnsListModel::mtns_Port).data().toInt());
 }
 
 QString OracleAuthDlg::getConnectionSheme()
@@ -364,13 +392,13 @@ void OracleAuthDlg::on_delRecentButton_clicked()
     bool DeleteFlag = true;
     if (ShowDelMsg)
     {
-        if (ui.tableWidget->currentRow() < 0)
+        if (ui->tableWidget->currentRow() < 0)
             DeleteFlag = false;
 
         if (DeleteFlag)
         {
             QCheckBox *check = new QCheckBox(tr("Больше не показывать"));
-            RecentList recent = recentList.at(ui.tableWidget->currentRow());
+            RecentList recent = recentList.at(ui->tableWidget->currentRow());
             QMessageBox msg(this);
             msg.setWindowTitle(tr("Подтверждение удаления."));
             msg.setText(tr("Удалить соеденение <b>%1@%2</b> из закладок?").arg(recent.user, recent.service));
@@ -387,11 +415,11 @@ void OracleAuthDlg::on_delRecentButton_clicked()
 
     if (DeleteFlag)
     {
-        recentList.removeAt(ui.tableWidget->currentRow());
-        ui.tableWidget->removeRow(ui.tableWidget->currentRow());
+        recentList.removeAt(ui->tableWidget->currentRow());
+        ui->tableWidget->removeRow(ui->tableWidget->currentRow());
 
-        if(ui.tableWidget->rowCount())
-            PumpPrefs(ui.tableWidget->rowCount() - 1);
+        if(ui->tableWidget->rowCount())
+            PumpPrefs(ui->tableWidget->rowCount() - 1);
         SavePrefs();
     }
 }
@@ -399,13 +427,13 @@ void OracleAuthDlg::on_delRecentButton_clicked()
 ConnectionInfo *OracleAuthDlg::createConnectionInfo()
 {
     ConnectionInfo *info = new ConnectionInfo(connectionname);
-    info->m_Host = ui.lineEdit_host->text();
-    info->m_Service = ui.lineEdit_service->text();
+    info->m_Host = ui->lineEdit_host->text();
+    info->m_Service = ui->lineEdit_service->text();
     info->m_SchemeName = sheme;
-    info->m_User = ui.lineEdit_username->text();
-    info->m_Password = ui.lineEdit_passw->text();
-    info->m_DSN = ui.comboBox->currentText();
-    info->m_Port = ui.spinBox->value();
+    info->m_User = ui->lineEdit_username->text();
+    info->m_Password = ui->lineEdit_passw->text();
+    info->m_DSN = ui->comboBox->currentText();
+    info->m_Port = ui->spinBox->value();
     info->m_Type = ConnectionInfo::CON_ORA;
 
     qCInfo(logCore()) << "ConnectionInfo:";

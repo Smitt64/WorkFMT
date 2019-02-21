@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- fmtindex.cpp -->
+  <title>FmtIndex Class | FmtLib</title>
+<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body>
+<p class="header"><small>[My awesome documentation]</small></p><hr/><li>FmtIndex</li>
+<div class="sidebar">
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#properties">Properties</a></li>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#reimplemented-public-functions">Reimplemented Public Functions</a></li>
+<li class="level1"><a href="#public-slots">Public Slots</a></li>
+<li class="level1"><a href="#signals">Signals</a></li>
+<li class="level1"><a href="#reimplemented-protected-functions">Reimplemented Protected Functions</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">FmtIndex Class</h1>
+<!-- $$$FmtIndex-brief -->
+<p><a href="fmtindex.html">FmtIndex</a> класс, обеспечивающий работу с индексом таблицы FMT <a href="#details">More...</a></p>
+<!-- @@@FmtIndex -->
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> Header:</td><td class="memItemRight bottomAlign"> <span class="preprocessor">#include &lt;FmtIndex&gt;</span>
+</td></tr><tr><td class="memItemLeft rightAlign topAlign"> Inherits:</td><td class="memItemRight bottomAlign"> FmtIndecesModelItem</td></tr></table></div><ul>
+<li><a href="fmtindex-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="properties"></a>
+<h2 id="properties">Properties</h2>
+<div class="table"><table class="propsummary">
+<tr><td class="topAlign"><ul>
+<li class="fn"><b><a href="fmtindex.html#IndexNumber-prop">IndexNumber</a></b> : const qint32</li>
+<li class="fn"><b><a href="fmtindex.html#Name-prop">Name</a></b> : QString</li>
+<li class="fn"><b><a href="fmtindex.html#NullValue-prop">NullValue</a></b> : int</li>
+<li class="fn"><b><a href="fmtindex.html#SegmentsCount-prop">SegmentsCount</a></b> : const qint32</li>
+</ul></td><td class="topAlign"><ul>
+<li class="fn"><b><a href="fmtindex.html#isAutoInc-prop">isAutoInc</a></b> : bool</li>
+<li class="fn"><b><a href="fmtindex.html#isDup-prop">isDup</a></b> : bool</li>
+<li class="fn"><b><a href="fmtindex.html#isLocal-prop">isLocal</a></b> : bool</li>
+<li class="fn"><b><a href="fmtindex.html#isUnique-prop">isUnique</a></b> : const bool</li>
+</ul>
+</td></tr>
+</table></div>
+<a name="public-functions"></a>
+<h2 id="public-functions">Public Functions</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#FmtIndex">FmtIndex</a></b>(FmtTable *<i>table</i>, QObject *<i>parent</i> = 0)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#dtor.FmtIndex">~FmtIndex</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#IndexNumber-prop">indexNumber</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#isAutoInc-prop">isAutoInc</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#isDup-prop">isDup</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#isLocal-prop">isLocal</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#isUnique-prop">isUnique</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#Name-prop">name</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> int </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#NullValue-prop">nullValue</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#SegmentsCount-prop">segmentsCount</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#isAutoInc-prop">setAutoInc</a></b>(bool <i>use</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#isDup-prop">setDup</a></b>(bool <i>use</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#setFlags">setFlags</a></b>(const quint32 &amp;<i>flags</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#isLocal-prop">setLocal</a></b>(bool <i>use</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#Name-prop">setName</a></b>(const QString &amp;<i>n</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#NullValue-prop">setNullValue</a></b>(const quint16 &amp;<i>val</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#setType">setType</a></b>(const quint16 &amp;<i>n</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtTable *</td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#table">table</a></b>()</td></tr>
+</table></div>
+<a name="reimplemented-public-functions"></a>
+<h2 id="reimplemented-public-functions">Reimplemented Public Functions</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> virtual QVariant </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#data">data</a></b>(int <i>column</i>, int <i>role</i> = Qt::DisplayRole) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> virtual void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#insertItem">insertItem</a></b>(int <i>after</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> virtual bool </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#setData">setData</a></b>(int <i>column</i>, const QVariant &amp;<i>value</i>)</td></tr>
+</table></div>
+<ul>
+<li class="fn">13 public functions inherited from <a href="fmtindecesmodelitem.html#public-functions">FmtIndecesModelItem</a></li>
+</ul>
+<a name="public-slots"></a>
+<h2 id="public-slots">Public Slots</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#NormalizeFlags">NormalizeFlags</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#addField">addField</a></b>(FmtField *<i>fld</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtSegment *</td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#addSegment">addSegment</a></b>(const quint32 &amp;<i>row</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#copyTo">copyTo</a></b>(FmtIndex *<i>other</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#removeField">removeField</a></b>(FmtField *<i>pFld</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#removeSegment">removeSegment</a></b>(const quint16 &amp;<i>segmentIndex</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtSegment *</td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#segment">segment</a></b>(const qint32 &amp;<i>index</i>)</td></tr>
+</table></div>
+<a name="signals"></a>
+<h2 id="signals">Signals</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#indexChanged">indexChanged</a></b>()</td></tr>
+</table></div>
+<a name="reimplemented-protected-functions"></a>
+<h2 id="reimplemented-protected-functions">Reimplemented Protected Functions</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> virtual void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#restoreData">restoreData</a></b>(QByteArray *<i>data</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> virtual void </td><td class="memItemRight bottomAlign"><b><a href="fmtindex.html#storeData">storeData</a></b>(QByteArray *<i>data</i>)</td></tr>
+</table></div>
+<ul>
+<li class="fn">2 protected functions inherited from <a href="fmtindecesmodelitem.html#protected-functions">FmtIndecesModelItem</a></li>
+</ul>
+<a name="details"></a>
+<!-- $$$FmtIndex-description -->
+<div class="descr">
+<h2 id="details">Detailed Description</h2>
+<p><a href="fmtindex.html">FmtIndex</a> класс, обеспечивающий работу с индексом таблицы FMT</p>
+</div>
+<!-- @@@FmtIndex -->
+<div class="prop">
+<h2>Property Documentation</h2>
+<!-- $$$IndexNumber-prop$$$indexNumber -->
+<h3 class="fn" id="IndexNumber-prop"><a name="IndexNumber-prop"></a><span class="name">IndexNumber</span> : const <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>indexNumber</b></span>() const</td></tr>
+</table></div>
+<!-- @@@IndexNumber -->
+<!-- $$$Name-prop$$$name$$$setNameconstQString& -->
+<h3 class="fn" id="Name-prop"><a name="Name-prop"></a><span class="name">Name</span> : <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>name</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setName</b></span>(const QString &amp;<i>n</i>)</td></tr>
+</table></div>
+<!-- @@@Name -->
+<!-- $$$NullValue-prop$$$nullValue$$$setNullValueconstquint16& -->
+<h3 class="fn" id="NullValue-prop"><a name="NullValue-prop"></a><span class="name">NullValue</span> : <span class="type">int</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> int </td><td class="memItemRight bottomAlign"><span class="name"><b>nullValue</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setNullValue</b></span>(const quint16 &amp;<i>val</i>)</td></tr>
+</table></div>
+<!-- @@@NullValue -->
+<!-- $$$SegmentsCount-prop$$$segmentsCount -->
+<h3 class="fn" id="SegmentsCount-prop"><a name="SegmentsCount-prop"></a><span class="name">SegmentsCount</span> : const <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>segmentsCount</b></span>() const</td></tr>
+</table></div>
+<!-- @@@SegmentsCount -->
+<!-- $$$isAutoInc-prop$$$isAutoInc$$$setAutoIncbool -->
+<h3 class="fn" id="isAutoInc-prop"><a name="isAutoInc-prop"></a><span class="name">isAutoInc</span> : <span class="type">bool</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isAutoInc</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setAutoInc</b></span>(bool <i>use</i>)</td></tr>
+</table></div>
+<!-- @@@isAutoInc -->
+<!-- $$$isDup-prop$$$isDup$$$setDupbool -->
+<h3 class="fn" id="isDup-prop"><a name="isDup-prop"></a><span class="name">isDup</span> : <span class="type">bool</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isDup</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setDup</b></span>(bool <i>use</i>)</td></tr>
+</table></div>
+<!-- @@@isDup -->
+<!-- $$$isLocal-prop$$$isLocal$$$setLocalbool -->
+<h3 class="fn" id="isLocal-prop"><a name="isLocal-prop"></a><span class="name">isLocal</span> : <span class="type">bool</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isLocal</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setLocal</b></span>(bool <i>use</i>)</td></tr>
+</table></div>
+<!-- @@@isLocal -->
+<!-- $$$isUnique-prop$$$isUnique -->
+<h3 class="fn" id="isUnique-prop"><a name="isUnique-prop"></a><span class="name">isUnique</span> : const <span class="type">bool</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isUnique</b></span>() const</td></tr>
+</table></div>
+<!-- @@@isUnique -->
+</div>
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$FmtIndex[overload1]$$$FmtIndexFmtTable*QObject* -->
+<h3 class="fn" id="FmtIndex"><a name="FmtIndex"></a>FmtIndex::<span class="name">FmtIndex</span>(<span class="type">FmtTable</span> *<i>table</i>, <span class="type">QObject</span> *<i>parent</i> = 0)</h3>
+<p>Default constructs an instance of FmtIndex.</p><!-- @@@FmtIndex -->
+<!-- $$$~FmtIndex[overload1]$$$~FmtIndex -->
+<h3 class="fn" id="dtor.FmtIndex"><a name="dtor.FmtIndex"></a>FmtIndex::<span class="name">~FmtIndex</span>()</h3>
+<p>Destroys the instance of FmtIndex.</p><!-- @@@~FmtIndex -->
+<!-- $$$NormalizeFlags[overload1]$$$NormalizeFlags -->
+<h3 class="fn" id="NormalizeFlags"><a name="NormalizeFlags"></a><code>[slot] </code><span class="type">void</span> FmtIndex::<span class="name">NormalizeFlags</span>()</h3>
+<!-- @@@NormalizeFlags -->
+<!-- $$$addField[overload1]$$$addFieldFmtField* -->
+<h3 class="fn" id="addField"><a name="addField"></a><code>[slot] </code><span class="type">void</span> FmtIndex::<span class="name">addField</span>(<span class="type"><a href="fmtfield.html">FmtField</a></span> *<i>fld</i>)</h3>
+<!-- @@@addField -->
+<!-- $$$addSegment[overload1]$$$addSegmentconstquint32& -->
+<h3 class="fn" id="addSegment"><a name="addSegment"></a><code>[slot] </code><span class="type"><a href="fmtsegment.html">FmtSegment</a></span> *FmtIndex::<span class="name">addSegment</span>(const <span class="type">quint32</span> &amp;<i>row</i>)</h3>
+<!-- @@@addSegment -->
+<!-- $$$copyTo[overload1]$$$copyToFmtIndex* -->
+<h3 class="fn" id="copyTo"><a name="copyTo"></a><code>[slot] </code><span class="type">void</span> FmtIndex::<span class="name">copyTo</span>(<span class="type"><a href="fmtindex.html#FmtIndex">FmtIndex</a></span> *<i>other</i>)</h3>
+<!-- @@@copyTo -->
+<!-- $$$data[overload1]$$$dataintint -->
+<h3 class="fn" id="data"><a name="data"></a><code>[virtual] </code><span class="type">QVariant</span> FmtIndex::<span class="name">data</span>(<span class="type">int</span> <i>column</i>, <span class="type">int</span> <i>role</i> = Qt::DisplayRole) const</h3>
+<p><b>See also </b><a href="fmtindex.html#setData">setData</a>().</p>
+<!-- @@@data -->
+<!-- $$$indexChanged[overload1]$$$indexChanged -->
+<h3 class="fn" id="indexChanged"><a name="indexChanged"></a><code>[signal] </code><span class="type">void</span> FmtIndex::<span class="name">indexChanged</span>()</h3>
+<!-- @@@indexChanged -->
+<!-- $$$insertItem[overload1]$$$insertItemint -->
+<h3 class="fn" id="insertItem"><a name="insertItem"></a><code>[virtual] </code><span class="type">void</span> FmtIndex::<span class="name">insertItem</span>(<span class="type">int</span> <i>after</i>)</h3>
+<!-- @@@insertItem -->
+<!-- $$$removeField[overload1]$$$removeFieldFmtField* -->
+<h3 class="fn" id="removeField"><a name="removeField"></a><code>[slot] </code><span class="type">void</span> FmtIndex::<span class="name">removeField</span>(<span class="type"><a href="fmtfield.html">FmtField</a></span> *<i>pFld</i>)</h3>
+<!-- @@@removeField -->
+<!-- $$$removeSegment[overload1]$$$removeSegmentconstquint16& -->
+<h3 class="fn" id="removeSegment"><a name="removeSegment"></a><code>[slot] </code><span class="type">void</span> FmtIndex::<span class="name">removeSegment</span>(const <span class="type">quint16</span> &amp;<i>segmentIndex</i>)</h3>
+<!-- @@@removeSegment -->
+<!-- $$$restoreData[overload1]$$$restoreDataQByteArray* -->
+<h3 class="fn" id="restoreData"><a name="restoreData"></a><code>[virtual protected] </code><span class="type">void</span> FmtIndex::<span class="name">restoreData</span>(<span class="type">QByteArray</span> *<i>data</i>)</h3>
+<!-- @@@restoreData -->
+<!-- $$$segment[overload1]$$$segmentconstqint32& -->
+<h3 class="fn" id="segment"><a name="segment"></a><code>[slot] </code><span class="type"><a href="fmtsegment.html">FmtSegment</a></span> *FmtIndex::<span class="name">segment</span>(const <span class="type">qint32</span> &amp;<i>index</i>)</h3>
+<!-- @@@segment -->
+<!-- $$$setData[overload1]$$$setDataintconstQVariant& -->
+<h3 class="fn" id="setData"><a name="setData"></a><code>[virtual] </code><span class="type">bool</span> FmtIndex::<span class="name">setData</span>(<span class="type">int</span> <i>column</i>, const <span class="type">QVariant</span> &amp;<i>value</i>)</h3>
+<p><b>See also </b><a href="fmtindex.html#data">data</a>().</p>
+<!-- @@@setData -->
+<!-- $$$setFlags[overload1]$$$setFlagsconstquint32& -->
+<h3 class="fn" id="setFlags"><a name="setFlags"></a><span class="type">void</span> FmtIndex::<span class="name">setFlags</span>(const <span class="type">quint32</span> &amp;<i>flags</i>)</h3>
+<!-- @@@setFlags -->
+<!-- $$$setType[overload1]$$$setTypeconstquint16& -->
+<h3 class="fn" id="setType"><a name="setType"></a><span class="type">void</span> FmtIndex::<span class="name">setType</span>(const <span class="type">quint16</span> &amp;<i>n</i>)</h3>
+<!-- @@@setType -->
+<!-- $$$storeData[overload1]$$$storeDataQByteArray* -->
+<h3 class="fn" id="storeData"><a name="storeData"></a><code>[virtual protected] </code><span class="type">void</span> FmtIndex::<span class="name">storeData</span>(<span class="type">QByteArray</span> *<i>data</i>)</h3>
+<!-- @@@storeData -->
+<!-- $$$table[overload1]$$$table -->
+<h3 class="fn" id="table"><a name="table"></a><span class="type">FmtTable</span> *FmtIndex::<span class="name">table</span>()</h3>
+<!-- @@@table -->
+</div>
+<hr/><p class="footer"><small>[some footer and whatnot information]</small></p></body>
+</html>

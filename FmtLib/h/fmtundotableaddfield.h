@@ -3,15 +3,16 @@
 
 #include <QObject>
 #include <QUndoCommand>
+#include "fmtlib_global.h"
 
 class FmtTable;
 class FmtField;
 class FmtUndoTableAddField : public QUndoCommand
 {
 public:
-    FmtUndoTableAddField(FmtTable *table, QUndoCommand *parent = NULL);
-    void setNameAndType(const QString &name, const qint16 &type);
-    void setInsertBefor(const qint32 &befor);
+    FmtUndoTableAddField(FmtTable *table, QUndoCommand *parent = Q_NULLPTR);
+    void setNameAndType(const QString &name, const FmtFldType &type);
+    void setInsertBefor(const FmtFldIndex &befor);
     FmtField *getField() const;
 
     virtual void undo();
@@ -22,8 +23,8 @@ private:
     FmtField *pField;
 
     QString m_Name;
-    qint16 m_Type;
-    qint32 m_Befor, m_Row;
+    FmtFldType m_Type;
+    FmtFldIndex m_Befor, m_Row;
 };
 
 #endif // FMTUNDOTABLEADDFIELD_H

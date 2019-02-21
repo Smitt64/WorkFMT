@@ -18,11 +18,15 @@ LogHighlighter::LogHighlighter(QTextDocument *parent)
     rule.format = rsexpFormat;
     highlightingRules.append(rule);
 
-    rule.pattern = QRegExp("(\\*)*\\s+(Start unloading)\\s+(\\*)*");
+    rule.pattern = QRegExp("(\\*)*\\s+(Start (un)*loading)\\s+(\\*)*");
     rule.format = separatorFormat;
     highlightingRules.append(rule);
 
     rule.pattern = QRegExp("ORA-\\d{5}[^\\n]*");
+    rule.format = errorFormat;
+    highlightingRules.append(rule);
+
+    rule.pattern = QRegExp("SP2-\\d{4}[^\\n]*");
     rule.format = errorFormat;
     highlightingRules.append(rule);
 }

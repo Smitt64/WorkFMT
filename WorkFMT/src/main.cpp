@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 
     QCommandLineParser parser;
     QCommandLineOption helpOption = parser.addHelpOption();
+    Q_UNUSED(helpOption)
     parser.addVersionOption();
 
     QCommandLineOption connectionStringOption(QStringList() << "cs" << "con-str",
@@ -39,7 +40,8 @@ int main(int argc, char *argv[])
     parser.addOption(rsreqOption);
     parser.addOption(logOption);
     parser.addOption(logruleOption);
-    parser.process(a);
+    qDebug() << a.arguments();
+    parser.process(a.arguments());
 
     MainWindow *w = (MainWindow*)a.addMainWindow();
     ProcessLoggingOption(&a, &parser, logOption, logruleOption);

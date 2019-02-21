@@ -17,6 +17,16 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent),
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
     connect(this, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
 
+    QFont f("Courier");
+    f.setPointSize(10);
+    f.setStyleHint(QFont::Monospace);
+    f.setFixedPitch(true);
+    document()->setDefaultFont(f);
+
+    QFontMetrics metrics(f);
+    int tabWidth = TABSTOP * metrics.width(' ');
+    setTabStopWidth(tabWidth);
+
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
 }

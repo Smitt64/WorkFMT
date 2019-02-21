@@ -30,7 +30,12 @@ QString FmtUndoMacroTitle(const QString &name, const quint16 &prop)
 }
 
 // ================================================================
+/*!
+    \class FmtIndex
+    \brief FmtIndex класс, обеспечивающий работу с индексом таблицы FMT
 
+    \ingroup tools
+*/
 FmtIndex::FmtIndex(FmtTable *table, QObject *parent):
     FmtIndecesModelItem(0, parent)
 {
@@ -60,7 +65,7 @@ void FmtIndex::setName(const QString &n)
     m_Name = n;
 }
 
-void FmtIndex::setType(const quint16 &n)
+void FmtIndex::setType(const FmtNumber5 &n)
 {
     m_Type = n;
 }
@@ -336,7 +341,7 @@ bool FmtIndex::setData(int column, const QVariant &value)
     return false;
 }
 
-void FmtIndex::setFlags(const quint32 &flags)
+void FmtIndex::setFlags(const FmtNumber10 &flags)
 {
     m_Flags = flags;
 }
@@ -486,6 +491,18 @@ void FmtIndex::removeSegmentPrivate(const quint32 &index, bool AutoDelete)
         delete item;
 }
 
+bool FmtIndex::hasField(FmtField *pFld)
+{
+    bool hr = false;
+    for (int i = 0; i < childItems.size(); i++)
+    {
+        FmtSegment *segment = (FmtSegment*)childItems[i];
+
+        if (segment->field() == pFld)
+            hr = true;
+    }
+    return hr;
+}
 
 void FmtIndex::storeData(QByteArray *data)
 {

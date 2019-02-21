@@ -2,7 +2,7 @@
 #include "fmtfield.h"
 #include "fmttable.h"
 
-FmtUndoFieldProperty::FmtUndoFieldProperty(FmtTable *table, const quint32 &row, QUndoCommand *parent) :
+FmtUndoFieldProperty::FmtUndoFieldProperty(FmtTable *table, const FmtFldIndex &row, QUndoCommand *parent) :
     QUndoCommand(parent)
 {
     m_FldRow = row;
@@ -24,7 +24,7 @@ void FmtUndoFieldProperty::setValueToRedo(const QVariant &value)
     m_RedoValue = value;
 }
 
-void FmtUndoFieldProperty::setProperty(const quint16 &property)
+void FmtUndoFieldProperty::setProperty(const FmtFldIndex &property)
 {
     setText(QObject::tr("Изменено свойство '%1'")
             .arg(FmtFieldPropertyTextById(property)));

@@ -5,13 +5,31 @@
 #include "gencppsettings.h"
 #include "fmtsegment.h"
 
+const QString getTab()
+{
+    return QString(4, QChar(QChar::Space));
+}
+
+QTextStream &tab(QTextStream &s)
+{
+    s << getTab();
+    return s;
+}
+
+// ----------------------------------------------------------------------------
+
 FmtGenCppTemplate::FmtGenCppTemplate()
     : FmtGenInterface()
 {
     //pSetttings = settings();
 }
 
-QByteArray FmtGenCppTemplate::makeContent(QSharedPointer<FmtTable> pTable)
+FmtGenCppTemplate::~FmtGenCppTemplate()
+{
+
+}
+
+QByteArray FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
@@ -22,19 +40,6 @@ QByteArray FmtGenCppTemplate::makeContent(QSharedPointer<FmtTable> pTable)
     m_Blocks.clear();
 
     CreateBlocks(pTable);
-
-    createOpenFuncDecl(pTable, stream);
-    if (prm.fGenSkf && pTable->hasNonUniqueIndexes())
-    {
-        createSkfDeclFunctions(pTable, stream);
-        createSkfFunctions(pTable, stream);
-    }
-
-    stream << endl;
-    createOpenFunc(pTable, stream);
-    stream << endl;
-
-    createFindFunctions(pTable, stream);
 
     if (prm.fGenStruct)
     {
@@ -54,6 +59,21 @@ QByteArray FmtGenCppTemplate::makeContent(QSharedPointer<FmtTable> pTable)
         stream << endl;
     }
 
+    createOpenFuncDecl(pTable, stream);
+    stream << endl;
+    createOpenFunc(pTable, stream);
+    stream << endl;
+
+    if (prm.fGenSkf && pTable->hasNonUniqueIndexes())
+    {
+        createSkfDeclFunctions(pTable, stream);
+        createSkfFunctions(pTable, stream);
+        stream << endl;
+    }
+
+    createFindFunctions(pTable, stream);
+    createDeclExtern(pTable, stream);
+
     stream.flush();
 
     return data;
@@ -66,15 +86,15 @@ void FmtGenCppTemplate::propertyEditor(QWidget *parent)
     dlg.exec();
 }
 
-qint16 FmtGenCppTemplate::calcMaxCppLenght(qint16 *maxfieldname, const QSharedPointer<FmtTable> &pTable)
+qint16 FmtGenCppTemplate::calcMaxCppLenght(qint16 *maxfieldname, const FmtSharedTablePtr &pTable)
 {
     qint16 len = 0, fieldname = 0;
 
     for (int i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *fld = pTable->field(i);
-        len = qMax<qint16>(len, (qint16)fmtCppStructTypeName(fld->type()).length());
-        fieldname = qMax<qint16>(fieldname, fld->getCppDecl().length());
+        len = qMax<qint16>(len, static_cast<qint16>(fmtCppStructDbTypeName(fld->type()).length()));
+        fieldname = qMax<qint16>(fieldname, static_cast<qint16>(fld->getCppDecl().length()));
     }
 
     if (maxfieldname)
@@ -83,26 +103,24 @@ qint16 FmtGenCppTemplate::calcMaxCppLenght(qint16 *maxfieldname, const QSharedPo
     return len;
 }
 
-void FmtGenCppTemplate::createOpenFuncDecl(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createOpenFuncDecl(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
         return;
 
-    stream << "// " << pTable->comment() << endl;
-    stream << QString("extern BTRVFILE *File%1;").arg(block->m_StructName) << endl;
-    stream << QString("extern int iOpen%1 (int OpenMode);").arg(block->m_StructName) << endl;
-    stream << endl;
+    WriteTableComment(pTable, stream);
     stream << QString("BTRVFILE *File%1 = NULL;").arg(block->m_StructName) << endl;
+    AppendFunctionDeclExtern(block, QString("BTRVFILE *File%1").arg(block->m_StructName));
 }
 
-void FmtGenCppTemplate::createStruct(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createStruct(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
         return;
 
-    stream << "// " << pTable->comment() << endl;
+    WriteTableComment(pTable, stream);
     stream << "typedef struct" << endl;
     stream << "{" << endl;
 
@@ -118,7 +136,7 @@ void FmtGenCppTemplate::createStruct(const QSharedPointer<FmtTable> &pTable, QTe
         if (prm.GenStruct.fAlignNames)
             cppDecl = cppDecl.leftJustified(block->m_MaxFldLenght + 1);
 
-        stream << "\t" << typeName << " ";
+        stream << tab << typeName << " ";
         stream << cppDecl;
 
         if (prm.GenStruct.fUseComments)
@@ -129,7 +147,7 @@ void FmtGenCppTemplate::createStruct(const QSharedPointer<FmtTable> &pTable, QTe
     stream << "} " << block->m_StructName << ";" << endl;
 }
 
-void FmtGenCppTemplate::createKeysUnion(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createKeysUnion(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
@@ -137,21 +155,21 @@ void FmtGenCppTemplate::createKeysUnion(const QSharedPointer<FmtTable> &pTable, 
 
     stream << "typedef union" << endl;
     stream << "{" << endl;
-    for (int i = 0; i < pTable->indecesCount(); i++)
+    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
     {
         FmtIndex *index = pTable->tableIndex(i);
 
-        stream << "\tstruct" << endl;
-        stream << "\t{" << endl;
+        stream << tab << "struct" << endl;
+        stream << tab << "{" << endl;
 
         for (int j = 0; j < index->segmentsCount(); j++)
         {
             FmtSegment *segment = index->segment(j);
             FmtField *fld = segment->field();
 
-            stream << "\t\t";
+            stream << tab << tab;
 
-            QString typeName = fld->getCppTypeName();
+            QString typeName = fmtCppStructDbBaseTypeName(fld->type());
             QString cppDecl = QString("%1;").arg(fld->getCppDecl());
 
             if (prm.GenUnion.fAlignNames)
@@ -179,7 +197,7 @@ void FmtGenCppTemplate::createKeysUnion(const QSharedPointer<FmtTable> &pTable, 
             stream << endl;
         }
 
-        stream << "\t} " << block->m_IndexUnionValue[index] << ";" << endl;
+        stream << tab << "} " << block->m_IndexUnionValue[index] << ";" << endl;
 
         if (i + 1 != pTable->indecesCount())
             stream << endl;
@@ -187,7 +205,7 @@ void FmtGenCppTemplate::createKeysUnion(const QSharedPointer<FmtTable> &pTable, 
     stream << "} " << block->m_UnionName << ";" << endl;
 }
 
-void FmtGenCppTemplate::createKeysEnum(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createKeysEnum(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
@@ -196,10 +214,10 @@ void FmtGenCppTemplate::createKeysEnum(const QSharedPointer<FmtTable> &pTable, Q
     stream << "typedef enum" << endl;
     stream << "{" << endl;
 
-    for (int i = 0; i < pTable->indecesCount(); i++)
+    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
     {
         FmtIndex *index = pTable->tableIndex(i);
-        stream << "\t" << block->m_IndexEnumValue[index];
+        stream << tab << block->m_IndexEnumValue[index];
         if (i + 1 != pTable->indecesCount())
             stream << ",";
         stream  << endl;
@@ -221,22 +239,26 @@ QString FmtGenCppTemplate::getBFileName(const QString &table) const
             .arg(FmtGetTableExtension(table).toLower());
 }
 
-void FmtGenCppTemplate::createOpenFunc(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createOpenFunc(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
         return;
 
-    stream << QString("int iOpen%1 (int OpenMode)").arg(block->m_StructName) << endl;
+    QString openName = QString("int iOpen%1 (int OpenMode)").arg(block->m_StructName);
+    WriteTableComment(pTable, stream);
+    stream << openName << endl;
     stream << "{" << endl;
-    stream << "\tchar FileName[_MAX_PATH];" << endl;
-    stream << QString("\tgetFileName(FileName, \"%1\");").arg(getBFileName(pTable->name())) << endl;
-    stream << QString("\treturn bfOpen(&File%1, FileName, OpenMode, sizeof(%1), sizeof(%2), 0, NULL, NULL, NULL, NULL);")
+    stream << tab << "char FileName[_MAX_PATH];" << endl;
+    stream << tab << QString("getFileName(FileName, \"%1\");").arg(getBFileName(pTable->name())) << endl;
+    stream << tab << QString("return bfOpen(&File%1, FileName, OpenMode, sizeof(%1), sizeof(%2), 0, NULL, NULL, NULL, NULL);")
               .arg(block->m_StructName).arg(block->m_UnionName) << endl;
-    stream << "}" << endl;
+    stream << "}";
+
+    AppendFunctionDeclExtern(block, openName);
 }
 
-void FmtGenCppTemplate::CreateFindFuncForIndex(FmtIndex *pIndex, const QSharedPointer<FmtTable> &pTable, QTextStream &stream, bool isDefault, int IndexNum)
+void FmtGenCppTemplate::CreateFindFuncForIndex(FmtIndex *pIndex, const FmtSharedTablePtr &pTable, QTextStream &stream, bool isDefault, int IndexNum)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
@@ -244,11 +266,8 @@ void FmtGenCppTemplate::CreateFindFuncForIndex(FmtIndex *pIndex, const QSharedPo
 
     QString Name;
 
-    stream << "int Find";
     if (isDefault)
-    {
         Name = FmtTableStructName(pTable->name()).toUpper();
-    }
     else
     {
         if (prm.FindFunc.iNameType == GenCppSettings::usn_Short)
@@ -269,7 +288,7 @@ void FmtGenCppTemplate::CreateFindFuncForIndex(FmtIndex *pIndex, const QSharedPo
         }
     }
 
-    stream << Name.toUpper() << "(";
+    Name = QString("int Find") + Name.toUpper() + QString("(");
 
     QString funcParams, fillKeyBuf;
     for (int i = 0; i < pIndex->segmentsCount(); i++)
@@ -281,43 +300,46 @@ void FmtGenCppTemplate::CreateFindFuncForIndex(FmtIndex *pIndex, const QSharedPo
                 .arg(fld->getCppTypeName(true))
                 .arg(fld->getCppDecl(true));
 
-        if (i + 1 != pIndex->segmentsCount())
-            funcParams += ", ";
+        funcParams += ", ";
 
-        if (fld->type() != fmtt_STRING && fld->type() != fmtt_SNR)
+        if (fld->type() != fmtt_STRING && fld->type() != fmtt_SNR && fld->type() != fmtt_UCHR)
         {
-            fillKeyBuf += QString("\tKB.%1.%2 = %2;\n")
+            fillKeyBuf += getTab() + QString("KB.%1.%2 = %2;\n")
                     .arg(block->m_IndexUnionValue[pIndex])
                     .arg(fld->undecorateName());
         }
         else
         {
-            fillKeyBuf += QString("\tstrncpyz(KB.%1.%2, %2, klen(%3,%2));\n")
+            fillKeyBuf += getTab() + QString("strncpyz(KB.%1.%2, %2, klen(%3,%2));\n")
                     .arg(block->m_IndexUnionValue[pIndex])
                     .arg(fld->undecorateName())
                     .arg(block->m_StructName);
         }
     }
 
-    stream << funcParams << ")" << endl << "{" << endl;
-    stream << "\t" << block->m_UnionName << " KB;" << endl;
-    stream << QString("\tmemset(&KB, 0, sizeof(%1));").arg(block->m_UnionName) << endl << endl;
+    Name += funcParams + QString("%1 *buff)").arg(block->m_StructName);
+
+    stream << Name << endl << "{" << endl;
+    stream << tab << block->m_UnionName << " KB;" << endl;
+    stream << tab << QString("memset(&KB, 0, sizeof(%1));").arg(block->m_UnionName) << endl << endl;
 
     stream << fillKeyBuf << endl;
-    stream << QString("\treturn CB_FindRecord(&File%1, iOpen%1, %2, &KB, buff, NULL);")
+    stream << tab << QString("return CB_FindRecord(&File%1, iOpen%1, %2, &KB, buff, NULL);")
               .arg(block->m_StructName)
               .arg(block->m_IndexEnumValue[pIndex])
            << endl;
     stream << "}" << endl;
+
+    AppendFunctionDeclExtern(block, Name);
 }
 
-void FmtGenCppTemplate::createFindFunctions(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createFindFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
         return;
 
-    FmtIndex *pDefaultIndex = NULL;
+    FmtIndex *pDefaultIndex = Q_NULLPTR;
     if (prm.FindFunc.iDefaultType == GenCppSettings::ffdf_PkKey)
     {
         if (pTable->pkIDx() != -1)
@@ -326,14 +348,14 @@ void FmtGenCppTemplate::createFindFunctions(const QSharedPointer<FmtTable> &pTab
             if (pDefaultIndex->isUnique())
                 CreateFindFuncForIndex(pDefaultIndex, pTable, stream, true, -1);
             else
-                pDefaultIndex = NULL;
+                pDefaultIndex = Q_NULLPTR;
         }
     }
 
     stream << endl;
 
     int IndexNum = 1;
-    for (int i = 0; i < pTable->indecesCount(); i++)
+    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
     {
         FmtIndex *index = pTable->tableIndex(i);
 
@@ -346,7 +368,7 @@ void FmtGenCppTemplate::createFindFunctions(const QSharedPointer<FmtTable> &pTab
     }
 }
 
-void FmtGenCppTemplate::createSkfDeclFunctions(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createSkfDeclFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
@@ -359,7 +381,7 @@ void FmtGenCppTemplate::createSkfDeclFunctions(const QSharedPointer<FmtTable> &p
                   .arg(block->m_SkfDefaultParams) << endl;
     }
 
-    for (int k = 0; k < pTable->indecesCount(); k++)
+    for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
 
@@ -384,8 +406,7 @@ void FmtGenCppTemplate::createSkfDeclFunctions(const QSharedPointer<FmtTable> &p
                 .arg(block->m_SkfNameValue[pIndex])
                 .arg(params);
 
-        stream << QString("extern %1;")
-                  .arg(block->m_SkfFullFuncNameValue[pIndex]) << endl;
+        AppendFunctionDeclExtern(block, block->m_SkfFullFuncNameValue[pIndex]);
     }
 }
 
@@ -397,7 +418,7 @@ void FmtGenCppTemplate::createSkfKfReturnSegment(const QString &fldName, const Q
         stream << (descOrder ? " >= " : " <= ");
         stream << QString("KB->%1.%2").arg(keyName, fldName) << " && " << endl;
 
-        stream << "\t\t";
+        stream << tab << tab;
         stream << QString("KB->%1.%2").arg(keyName, fldName);
         stream << (descOrder ? " >= " : " <= ");
         stream << QString("BV->%1.%2").arg(keyName, fldName);
@@ -406,7 +427,7 @@ void FmtGenCppTemplate::createSkfKfReturnSegment(const QString &fldName, const Q
     {
         stream << QString("strcmpR(TV->%1.%2, KB->%1.%2)").arg(keyName, fldName);
         stream << (descOrder ? " >= 0 " : " <= 0") << " && " << endl;
-        stream << "\t\t";
+        stream << tab << tab;
         stream << QString("strcmpR(TV->%1.%2, KB->%1.%2)").arg(keyName, fldName);
         stream << (descOrder ? " >= 0 " : " <= 0 ");
     }
@@ -421,11 +442,11 @@ void FmtGenCppTemplate::createSkfKfFunctions(FmtIndex *pIndex, QTextStream &stre
     stream << QString("static int KF_%1_%2(BTRVFILE *bf)")
               .arg(block->m_StructName).arg(pIndex->indexNumber()) << endl;
     stream << "{" << endl;
-    stream << QString("\t%1 *KB = (%1 *)bf->KeyBuf;").arg(block->m_UnionName) << endl;
-    stream << QString("\t%1 *TV = (%1 *)bf->KeyTopVal;").arg(block->m_UnionName) << endl;
-    stream << QString("\t%1 *BV = (%1 *)bf->KeyBotVal;").arg(block->m_UnionName) << endl;
+    stream << tab << QString("%1 *KB = (%1 *)bf->KeyBuf;").arg(block->m_UnionName) << endl;
+    stream << tab << QString("%1 *TV = (%1 *)bf->KeyTopVal;").arg(block->m_UnionName) << endl;
+    stream << tab << QString("%1 *BV = (%1 *)bf->KeyBotVal;").arg(block->m_UnionName) << endl;
     stream << endl;
-    stream << "\treturn !(" << endl;
+    stream << tab << "return !(" << endl;
     for (int i = 0; i < pIndex->segmentsCount(); i++)
     {
         FmtSegment *seg = pIndex->segment(i);
@@ -435,7 +456,7 @@ void FmtGenCppTemplate::createSkfKfFunctions(FmtIndex *pIndex, QTextStream &stre
         if (i != 0)
             stream  <<" && " << endl;
 
-        stream << "\t\t";
+        stream << tab << tab;
         switch(seg->field()->type())
         {
         case fmtt_INT:
@@ -466,20 +487,13 @@ void FmtGenCppTemplate::createSkfKfFunctions(FmtIndex *pIndex, QTextStream &stre
     stream << "}" << endl;
 }
 
-void FmtGenCppTemplate::createSkfFunctions(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
         return;
 
-    /*if (prm.SkfFunc.fAllSkf)
-    {
-         stream << QString("void %1(int keynum, %2);")
-                  .arg(block->m_SkfDefaultFunc)
-                  .arg(block->m_SkfDefaultParams) << endl;
-    }*/
-
-    for (int k = 0; k < pTable->indecesCount(); k++)
+    for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
 
@@ -487,31 +501,11 @@ void FmtGenCppTemplate::createSkfFunctions(const QSharedPointer<FmtTable> &pTabl
             continue;
 
         createSkfKfFunctions(pIndex, stream);
-        /*QString params;
-        for (int i = 0; i < pIndex->segmentsCount(); i++)
-        {
-            FmtField *fld = pIndex->segment(i)->field();
-
-            if (i != 0)
-                params += ", ";
-
-            params += QString("%1 %2")
-                    .arg(fld->getCppTypeName(true))
-                    .arg(fld->getCppDecl(true));
-
-        }
-
-        block->m_SkfFullFuncNameValue[pIndex] = QString("void %1(%2)")
-                .arg(block->m_SkfNameValue[pIndex])
-                .arg(params);
-
-        stream << QString("extern %1;")
-                  .arg(block->m_SkfFullFuncNameValue[pIndex]) << endl;*/
     }
 
     stream << endl;
 
-    for (int k = 0; k < pTable->indecesCount(); k++)
+    for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
 
@@ -520,17 +514,71 @@ void FmtGenCppTemplate::createSkfFunctions(const QSharedPointer<FmtTable> &pTabl
 
         stream << block->m_SkfFullFuncNameValue[pIndex] << endl;
         stream << "{" << endl;
-        stream << QString("\t%1 *TV = (%1 *)File%2->KeyTopVal;").arg(block->m_UnionName, block->m_StructName) << endl;
-        stream << QString("\t%1 *BV = (%1 *)File%2->KeyBotVal;").arg(block->m_UnionName, block->m_StructName) << endl;
+        stream << tab << QString("%1 *TV = (%1 *)File%2->KeyTopVal;").arg(block->m_UnionName, block->m_StructName) << endl;
+        stream << tab << QString("%1 *BV = (%1 *)File%2->KeyBotVal;").arg(block->m_UnionName, block->m_StructName) << endl;
+
+        stream << endl;
+        stream << tab << QString("File%1->KeyNum = %2;")
+               .arg(block->m_StructName, block->m_IndexEnumValue[pIndex]) << endl;
+        stream << tab << QString("File%1->KeyFltr = KF_%1_%2;")
+               .arg(block->m_StructName)
+               .arg(pIndex->indexNumber())<< endl;
+        stream << endl;
 
         for (int j = 0; j < pIndex->segmentsCount(); j++)
         {
             FmtSegment *seg = pIndex->segment(j);
-            QString fldName = seg->field()->undecorateName();
+            FmtField *fld = seg->field();
+            QString fldName = fld->undecorateName();
             QString keyName = block->m_IndexUnionValue[pIndex];
+
+            if (j != 0)
+                stream << endl;
+
+            if (fld->isStringType() || (fld->type() == fmtt_UCHR && fld->size() > 1))
+            {
+                stream << tab << "if (" << fldName << ")" << endl << "\t{" << endl;
+                stream << tab << tab << QString("strcpy(TV->%1.%2, %2);")
+                       .arg(keyName, fldName)<< endl;
+                stream << tab << tab << QString("strcpy(BV->%1.%2, %2);")
+                       .arg(keyName, fldName)<< endl;
+                stream << tab << "}" << endl << "\telse" << endl << "\t{" << endl;
+                stream << tab << tab << QString("memset(TV->%1.%2, 0, sizeof(TV->%1.%2));")
+                       .arg(keyName, fldName)<< endl;
+                stream << tab << tab << QString("memset(BV->%1.%2, 0, sizeof(BV->%1.%2));")
+                       .arg(keyName, fldName)<< endl;
+                stream << tab << "}" << endl;
+            }
+            else if (fld->type() == fmtt_DATE)
+                WrapSkfAssignValue(stream, keyName, fldName, "BDATE_MIN", "BDATE_MAX", "BDATE_ZERO");
+            else if (fld->type() == fmtt_TIME)
+                WrapSkfAssignValue(stream, keyName, fldName, "BTIME_MIN", "BTIME_MAX", "BTIME_ZERO");
+            else if (fld->type() == fmtt_INT)
+                WrapSkfAssignValue(stream, keyName, fldName, "DB_INT16_MIN", "DB_INT16_MAX", "0");
+            else if (fld->type() == fmtt_LONG)
+                WrapSkfAssignValue(stream, keyName, fldName, "DB_INT32_MIN", "DB_INT32_MAX", "0");
+            else if (fld->type() == fmtt_BIGINT)
+                WrapSkfAssignValue(stream, keyName, fldName, "DB_INT64_MIN", "DB_INT64_ZERO", "0");
+            else if (fld->type() == fmtt_CHR || fld->type() == fmtt_UCHR)
+                WrapSkfAssignValue(stream, keyName, fldName, "0", "255", "0");
         }
         stream << "}" << endl;
     }
+}
+
+void FmtGenCppTemplate::WrapSkfAssignValue(QTextStream &stream, const QString &keyName, const QString &fldName, const QString &minval, const QString &maxval, const QString &zeroval)
+{
+    stream << tab << "if (" << fldName << " != " << zeroval << ")" << endl << "\t{" << endl;
+    stream << tab << tab << QString("TV->%1.%2 = %2;")
+           .arg(keyName, fldName)<< endl;
+    stream << tab << tab << QString("BV->%1.%2 = %2;")
+           .arg(keyName, fldName)<< endl;
+    stream << tab << "}" << endl << tab << "else" << endl << tab << "{" << endl;
+    stream << tab << tab << QString("TV->%1.%2 = %3;")
+           .arg(keyName, fldName, minval)<< endl;
+    stream << tab << tab << QString("BV->%1.%2 = %3;")
+           .arg(keyName, fldName, maxval)<< endl;
+    stream << tab << "}" << endl;
 }
 
 QString FmtGenCppTemplate::FormatName(QString &Mask, const GenCppTemplateBlock *block)
@@ -538,7 +586,7 @@ QString FmtGenCppTemplate::FormatName(QString &Mask, const GenCppTemplateBlock *
     return Mask.replace("${StructName}", block->m_StructName);
 }
 
-void FmtGenCppTemplate::CreateBlocks(const QSharedPointer<FmtTable> &pTable)
+void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
 {
     if (m_Blocks.contains(pTable.data()))
         return;
@@ -555,8 +603,7 @@ void FmtGenCppTemplate::CreateBlocks(const QSharedPointer<FmtTable> &pTable)
             .arg(block->m_StructName);
 
     QList<FmtField*> fields;
-    //int iSkfNameIndex = 1;
-    for (int i = 0; i < pTable->indecesCount(); i++)
+    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
     {
         QString EnumName, UnionName, SkfName;
         FmtIndex *index = pTable->tableIndex(i);
@@ -630,17 +677,40 @@ void FmtGenCppTemplate::CreateBlocks(const QSharedPointer<FmtTable> &pTable)
     }
 }
 
-GenCppTemplateBlock *FmtGenCppTemplate::getTemplateBlock(const QSharedPointer<FmtTable> &pTable)
+GenCppTemplateBlock *FmtGenCppTemplate::getTemplateBlock(const FmtSharedTablePtr &pTable)
 {
     return getTemplateBlock(pTable.data());
 }
 
 GenCppTemplateBlock *FmtGenCppTemplate::getTemplateBlock(const FmtTable *pTable)
 {
-    GenCppTemplateBlock *block = NULL;
-
-    if (m_Blocks.contains((FmtTable*)pTable))
-        block =  m_Blocks[(FmtTable*)pTable];
+    GenCppTemplateBlock *block = Q_NULLPTR;
+    FmtTable *cTable = const_cast<FmtTable*>(pTable);
+    if (m_Blocks.contains(cTable))
+        block =  m_Blocks[cTable];
 
     return block;
+}
+
+void FmtGenCppTemplate::AppendFunctionDeclExtern(GenCppTemplateBlock *block, const QString &func)
+{
+    block->m_Decl.append(QString("extern %1;").arg(func));
+}
+
+void FmtGenCppTemplate::WriteTableComment(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+{
+    stream << QString("// %1").arg(pTable->comment()) << endl;
+}
+
+void FmtGenCppTemplate::createDeclExtern(const FmtSharedTablePtr &pTable, QTextStream &stream)
+{
+    GenCppTemplateBlock *block = getTemplateBlock(pTable);
+
+    if (!block)
+        return;
+
+    WriteTableComment(pTable, stream);
+    foreach (const QString &decl, block->m_Decl) {
+        stream << decl << endl;
+    }
 }

@@ -8,7 +8,12 @@
 #include "fmtundoindexsegmentproperty.h"
 #include "fmtsegment.h"
 #include <QDataStream>
+/*!
+    \class FmtSegment
+    \brief FmtSegment класс, обеспечивающий работу с сегментом индекса таблицы FMT
 
+    \ingroup tools
+*/
 FmtSegment::FmtSegment(FmtIndecesModelItem *parent)
     :FmtIndecesModelItem(parent)
 {

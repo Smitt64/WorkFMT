@@ -2,27 +2,34 @@
 #define HIGHLIGHTER_H
 
 #include <QSyntaxHighlighter>
-
+#include "fmtcore.h"
 #include <QHash>
 #include <QTextCharFormat>
 
 class QTextDocument;
 
-class Highlighter : public QSyntaxHighlighter
+class FMTLIBSHARED_EXPORT Highlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
-
 public:
-    Highlighter(QTextDocument *parent = 0);
+    enum HighlighterCode
+    {
+        HC_CPP = 1,
+        HC_JS,
+    };
+    Highlighter(QTextDocument *parent = Q_NULLPTR);
+    Highlighter(const HighlighterCode &type, QTextDocument *parent = Q_NULLPTR);
 
 protected:
     void highlightBlock(const QString &text);
 
 private:
+    void init(const HighlighterCode &type);
     struct HighlightingRule
     {
-        QRegExp pattern;
+        QRegularExpression pattern;
         QTextCharFormat format;
+        bool isNotCaseInsensitive;
     };
     QVector<HighlightingRule> highlightingRules;
 
@@ -55,7 +62,7 @@ protected:
 private:
     struct HighlightingRule
     {
-        QRegExp pattern;
+        QRegularExpression pattern;
         QTextCharFormat format;
     };
     QVector<HighlightingRule> highlightingRules;

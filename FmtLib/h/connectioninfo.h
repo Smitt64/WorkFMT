@@ -3,13 +3,15 @@
 
 #include <QtCore>
 #include <QSqlDatabase>
+#include <QSqlDriver>
 #include <QColor>
 #include <QIcon>
 #include "fmtlib_global.h"
 
 class FmtTablesModel;
-class FMTLIBSHARED_EXPORT ConnectionInfo
+class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
 {
+    Q_OBJECT
     /// @private
     friend class FmtTablesModel;
     /// @private
@@ -30,6 +32,7 @@ public:
 
     FmtTablesModel *tablesModel();
     QSqlDatabase db();
+    QSqlDriver *driver();
 
     /**
      * @brief Устанавливает имя схемы
@@ -61,6 +64,13 @@ public:
 
     bool openSqlite(const QString &filename);
 
+    FmtTablesModel *addModel();
+    FmtTablesModel *getModel(const int &index);
+    void deleteModel(const int &index);
+    int getFilterIndex(const int &index);
+    int lastIndex() const;
+    int modelCount() const;
+
 protected:
     QString m_Alias, m_SchemeName, m_Host, m_Service, m_User, m_Password, m_DSN;
     qint32 m_Port;
@@ -69,6 +79,9 @@ protected:
     QColor m_Color;
     QIcon m_Icon;
     ConnectionType m_Type;
+    QList<FmtTablesModel*> pModels;
+    QList<int> m_Index;
+    int Index;
 };
 
 #endif // CONNECTIONINFO_H

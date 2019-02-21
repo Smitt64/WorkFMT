@@ -1,0 +1,40 @@
+project                 = FmtLib
+description             = FmtLib Reference Documentation
+outputdir  =    help
+outputformats = HTML
+
+sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
+headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml"
+examples.imageextensions = "*.png *.jpeg *.jpg *.gif *.mng"
+
+sourcedirs = ../FmtScript src ../FmtLib/src
+headerdirs = ../FmtScript ../FmtLib/h ../FmtScript src
+
+HTML.stylesheets = style.css
+# the string that actually includes the CSS into documentation file
+HTML.headerstyles = "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\"/>\n"
+# what to append to every page after header
+HTML.postheader = "<p class=\"header\"><small>[My awesome documentation]</small></p><hr/>"
+# what to append to every page after the content
+HTML.footer = "<hr/><p class=\"footer\"><small>[some footer and whatnot information]</small></p>"
+
+sourceencoding = UTF-8
+outputencoding = UTF-8
+
+qhp.FmtLib.file                = fmt.qhp
+qhp.FmtLib.namespace           = ru.FmtLib.core
+qhp.FmtLib.virtualFolder       = fmtdoc
+qhp.FmtLib.indexTitle          = FmtLib Reference Documentation
+qhp.FmtLib.indexRoot           =
+qhp.FmtLib.extraFiles          = style.css
+#qhp.FmtLib.subprojects         = classes overviews examples
+#qhp.FmtLib.subprojects.classes.title = Classes
+#qhp.FmtLib.subprojects.classes.indexTitle = Qt's Classes
+#qhp.FmtLib.subprojects.classes.selectors = class
+#qhp.FmtLib.subprojects.overviews.title = Overviews
+#qhp.FmtLib.subprojects.overviews.indexTitle = All Overviews and HOWTOs
+#qhp.FmtLib.subprojects.overviews.selectors = fake:page,group,module
+#qhp.FmtLib.subprojects.examples.title = Tutorials and Examples
+#qhp.FmtLib.subprojects.examples.indexTitle = Qt Examples
+#qhp.FmtLib.subprojects.examples.selectors = fake:example

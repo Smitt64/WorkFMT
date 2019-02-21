@@ -23,13 +23,15 @@ class FMTLIBSHARED_EXPORT FmtErrors : public QAbstractItemModel
     Q_PROPERTY(qint32 errorsCount READ errorsCount)
     Q_PROPERTY(qint32 warningsCount READ warningsCount)
 public:
-    enum
+    enum FmtErrorType
     {
         fmtet_Error = 0,
         fmtet_Warning,
         fmtet_Info
     };
+    Q_ENUM(FmtErrorType)
     explicit FmtErrors(QObject *parent = 0);
+    virtual ~FmtErrors();
     void appendError(const QString &text, const qint16 &type = fmtet_Error, const QDateTime &dateTime = QDateTime());
     void appendMessage(const QString &text, const QDateTime &dateTime = QDateTime());
 
@@ -43,6 +45,9 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
 signals:
+    void errorsCountChanged(quint32);
+    void warningsCountChanged(quint32);
+    void infoCountChanged(quint32);
 
 public slots:
     bool hasErrors();
@@ -61,6 +66,7 @@ public slots:
     void clear();
 
 private:
+    quint32 m_errorsCount, m_warningsCount, m_infoCount;
     QList<FmtErrorStruct> m_errors;
     QList<FmtErrorStruct>::iterator m_Iterator;
 };

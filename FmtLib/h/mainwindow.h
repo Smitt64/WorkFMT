@@ -16,6 +16,7 @@ class FmtWorkWindow;
 class TreeComboBox;
 class SubWindowsModel;
 class WindowsComboAction;
+class FmtTableListDelegate;
 class FMTLIBSHARED_EXPORT MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -57,8 +58,17 @@ private slots:
     void CopyTableTo();
     void RsExpExportDir();
     void UnloadDbf();
+    void LoadDbf();
     void UnloadSqlite();
     void OpenConnection();
+    void RemoveFmtTable();
+    void LoggingSettings();
+    void EditContent();
+    void GenCreateTableScript();
+    void GenModifyTableFields();
+    void GenAddFiledsScript();
+    void GenDeleteFiledsScript();
+    void OnTableChangeUpdtList();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
@@ -70,13 +80,21 @@ private:
     void UpdateActions();
     void CreateWindowsCombo();
     void CreateViewMenu();
+    void CreateSearchToolBar();
+    void SetActiveFmtWindow(QMdiSubWindow *wnd);
+    QMdiSubWindow *hasTableWindow(const QString &tableName);
+    QMdiSubWindow *hasTableWindow(const FmtRecId &tableID);
     QAction *CreateConnectionActio(const QString &ShemeName, ConnectionInfo *info);
     void tablesContextMenu(QContextMenuEvent *event, QListView *view);
-    QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table);
+    QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
     Ui::MainWindow *ui;
     TablesDock *pTablesDock;
     QMdiArea *pMdi;
 
+    QLineEdit *pSearchLine;
+    QToolBar *pSearch;
+    FmtTableListDelegate *pTableListDelegate;
+    QShortcut *pFindShortcut;
     //QUndoView *pUndoView;
 
     TreeComboBox *pWindowsComboBox;
@@ -84,10 +102,12 @@ private:
     QMap<ConnectionInfo*, WorkWindowList> m_Windows;
     QList<ConnectionInfo*> m_pConnections;
 
-    QAction *actionEdit, *actionExport;
+    QAction *actionEdit, *actionExport, *actionDeleteTable;
     QToolButton *toolConnect;
     QMenu *toolConnectMenu;
     QActionGroup *m_ConnectionsGroup;
+
+    QPushButton *pLogButton;
 
     SubWindowsModel *pWindowsModel;
 };

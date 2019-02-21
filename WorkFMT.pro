@@ -9,9 +9,13 @@ SUBDIRS += \
     FmtLib \
     WorkFMT \
     DBFileTool \
-    FmtDbgHelp
+    FmtDbgHelp \
+    FmtScript \
+    FmtScriptTest
 
 WorkFMT.depends = FmtLib
+FmtScript.depends = FmtLib
+FmtScriptTest.depends = FmtLib FmtScript
 DBFileTool.depends = FmtLib
 
 RESOURCES += \

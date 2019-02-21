@@ -63,6 +63,10 @@ void ErrorDlg::setErrors(FmtErrors *e)
         if (e->hasErrors())
             ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
     }
+
+    connect(e, SIGNAL(errorsCountChanged(quint32)), SLOT(errorsCountChanged(quint32)));
+    connect(e, SIGNAL(warningsCountChanged(quint32)), SLOT(warningsCountChanged(quint32)));
+    connect(e, SIGNAL(infoCountChanged(quint32)), SLOT(infoCountChanged(quint32)));
 }
 
 void ErrorDlg::onActivated(const QModelIndex &index)
@@ -78,4 +82,19 @@ void ErrorDlg::setMessage(const QString &msg)
 QDialogButtonBox *ErrorDlg::buttons()
 {
     return ui->buttonBox;
+}
+
+void ErrorDlg::errorsCountChanged(const quint32 &value)
+{
+    ui->toolButtonError->setText(tr("Ошибки: %1").arg(value));
+}
+
+void ErrorDlg::warningsCountChanged(const quint32 &value)
+{
+    ui->toolButtonWarning->setText(tr("Предупреждения: %1").arg(value));
+}
+
+void ErrorDlg::infoCountChanged(const quint32 &value)
+{
+    ui->toolButtonMsg->setText(tr("Сообщения: %1").arg(value));
 }

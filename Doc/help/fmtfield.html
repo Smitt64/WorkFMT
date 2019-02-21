@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- fmtfield.cpp -->
+  <title>FmtField Class | FmtLib</title>
+<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body>
+<p class="header"><small>[My awesome documentation]</small></p><hr/><li>FmtField</li>
+<div class="sidebar">
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#properties">Properties</a></li>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#public-slots">Public Slots</a></li>
+<li class="level1"><a href="#signals">Signals</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">FmtField Class</h1>
+<!-- $$$FmtField-brief -->
+<p><a href="fmtfield.html">FmtField</a> класс, обеспечивающий работу с полем таблицы FMT <a href="#details">More...</a></p>
+<!-- @@@FmtField -->
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> Header:</td><td class="memItemRight bottomAlign"> <span class="preprocessor">#include &lt;FmtField&gt;</span>
+</td></tr></table></div><ul>
+<li><a href="fmtfield-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="properties"></a>
+<h2 id="properties">Properties</h2>
+<div class="table"><table class="propsummary">
+<tr><td class="topAlign"><ul>
+<li class="fn"><b><a href="fmtfield.html#Comment-prop">Comment</a></b> : QString</li>
+<li class="fn"><b><a href="fmtfield.html#Decpoint-prop">Decpoint</a></b> : qint32</li>
+<li class="fn"><b><a href="fmtfield.html#Hidden-prop">Hidden</a></b> : bool</li>
+<li class="fn"><b><a href="fmtfield.html#Id-prop">Id</a></b> : const quint32</li>
+<li class="fn"><b><a href="fmtfield.html#Index-prop">Index</a></b> : const qint32</li>
+<li class="fn"><b><a href="fmtfield.html#Name-prop">Name</a></b> : QString</li>
+<li class="fn"><b><a href="fmtfield.html#Offset-prop">Offset</a></b> : qint32</li>
+</ul></td><td class="topAlign"><ul>
+<li class="fn"><b><a href="fmtfield.html#Outlen-prop">Outlen</a></b> : qint32</li>
+<li class="fn"><b><a href="fmtfield.html#Size-prop">Size</a></b> : qint32</li>
+<li class="fn"><b><a href="fmtfield.html#TableId-prop">TableId</a></b> : const quint32</li>
+<li class="fn"><b><a href="fmtfield.html#Type-prop">Type</a></b> : qint32</li>
+<li class="fn"><b><a href="fmtfield.html#TypeIndex-prop">TypeIndex</a></b> : qint32</li>
+<li class="fn"><b><a href="fmtfield.html#UndecorateName-prop">UndecorateName</a></b> : const QString</li>
+</ul>
+</td></tr>
+</table></div>
+<a name="public-functions"></a>
+<h2 id="public-functions">Public Functions</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#FmtField">FmtField</a></b>(QObject *<i>parent</i> = 0)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Comment-prop">comment</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Decpoint-prop">decpoint</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Id-prop">id</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Index-prop">index</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Hidden-prop">isHidden</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#isStringType">isStringType</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#load">load</a></b>(const QSqlRecord &amp;<i>rec</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Name-prop">name</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Offset-prop">offset</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Outlen-prop">outlen</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Comment-prop">setComment</a></b>(const QString &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Decpoint-prop">setDecpoint</a></b>(const qint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Hidden-prop">setHidden</a></b>(const bool &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Name-prop">setName</a></b>(const QString &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Offset-prop">setOffset</a></b>(const qint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Outlen-prop">setOutlen</a></b>(const qint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Size-prop">setSize</a></b>(const qint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Type-prop">setType</a></b>(const qint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#TypeIndex-prop">setTypeIndex</a></b>(const qint32 &amp;<i>v</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Size-prop">size</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FmtTable *</td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#table">table</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> quint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#TableId-prop">tableId</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Type-prop">type</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> qint32 </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#TypeIndex-prop">typeIndex</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#UndecorateName-prop">undecorateName</a></b>() const</td></tr>
+</table></div>
+<a name="public-slots"></a>
+<h2 id="public-slots">Public Slots</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#getCommentSql">getCommentSql</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#getCppDecl">getCppDecl</a></b>(bool <i>funcPrm</i> = false) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#getCppTypeName">getCppTypeName</a></b>(bool <i>Short</i> = false) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#getOraDecl">getOraDecl</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#getOraDefaultVal">getOraDefaultVal</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#getOraName">getOraName</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#getOraTypeName">getOraTypeName</a></b>() const</td></tr>
+</table></div>
+<a name="signals"></a>
+<h2 id="signals">Signals</h2>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Comment-prop">commentChanged</a></b>(<i>QString</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Id-prop">idChanged</a></b>(<i>quint32</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Name-prop">nameChanged</a></b>(<i>QString</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Size-prop">sizeChanged</a></b>(<i>quint32</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#TableId-prop">tableIdChanged</a></b>(<i>quint32</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="fmtfield.html#Type-prop">typeChanged</a></b>(<i>quint32</i>)</td></tr>
+</table></div>
+<a name="details"></a>
+<!-- $$$FmtField-description -->
+<div class="descr">
+<h2 id="details">Detailed Description</h2>
+<p><a href="fmtfield.html">FmtField</a> класс, обеспечивающий работу с полем таблицы FMT</p>
+</div>
+<!-- @@@FmtField -->
+<div class="prop">
+<h2>Property Documentation</h2>
+<!-- $$$Comment-prop$$$comment$$$setCommentconstQString&$$$commentChangedQString -->
+<h3 class="fn" id="Comment-prop"><a name="Comment-prop"></a><span class="name">Comment</span> : <span class="type">QString</span></h3>
+<p>Хранит информацию поля <a href="fmtfield.html">FmtField</a>.T_COMMENT. Содержит описание поля</p>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>comment</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setComment</b></span>(const QString &amp;<i>v</i>)</td></tr>
+</table></div>
+<p><b>Notifier signal:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>commentChanged</b></span>(<i>QString</i>)</td></tr>
+</table></div>
+<!-- @@@Comment -->
+<!-- $$$Decpoint-prop$$$decpoint$$$setDecpointconstqint32& -->
+<h3 class="fn" id="Decpoint-prop"><a name="Decpoint-prop"></a><span class="name">Decpoint</span> : <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>decpoint</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setDecpoint</b></span>(const qint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@Decpoint -->
+<!-- $$$Hidden-prop$$$isHidden$$$setHiddenconstbool& -->
+<h3 class="fn" id="Hidden-prop"><a name="Hidden-prop"></a><span class="name">Hidden</span> : <span class="type">bool</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> bool </td><td class="memItemRight bottomAlign"><span class="name"><b>isHidden</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setHidden</b></span>(const bool &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@Hidden -->
+<!-- $$$Id-prop$$$id$$$idChangedquint32 -->
+<h3 class="fn" id="Id-prop"><a name="Id-prop"></a><span class="name">Id</span> : const <span class="type">quint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>id</b></span>() const</td></tr>
+</table></div>
+<p><b>Notifier signal:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>idChanged</b></span>(<i>quint32</i>)</td></tr>
+</table></div>
+<!-- @@@Id -->
+<!-- $$$Index-prop$$$index -->
+<h3 class="fn" id="Index-prop"><a name="Index-prop"></a><span class="name">Index</span> : const <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>index</b></span>() const</td></tr>
+</table></div>
+<!-- @@@Index -->
+<!-- $$$Name-prop$$$name$$$setNameconstQString&$$$nameChangedQString -->
+<h3 class="fn" id="Name-prop"><a name="Name-prop"></a><span class="name">Name</span> : <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>name</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setName</b></span>(const QString &amp;<i>v</i>)</td></tr>
+</table></div>
+<p><b>Notifier signal:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>nameChanged</b></span>(<i>QString</i>)</td></tr>
+</table></div>
+<!-- @@@Name -->
+<!-- $$$Offset-prop$$$offset$$$setOffsetconstqint32& -->
+<h3 class="fn" id="Offset-prop"><a name="Offset-prop"></a><span class="name">Offset</span> : <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>offset</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setOffset</b></span>(const qint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@Offset -->
+<!-- $$$Outlen-prop$$$outlen$$$setOutlenconstqint32& -->
+<h3 class="fn" id="Outlen-prop"><a name="Outlen-prop"></a><span class="name">Outlen</span> : <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>outlen</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setOutlen</b></span>(const qint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@Outlen -->
+<!-- $$$Size-prop$$$size$$$setSizeconstqint32&$$$sizeChangedquint32 -->
+<h3 class="fn" id="Size-prop"><a name="Size-prop"></a><span class="name">Size</span> : <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>size</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setSize</b></span>(const qint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<p><b>Notifier signal:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>sizeChanged</b></span>(<i>quint32</i>)</td></tr>
+</table></div>
+<!-- @@@Size -->
+<!-- $$$TableId-prop$$$tableId$$$tableIdChangedquint32 -->
+<h3 class="fn" id="TableId-prop"><a name="TableId-prop"></a><span class="name">TableId</span> : const <span class="type">quint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> quint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>tableId</b></span>() const</td></tr>
+</table></div>
+<p><b>Notifier signal:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>tableIdChanged</b></span>(<i>quint32</i>)</td></tr>
+</table></div>
+<!-- @@@TableId -->
+<!-- $$$Type-prop$$$type$$$setTypeconstqint32&$$$typeChangedquint32 -->
+<h3 class="fn" id="Type-prop"><a name="Type-prop"></a><span class="name">Type</span> : <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>type</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setType</b></span>(const qint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<p><b>Notifier signal:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>typeChanged</b></span>(<i>quint32</i>)</td></tr>
+</table></div>
+<!-- @@@Type -->
+<!-- $$$TypeIndex-prop$$$typeIndex$$$setTypeIndexconstqint32& -->
+<h3 class="fn" id="TypeIndex-prop"><a name="TypeIndex-prop"></a><span class="name">TypeIndex</span> : <span class="type">qint32</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> qint32 </td><td class="memItemRight bottomAlign"><span class="name"><b>typeIndex</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setTypeIndex</b></span>(const qint32 &amp;<i>v</i>)</td></tr>
+</table></div>
+<!-- @@@TypeIndex -->
+<!-- $$$UndecorateName-prop$$$undecorateName -->
+<h3 class="fn" id="UndecorateName-prop"><a name="UndecorateName-prop"></a><span class="name">UndecorateName</span> : const <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<div class="table"><table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QString </td><td class="memItemRight bottomAlign"><span class="name"><b>undecorateName</b></span>() const</td></tr>
+</table></div>
+<!-- @@@UndecorateName -->
+</div>
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$FmtField[overload1]$$$FmtFieldQObject* -->
+<h3 class="fn" id="FmtField"><a name="FmtField"></a>FmtField::<span class="name">FmtField</span>(<span class="type">QObject</span> *<i>parent</i> = 0)</h3>
+<p>Default constructs an instance of FmtField.</p><!-- @@@FmtField -->
+<!-- $$$getCommentSql[overload1]$$$getCommentSql -->
+<h3 class="fn" id="getCommentSql"><a name="getCommentSql"></a><code>[slot] </code><span class="type">QString</span> FmtField::<span class="name">getCommentSql</span>() const</h3>
+<!-- @@@getCommentSql -->
+<!-- $$$getCppDecl[overload1]$$$getCppDeclbool -->
+<h3 class="fn" id="getCppDecl"><a name="getCppDecl"></a><code>[slot] </code><span class="type">QString</span> FmtField::<span class="name">getCppDecl</span>(<span class="type">bool</span> <i>funcPrm</i> = false) const</h3>
+<p>Возвращает описание поля в с++. <code>funcPrm</code> установлен в true, функция вернет описание поля, если бы оно использовалось как параметр функции:</p>
+<pre class="cpp">var pConnection <span class="operator">=</span> CreateConnection(<span class="string">&quot;user&quot;</span><span class="operator">,</span> <span class="string">&quot;password&quot;</span><span class="operator">,</span> <span class="string">&quot;DSN&quot;</span>);
+var table <span class="operator">=</span> <span class="keyword">new</span> CJsFmtTable(pConnection);
+
+var fld <span class="operator">=</span> table<span class="operator">.</span>addField(<span class="string">&quot;SimpleString&quot;</span><span class="operator">,</span> CJsFmtTable<span class="operator">.</span>ftSTRING);
+fld<span class="operator">.</span>Size <span class="operator">=</span> <span class="number">50</span>;
+print(fld<span class="operator">.</span>getCppDecl());
+print(fld<span class="operator">.</span>getCppDecl(<span class="keyword">true</span>));</pre>
+<p>Вывод:</p>
+<pre class="cpp">SimpleString<span class="operator">[</span><span class="number">50</span><span class="operator">]</span>
+<span class="operator">*</span>SimpleString</pre>
+<!-- @@@getCppDecl -->
+<!-- $$$getCppTypeName[overload1]$$$getCppTypeNamebool -->
+<h3 class="fn" id="getCppTypeName"><a name="getCppTypeName"></a><code>[slot] </code><span class="type">QString</span> FmtField::<span class="name">getCppTypeName</span>(<span class="type">bool</span> <i>Short</i> = false) const</h3>
+<p>Возвращает тип поля в с++.</p>
+<pre class="cpp">var pConnection <span class="operator">=</span> CreateConnection(<span class="string">&quot;user&quot;</span><span class="operator">,</span> <span class="string">&quot;password&quot;</span><span class="operator">,</span> <span class="string">&quot;DSN&quot;</span>);
+var table <span class="operator">=</span> <span class="keyword">new</span> CJsFmtTable(pConnection);
+
+var fld <span class="operator">=</span> table<span class="operator">.</span>addField(<span class="string">&quot;SimpleField&quot;</span><span class="operator">,</span> CJsFmtTable<span class="operator">.</span>ftLONG);
+print(fld<span class="operator">.</span>getCppTypeName());
+print(fld<span class="operator">.</span>getCppTypeName(<span class="keyword">true</span>));</pre>
+<p>Вывод:</p>
+<pre class="cpp">db_int32
+int32</pre>
+<!-- @@@getCppTypeName -->
+<!-- $$$getOraDecl[overload1]$$$getOraDecl -->
+<h3 class="fn" id="getOraDecl"><a name="getOraDecl"></a><code>[slot] </code><span class="type">QString</span> FmtField::<span class="name">getOraDecl</span>() const</h3>
+<p>Возвращает описание поля в БД Oracle.</p>
+<pre class="cpp">var fld <span class="operator">=</span> table<span class="operator">.</span>addField(<span class="string">&quot;Simple&quot;</span><span class="operator">,</span> CJsFmtTable<span class="operator">.</span>ftLONG);
+print(fld<span class="operator">.</span>getOraDecl());</pre>
+<p>Вывод:</p>
+<pre class="cpp">NUMBER(<span class="number">10</span>)</pre>
+<!-- @@@getOraDecl -->
+<!-- $$$getOraDefaultVal[overload1]$$$getOraDefaultVal -->
+<h3 class="fn" id="getOraDefaultVal"><a name="getOraDefaultVal"></a><code>[slot] </code><span class="type">QString</span> FmtField::<span class="name">getOraDefaultVal</span>() const</h3>
+<p>Возвращает значение по умолчанию для поля в БД Oracle.</p>
+<pre class="cpp">var fld <span class="operator">=</span> table<span class="operator">.</span>addField(<span class="string">&quot;Simple&quot;</span><span class="operator">,</span> CJsFmtTable<span class="operator">.</span>ftDATE);
+print(fld<span class="operator">.</span>getOraDefaultVal());</pre>
+<p>Вывод:</p>
+<pre class="cpp">TO_DATE(<span class="char">''</span><span class="number">01</span><span class="operator">/</span><span class="number">01</span><span class="operator">/</span><span class="number">0001</span><span class="char">''</span><span class="operator">,</span> <span class="char">''</span>MM<span class="operator">/</span>DD<span class="operator">/</span>YYYY<span class="char">''</span>)</pre>
+<!-- @@@getOraDefaultVal -->
+<!-- $$$getOraName[overload1]$$$getOraName -->
+<h3 class="fn" id="getOraName"><a name="getOraName"></a><code>[slot] </code><span class="type">QString</span> FmtField::<span class="name">getOraName</span>() const</h3>
+<!-- @@@getOraName -->
+<!-- $$$getOraTypeName[overload1]$$$getOraTypeName -->
+<h3 class="fn" id="getOraTypeName"><a name="getOraTypeName"></a><code>[slot] </code><span class="type">QString</span> FmtField::<span class="name">getOraTypeName</span>() const</h3>
+<p>Возвращает наименование типа поля в БД Oracle.</p>
+<pre class="cpp">var fld <span class="operator">=</span> table<span class="operator">.</span>addField(<span class="string">&quot;Simple&quot;</span><span class="operator">,</span> CJsFmtTable<span class="operator">.</span>ftDATE);
+print(fld<span class="operator">.</span>getOraTypeName());</pre>
+<p>Вывод:</p>
+<pre class="cpp">DATE</pre>
+<!-- @@@getOraTypeName -->
+<!-- $$$isStringType[overload1]$$$isStringType -->
+<h3 class="fn" id="isStringType"><a name="isStringType"></a><span class="type">bool</span> FmtField::<span class="name">isStringType</span>() const</h3>
+<!-- @@@isStringType -->
+<!-- $$$load[overload1]$$$loadconstQSqlRecord& -->
+<h3 class="fn" id="load"><a name="load"></a><span class="type">void</span> FmtField::<span class="name">load</span>(const <span class="type">QSqlRecord</span> &amp;<i>rec</i>)</h3>
+<!-- @@@load -->
+<!-- $$$table[overload1]$$$table -->
+<h3 class="fn" id="table"><a name="table"></a><span class="type">FmtTable</span> *FmtField::<span class="name">table</span>()</h3>
+<!-- @@@table -->
+</div>
+<hr/><p class="footer"><small>[some footer and whatnot information]</small></p></body>
+</html>

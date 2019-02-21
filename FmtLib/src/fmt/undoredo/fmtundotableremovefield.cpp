@@ -1,5 +1,4 @@
 #include "fmtundotableremovefield.h"
-#include "fmttable.h"
 #include "fmtfield.h"
 
 FmtUndoTableRemoveField::FmtUndoTableRemoveField(FmtTable *table, QUndoCommand *parent) :
@@ -19,7 +18,7 @@ QByteArray *FmtUndoTableRemoveField::storedDataPtr()
     return &m_StoredData;
 }
 
-void FmtUndoTableRemoveField::setFieldRow(const quint16 &row)
+void FmtUndoTableRemoveField::setFieldRow(const FmtFldIndex &row)
 {
     m_Row = row;
 }

@@ -5,11 +5,18 @@
 #include <QComboBox>
 #include <QApplication>
 #include <QLineEdit>
+#include <QTextDocument>
+#include <QAbstractTextDocumentLayout>
 
 #define DEFAULT_HEIGHT 25
 
-FmtFieldsDelegate::FmtFieldsDelegate(QWidget *parent) :
+FmtFieldsDelegate::FmtFieldsDelegate(QObject *parent) :
     QStyledItemDelegate(parent)
+{
+
+}
+
+FmtFieldsDelegate::~FmtFieldsDelegate()
 {
 
 }
@@ -21,7 +28,12 @@ QSize FmtFieldsDelegate::sizeHint(const QStyleOptionViewItem &option, const QMod
 
 void FmtFieldsDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+    FmtFildsModel *pModel = (FmtFildsModel*)index.model();
+    QStyleOptionViewItemV4 optionV4 = option;
     QStyleOptionViewItem opt = option;
+    initStyleOption(&optionV4, index);
+    QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+
     if (index.column() == FmtFildsModel::fld_Custom)
     {
         QStyleOptionButton button;
@@ -42,7 +54,31 @@ void FmtFieldsDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
        painter->fillRect(option.rect, Qt::lightGray);
     }
 
-    QStyledItemDelegate::paint(painter, opt, index);
+    QTextDocument doc;
+    doc.setDefaultFont(optionV4.font);
+
+    QVariant text;
+    if(index.column() == FmtFildsModel::fld_Name || index.column() == FmtFildsModel::fld_Comment && !m_HighlightText.isEmpty())
+        text = pModel->ProcessHighlightFields(index, FmtFildsModel::FindSubTextRole, m_HighlightText);
+    else
+        text = optionV4.text;
+
+    doc.setHtml(text.toString());
+    optionV4.text = QString();
+    style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+
+    QAbstractTextDocumentLayout::PaintContext ctx;
+
+    // Highlighting text if item is selected
+    /*if (optionV4.state & QStyle::State_Selected)
+        ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));*/
+
+    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+    painter->save();
+    painter->translate(textRect.topLeft());
+    painter->setClipRect(textRect.translated(-textRect.topLeft()));
+    doc.documentLayout()->draw(painter, ctx);
+    painter->restore();
 }
 
 QWidget *FmtFieldsDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -100,4 +136,9 @@ void FmtFieldsDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     }
     else
         QStyledItemDelegate::setModelData(editor, model, index);
+}
+
+void FmtFieldsDelegate::setHighlightText(const QString &str)
+{
+    m_HighlightText = str;
 }

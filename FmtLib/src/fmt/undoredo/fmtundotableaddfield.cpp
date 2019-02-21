@@ -6,22 +6,23 @@ FmtUndoTableAddField::FmtUndoTableAddField(FmtTable *table, QUndoCommand *parent
     QUndoCommand(parent)
 {
     pTable = table;
-    pField = NULL;
+    pField = Q_NULLPTR;
     m_Befor = -1;
     m_Row = 0;
 }
 
-void FmtUndoTableAddField::setNameAndType(const QString &name, const qint16 &type)
+void FmtUndoTableAddField::setNameAndType(const QString &name, const FmtFldType &type)
 {
     m_Name = name;
     m_Type = type;
 
+    QString mtypename = fmtTypeNameForType(type);
     setText(QObject::tr("Добавлено поле типа %2: %1")
             .arg(m_Name)
-            .arg(fmtTypeNameForType(type)));
+            .arg(mtypename));
 }
 
-void FmtUndoTableAddField::setInsertBefor(const qint32 &befor)
+void FmtUndoTableAddField::setInsertBefor(const FmtFldIndex &befor)
 {
     m_Befor = befor;
 }
@@ -31,7 +32,7 @@ void FmtUndoTableAddField::undo()
     pTable->setIgnoreUndoStack(true);
     pTable->removeInsertedFieldPrivate(m_Row);
     pTable->setIgnoreUndoStack(false);
-    pField = NULL;
+    pField = Q_NULLPTR;
 }
 
 void FmtUndoTableAddField::redo()

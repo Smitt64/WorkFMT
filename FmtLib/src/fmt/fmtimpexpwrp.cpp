@@ -258,7 +258,7 @@ void FmtImpExpWrp::importFile(const QString &file)
         m_Protocol = d.absolutePath() + "/protocol.out";
         pFmtXml->setWorkingDirectory(m_TempDir.path());
         qCInfo(logCore()) << "FmtXml import file started: " << programName() << arg;
-        pFmtXml->start(programName(), arg);
+        CoreStartProcess(pFmtXml, programName(), arg, false);
     }
 }
 
@@ -283,7 +283,7 @@ void FmtImpExpWrp::exportTable(const QString &dir)
         m_Protocol = dir + "/protocol.out";
         pFmtXml->setWorkingDirectory(m_TempDir.path());
         qCInfo(logCore()) << "FmtXml export table started: " << programName() << arg;
-        pFmtXml->start(programName(), arg);
+        CoreStartProcess(pFmtXml, programName(), arg, false);
     }
 }
 

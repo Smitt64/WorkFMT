@@ -25,10 +25,8 @@ public:
 
 private slots:
     void onPageChanged(const int &id);
-    void onTextChanged();
 
 private:
-    int GetTypeSize(const QString &str, int *size);
     QWizardPage *createRichTextPage();
     QWizardPage *createFmtWorkPage();
     QWizardPage *createFinishPage();
@@ -37,7 +35,6 @@ private:
     QWizardPage *pFmtWorkPage;
     QWizardPage *pFinishPage;
 
-    QTextEdit *pDocument;
     QSharedPointer<FmtTable> pFmtTable;
     FmtWorkWindow *pWorkWnd;
 
@@ -45,11 +42,6 @@ private:
     QCheckBox *CreateTableCheck;
     QCheckBox *CreateIndexCheck;
 
-    QCheckBox *m_IngnoreNumbersCol, *m_IgnoreTitleRow;
-    QLabel *pNameLabel, *pTypeLabel, *pCommentLabel;
-    QComboBox *pNameCombo, *pTypeCombo, *pCommentCombo;
-
-    QStandardItemModel m_ColumnsItems;
 };
 
 #endif // FMTFROMRICHTEXT_H

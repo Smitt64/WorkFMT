@@ -7,6 +7,7 @@
 #include <QToolButton>
 #include "fmttable.h"
 #include "fmtlib_global.h"
+#include "mdisubinterface.h"
 
 namespace Ui {
 class FmtWorkWindow;
@@ -18,28 +19,44 @@ class FmtFieldsTableView;
 class FmtIndexTreeView;
 class FmtWorkWndGen;
 class UndoListPopup;
+class LineEditAction;
 class QMdiSubWindow;
-class FMTLIBSHARED_EXPORT FmtWorkWindow : public QDialog
+class QShortcut;
+class FmtFieldsTableHeaderDelegate;
+class FMTLIBSHARED_EXPORT FmtWorkWindow : public MdiSubInterface
 {
     Q_OBJECT
 
 public:
-    explicit FmtWorkWindow(QWidget *parent = 0);
-    ~FmtWorkWindow();
+    enum FmtWinTabs
+    {
+        FmtWinTabs_Columns = 0,
+        FmtWinTabs_Index,
+        FmtWinTabs_Code,
+    };
 
-    void setFmtTable(QSharedPointer<FmtTable> &table);
+    explicit FmtWorkWindow(QWidget *parent = Q_NULLPTR);
+    virtual ~FmtWorkWindow();
+
+    void setFmtTable(FmtSharedTablePtr &table);
+    FmtSharedTablePtr table() const { return pTable; }
     void rebuildOffsets();
 
     void setDialogButtonsVisible(bool f);
     void setInitButtonVisible(bool f);
 
-    void setParentWnd(QMdiSubWindow *wnd);
-
-    ConnectionInfo *connection();
+    ConnectionInfo *connection() const;
 
     QUndoStack *tableUndoStack();
 
 signals:
+
+public slots:
+    void EditContent();
+    void GenDeleteFiledsScript();
+    void GenAddFiledsScript();
+    void GenModifyTableFields();
+    void GenCreateTableScript();
 
 private slots:
     void indexModelReseted();
@@ -47,6 +64,8 @@ private slots:
     void AddIndex();
     void Apply();
     void ExportXml();
+    void UnloadToDbf();
+    void LoadFromDbf();
     void InitDB();
     void FillIndecesList();
     void FieldAdded(FmtField *fld);
@@ -63,6 +82,13 @@ private slots:
     void undoActionChanged();
     void isTemporaryTableChanged(bool value);
 
+    void TabCloseRequested(int index);
+    void RemoveTableFields();
+    void OpenScriptEditorWindow();
+
+    void AddFieldsToEnd();
+    void InsertFieldsBefore();
+
 protected:
     void paintEvent(QPaintEvent *paintEvent);
 
@@ -70,12 +96,17 @@ private:
     int CheckAppy();
     int SaveTable();
     void setupUndoRedo();
+    void setupFind();
+    void SetUnclosableSystemTabs();
+    int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList);
+    void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true);
+    void SetupActionsMenu();
     Ui::FmtWorkWindow *ui;
-    QMdiSubWindow *pParentWnd;
     QSharedPointer<FmtTable> pTable;
 
     FmtFieldsTableView *pTableView;
     FmtIndexTreeView   *pTreeView;
+    FmtFieldsTableHeaderDelegate *pTableHeaderDelegate;
 
     QDataWidgetMapper *pMapper;
     FmtFieldsDelegate *pFieldsDelegate;
@@ -84,19 +115,23 @@ private:
     QSpacerItem *pHorizontalSpacer;
     QPushButton *pAddIndex;
 
-    QMenu *pCopyMenu, *pActionsMenu;
-    QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets;
-
+    QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu;
+    QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_unloadDbf, *m_loadDbf, *m_MassRemoveFields;
+    QAction *m_AddFieldsToEnd, *m_InsertFields, *m_EditContent;
+    QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     FmtWorkWndGen *pCodeGenWidget;
 
     QFrame *pUndoRedoBtnContainer;
     QHBoxLayout *pUndoRedoLayout;
-    QToolButton *pUndoBtn, *pRedoBtn;
+    QToolButton *pUndoBtn, *pRedoBtn, *pFindBtn;
 
     QAction *pUndoAction, *pRedoAction, *pUndoActionWrp;
     UndoListPopup *pUndoPopup;
+    LineEditAction *pFindLineEdit;
     QIcon undoDisabled;
-    QMenu *pUndoMenu;
+    QMenu *pUndoMenu, *pFindMenu;
+
+    QShortcut *pFindShortcut;
 
     QColor dcolor;
     QColor color;

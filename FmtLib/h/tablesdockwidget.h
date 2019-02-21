@@ -11,12 +11,17 @@ class FMTLIBSHARED_EXPORT TablesDockWidget : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit TablesDockWidget(QWidget *parent = 0);
+    explicit TablesDockWidget(QWidget *parent = Q_NULLPTR);
     void setModel(FmtTablesModel *model);
 
     QItemSelectionModel *selection();
     void setSelectionMode(const QAbstractItemView::SelectionMode &mode);
     QListView *listView();
+
+    bool isFiltered();
+    void updateList();
+
+    void applyFilter(const QString &str);
 
 private slots:
     void filterTriggered(bool checked);

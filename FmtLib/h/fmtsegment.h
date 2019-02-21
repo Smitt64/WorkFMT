@@ -32,17 +32,7 @@ public:
 
     virtual QVariant data(int column, int role = Qt::DisplayRole) const;
     virtual bool setData(int column, const QVariant &value);
-
     virtual void insertItem(int after);
-
-    FmtField *field();
-    void setField(FmtField *fld);
-    void setField(const quint32 &fld);
-    quint16 fieldIndex();
-
-    FmtIndex *index();
-    FmtTable *table();
-    quint16 segmentNumber();
 
     bool isReal() const;
     bool isNotNull() const;
@@ -63,6 +53,16 @@ public:
 
     void copyTo(FmtSegment *other);
 
+public slots:
+    FmtField *field();
+    void setField(FmtField *fld);
+    void setField(const quint32 &fld);
+    quint16 fieldIndex();
+
+    FmtIndex *index();
+    FmtTable *table();
+    quint16 segmentNumber();
+
 signals:
     void isRealChanged(bool);
     void isNotNullChanged(bool);
@@ -77,7 +77,7 @@ private:
     void setDataPrivate(const QVariant &value, const quint16 &column);
     FmtField *pFld;
     bool m_fSetIgnoreUndoStack;
-    quint32 m_Flags;
+    FmtNumber10 m_Flags;
     bool m_IsReal;
     QString m_Comment;
 };

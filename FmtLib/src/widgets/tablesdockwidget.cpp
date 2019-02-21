@@ -6,9 +6,15 @@
 #include <QtSql>
 #include <QInputDialog>
 
-TablesDockWidget::TablesDockWidget(QWidget *parent) : QMainWindow(parent)
+static int Index = 0;
+
+TablesDockWidget::TablesDockWidget(QWidget *parent) :
+    QMainWindow(parent),
+    pInitTableAction(Q_NULLPTR),
+    pRebuildOffsets(Q_NULLPTR),
+    pFilterByGroup(Q_NULLPTR)
 {
-    pModel = NULL;
+    pModel = Q_NULLPTR;
     pTables = new QListView(this);
     pTables->setResizeMode(QListView::Adjust);
     pTables->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -49,7 +55,9 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) : QMainWindow(parent)
     pFilterMenu->addSeparator();
     pMuiltyLineText = pFilterMenu->addAction(QIcon(":/img/text.png"), tr("Из многострочногго текста"), this, SLOT(fromMuiltyLineText()));
 
-    setObjectName("TablesDock");
+    Index ++;
+    QString name = QString("TablesDock%1").arg(Index);
+    setObjectName(name);
 
     pFilterAction->setEnabled(false);
     pFilterEdit->setEnabled(false);
@@ -173,6 +181,11 @@ QListView *TablesDockWidget::listView()
     return pTables;
 }
 
+bool TablesDockWidget::isFiltered()
+{
+    return pFilterAction->isChecked();
+}
+
 void TablesDockWidget::filterByGroupCombo(const int &id)
 {
     QSharedPointer<QSqlQuery> q = TablesGroupProvider::instance()->getQueryForSeletGroup(id);
@@ -283,4 +296,18 @@ void TablesDockWidget::createGroup()
             AddTablesToGroup(uid);
         }
     }
+}
+
+void TablesDockWidget::updateList()
+{
+    pModel->updateFmtList();
+}
+
+void TablesDockWidget::applyFilter(const QString &str)
+{
+    pFilterEdit->setText(str);
+    filterTriggered(true);
+
+    if (!str.isEmpty())
+        pFilterAction->setChecked(true);
 }

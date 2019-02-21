@@ -17,9 +17,11 @@ public:
 
 signals:
     void started();
+    void startError();
 
 public slots:
     void unload(const QString &ExportDir, const QString &dbt);
+    void load(const QString &dbt);
     void stop();
 
 private slots:

@@ -116,52 +116,63 @@ enum FmtBlobType
 };
 
 class FmtTable;
+class FmtField;
 class ConnectionInfo;
 
-void FmtInit();
-bool hasTemporaryFlag(const quint32 &flag);
-bool hasRecordFlag(const quint32 &flag);
+FMTLIBSHARED_EXPORT void FmtInit();
+bool hasTemporaryFlag(const FmtNumber10 &flag);
+bool hasRecordFlag(const FmtNumber10 &flag);
 
-int ExecuteQuery(QSqlQuery *query);
-int ExecuteQuery(const QString &query, QSqlDatabase &db = QSqlDatabase());
-int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase &db = QSqlDatabase());
+int ExecuteQuery(QSqlQuery *query, QString *err = Q_NULLPTR);
+int ExecuteQuery(const QString &query, QSqlDatabase db = QSqlDatabase(), QString *err = Q_NULLPTR);
+int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase db = QSqlDatabase());
 
 QString ConfigOraFilePath();
 
 QString PlusButtonCss();
 QString MinusButtonCss();
+QString AddTabButtonCss();
 QString CheckSymbol();
 QString NullString(const int &index);
 
 QSettings *settings();
 
-QStringList fmtTypes();
-QString fmtTypeForId(const quint32 &id);
-QString fmtOracleDecl(const quint32 &Type);
-QString fmtCppStructTypeName(const quint32 &Type);
-bool fmtTypeCanHaveCustomSize(const quint32 &Type);
+FMTLIBSHARED_EXPORT QStringList fmtTypes();
+FMTLIBSHARED_EXPORT QString fmtTypeForId(const FmtFldType &id);
+FMTLIBSHARED_EXPORT QString fmtOracleDecl(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtCppStructTypeName(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtCppStructDbTypeName(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtCppStructDbBaseTypeName(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtRslTypeName(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtRslValueName(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT bool fmtTypeCanHaveCustomSize(const FmtFldType &Type);
 
 quint32 fmtTypeIndexForId(const quint32 &id);
-quint16 fmtTypeFromIndex(const quint32 &id);
-quint32 fmtIndexForType(const quint32 &id);
+FmtFldType fmtTypeFromIndex(const FmtFldIndex &id);
+FmtFldIndex fmtIndexForType(const FmtFldType &id);
 quint16 fmtIndexFromFmtType(const quint32 &id);
-QString fmtTypeNameForType(const quint32 &type);
+QString fmtTypeNameForType(const FmtFldType &type);
 
-quint16 fmtTypeSize(const quint32 &Type);
-quint16 fmtTypeIndexSize(const quint32 &id);
+quint16 fmtTypeSize(const FmtFldType &Type);
+quint16 fmtTypeIndexSize(const FmtFldType &id);
 
 int trn(QSqlDatabase &db, std::function<int(void)> func);
 
 QString DatasourceFromService(const QString &service);
 
-QString DbInitTextError(const quint16 &id);
+QString DbInitTextError(const qint16 &id);
+int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& arguments, bool waitForFinished = false, bool waitForStarted = false);
+QString ProcessExitStatusText(qint16 State);
+QString ProcessStateText(qint16 State);
 
 QString BlobTypeToString(int type);
 QString BoolToString(bool value);
 
 QColor GenerateColor();
+void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent);
+void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent);
 
-void ExportFmtToXml(ConnectionInfo *connection, const QStringList &file, const QString &dir, bool ShowProgress, bool ShowReport, QWidget *parent = NULL);
+void ExportFmtToXml(ConnectionInfo *connection, const QStringList &file, const QString &dir, bool ShowProgress, bool ShowReport, QWidget *parent = Q_NULLPTR);
 void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent);
 
 void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent);
@@ -172,9 +183,17 @@ void FmtHotFixCreate(QSharedPointer<FmtTable> pTable);
 QString FmtTableStructName(const QString &table);
 QStringList FmtTableStringList(const QString &table);
 QString FmtGetTableExtension(const QString &table);
+QString FmtGetTableFileName(const QString &table);
 
 FMTLIBSHARED_EXPORT QString GetProcessErrorText(const QProcess::ProcessError &error);
 QString GetVersionNumberString();
+
+QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
+QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
+QString FmtGenModifyColumnScript(QList<FmtField*> flds);
+QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable);
+QString FmtGenUpdateCreateTableScript(FmtTable *pTable);
+void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField *> flds = QList<FmtField*>());
 
 FMTLIBSHARED_EXPORT QString ConstrType1RegExp();
 FMTLIBSHARED_EXPORT bool ParseConnectionString(const QString &connString, QString &user, QString &pass, QString &service);
@@ -182,5 +201,7 @@ FMTLIBSHARED_EXPORT bool ParseConnectionString(const QString &connString, QStrin
 FMTLIBSHARED_EXPORT QString ReadTextFileContent(const QString &filename);
 FMTLIBSHARED_EXPORT int CloneFmtFromConnection(QSqlDatabase &source, QSqlDatabase &dest, QWidget *parent);
 FMTLIBSHARED_EXPORT bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg = false, QWidget *parent = Q_NULLPTR);
+
+FMTLIBSHARED_EXPORT int ShowCodeDialog(QWidget *parent, const QString &title, const int &type, const QString &code);
 
 #endif // FMTCORE_H

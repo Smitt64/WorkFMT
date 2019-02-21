@@ -8,6 +8,7 @@
 #include "dbinitdlg.h"
 #include "oracletnslistmodel.h"
 #include "loggingcategories.h"
+#include "fmtdbftoolwrp.h"
 #include <Windows.h>
 #include <QtCore>
 #include <QSqlError>
@@ -37,18 +38,37 @@ static QStringList FmtTypesList = QStringList()
 
 typedef struct tagFmtTypeInfo
 {
-    quint16 _type;
+    FmtFldType _type;
     quint16 _size;
     quint16 _indexType;
     QString _oraType;
     QString _cppType;
+    QString _cppDbType;
+    QString _cppDbBaseType;
+    QString _rslType;
+    QString _rslValueName;
 
-    tagFmtTypeInfo(quint16 type = 0, quint16 size = 0, QString oraType = QString(), quint16 indexType = 0)
+    tagFmtTypeInfo
+    (
+            const quint16 &type = 0,
+            const quint16 &size = 0,
+            const QString &oraType = QString(),
+            const quint16 &indexType = 0,
+            const QString &cppType = QString(),
+            const QString &cppDbType = QString(),
+            const QString &cppDbBaseType = QString(),
+            const QString &rslType = QString(),
+            const QString &rslValueName = QString())
     {
        _type = type;
        _size = size;
        _oraType = oraType;
        _indexType = indexType;
+       _cppType = cppType;
+       _cppDbType = cppDbType;
+       _cppDbBaseType = cppDbBaseType;
+       _rslType = rslType;
+       _rslValueName = rslValueName;
     }
 }FmtTypeInfo;
 
@@ -57,27 +77,30 @@ typedef struct tagFmtTtypesItem
     QString name;
     int id;
 }FmtIndexTypesItem;
+typedef QMap<QString, FmtTypeInfo> FmtTypesMapType;
 
-static QMap<QString, FmtTypeInfo> FmtTypesMap;
+//Q_GLOBAL_STATIC(FmtTypesMapType, FmtTypesMap);
+static FmtTypesMapType FmtTypesMap;
 
 void FmtInit()
 {
-    FmtTypesMap["INT"]     = tagFmtTypeInfo(fmtt_INT,    2, "NUMBER(5)",     fmtk_Einteger);
-    FmtTypesMap["LONG"]    = tagFmtTypeInfo(fmtt_LONG,   4, "NUMBER(10)",    fmtk_Einteger);
-    FmtTypesMap["BIGINT"]  = tagFmtTypeInfo(fmtt_BIGINT, 8, "NUMBER(19)",    fmtk_Einteger);
-    FmtTypesMap["FLOAT"]   = tagFmtTypeInfo(fmtt_FLOAT,  4, "FLOAT(24)",     fmtk_Efloat);
-    FmtTypesMap["DOUBLE"]  = tagFmtTypeInfo(fmtt_DOUBLE, 8, "FLOAT(53)",     fmtk_Ebfloat);
-    FmtTypesMap["MONEY"]   = tagFmtTypeInfo(fmtt_MONEY,  8, "NUMBER(19,4)",  fmtk_Emoney);
-    FmtTypesMap["STRING"]  = tagFmtTypeInfo(fmtt_STRING, 0, "VARCHAR2",      fmtk_Estring);
-    FmtTypesMap["SNR"]     = tagFmtTypeInfo(fmtt_SNR,    0, "VARCHAR2",      fmtk_Estring);
-    FmtTypesMap["DATE"]    = tagFmtTypeInfo(fmtt_DATE,   4, "DATE",          fmtk_Edate);
-    FmtTypesMap["TIME"]    = tagFmtTypeInfo(fmtt_TIME,   4, "DATE",          fmtk_Etime);
-    FmtTypesMap["CHR"]     = tagFmtTypeInfo(fmtt_CHR,    1, "CHAR",          fmtk_Estring);
-    FmtTypesMap["UCHR"]    = tagFmtTypeInfo(fmtt_UCHR,   1, "RAW",           fmtk_Estring);
-    FmtTypesMap["NUMERIC"] = tagFmtTypeInfo(fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric);
+    //                                       type     size  oraType          indexType      cppType      cppDbType     cppDbBaseType     rslType
+    FmtTypesMap["INT"]     = tagFmtTypeInfo(fmtt_INT,    2, "NUMBER(5)",     fmtk_Einteger, "int16",     "db_int16",   "db_baseint16",   "V_INTEGER",    "intval");
+    FmtTypesMap["LONG"]    = tagFmtTypeInfo(fmtt_LONG,   4, "NUMBER(10)",    fmtk_Einteger, "int32",     "db_int32",   "db_baseint32",   "V_INTEGER",    "intval");
+    FmtTypesMap["BIGINT"]  = tagFmtTypeInfo(fmtt_BIGINT, 8, "NUMBER(19)",    fmtk_Einteger, "int64_t",   "db_int64",   "db_baseint64",   "V_BIGINT",     "bigint");
+    FmtTypesMap["FLOAT"]   = tagFmtTypeInfo(fmtt_FLOAT,  4, "FLOAT(24)",     fmtk_Efloat,   "float",     "db_float",   "db_basefloat",   "V_DOUBLE",     "doubvalL");
+    FmtTypesMap["DOUBLE"]  = tagFmtTypeInfo(fmtt_DOUBLE, 8, "FLOAT(53)",     fmtk_Ebfloat,  "double",    "db_double",  "db_basedouble",  "V_DOUBLE",     "doubvalL");
+    FmtTypesMap["MONEY"]   = tagFmtTypeInfo(fmtt_MONEY,  8, "NUMBER(19,4)",  fmtk_Emoney,   "lmoney",    "db_lmoney",  "db_lbasemoney",  "V_MONEY_FDEC", "numVal");
+    FmtTypesMap["STRING"]  = tagFmtTypeInfo(fmtt_STRING, 0, "VARCHAR2",      fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string");
+    FmtTypesMap["SNR"]     = tagFmtTypeInfo(fmtt_SNR,    0, "VARCHAR2",      fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string");
+    FmtTypesMap["DATE"]    = tagFmtTypeInfo(fmtt_DATE,   4, "DATE",          fmtk_Edate,    "bdate",     "bdate",      "bdate",          "V_DATE",       "date");
+    FmtTypesMap["TIME"]    = tagFmtTypeInfo(fmtt_TIME,   4, "DATE",          fmtk_Etime,    "btime",     "btime",      "btime",          "V_TIME",       "time");
+    FmtTypesMap["CHR"]     = tagFmtTypeInfo(fmtt_CHR,    1, "CHAR",          fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval");
+    FmtTypesMap["UCHR"]    = tagFmtTypeInfo(fmtt_UCHR,   1, "RAW",           fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval");
+    FmtTypesMap["NUMERIC"] = tagFmtTypeInfo(fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_decimal", "db_basedecimal", "V_DECIMAL",    "decimal");
 }
 
-bool fmtTypeCanHaveCustomSize(const quint32 &Type)
+bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)
 {
     bool hr = false;
     switch(Type)
@@ -93,12 +116,12 @@ bool fmtTypeCanHaveCustomSize(const quint32 &Type)
     return hr;
 }
 
-bool hasTemporaryFlag(const quint32 &flag)
+bool hasTemporaryFlag(const FmtNumber10 &flag)
 {
     return (flag & fmtnf_Temp) == fmtnf_Temp;
 }
 
-bool hasRecordFlag(const quint32 &flag)
+bool hasRecordFlag(const FmtNumber10 &flag)
 {
     return (flag & fmtnf_Rec) == fmtnf_Rec;
 }
@@ -113,7 +136,7 @@ QStringList fmtTypes()
     return QStringList(FmtTypesList);
 }
 
-QString fmtTypeForId(const quint32 &id)
+QString fmtTypeForId(const FmtFldType &id)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -126,7 +149,7 @@ QString fmtTypeForId(const quint32 &id)
     return QString::number(id);
 }
 
-quint16 fmtTypeSize(const quint32 &Type)
+quint16 fmtTypeSize(const FmtFldType &Type)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -138,53 +161,39 @@ quint16 fmtTypeSize(const quint32 &Type)
     return 0;
 }
 
-QString fmtOracleDecl(const quint32 &Type)
+QString fmtOracleDecl(const FmtFldType &Type)
 {
     return FmtTypesMap[fmtTypeForId(Type)]._oraType;
 }
 
-QString fmtCppStructTypeName(const quint32 &Type)
+QString fmtCppStructTypeName(const FmtFldType &Type)
 {
-    QString type;
+    QString fldType = fmtTypeForId(Type);
+    return FmtTypesMap[fldType]._cppType;
+}
 
-    switch(Type)
-    {
-    case fmtt_INT:
-        type = "db_int16";
-        break;
-    case fmtt_LONG:
-        type = "db_int32";
-        break;
-    case fmtt_BIGINT:
-        type = "int64_t";
-        break;
-    case fmtt_FLOAT:
-        type = "db_float";
-        break;
-    case fmtt_DOUBLE:
-        type = "db_double";
-        break;
-    case fmtt_MONEY:
-        type = "?";
-        break;
-    case fmtt_STRING:
-    case fmtt_SNR:
-    case fmtt_CHR:
-    case fmtt_UCHR:
-        type = "char";
-        break;
-    case fmtt_DATE:
-        type = "bdate";
-        break;
-    case fmtt_TIME:
-        type = "btime";
-        break;
-    case fmtt_NUMERIC:
-        type = "db_decimal";
-        break;
-    }
+QString fmtCppStructDbTypeName(const FmtFldType &Type)
+{
+    QString fldType = fmtTypeForId(Type);
+    return FmtTypesMap[fldType]._cppDbType;
+}
 
-    return type;
+QString fmtRslTypeName(const FmtFldType &Type)
+{
+    QString fldType = fmtTypeForId(Type);
+    return FmtTypesMap[fldType]._rslType;
+}
+
+QString fmtRslValueName(const FmtFldType &Type)
+{
+    QString fldType = fmtTypeForId(Type);
+    return FmtTypesMap[fldType]._rslValueName;
+}
+
+QString fmtCppStructDbBaseTypeName(const FmtFldType &Type)
+{
+    QString fldType = fmtTypeForId(Type);
+    return FmtTypesMap[fldType]._cppDbBaseType;
 }
 
 quint32 fmtTypeIndexForId(const quint32 &id)
@@ -194,13 +203,13 @@ quint32 fmtTypeIndexForId(const quint32 &id)
     {
         iterator.next();
         if (iterator.value()._type == id)
-            return FmtTypesList.indexOf(iterator.key());
+            return static_cast<quint32>(FmtTypesList.indexOf(iterator.key()));
     }
 
     return 0;
 }
 
-quint32 fmtIndexForType(const quint32 &id)
+FmtFldIndex fmtIndexForType(const FmtFldType &id)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
 
@@ -217,21 +226,30 @@ quint32 fmtIndexForType(const quint32 &id)
         }
     }
 
-    return indx;
+    return static_cast<FmtFldIndex>(indx);
 }
 
-QString fmtTypeNameForType(const quint32 &type)
+QString fmtTypeNameForType(const FmtFldType &type)
 {
+    int index = static_cast<int>(fmtIndexForType(type));
+    if (index < 0 || index >= FmtTypesList.size())
+        return "Unknown";
     return FmtTypesList[fmtIndexForType(type)];
 }
 
-quint16 fmtTypeFromIndex(const quint32 &id)
+FmtFldType fmtTypeFromIndex(const FmtFldIndex &id)
 {
+    int index = static_cast<int>(fmtIndexForType(id));
+    if (index < 0 || index >= FmtTypesList.size())
+        return -1;
     return FmtTypesMap[FmtTypesList[id]]._type;
 }
 
-quint16 fmtTypeIndexSize(const quint32 &id)
+quint16 fmtTypeIndexSize(const FmtFldType &id)
 {
+    int index = fmtIndexForType(id);
+    if (index < 0 || index >= FmtTypesList.size())
+        return -1;
     return FmtTypesMap[FmtTypesList[id]]._size;
 }
 
@@ -247,6 +265,14 @@ quint16 fmtIndexFromFmtType(const quint32 &id)
 
     return 0;
 }
+
+QString AddTabButtonCss()
+{
+    return "*         {image: url(':/img/addtab-icon.png'); border: 0;}"
+           "*:hover   {image: url(':/img/addtab-icon-hover.png');}"
+           "*:pressed {image: url(':/img/addtab-icon-pressed.png');} ";
+}
+
 
 QString PlusButtonCss()
 {
@@ -277,7 +303,7 @@ QString NullString(const int &index)
     return v;
 }
 
-int ExecuteQuery(QSqlQuery *query)
+int ExecuteQuery(QSqlQuery *query, QString *err)
 {
     int stat = 0;
 
@@ -294,6 +320,9 @@ int ExecuteQuery(QSqlQuery *query)
     {
         stat = 1;
         qCCritical(logSql()) << query->lastError().text();
+
+        if (err != Q_NULLPTR)
+            *err = query->lastError().text();
     }
     qCInfo(logSql()) << query->executedQuery();
     qCInfo(logSql()) << "Result:" << result;
@@ -301,14 +330,14 @@ int ExecuteQuery(QSqlQuery *query)
     return stat;
 }
 
-int ExecuteQuery(const QString &query, QSqlDatabase &db)
+int ExecuteQuery(const QString &query, QSqlDatabase db, QString *err)
 {
     QSqlQuery q(db);
     q.prepare(query);
-    return ExecuteQuery(&q);
+    return ExecuteQuery(&q, err);
 }
 
-int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase &db)
+int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase db)
 {
     QString content = ReadTextFileContent(queryFileName);
 
@@ -379,8 +408,11 @@ QString DatasourceFromService(const QString &service)
 13 - Index creation warning          23 - Index creation error
 14 - Btrieve warning                 24 - Btrieve error
  */
-QString DbInitTextError(const quint16 &id)
+QString DbInitTextError(const qint16 &id)
 {
+    if (id < 0)
+        return "Unknown status";
+
     QString error;
     QStringList lst;
     lst << "OK"
@@ -555,7 +587,7 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
             {
                 msg.setWindowTitle(QObject::tr("Ошибка"));
                 msg.setIcon(QMessageBox::Critical);
-                msg.setText(QObject::tr("<b>DbInit вернул код ошибки [%1]:</b>").arg(stat));
+                msg.setText(QObject::tr("<b>DbInit вернул код ошибки [%1]: %2</b>").arg(stat).arg(DbInitTextError(stat)));
             }
             else
             {
@@ -594,6 +626,15 @@ QString FmtGetTableExtension(const QString &table)
         str = "";
 
     return str.toLower();
+}
+
+QString FmtGetTableFileName(const QString &table)
+{
+    QString filename = QString("%1.%2")
+            .arg(FmtTableStructName(table))
+            .arg(FmtGetTableExtension(table));
+
+    return filename.toLower();
 }
 
 QString FmtTableStructName(const QString &table)
@@ -660,6 +701,80 @@ QString GetProcessErrorText(const QProcess::ProcessError &error)
 
     return errText;
 }
+
+QString ProcessStateText(qint16 State)
+{
+    QString result;
+    switch(State)
+    {
+    case QProcess::Starting:
+        result = "The process is starting, but the program has not yet been invoked.";
+        break;
+    case QProcess::Running:
+        result = "The process is running and is ready for reading and writing.";
+        break;
+    default:
+        result = "The process is not running.";
+    }
+
+    return result;
+}
+
+QString ProcessExitStatusText(qint16 State)
+{
+    QString result;
+    switch(State)
+    {
+    case QProcess::CrashExit:
+        result = "The process crashed.";
+        break;
+    default:
+        result = "The process exited normally.";
+    }
+
+    return result;
+}
+
+int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& arguments, bool waitForFinished, bool waitForStarted)
+{
+    int stat = 0;
+    qCInfo(logCore()) << "Process: " << exe;
+    qCInfo(logCore()) << "Executable path:" << program;
+    qCInfo(logCore()) << "Working directory:" << exe->workingDirectory();
+    qCInfo(logCore()) << "Аrguments" << arguments;
+
+    QObject::connect(exe, &QProcess::stateChanged, [&exe](QProcess::ProcessState newState)
+    {
+        qCInfo(logCore()) << QString("Process state changed to: %1 (%2)")
+                             .arg(newState).arg(ProcessStateText(newState));
+    });
+    QObject::connect(exe, &QProcess::errorOccurred, [&exe,&stat](QProcess::ProcessError error)
+    {
+        qCInfo(logCore()) << QString("Process error occurred: %1 (%2)")
+                             .arg(error).arg(GetProcessErrorText(error));
+        stat = -1;
+    });
+    exe->start(program, arguments);
+
+    if (waitForStarted)
+        exe->waitForStarted();
+
+    if (waitForFinished)
+    {
+        exe->waitForFinished();
+
+        if (!stat)
+        {
+            stat = exe->exitCode();
+            qCInfo(logCore()) << "Process exit code: " << stat;
+        }
+        int status= exe->exitStatus();
+        qCInfo(logCore()) << QString("Process exit status: %1 (%2)").arg(status).arg(ProcessExitStatusText(status));
+    }
+
+    return stat;
+}
+
 
 QString GetVersionNumberString()
 {
@@ -887,4 +1002,30 @@ bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg, Q
             QMessageBox::information(parent, QObject::tr("Информация"), QObject::tr("Это действие не доступно для данного вида подключения"));
     }
     return hr;
+}
+
+void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
+{
+    ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
+    dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
+    dlg.setWindowModality(Qt::WindowModal);
+    FmtDbfToolWrp wrp(current, parent);
+    dlg.setErrors(wrp.fmterrors());
+    QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
+    QObject::connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
+    QObject::connect(&wrp, SIGNAL(startError()), &dlg, SLOT(exec()));
+    wrp.unload(settings()->value("RsExpUnlDir").toString(), table);
+}
+
+void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
+{
+    ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
+    dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
+    dlg.setWindowModality(Qt::WindowModal);
+    FmtDbfToolWrp wrp(current, parent);
+    dlg.setErrors(wrp.fmterrors());
+    QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
+    QObject::connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
+    QObject::connect(&wrp, SIGNAL(startError()), &dlg, SLOT(exec()));
+    wrp.load(table);
 }

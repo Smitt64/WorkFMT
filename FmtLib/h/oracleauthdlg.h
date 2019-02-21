@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QtSql>
-#include "ui_oracleauthdlg.h"
+//#include "ui_oracleauthdlg.h"
 #include "fmtlib_global.h"
 
 typedef struct
@@ -22,6 +22,11 @@ QDataStream &operator <<(QDataStream &stream, const RecentList &i);
 QDataStream &operator >>(QDataStream &stream, RecentList &i);
 bool operator == (RecentList &list, const RecentList &other);
 
+namespace Ui {
+class OracleAuthDlg;
+}
+
+
 class OracleTnsListModel;
 class ConnectionInfo;
 class FMTLIBSHARED_EXPORT OracleAuthDlg : public QDialog
@@ -29,7 +34,8 @@ class FMTLIBSHARED_EXPORT OracleAuthDlg : public QDialog
 	Q_OBJECT
 
 public:
-	OracleAuthDlg(QWidget *parent = 0);
+    OracleAuthDlg(QWidget *parent = Q_NULLPTR);
+    OracleAuthDlg(OracleTnsListModel *tnsmodel, QWidget *parent = Q_NULLPTR);
 	~OracleAuthDlg();
 	bool authirizate();
 	void LoadPrefs();
@@ -54,9 +60,10 @@ public:
     static QSqlDatabase OraCreateConnection(const QString &username,
                                             const QString &passw,
                                             const QString &DSN,
-                                            ConnectionInfo **info);
+                                            ConnectionInfo **info,
+                                            OracleTnsListModel *tnsmodel = Q_NULLPTR);
 private:
-	Ui::OracleAuthDlg ui;
+    Ui::OracleAuthDlg *ui;
 private slots:
 	void on_pushButton_accept_clicked();
     void on_tableWidget_doubleClicked(const QModelIndex &index);

@@ -1,5 +1,4 @@
 #include "fmtundoremoveindex.h"
-#include "fmttable.h"
 #include "fmtindex.h"
 
 FmtUndoRemoveIndex::FmtUndoRemoveIndex(FmtTable *table, QUndoCommand *parent) :
@@ -14,7 +13,7 @@ FmtUndoRemoveIndex::~FmtUndoRemoveIndex()
 
 }
 
-void FmtUndoRemoveIndex::setIndexRow(const quint16 &row)
+void FmtUndoRemoveIndex::setIndexRow(const FmtFldIndex &row)
 {
     m_Row = row;
     setText(QObject::tr("Удален индекс _IDX%1")

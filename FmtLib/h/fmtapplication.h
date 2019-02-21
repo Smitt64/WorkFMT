@@ -21,7 +21,7 @@ class FMTLIBSHARED_EXPORT FmtApplication : public QApplication
     Q_OBJECT
     friend class tagUnhandledExceptionWrp;
 public:
-    FmtApplication(int &argc, char **argv);
+    explicit FmtApplication(int &argc, char **argv);
     virtual ~FmtApplication();
 
     QMainWindow *addMainWindow();
@@ -31,11 +31,17 @@ public:
 
     OracleTnsListModel *getOracleTnsModel();
 
-    void initLogging(const QString &rules);
+    bool initLogging(const QString &rules);
+    void setLoggingRules(const QString &rules);
+    void disableLogging();
+    bool isLoggingEnabled() const;
     void init();
+
+    QString logginFileName() const;
 
 private:
     void initDbgHelp();
+    void ShowObjectStackMsg(QObject *receiver, QKeyEvent *e);
 #ifdef Q_OS_WIN
     friend LONG CALLBACK ExceptionFilter(PEXCEPTION_POINTERS pExInfo);
     LPTOP_LEVEL_EXCEPTION_FILTER hOldFilter;
@@ -43,9 +49,11 @@ private:
     QLibrary dbgLib;
     QObject *pDbgHelp;
 #endif
+    QString lastCtrlF12Msg;
     QSettings *pSettings;
     OracleTnsListModel *pTnsModel;
     QTranslator qt_translator;
+    bool m_fLogging;
 };
 
 #endif // FMTAPPLICATION_H
