@@ -3,6 +3,7 @@
 #include "fmteditcontentfilter.h"
 #include <QFontMetrics>
 #include "fmtfield.h"
+#include "import/importwizard.h"
 
 FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *parent) :
     QMainWindow(parent)
@@ -21,6 +22,8 @@ FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *par
     pAddRecord = pToolBar->addAction(QIcon(":/img/DataContainer_NewRecordHS.png"), tr("Добавить запись"));
     pRemoveRecord = pToolBar->addAction(QIcon(":/img/XSDSchema_RemoveAllButSelectionFromWorkspaceCmd.png"), tr("Удалить запись"));
     pRefrash = pToolBar->addAction(QIcon(":/img/RepeatHS.png"), tr("Обновить записи"));
+    pToolBar->addSeparator();
+    pImportAction = pToolBar->addAction(QIcon(":/img/RepeatHS.png"), tr("Загрузить данные"));
     pTable = table;
 
     try
@@ -30,6 +33,7 @@ FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *par
         connect(pRemoveRecord, SIGNAL(triggered(bool)), SLOT(OnDeleteRecord()));
         connect(pRefrash, SIGNAL(triggered(bool)), pModel, SLOT(select()));
         connect(pFilter, SIGNAL(triggered(bool)), SLOT(OnFilter()));
+        connect(pImportAction, SIGNAL(triggered(bool)), SLOT(OnImport()));
         connect(pTableView, SIGNAL(doubleClicked(QModelIndex)), SLOT(OnDoubleClicked(QModelIndex)));
 
         pModel->select();
@@ -147,4 +151,10 @@ void FmtEditContentWindow::OnFilter()
         pModel->setOrder(dlg.sort());
         pModel->setFilter(dlg.filter());
     }
+}
+
+void FmtEditContentWindow::OnImport()
+{
+    ImportWizard dlg;
+    dlg.exec();
 }

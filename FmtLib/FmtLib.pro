@@ -117,7 +117,10 @@ SOURCES += \
     src/models/fmtfieldstableheaderdelegate.cpp \
     mdisubinterface.cpp \
     fmtgeninputservicecpptemplate.cpp \
-    fmtgencppclasstemplate.cpp
+    fmtgencppclasstemplate.cpp \
+    src/widgets/editcontent/import/importwizard.cpp \
+    src/widgets/editcontent/import/selecttypepage.cpp \
+    src/widgets/editcontent/import/texteditpage.cpp
 
 unix {
     target.path = /usr/lib
@@ -143,7 +146,9 @@ FORMS += \
     ui/selectfiltereddlg.ui \
     ui/logsettingsdlg.ui \
     ui/fmteditcontentfilter.ui \
-    ui/dataselectdialog.ui
+    ui/dataselectdialog.ui \
+    src/widgets/editcontent/import/selecttypepage.ui \
+    src/widgets/editcontent/import/texteditpage.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -238,7 +243,10 @@ HEADERS += \
     h/fmtfieldstableheaderdelegate.h \
     mdisubinterface.h \
     fmtgeninputservicecpptemplate.h \
-    fmtgencppclasstemplate.h
+    fmtgencppclasstemplate.h \
+    src/widgets/editcontent/import/importwizard.h \
+    src/widgets/editcontent/import/selecttypepage.h \
+    src/widgets/editcontent/import/texteditpage.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

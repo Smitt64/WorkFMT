@@ -18,6 +18,7 @@ private slots:
     void OnDeleteRecord();
     void OnDoubleClicked(const QModelIndex &index);
     void OnFilter();
+    void OnImport();
 
 private:
     void SetupColWidth();
@@ -26,7 +27,7 @@ private:
     FmtEditContentModel *pModel;
 
     QToolBar *pToolBar;
-    QAction *pAddRecord, *pRemoveRecord, *pRefrash, *pFilter;
+    QAction *pAddRecord, *pRemoveRecord, *pRefrash, *pFilter, *pImportAction;
 };
 
 #endif // FMTEDITCONTENTWINDOW_H
