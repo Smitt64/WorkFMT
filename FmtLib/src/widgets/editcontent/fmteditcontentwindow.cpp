@@ -155,6 +155,6 @@ void FmtEditContentWindow::OnFilter()
 
 void FmtEditContentWindow::OnImport()
 {
-    ImportWizard dlg;
+    ImportWizard dlg(pTable);
     dlg.exec();
 }

@@ -1,18 +1,24 @@
 #include "texteditpage.h"
 #include "ui_texteditpage.h"
+#include "tablemaptofmtwidget.h"
+#include <QTableView>
 #include <QTextDocument>
 #include <QTextBlock>
 #include <QTextTable>
 #include <QTextCursor>
 #include <QDebug>
 
-TextEditPage::TextEditPage(QStandardItemModel *model, QWidget *parent) :
+TextEditPage::TextEditPage(FmtSharedTablePtr table, QStandardItemModel *model, QWidget *parent) :
     QWizardPage(parent),
     ui(new Ui::TextEditPage)
 {
     ui->setupUi(this);
     pTableModel = model;
-    ui->tableView->setModel(pTableModel);
+    pTable = table;
+
+    pTableWidget = new TableMapToFmtWidget(pTable, this);
+    pTableWidget->tableWidget()->setModel(pTableModel);
+    ui->verticalLayout->addWidget(pTableWidget);
     connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChanged()));
 }
 

@@ -120,7 +120,9 @@ SOURCES += \
     fmtgencppclasstemplate.cpp \
     src/widgets/editcontent/import/importwizard.cpp \
     src/widgets/editcontent/import/selecttypepage.cpp \
-    src/widgets/editcontent/import/texteditpage.cpp
+    src/widgets/editcontent/import/texteditpage.cpp \
+    src/widgets/editcontent/import/tablemaptofmtwidget.cpp \
+    src/core/columnalignedlayout.cpp
 
 unix {
     target.path = /usr/lib
@@ -148,7 +150,8 @@ FORMS += \
     ui/fmteditcontentfilter.ui \
     ui/dataselectdialog.ui \
     src/widgets/editcontent/import/selecttypepage.ui \
-    src/widgets/editcontent/import/texteditpage.ui
+    src/widgets/editcontent/import/texteditpage.ui \
+    src/widgets/editcontent/import/tablemaptofmtwidget.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -246,7 +249,9 @@ HEADERS += \
     fmtgencppclasstemplate.h \
     src/widgets/editcontent/import/importwizard.h \
     src/widgets/editcontent/import/selecttypepage.h \
-    src/widgets/editcontent/import/texteditpage.h
+    src/widgets/editcontent/import/texteditpage.h \
+    src/widgets/editcontent/import/tablemaptofmtwidget.h \
+    h/columnalignedlayout.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

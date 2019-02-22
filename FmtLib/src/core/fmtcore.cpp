@@ -96,8 +96,8 @@ void FmtInit()
     FmtTypesMap["DATE"]    = tagFmtTypeInfo(fmtt_DATE,   4, "DATE",          fmtk_Edate,    "bdate",     "bdate",      "bdate",          "V_DATE",       "date");
     FmtTypesMap["TIME"]    = tagFmtTypeInfo(fmtt_TIME,   4, "DATE",          fmtk_Etime,    "btime",     "btime",      "btime",          "V_TIME",       "time");
     FmtTypesMap["CHR"]     = tagFmtTypeInfo(fmtt_CHR,    1, "CHAR",          fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval");
-    FmtTypesMap["UCHR"]    = tagFmtTypeInfo(fmtt_UCHR,   1, "RAW",           fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval");
-    FmtTypesMap["NUMERIC"] = tagFmtTypeInfo(fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_decimal", "db_basedecimal", "V_DECIMAL",    "decimal");
+    FmtTypesMap["UCHR"]    = tagFmtTypeInfo(fmtt_UCHR,   1, "RAW",           fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string");
+    FmtTypesMap["NUMERIC"] = tagFmtTypeInfo(fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_lmoney",  "db_lbasemoney",  "V_NUMERIC",    "decimal");
 }
 
 bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)

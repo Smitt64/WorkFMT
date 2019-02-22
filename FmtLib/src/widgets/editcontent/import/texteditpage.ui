@@ -53,9 +53,6 @@
    <item>
     <widget class="QTextEdit" name="textEdit"/>
    </item>
-   <item>
-    <widget class="QTableView" name="tableView"/>
-   </item>
   </layout>
  </widget>
  <resources/>

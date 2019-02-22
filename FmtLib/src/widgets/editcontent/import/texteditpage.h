@@ -3,17 +3,19 @@
 
 #include <QWizardPage>
 #include <QStandardItemModel>
+#include "fmttable.h"
 
 namespace Ui {
 class TextEditPage;
 }
 
+class TableMapToFmtWidget;
 class TextEditPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    explicit TextEditPage(QStandardItemModel *model, QWidget *parent = nullptr);
+    explicit TextEditPage(FmtSharedTablePtr table, QStandardItemModel *model, QWidget *parent = nullptr);
     ~TextEditPage();
 
 private slots:
@@ -21,6 +23,8 @@ private slots:
 
 private:
     QStandardItemModel *pTableModel;
+    TableMapToFmtWidget *pTableWidget;
+    FmtSharedTablePtr pTable;
     Ui::TextEditPage *ui;
 };
 

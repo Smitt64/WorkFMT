@@ -2,6 +2,7 @@
 #define IMPORTWIZARD_H
 
 #include <QWizard>
+#include "fmttable.h"
 
 enum
 {
@@ -15,7 +16,7 @@ class ImportWizard : public QWizard
 {
     Q_OBJECT
 public:
-    ImportWizard(QWidget *parent = nullptr);
+    ImportWizard(FmtSharedTablePtr table, QWidget *parent = nullptr);
     virtual ~ImportWizard();
 
 private:
@@ -23,6 +24,7 @@ private:
     QWizardPage *createTextEditPage(QStandardItemModel *model);
 
     QStandardItemModel *pTableModel;
+    FmtSharedTablePtr pTable;
 };
 
 #endif // IMPORTWIZARD_H
