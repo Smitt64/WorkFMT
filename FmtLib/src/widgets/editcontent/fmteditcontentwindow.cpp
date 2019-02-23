@@ -4,6 +4,7 @@
 #include <QFontMetrics>
 #include "fmtfield.h"
 #include "import/importwizard.h"
+#include "connectioninfo.h"
 
 FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *parent) :
     QMainWindow(parent)
@@ -36,12 +37,21 @@ FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *par
         connect(pImportAction, SIGNAL(triggered(bool)), SLOT(OnImport()));
         connect(pTableView, SIGNAL(doubleClicked(QModelIndex)), SLOT(OnDoubleClicked(QModelIndex)));
 
-        pModel->select();
-        pTableView->setModel(pModel);
-        pTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        pTableView->setColumnHidden(pModel->columnCount() - 1, true);
-        pTableView->verticalHeader()->setDefaultSectionSize(25);
-        SetupColWidth();
+        if (table->connection()->type() == ConnectionInfo::CON_ORA)
+        {
+            pModel->select();
+            pTableView->setModel(pModel);
+            pTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+            pTableView->setColumnHidden(pModel->columnCount() - 1, true);
+            pTableView->verticalHeader()->setDefaultSectionSize(25);
+            SetupColWidth();
+        }
+        else
+        {
+            pAddRecord->setEnabled(false);
+            pRemoveRecord->setEnabled(false);
+            pRefrash->setEnabled(false);
+        }
     }
     catch (const QString err)
     {

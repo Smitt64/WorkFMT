@@ -138,3 +138,7 @@ WorkFMT/debug/
 WorkFMT/release/
 
 WorkFMT/build/
+
+WorkFMT/tables\.dat
+
+WorkFMT/fmtopt\.ini

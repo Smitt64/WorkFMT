@@ -97,12 +97,18 @@ QVariant FmtErrors::headerData(int section, Qt::Orientation orientation, int rol
 
 bool FmtErrors::hasErrors()
 {
-    return !m_errorsCount;
+    bool result = false;
+    if (m_errorsCount)
+        result = true;
+    return result;
 }
 
 bool FmtErrors::hasWarnings()
 {
-    return !m_warningsCount;
+    bool result = false;
+    if (m_warningsCount)
+        result = true;
+    return result;
 }
 
 int FmtErrors::errorsCount()

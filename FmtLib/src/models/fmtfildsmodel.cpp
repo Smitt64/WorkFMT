@@ -47,7 +47,7 @@ QVariant FmtFildsModel::data(const QModelIndex &index, int role) const
         if (role == Qt::ToolTipRole && index.column() == FmtFildsModel::fld_Name)
         {
             if (!isValidName)
-                return tr("Имя таблицы имеет недопустимое значение");
+                return tr("Имя столбца имеет недопустимое значение");
         }
 
         return QVariant();

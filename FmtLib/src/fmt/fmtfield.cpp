@@ -59,8 +59,8 @@ QString FmtFieldPropertyTextById(const FmtFldIndex &fld)
 FmtField::FmtField(QObject *parent) : QObject(parent)
 {
     m_Id = 0;
-    m_Size = 0;
     m_Type = fmtt_INT;
+    m_Size = fmtTypeSize(m_Type);
     m_Offset = 0;
     m_Outlen = 0;
     m_Decpoint = 0;

@@ -770,10 +770,7 @@ FmtField *FmtTable::addFieldPrivate(const QString &name, const FmtFldType &type)
         value += m_pFields[i]->size();
         ++i;
     }
-    /*for (FmtFldIndex i = 0; i < fieldsSize, i < idx; i++)
-    {
-        value += m_pFields[i]->size();
-    }*/
+
     fld->setOffset(value);
     fld->m_IgnoreUndoStack = false;
     emit fieldAdded(fld);

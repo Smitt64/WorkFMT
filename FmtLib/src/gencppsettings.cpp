@@ -1,6 +1,7 @@
 #include "gencppsettings.h"
 #include "ui_gencppsettings.h"
 #include "fmtcore.h"
+#include <QButtonGroup>
 
 GenCppSettings::GenCppSettings(QWidget *parent) :
     QDialog(parent),
