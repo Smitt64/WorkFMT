@@ -106,6 +106,7 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu = new QMenu(this);
     m_AddFieldsToEnd = pActionsMenu->addAction(tr("Добавить поля в конец"));
     m_InsertFields = pActionsMenu->addAction(tr("Добавить поля перед..."));
+    m_CopyFields = pActionsMenu->addAction(QIcon(":/img/CopyHS.png"), tr("Копировать поля в буффер обмена..."));
     pActionsMenu->addSeparator();
     m_saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
     pActionsMenu->addSeparator();

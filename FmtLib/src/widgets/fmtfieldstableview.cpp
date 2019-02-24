@@ -144,8 +144,9 @@ void FmtFieldsTableView::paintDeleteMark()
         QRect last = visualRect(model()->index(row, model()->columnCount() - 1));
 
         p.setPen(penDeleteMark);
-        QRect selection(first.x() + 2, first.y() + 2 - horizontalHeader()->offset(), last.right() - 2, last.height() - 2);
-        p.drawRect(selection);
+        QRect selection(first.x(), first.y() - horizontalHeader()->offset(), last.right(), last.height());
+        selection.adjust(2, 2, -2, -2);
+        p.drawRoundRect(selection, 4, 4);
     }
 
     if (m_fDrawInsertMark)
