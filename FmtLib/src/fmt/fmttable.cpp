@@ -11,6 +11,7 @@
 #include "fmtundotableremovefield.h"
 #include "fmtundotableaddindex.h"
 #include "fmtundoremoveindex.h"
+#include "fmtundotablepastefield.h"
 #include "fmtsegment.h"
 #include "loggingcategories.h"
 #include <QProcess>
@@ -561,7 +562,7 @@ void FmtTable::rebuildOffsets(QUndoCommand *pLastCommand)
 {
     int value = 0;
 
-    bool hasParentCommand = pLastCommand ? true : false;
+    bool hasParentCommand = (pLastCommand && pLastCommand != Q_NULLPTR) ? true : false;
     if (!m_IgnoreUndoStack)
     {
         if (!hasParentCommand)
@@ -751,6 +752,15 @@ FmtField *FmtTable::addField(const QString &name, const FmtFldType &type)
     return cmd->getField();
 }
 
+FmtField *FmtTable::addField(const QMap<quint16,QVariant> &data)
+{
+    FmtUndoTablePasteField *cmd = new FmtUndoTablePasteField(this);
+    cmd->setData(data);
+    pUndoStack->push(cmd);
+
+    return cmd->getField();
+}
+
 FmtField *FmtTable::addFieldPrivate(const QString &name, const FmtFldType &type)
 {
     pFieldsModel->beginInsertRows(QModelIndex(), m_pFields.size(), m_pFields.size());
@@ -772,6 +782,38 @@ FmtField *FmtTable::addFieldPrivate(const QString &name, const FmtFldType &type)
     }
 
     fld->setOffset(value);
+    fld->m_IgnoreUndoStack = false;
+    emit fieldAdded(fld);
+    pFieldsModel->endInsertRows();
+
+    return fld;
+}
+
+FmtField *FmtTable::addFieldPrivate(const QMap<quint16,QVariant> &data)
+{
+    pFieldsModel->beginInsertRows(QModelIndex(), m_pFields.size(), m_pFields.size());
+    FmtField *fld = new FmtField(this);
+    m_pFields.append(fld);
+
+    fld->m_IgnoreUndoStack = true;
+    fld->setName(data[FmtField::fld_Name].toString());
+    fld->setType(static_cast<FmtFldType>(data[FmtField::fld_Type].toInt()));
+    fld->setSize(static_cast<FmtNumber10>(data[FmtField::fld_Size].toInt()));
+    fld->setComment(data[FmtField::fld_Comment].toString());
+    fld->setOutlen(static_cast<FmtNumber5>(data[FmtField::fld_Outlen].toInt()));
+    fld->setDecpoint(static_cast<FmtNumber5>(data[FmtField::fld_DecPoint].toInt()));
+    fld->setHidden(data[FmtField::fld_Hidden].toBool());
+
+    int value = 0;
+    int idx = m_pFields.indexOf(const_cast<FmtField*>(fld));
+    FmtFldIndex fieldsSize = static_cast<FmtFldIndex>(m_pFields.size());
+    FmtFldIndex i = 0;
+    while (i < fieldsSize && i < idx)
+    {
+        value += m_pFields[i]->size();
+        ++i;
+    }
+
     fld->m_IgnoreUndoStack = false;
     emit fieldAdded(fld);
     pFieldsModel->endInsertRows();
@@ -855,9 +897,31 @@ FmtField *FmtTable::insertFieldPrivate(const FmtFldIndex &befor, const QString &
     fld->m_IgnoreUndoStack = true;
     fld->setName("t_" + name);
     fld->setType(type);
-
+    rebuildOffsets(Q_NULLPTR);
     pFieldsModel->endInsertRows();
+    fld->m_IgnoreUndoStack = false;
+    emit fieldAdded(fld);
 
+    return fld;
+}
+
+FmtField *FmtTable::insertFieldPrivate(const FmtFldIndex &befor, const QMap<quint16,QVariant> &data)
+{
+    pFieldsModel->beginInsertRows(QModelIndex(), befor, befor);
+    FmtField *fld = new FmtField(this);
+    m_pFields.insert(befor, fld);
+
+    fld->m_IgnoreUndoStack = true;
+    fld->setName(data[FmtField::fld_Name].toString());
+    fld->setType(static_cast<FmtFldType>(data[FmtField::fld_Type].toInt()));
+    fld->setSize(static_cast<FmtNumber10>(data[FmtField::fld_Type].toInt()));
+    fld->setComment(data[FmtField::fld_Comment].toString());
+    fld->setOutlen(static_cast<FmtNumber5>(data[FmtField::fld_Outlen].toInt()));
+    fld->setDecpoint(static_cast<FmtNumber5>(data[FmtField::fld_DecPoint].toInt()));
+    fld->setHidden(data[FmtField::fld_Hidden].toBool());
+
+    rebuildOffsets(Q_NULLPTR);
+    pFieldsModel->endInsertRows();
     fld->m_IgnoreUndoStack = false;
     emit fieldAdded(fld);
 

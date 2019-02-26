@@ -43,6 +43,7 @@ class FMTLIBSHARED_EXPORT FmtTable : public QAbstractItemModel
     friend class FmtSegment;
     friend class FmtUndoTableProperty;
     friend class FmtUndoTableAddField;
+    friend class FmtUndoTablePasteField;
     friend class FmtUndoTableRemoveField;
     friend class FmtUndoTableAddIndex;
     friend class FmtUndoRemoveIndex;
@@ -163,6 +164,7 @@ public slots:
     bool load(const QString &name);
 
     FmtField *addField(const QString &name, const FmtFldType &type);
+    FmtField *addField(const QMap<quint16,QVariant> &data);
     FmtField *insertField(const FmtFldIndex &befor, const QString &name, const FmtFldType &type);
     FmtField *field(const FmtNumber5 &index);
     FmtFldIndex fieldNum(FmtField *fld);
@@ -223,7 +225,11 @@ private:
     /// @private
     FmtField *addFieldPrivate(const QString &name, const FmtFldType &type);
     /// @private
+    FmtField *addFieldPrivate(const QMap<quint16,QVariant> &data);
+    /// @private
     FmtField *insertFieldPrivate(const FmtFldIndex &befor, const QString &name, const FmtFldType &type);
+    /// @private
+    FmtField *insertFieldPrivate(const FmtFldIndex &befor, const QMap<quint16,QVariant> &data);
     /// @private
     void removeInsertedFieldPrivate(const FmtFldIndex &row);
     /// @private

@@ -24,6 +24,7 @@
 #include "fmteditcontentwindow.h"
 #include "fmtfieldstableheaderdelegate.h"
 #include <QtWidgets>
+#include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
 #include <QTemporaryFile>
@@ -107,6 +108,7 @@ void FmtWorkWindow::SetupActionsMenu()
     m_AddFieldsToEnd = pActionsMenu->addAction(tr("Добавить поля в конец"));
     m_InsertFields = pActionsMenu->addAction(tr("Добавить поля перед..."));
     m_CopyFields = pActionsMenu->addAction(QIcon(":/img/CopyHS.png"), tr("Копировать поля в буффер обмена..."));
+    m_PasteFields = pActionsMenu->addAction(QIcon(":/img/PasteHS.png"), tr("Вставить поля из буффера обмена..."));
     pActionsMenu->addSeparator();
     m_saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
     pActionsMenu->addSeparator();
@@ -138,6 +140,8 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_AddFieldsToEnd, SIGNAL(triggered(bool)), SLOT(AddFieldsToEnd()));
     connect(m_InsertFields, SIGNAL(triggered(bool)), SLOT(InsertFieldsBefore()));
     connect(m_EditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
+    connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
+    connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
 }
 
 ConnectionInfo *FmtWorkWindow::connection() const
@@ -741,5 +745,51 @@ void FmtWorkWindow::EditContent()
         FmtEditContentWindow *content = new FmtEditContentWindow(pTable);
         int tab = ui->tabWidget->addTab(content, tr("Содержимое"));
         ui->tabWidget->setCurrentIndex(tab);
+    }
+}
+
+void FmtWorkWindow::CopyFields()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    QList<FmtField*> FldList;
+    if (SelectTableFieldsDailog(tr("Выбор полей для копирования в буффер"), &FldList) == QDialog::Accepted)
+    {
+        QByteArray itemData;
+        QDataStream stream(&itemData, QIODevice::WriteOnly);
+        QMimeData* mimeData = new QMimeData;
+
+        stream << (quint16)FldList.size();
+        foreach (FmtField *fld, FldList) {
+            stream << fld;
+        }
+        mimeData->setData(FmtField::getMimeType(), itemData);
+        clipboard->clear();
+        clipboard->setMimeData(mimeData);
+    }
+}
+
+void FmtWorkWindow::PasteFields()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    const QMimeData *mimeData = clipboard->mimeData();
+
+    if (!mimeData)
+        return;
+
+    if (!mimeData->hasFormat(FmtField::getMimeType()))
+        return;
+
+    QByteArray itemData = mimeData->data(FmtField::getMimeType());
+    QDataStream stream(&itemData, QIODevice::ReadOnly);
+
+    quint16 size = 0;
+    stream >> size;
+
+    for (int i = 0; i < size; i++)
+    {
+        QMap<quint16,QVariant> fldDataMap;
+        stream >> fldDataMap;
+        pTable->addField(fldDataMap);
+        //qDebug() << fldDataMap;
     }
 }

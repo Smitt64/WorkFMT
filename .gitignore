@@ -142,3 +142,5 @@ WorkFMT/build/
 WorkFMT/tables\.dat
 
 WorkFMT/fmtopt\.ini
+
+*.autosave

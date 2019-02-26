@@ -122,7 +122,8 @@ SOURCES += \
     src/widgets/editcontent/import/selecttypepage.cpp \
     src/widgets/editcontent/import/texteditpage.cpp \
     src/widgets/editcontent/import/tablemaptofmtwidget.cpp \
-    src/core/columnalignedlayout.cpp
+    src/core/columnalignedlayout.cpp \
+    src/fmt/undoredo/fmtundotablepastefield.cpp
 
 unix {
     target.path = /usr/lib
@@ -251,7 +252,8 @@ HEADERS += \
     src/widgets/editcontent/import/selecttypepage.h \
     src/widgets/editcontent/import/texteditpage.h \
     src/widgets/editcontent/import/tablemaptofmtwidget.h \
-    h/columnalignedlayout.h
+    h/columnalignedlayout.h \
+    h/fmtundotablepastefield.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

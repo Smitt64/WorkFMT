@@ -81,5 +81,6 @@
         <file>img/addtab-icon.png</file>
         <file>img/addtab-icon-hover.png</file>
         <file>img/addtab-icon-pressed.png</file>
+        <file>img/PasteHS.png</file>
     </qresource>
 </RCC>

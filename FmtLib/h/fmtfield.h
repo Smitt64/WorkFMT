@@ -32,6 +32,7 @@ class FMTLIBSHARED_EXPORT FmtField : public QObject
     friend class FmtFildsModel;
     friend class FmtUndoFieldProperty;
     friend class FmtUndoTableRemoveField;
+    friend QDataStream &operator <<(QDataStream &stream, FmtField *fld);
 public:
     enum
     {
@@ -81,6 +82,8 @@ public:
 
     FmtTable *table();
 
+    static QString getMimeType();
+
 signals:
     void tableIdChanged(quint32);
     void idChanged(quint32);
@@ -107,6 +110,7 @@ private:
     FmtRecId FindFirstEmptyID();
     int save();
     void stroreData(QByteArray *data);
+    void stroreData(QDataStream &stream);
     void restoreData(QByteArray *data);
     bool setDataPrivate(const FmtFldIndex &fld, const QVariant &value);
     FmtTable *pTable;
@@ -124,5 +128,6 @@ private:
     FmtFildsModel *pFieldsModel;
 };
 
+QDataStream &operator <<(QDataStream &stream, FmtField *fld);
 QString FmtFieldPropertyTextById(const FmtFldIndex &fld);
 #endif // FMTFIELD_H

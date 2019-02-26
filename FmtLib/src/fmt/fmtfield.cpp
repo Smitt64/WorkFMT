@@ -676,7 +676,7 @@ bool FmtField::setDataPrivate(const FmtFldIndex &fld, const QVariant &value)
     return true;
 }
 
-void FmtField::stroreData(QByteArray *data)
+void FmtField::stroreData(QDataStream &stream)
 {
     QMap<quint16,QVariant> fldDataMap;
 
@@ -716,9 +716,13 @@ void FmtField::stroreData(QByteArray *data)
             break;
         }
     }
-
-    QDataStream stream(data, QIODevice::WriteOnly);
     stream << fldDataMap;
+}
+
+void FmtField::stroreData(QByteArray *data)
+{
+    QDataStream stream(data, QIODevice::WriteOnly);
+    stroreData(stream);
 }
 
 void FmtField::restoreData(QByteArray *data)
@@ -794,4 +798,15 @@ bool FmtField::isString() const
         hr = true;
 
     return hr;
+}
+
+QString FmtField::getMimeType()
+{
+    return QString("application/FmtFieldList");
+}
+
+QDataStream &operator <<(QDataStream &stream, FmtField *fld)
+{
+    fld->stroreData(stream);
+    return stream;
 }
