@@ -8,6 +8,7 @@ enum
 {
     page_Type = 0,
     page_TextEdit,
+    page_MapFields
 };
 
 class QStandardItemModel;
@@ -22,6 +23,7 @@ public:
 private:
     QWizardPage *createTypePage();
     QWizardPage *createTextEditPage(QStandardItemModel *model);
+    QWizardPage *createMapFieldsPage(QStandardItemModel *model);
 
     QStandardItemModel *pTableModel;
     FmtSharedTablePtr pTable;

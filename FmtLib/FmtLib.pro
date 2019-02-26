@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += widgets sql xml script scripttools
+QT       += widgets sql xml script scripttools core
 CONFIG   += force_debug_info
 TARGET = FmtLib
 TEMPLATE = lib
@@ -123,7 +123,9 @@ SOURCES += \
     src/widgets/editcontent/import/texteditpage.cpp \
     src/widgets/editcontent/import/tablemaptofmtwidget.cpp \
     src/core/columnalignedlayout.cpp \
-    src/fmt/undoredo/fmtundotablepastefield.cpp
+    src/fmt/undoredo/fmtundotablepastefield.cpp \
+    src/widgets/editcontent/import/mapfieldspage.cpp \
+    src/widgets/editcontent/import/mapfildsmodel.cpp
 
 unix {
     target.path = /usr/lib
@@ -152,7 +154,8 @@ FORMS += \
     ui/dataselectdialog.ui \
     src/widgets/editcontent/import/selecttypepage.ui \
     src/widgets/editcontent/import/texteditpage.ui \
-    src/widgets/editcontent/import/tablemaptofmtwidget.ui
+    src/widgets/editcontent/import/tablemaptofmtwidget.ui \
+    src/widgets/editcontent/import/mapfieldspage.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -253,7 +256,9 @@ HEADERS += \
     src/widgets/editcontent/import/texteditpage.h \
     src/widgets/editcontent/import/tablemaptofmtwidget.h \
     h/columnalignedlayout.h \
-    h/fmtundotablepastefield.h
+    h/fmtundotablepastefield.h \
+    src/widgets/editcontent/import/mapfieldspage.h \
+    src/widgets/editcontent/import/mapfildsmodel.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

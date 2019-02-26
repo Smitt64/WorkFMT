@@ -18,6 +18,8 @@ public:
     explicit TextEditPage(FmtSharedTablePtr table, QStandardItemModel *model, QWidget *parent = nullptr);
     ~TextEditPage();
 
+    int nextId() const Q_DECL_OVERRIDE;
+
 private slots:
     void textChanged();
 

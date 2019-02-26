@@ -1,6 +1,7 @@
 #include "texteditpage.h"
 #include "ui_texteditpage.h"
 #include "tablemaptofmtwidget.h"
+#include "importwizard.h"
 #include <QTableView>
 #include <QTextDocument>
 #include <QTextBlock>
@@ -63,4 +64,9 @@ void TextEditPage::textChanged()
         }
         block = block.next();
     }
+}
+
+int TextEditPage::nextId() const
+{
+    return page_MapFields;
 }
