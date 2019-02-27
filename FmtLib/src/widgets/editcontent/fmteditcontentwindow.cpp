@@ -24,7 +24,7 @@ FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *par
     pRemoveRecord = pToolBar->addAction(QIcon(":/img/XSDSchema_RemoveAllButSelectionFromWorkspaceCmd.png"), tr("Удалить запись"));
     pRefrash = pToolBar->addAction(QIcon(":/img/RepeatHS.png"), tr("Обновить записи"));
     pToolBar->addSeparator();
-    pImportAction = pToolBar->addAction(QIcon(":/img/RepeatHS.png"), tr("Загрузить данные"));
+    pImportAction = pToolBar->addAction(QIcon(":/img/ImportContent.png"), tr("Загрузить данные"));
     pTable = table;
 
     try

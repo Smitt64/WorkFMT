@@ -3,6 +3,7 @@
 
 #include <QWizardPage>
 #include <QStandardItemModel>
+#include <QMap>
 #include "fmttable.h"
 
 namespace Ui {
@@ -19,6 +20,7 @@ public:
     ~TextEditPage();
 
     int nextId() const Q_DECL_OVERRIDE;
+    int getColumnForFmtField(const int &fieldId);
 
 private slots:
     void textChanged();
@@ -27,6 +29,7 @@ private:
     QStandardItemModel *pTableModel;
     TableMapToFmtWidget *pTableWidget;
     FmtSharedTablePtr pTable;
+    QMap<FmtNumber5, FmtNumber10> fieldsMap;
     Ui::TextEditPage *ui;
 };
 

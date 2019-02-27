@@ -9,9 +9,15 @@ ImportWizard::ImportWizard(FmtSharedTablePtr table, QWidget *parent) :
 {
     pTable = table;
     pTableModel = new QStandardItemModel();
-    addPage(createTypePage());
-    addPage(createTextEditPage(pTableModel));
-    addPage(createMapFieldsPage(pTableModel));
+
+    QWizardPage *pTypePage = createTypePage();
+    QWizardPage *pTextEditPage = createTextEditPage(pTableModel);
+    QWizardPage *pMapFieldsPage = createMapFieldsPage(pTableModel);
+    static_cast<MapFieldsPage*>(pMapFieldsPage)->setTextEditPage(qobject_cast<TextEditPage*>(pTextEditPage));
+
+    addPage(pTypePage);
+    addPage(pTextEditPage);
+    addPage(pMapFieldsPage);
 }
 
 ImportWizard::~ImportWizard()

@@ -56,7 +56,7 @@ void TableMapToFmtWidget::onSectionCountChanged(int oldCount, int newCount)
     while (alignedLayout->count() < newCount)
     {
         QComboBox *combo = new QComboBox(this);
-        combo->setEditable(true);
+        //combo->setEditable(true);
         combo->setModel(pTable->fieldsModel());
         alignedLayout->addWidget(combo);
     }

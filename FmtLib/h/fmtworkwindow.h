@@ -91,6 +91,7 @@ private slots:
 
     void CopyFields();
     void PasteFields();
+    void OnImport();
 
 protected:
     void paintEvent(QPaintEvent *paintEvent);
@@ -119,7 +120,8 @@ private:
     QPushButton *pAddIndex;
 
     QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu;
-    QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_unloadDbf, *m_loadDbf, *m_MassRemoveFields;
+    QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_MassRemoveFields;
+    QAction *m_unloadDbf, *m_loadDbf, *m_ImportData;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     FmtWorkWndGen *pCodeGenWidget;

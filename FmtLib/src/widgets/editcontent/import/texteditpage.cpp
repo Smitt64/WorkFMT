@@ -34,6 +34,7 @@ void TextEditPage::textChanged()
     QTextBlock block = ui->textEdit->document()->begin();
 
     pTableModel->clear();
+    fieldsMap.clear();
     while(block.isValid())
     {
         QTextCursor blockCursor(block);
@@ -64,9 +65,24 @@ void TextEditPage::textChanged()
         }
         block = block.next();
     }
+
+    for (int i = 0; i < pTableModel->rowCount(); i++)
+    {
+        QComboBox *combo = pTableWidget->columnFilter(i);
+        qDebug() << combo->currentIndex() << combo->currentText();
+        if (combo->currentIndex() != -1)
+            fieldsMap[combo->currentIndex()] = i;
+    }
 }
 
 int TextEditPage::nextId() const
 {
     return page_MapFields;
+}
+
+int TextEditPage::getColumnForFmtField(const int &fieldId)
+{
+    if (!fieldsMap.contains(fieldId))
+        return -1;
+    return fieldsMap[fieldId];
 }

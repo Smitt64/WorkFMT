@@ -23,6 +23,7 @@
 #include "fmrichtextwidget.h"
 #include "fmteditcontentwindow.h"
 #include "fmtfieldstableheaderdelegate.h"
+#include "widgets/editcontent/import/importwizard.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -107,6 +108,7 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu = new QMenu(this);
     m_AddFieldsToEnd = pActionsMenu->addAction(tr("Добавить поля в конец"));
     m_InsertFields = pActionsMenu->addAction(tr("Добавить поля перед..."));
+    pActionsMenu->addSeparator();
     m_CopyFields = pActionsMenu->addAction(QIcon(":/img/CopyHS.png"), tr("Копировать поля в буффер обмена..."));
     m_PasteFields = pActionsMenu->addAction(QIcon(":/img/PasteHS.png"), tr("Вставить поля из буффера обмена..."));
     pActionsMenu->addSeparator();
@@ -114,9 +116,11 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu->addSeparator();
     m_MassRemoveFields = pActionsMenu->addAction(QIcon(":/img/remove.png"), tr("Удалить поля из таблицы"));
     pActionsMenu->addSeparator();
-    m_EditContent = pActionsMenu->addAction(tr("Редактировать содержимое"));
-    m_unloadDbf = pActionsMenu->addAction(tr("Выгрузить содержимое"));
-    m_loadDbf = pActionsMenu->addAction(tr("Загрузить содержимое"));
+    m_EditContent = pActionsMenu->addAction(QIcon(":/img/EditTableHS.png"), tr("Редактировать содержимое"));
+    m_unloadDbf = pActionsMenu->addAction(tr("Выгрузить содержимое в *.dat"));
+    m_loadDbf = pActionsMenu->addAction(tr("Загрузить содержимое из *.dat"));
+    pActionsMenu->addSeparator();
+    m_ImportData = pActionsMenu->addAction(QIcon(":/img/ImportContent.png"), tr("Загрузить данные"));
     pActionsMenu->addSeparator();
     m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
     m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
@@ -142,6 +146,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_EditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
     connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
     connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
+    connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
 ConnectionInfo *FmtWorkWindow::connection() const
@@ -792,4 +797,10 @@ void FmtWorkWindow::PasteFields()
         pTable->addField(fldDataMap);
         //qDebug() << fldDataMap;
     }
+}
+
+void FmtWorkWindow::OnImport()
+{
+    ImportWizard dlg(pTable);
+    dlg.exec();
 }
