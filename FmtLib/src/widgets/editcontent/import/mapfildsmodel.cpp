@@ -39,7 +39,9 @@ QVariant MapFildsModel::data(const QModelIndex &index, int role) const
 
 bool MapFildsModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    m_Data[index.row()] = value;
+    if (role == Qt::EditRole)
+        m_Data[index.row()] = value;
+    qDebug() << value;
     return true;
 }
 

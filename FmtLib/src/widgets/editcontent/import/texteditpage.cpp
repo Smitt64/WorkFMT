@@ -21,6 +21,7 @@ TextEditPage::TextEditPage(FmtSharedTablePtr table, QStandardItemModel *model, Q
     pTableWidget->tableWidget()->setModel(pTableModel);
     ui->verticalLayout->addWidget(pTableWidget);
     connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChanged()));
+    connect(ui->textEdit, SIGNAL(textChanged()), this, SIGNAL(tableChanged()));
 }
 
 TextEditPage::~TextEditPage()
@@ -66,7 +67,7 @@ void TextEditPage::textChanged()
         block = block.next();
     }
 
-    for (int i = 0; i < pTableModel->rowCount(); i++)
+    for (int i = 0; i < pTable->rowCount(); i++)
     {
         QComboBox *combo = pTableWidget->columnFilter(i);
         qDebug() << combo->currentIndex() << combo->currentText();

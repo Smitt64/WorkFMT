@@ -22,6 +22,9 @@ public:
     int nextId() const Q_DECL_OVERRIDE;
     int getColumnForFmtField(const int &fieldId);
 
+signals:
+    void tableChanged();
+
 private slots:
     void textChanged();
 

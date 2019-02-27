@@ -25,7 +25,11 @@ MapFieldsPage::~MapFieldsPage()
 void MapFieldsPage::setTextEditPage(TextEditPage *page)
 {
     pTextPage = page;
+    connect(pTextPage, SIGNAL(tableChanged()), this, SLOT(tableChanged()));
+}
 
+void MapFieldsPage::tableChanged()
+{
     for (int i = 0; i < pTable->fieldsCount(); i++)
     {
         int col = pTextPage->getColumnForFmtField(i);

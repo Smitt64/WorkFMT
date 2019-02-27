@@ -21,6 +21,9 @@ public:
 
     void setTextEditPage(TextEditPage *page);
 
+private slots:
+    void tableChanged();
+
 private:
     Ui::MapFieldsPage *ui;
     FmtSharedTablePtr pTable;
