@@ -24,7 +24,7 @@ int MapFildsModel::columnCount(const QModelIndex &parent) const
 
 QVariant MapFildsModel::data(const QModelIndex &index, int role) const
 {
-    if (role != Qt::DisplayRole)
+    if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
 
     FmtField *pFld = pTable->field(static_cast<FmtNumber5>(index.row()));
@@ -41,7 +41,6 @@ bool MapFildsModel::setData(const QModelIndex &index, const QVariant &value, int
 {
     if (role == Qt::EditRole)
         m_Data[index.row()] = value;
-    qDebug() << value;
     return true;
 }
 

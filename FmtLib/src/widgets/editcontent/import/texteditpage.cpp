@@ -21,7 +21,8 @@ TextEditPage::TextEditPage(FmtSharedTablePtr table, QStandardItemModel *model, Q
     pTableWidget->tableWidget()->setModel(pTableModel);
     ui->verticalLayout->addWidget(pTableWidget);
     connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(textChanged()));
-    connect(ui->textEdit, SIGNAL(textChanged()), this, SIGNAL(tableChanged()));
+    connect(pTableModel, &QStandardItemModel::columnsInserted, this, &TextEditPage::updateFieldsMap);
+    connect(pTableModel, &QStandardItemModel::columnsRemoved, this, &TextEditPage::updateFieldsMap);
 }
 
 TextEditPage::~TextEditPage()
@@ -66,14 +67,6 @@ void TextEditPage::textChanged()
         }
         block = block.next();
     }
-
-    for (int i = 0; i < pTable->rowCount(); i++)
-    {
-        QComboBox *combo = pTableWidget->columnFilter(i);
-        qDebug() << combo->currentIndex() << combo->currentText();
-        if (combo->currentIndex() != -1)
-            fieldsMap[combo->currentIndex()] = i;
-    }
 }
 
 int TextEditPage::nextId() const
@@ -86,4 +79,30 @@ int TextEditPage::getColumnForFmtField(const int &fieldId)
     if (!fieldsMap.contains(fieldId))
         return -1;
     return fieldsMap[fieldId];
+}
+
+void TextEditPage::updateFieldsMap()
+{
+    for (int i = 0; i < pTableModel->columnCount(); i++)
+    {
+        QComboBox *combo = pTableWidget->columnFilter(i);
+
+        if (combo == Q_NULLPTR)
+            continue;
+
+        combo->disconnect();
+        connect(combo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index)
+        {
+            fieldsMap.clear();
+            for (int j = 0; j < pTableModel->columnCount(); j++)
+            {
+                QComboBox *comboBox = pTableWidget->columnFilter(j);
+                int comboBoxIndex = comboBox->currentIndex();
+                fieldsMap[comboBoxIndex] = j + 1;
+            }
+            qDebug() << fieldsMap;
+        });
+        connect(combo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(tableMapChanged()));
+    }
+    emit tableMapChanged();
 }

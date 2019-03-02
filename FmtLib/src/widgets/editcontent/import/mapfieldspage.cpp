@@ -25,7 +25,7 @@ MapFieldsPage::~MapFieldsPage()
 void MapFieldsPage::setTextEditPage(TextEditPage *page)
 {
     pTextPage = page;
-    connect(pTextPage, SIGNAL(tableChanged()), this, SLOT(tableChanged()));
+    connect(pTextPage, SIGNAL(tableMapChanged()), this, SLOT(tableChanged()));
 }
 
 void MapFieldsPage::tableChanged()
@@ -34,6 +34,8 @@ void MapFieldsPage::tableChanged()
     {
         int col = pTextPage->getColumnForFmtField(i);
         if (col != -1)
-            pMapModel->setData(pMapModel->index(0, 1), QString("${%1}").arg(col));
+            pMapModel->setData(pMapModel->index(i, 1), QString("${%1}").arg(col));
+        else
+            pMapModel->setData(pMapModel->index(i, 1), QString(""));
     }
 }

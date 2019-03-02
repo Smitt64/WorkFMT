@@ -23,10 +23,11 @@ public:
     int getColumnForFmtField(const int &fieldId);
 
 signals:
-    void tableChanged();
+    void tableMapChanged();
 
 private slots:
     void textChanged();
+    void updateFieldsMap();
 
 private:
     QStandardItemModel *pTableModel;

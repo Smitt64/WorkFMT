@@ -20,6 +20,7 @@ public:
 
     QTableView *tableWidget();
     QComboBox *columnFilter(int columnIndex);
+    int comboBoxIndex(QComboBox *combo);
 
 private slots:
     void invalidateAlignedLayout();

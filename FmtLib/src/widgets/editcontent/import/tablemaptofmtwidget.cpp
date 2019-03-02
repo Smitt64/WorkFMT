@@ -34,12 +34,27 @@ QTableView *TableMapToFmtWidget::tableWidget()
 
 QComboBox *TableMapToFmtWidget::columnFilter(int columnIndex)
 {
-    return (QComboBox*)alignedLayout->itemAt(columnIndex)->widget();
+    if (columnIndex >= alignedLayout->count())
+        return Q_NULLPTR;
+    return qobject_cast<QComboBox*>(alignedLayout->itemAt(columnIndex)->widget());
 }
 
 void TableMapToFmtWidget::invalidateAlignedLayout()
 {
     alignedLayout->invalidate();
+}
+
+int TableMapToFmtWidget::comboBoxIndex(QComboBox *combo)
+{
+    int index = -1;
+    for (int i = 0; i < alignedLayout->count(); i++)
+    {
+        QComboBox *obj = qobject_cast<QComboBox*>(alignedLayout->itemAt(i)->widget());
+
+        if (obj == combo)
+            index = i;
+    }
+    return index;
 }
 
 void TableMapToFmtWidget::onSectionCountChanged(int oldCount, int newCount)
