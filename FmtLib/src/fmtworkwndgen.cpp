@@ -1,6 +1,7 @@
 #include "h/fmtworkwndgen.h"
 #include "ui_fmtworkwndgen.h"
 #include "fmtgeninterface.h"
+#include "geninterfacefactorymodel.h"
 #include "highlighter.h"
 #include "codeeditor.h"
 #include <QFileDialog>
@@ -10,7 +11,7 @@
 FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::FmtWorkWndGen),
-    pCurrentHighlighter(NULL)
+    pCurrentHighlighter(nullptr)
 {
     ui->setupUi(this);
 
@@ -24,9 +25,10 @@ FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
 
     connect(pGenType, SIGNAL(currentIndexChanged(QString)), SLOT(interfaceComboSelected(QString)));
     connect(pActionRun, SIGNAL(triggered(bool)), SLOT(generate()));
-    pGenType->addItems(fmtGenInterfaces());
 
-    qDebug() << fmtGenAliases();
+    pGenModel = new GenInterfaceFactoryModel(this);
+    pGenType->setModel(pGenModel);//->addItems(fmtGenInterfaces());
+    pGenType->setModelColumn(GenInterfaceFactoryModel::FieldAlias);
 
     pEditor = new CodeEditor(this);
     pEditor->setReadOnly(true);
@@ -47,12 +49,19 @@ void FmtWorkWndGen::setTable(QSharedPointer<FmtTable> table)
     pTable = table;
 }
 
+QString FmtWorkWndGen::getInterfaceId() const
+{
+    int index = pGenType->currentIndex();
+    QString id = pGenModel->data(pGenModel->index(index, GenInterfaceFactoryModel::FieldKey), Qt::DisplayRole).toString();
+    return id;
+}
+
 void FmtWorkWndGen::onFinish(const QByteArray &data)
 {
     if (pCurrentHighlighter)
         delete pCurrentHighlighter;
 
-    FmtGenInterface *pInterface = m_Interfaces[pGenType->currentText()];
+    FmtGenInterface *pInterface = m_Interfaces[getInterfaceId()];
     switch(pInterface->getContentType())
     {
     case FmtGenInterface::GenSql:
@@ -70,14 +79,15 @@ void FmtWorkWndGen::onFinish(const QByteArray &data)
 
 void FmtWorkWndGen::interfaceComboSelected(const QString &value)
 {
-    FmtGenInterface *pInterface = NULL;
+    const QString id = getInterfaceId();
+    FmtGenInterface *pInterface = Q_NULLPTR;
 
-    if (m_Interfaces.contains(value))
-        pInterface = m_Interfaces[value];
+    if (m_Interfaces.contains(id))
+        pInterface = m_Interfaces[id];
     else
     {
-        pInterface = fmtGenInterfaceCreate(value);
-        m_Interfaces[value] = pInterface;
+        pInterface = fmtGenInterfaceCreate(id);
+        m_Interfaces[id] = pInterface;
     }
     connect(pInterface, SIGNAL(finish(QByteArray)), SLOT(onFinish(QByteArray)));
     pActionProperty->setEnabled(pInterface->hasPropertes());
@@ -85,7 +95,7 @@ void FmtWorkWndGen::interfaceComboSelected(const QString &value)
 
 void FmtWorkWndGen::generate()
 {
-    m_Interfaces[pGenType->currentText()]->start(pTable);
+    m_Interfaces[getInterfaceId()]->start(pTable);
     pActionRun->setEnabled(false);
 }
 
@@ -99,13 +109,13 @@ void FmtWorkWndGen::UpdateSaveAction()
 
 void FmtWorkWndGen::onProperty()
 {
-    m_Interfaces[pGenType->currentText()]->propertyEditor(this);
+    m_Interfaces[getInterfaceId()]->propertyEditor(this);
 }
 
 void FmtWorkWndGen::onSave()
 {
     QString filter;
-    FmtGenInterface *pInterface = m_Interfaces[pGenType->currentText()];
+    FmtGenInterface *pInterface = m_Interfaces[getInterfaceId()];
 
     switch(pInterface->getContentType())
     {

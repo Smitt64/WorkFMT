@@ -8,14 +8,15 @@ namespace Ui {
 class FmtWorkWndGen;
 }
 
+class GenInterfaceFactoryModel;
 class CodeEditor;
 class FmtWorkWndGen : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit FmtWorkWndGen(QWidget *parent = 0);
-    ~FmtWorkWndGen();
+    explicit FmtWorkWndGen(QWidget *parent = Q_NULLPTR);
+    virtual ~FmtWorkWndGen();
 
     void setTable(QSharedPointer<FmtTable> table);
 
@@ -28,8 +29,10 @@ private slots:
 
 private:
     void UpdateSaveAction();
+    QString getInterfaceId() const;
     Ui::FmtWorkWndGen *ui;
     QComboBox *pGenType;
+    GenInterfaceFactoryModel *pGenModel;
 
     CodeEditor *pEditor;
     QAction *pActionRun, *pActionProperty, *pActionSave;

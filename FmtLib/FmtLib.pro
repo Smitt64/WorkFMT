@@ -125,7 +125,8 @@ SOURCES += \
     src/core/columnalignedlayout.cpp \
     src/fmt/undoredo/fmtundotablepastefield.cpp \
     src/widgets/editcontent/import/mapfieldspage.cpp \
-    src/widgets/editcontent/import/mapfildsmodel.cpp
+    src/widgets/editcontent/import/mapfildsmodel.cpp \
+    src/models/geninterfacefactorymodel.cpp
 
 unix {
     target.path = /usr/lib
@@ -258,7 +259,8 @@ HEADERS += \
     h/columnalignedlayout.h \
     h/fmtundotablepastefield.h \
     src/widgets/editcontent/import/mapfieldspage.h \
-    src/widgets/editcontent/import/mapfildsmodel.h
+    src/widgets/editcontent/import/mapfildsmodel.h \
+    h/geninterfacefactorymodel.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

@@ -4,6 +4,7 @@
 #include <QString>
 #include <QHash>
 #include <QMap>
+#include <QStandardItemModel>
 
 #include <QDebug>
 
@@ -81,6 +82,11 @@ public:
             list.append(value->alias());
         }
         return list;
+    }
+
+    QString getAlias(const IdType &id) const
+    {
+        return _FmtLibFactory[id]->alias();
     }
 
     qint32 count() const

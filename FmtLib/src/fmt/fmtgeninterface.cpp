@@ -85,6 +85,11 @@ qint32 fmtGenInterfacesCount()
     return FmtGenInterface::m_pGenInterfaceFactory.count();
 }
 
+void fmtGenInterfaces(QString &alias, QString &label)
+{
+
+}
+
 FmtGenInterface *fmtGenInterfaceCreate(const QString &alias)
 {
     return FmtGenInterface::m_pGenInterfaceFactory.create(alias);
