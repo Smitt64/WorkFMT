@@ -75,6 +75,16 @@ QStringList fmtGenInterfaces()
     return FmtGenInterface::m_pGenInterfaceFactory.getIds();
 }
 
+QStringList fmtGenAliases()
+{
+    return FmtGenInterface::m_pGenInterfaceFactory.getAliases();
+}
+
+qint32 fmtGenInterfacesCount()
+{
+    return FmtGenInterface::m_pGenInterfaceFactory.count();
+}
+
 FmtGenInterface *fmtGenInterfaceCreate(const QString &alias)
 {
     return FmtGenInterface::m_pGenInterfaceFactory.create(alias);

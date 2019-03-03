@@ -77,11 +77,11 @@ void FmtApplication::init()
 
     initDbgHelp();
 
-    registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql");
-    registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate");
-    registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate");
-    registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate");
-    registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix");
+    registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql", tr("Скрипт TablesSql"));
+    registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate", tr("Шиблоны btrv"));
+    registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate", tr("Объектный сервис ввода"));
+    registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate", tr("Класс для импорта в RSL"));
+    registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix", tr("PL/SQL скрип наполнения fmt"));
 }
 
 void FmtApplication::initDbgHelp()

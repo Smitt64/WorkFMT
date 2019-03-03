@@ -53,14 +53,16 @@ public:
 };
 
 template<class T>
-void registerFmtGenInterface(const QString &alias)
+void registerFmtGenInterface(const QString &alias, const QString &label)
 {
-    FmtGenInterface::m_pGenInterfaceFactory.add<T>(alias);
-    qInfo(logCore()) << "Interface registered: " << alias;
+    FmtGenInterface::m_pGenInterfaceFactory.add<T>(alias, label);
+    qInfo(logCore()) << "Interface registered: " << alias << ", Label: " << label;
 }
 
 FmtGenInterface *fmtGenInterfaceCreate(const QString &alias);
 QStringList fmtGenInterfaces();
+QStringList fmtGenAliases();
+qint32 fmtGenInterfacesCount();
 QTextStream &tab(QTextStream &s);
 
 #endif // FMTGENINTERFACE_H

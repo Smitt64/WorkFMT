@@ -26,6 +26,8 @@ FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
     connect(pActionRun, SIGNAL(triggered(bool)), SLOT(generate()));
     pGenType->addItems(fmtGenInterfaces());
 
+    qDebug() << fmtGenAliases();
+
     pEditor = new CodeEditor(this);
     pEditor->setReadOnly(true);
     setCentralWidget(pEditor);

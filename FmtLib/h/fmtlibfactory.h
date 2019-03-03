@@ -11,19 +11,24 @@ template <class Base>
 class AbstractCreator
 {
 public:
-    AbstractCreator() { }
+    AbstractCreator(const QString &pAlias) { m_alias = pAlias; }
     virtual ~AbstractCreator() { }
     virtual Base *create() = 0;
+    const QString alias() const { return m_alias; }
+
+private:
+    QString m_alias;
 };
 
 template <class C, class Base>
 class Creator : public AbstractCreator<Base>
 {
 public:
-    Creator() { }
+    Creator(const QString &alias) :
+        AbstractCreator<Base>(alias)
+    { }
     virtual ~Creator() { }
-    Base *create() { return (Base*)new C(); }
-
+    Base *create() { return static_cast<Base*>(new C()); }
 };
 
 template <class Base, class IdType>
@@ -38,9 +43,9 @@ public:
     virtual ~FmtLibFactory() { }
 
     template <class C>
-    void add(const IdType &id)
+    void add(const IdType &id, const QString &alias)
     {
-        registerClass(id, new Creator<C, Base>());
+        registerClass(id, new Creator<C, Base>(alias));
     }
 
     Base *create(const IdType &id) const
@@ -63,6 +68,24 @@ public:
     QList<IdType> getIds() const
     {
         return _FmtLibFactory.keys();
+    }
+
+    QStringList getAliases() const
+    {
+        QStringList list;
+        QMapIterator<typename FmtLibFactoryMap::key_type, typename FmtLibFactoryMap::mapped_type> iter(_FmtLibFactory);
+        while (iter.hasNext())
+        {
+            iter.next();
+            const typename FmtLibFactoryMap::mapped_type &value = iter.value();
+            list.append(value->alias());
+        }
+        return list;
+    }
+
+    qint32 count() const
+    {
+        return _FmtLibFactory.count();
     }
 protected:
     void registerClass(const IdType &id, AbstractFmtLibFactory *p)
