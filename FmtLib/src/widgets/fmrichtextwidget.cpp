@@ -2,6 +2,7 @@
 #include "fmtcore.h"
 #include "fmtfield.h"
 #include <QSpacerItem>
+#include <QRegularExpression>
 
 FmRichTextWidget::FmRichTextWidget(QWidget *parent) :
     QWizardPage(parent)
@@ -140,22 +141,26 @@ void FmRichTextWidget::ReadConetent(FmtSharedTablePtr &pTable, const FmRichTextR
                 fcur2.select(QTextCursor::LineUnderCursor);
                 fcur3.select(QTextCursor::LineUnderCursor);
 
-                FmtField *fld = Q_NULLPTR;
-                if (prm.insertBefore < 0)
-                    fld = pTable->addField(fcur.selectedText().simplified(), fmtt_INT);
-                else
-                    fld = pTable->insertField(prm.insertBefore, fcur.selectedText().simplified(), fmtt_INT);
-
                 int size = 0;
                 QString comment = fcur3.selectedText().simplified();
-                FmtFldType type = GetTypeSize(fcur2.selectedText().simplified(), &size, comment);
+                CreateFieldParamList fldsList = GetFieldsToCreate(fcur2.selectedText().simplified(), comment);
 
-                if (pStringCheck->checkState() != Qt::Unchecked)
-                    ++ size;
+                foreach(const FmRichTextCreateFieldParam &fldParam, fldsList)
+                {
+                    FmtField *fld = Q_NULLPTR;
+                    size = fldParam.size;
 
-                fld->setType(type);
-                fld->setComment(comment);
-                fld->setSize(size);
+                    if (prm.insertBefore < 0)
+                        fld = pTable->addField(fcur.selectedText().simplified(), fldParam.type);
+                    else
+                        fld = pTable->insertField(prm.insertBefore, fcur.selectedText().simplified(), fldParam.type);
+
+                    if (pStringCheck->checkState() != Qt::Unchecked)
+                        ++ size;
+
+                    fld->setComment(comment);
+                    fld->setSize(size);
+                }
             }
             break;
         }
@@ -164,124 +169,108 @@ void FmRichTextWidget::ReadConetent(FmtSharedTablePtr &pTable, const FmRichTextR
     }
 }
 
-FmtFldType FmRichTextWidget::GetTypeSize(const QString &str, int *size, const QString &comment)
+void FmRichTextWidget::AddToCreateFieldParamList(CreateFieldParamList &list, const FmtFldType &type, const int &size)
 {
-    FmtFldType type = fmtt_INT;
-    *size = fmtTypeSize(type);
+    FmRichTextCreateFieldParam param;
+    param.type = type;
+    param.size = size;
 
+    if (size == CALC_SIZE)
+        param.size = fmtTypeSize(param.type);
+
+    list.append(param);
+}
+
+CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, const QString &comment)
+{
+    CreateFieldParamList CreateList;
+
+    QRegularExpressionMatch match;
     if (str.contains("LONG", Qt::CaseInsensitive))
-    {
-        type = fmtt_LONG;
-        *size = fmtTypeSize(type);
-    }
+        AddToCreateFieldParamList(CreateList, fmtt_LONG);
     else if (str.contains("BIGINT", Qt::CaseInsensitive))
+        AddToCreateFieldParamList(CreateList, fmtt_BIGINT);
+    else if (str.contains(QRegularExpression("NUMBER[\\n\\s\\t]*\\((\\d+)\\)", QRegularExpression::CaseInsensitiveOption), &match))
     {
-        type = fmtt_BIGINT;
-        *size = fmtTypeSize(type);
-    }
-    else if (str.contains("NUMBER", Qt::CaseInsensitive))
-    {
-        QRegExp rx("\\((\\d+)\\)");
-        int pos = 0;
-        if ((pos = rx.indexIn(str, pos)) != -1)
-        {
-            *size = rx.cap(1).toInt();
-            if (*size == 10)
-                type = fmtt_LONG;
-            else if (*size == 19)
-                type = fmtt_BIGINT;
-            else
-                type = fmtt_INT;
-        }
-        *size = fmtTypeSize(type);
+        FmtFldType type = fmtt_INT;
+        int size = match.captured(1).toInt();
+
+        if (size == 10)
+            type = fmtt_LONG;
+        else if (size == 19)
+            type = fmtt_BIGINT;
+        else
+            type = fmtt_INT;
+
+        AddToCreateFieldParamList(CreateList, type);
     }
     else if (str.contains("FLOAT", Qt::CaseInsensitive))
-    {
-        type = fmtt_FLOAT;
-        *size = fmtTypeSize(type);
-    }
+        AddToCreateFieldParamList(CreateList, fmtt_FLOAT);
     else if (str.contains("DOUBLE", Qt::CaseInsensitive))
-    {
-        type = fmtt_DOUBLE;
-        *size = fmtTypeSize(type);
-    }
+        AddToCreateFieldParamList(CreateList, fmtt_DOUBLE);
     else if (str.contains("MONEY", Qt::CaseInsensitive))
+        AddToCreateFieldParamList(CreateList, fmtt_MONEY);
+    else if (str.contains(QRegularExpression("STRING|VARCHAR2|SNR|UCHR[\\n\\s\\t]*\\((\\d+)\\)", QRegularExpression::CaseInsensitiveOption), &match))
     {
-        type = fmtt_MONEY;
-        *size = fmtTypeSize(type);
-    }
-    else if (str.contains("STRING", Qt::CaseInsensitive))
-    {
-        type = fmtt_STRING;
-        QRegExp rx("\\((\\d+)\\)");
-        int pos = 0;
-        if ((pos = rx.indexIn(str, pos)) != -1)
-        {
-            *size = rx.cap(1).toInt();
-        }
-    }
-    else if (str.contains("VARCHAR2", Qt::CaseInsensitive))
-    {
-        type = fmtt_STRING;
-        QRegExp rx("\\((\\d+)\\)");
-        int pos = 0;
-        if ((pos = rx.indexIn(str, pos)) != -1)
-        {
-            *size = rx.cap(1).toInt() + 1;
-        }
-    }
-    else if (str.contains("SNR", Qt::CaseInsensitive))
-    {
-        type = fmtt_SNR;
-        QRegExp rx("\\((\\d+)\\)");
-        int pos = 0;
-        if ((pos = rx.indexIn(str, pos)) != -1)
-        {
-            *size = rx.cap(1).toInt();
-        }
+        FmtFldType type = fmtt_STRING;
+        int size = match.captured(1).toInt();
+        AddToCreateFieldParamList(CreateList, type, size);
     }
     else if (str.contains("DATE", Qt::CaseInsensitive))
     {
-        type = fmtt_DATE;
-        *size = fmtTypeSize(type);
+        FmtFldType type = fmtt_DATE;
 
         if (str.contains("TIME", Qt::CaseInsensitive) || str.contains("Время", Qt::CaseInsensitive) || comment.contains("TIME", Qt::CaseInsensitive) || comment.contains("Время", Qt::CaseInsensitive))
             type = fmtt_TIME;
+
+        AddToCreateFieldParamList(CreateList, type);
     }
     else if (str.contains("TIME", Qt::CaseInsensitive))
+        AddToCreateFieldParamList(CreateList, fmtt_TIME);
+    else if (str.contains(QRegularExpression("CHR|CHAR[\\n\\s\\t]*\\((\\d+)\\)*", QRegularExpression::CaseInsensitiveOption), &match))
     {
-        type = fmtt_TIME;
-        *size = fmtTypeSize(type);
-    }
-    else if (str.contains("CHR", Qt::CaseInsensitive) || str.contains("CHAR", Qt::CaseInsensitive))
-    {
-        type = fmtt_CHR;
-        QRegExp rx("\\((\\d+)\\)");
-        int pos = 0;
-        if ((pos = rx.indexIn(str, pos)) != -1)
-        {
-            *size = rx.cap(1).toInt();
-        }
+        FmtFldType type = fmtt_CHR;
+        int size = match.captured(1).toInt();
+
+        if (size > 1)
+            type = fmtt_STRING;
+
+        if (!size)
+            size = 1;
+
+        AddToCreateFieldParamList(CreateList, type, size);
     }
     else if (str.contains("FLAG", Qt::CaseInsensitive))
-    {
-        type = fmtt_CHR;
-        *size = 1;
-    }
-    else if (str.contains("UCHR", Qt::CaseInsensitive))
-    {
-        type = fmtt_CHR;
-        QRegExp rx("\\((\\d+)\\)");
-        int pos = 0;
-        if ((pos = rx.indexIn(str, pos)) != -1)
-        {
-            *size = rx.cap(1).toInt();
-        }
-    }
+        AddToCreateFieldParamList(CreateList, fmtt_CHR, 1);
     else if (str.contains("NUMERIC", Qt::CaseInsensitive))
+        AddToCreateFieldParamList(CreateList, fmtt_NUMERIC);
+    // форматы ТЗ
+    else if (str.contains(QRegularExpression("N(\\d+)"), &match))
     {
-        type = fmtt_NUMERIC;
-        *size = fmtTypeSize(type);
+        if (match.captured(1) == "10")
+            AddToCreateFieldParamList(CreateList, fmtt_LONG);
+        else if (match.captured(1) == "5")
+            AddToCreateFieldParamList(CreateList, fmtt_INT);
     }
-    return type;
+    else if (str.contains(QRegularExpression("[AaАа](\\d+)"), &match))
+    {
+        bool ok = false;
+        int size = match.captured(1).toInt(&ok) + 1;
+
+        if (!ok)
+            size = -1;
+
+        AddToCreateFieldParamList(CreateList, fmtt_STRING, size);
+    }
+    else if (str.contains(QRegularExpression("(dd.mm.yyyy)[\\n\\s\\t]+(hh:mm:ss)"), &match))
+    {
+        AddToCreateFieldParamList(CreateList, fmtt_DATE);
+        AddToCreateFieldParamList(CreateList, fmtt_TIME);
+    }
+    else if (str.contains(QRegularExpression("(dd.mm.yyyy)"), &match))
+        AddToCreateFieldParamList(CreateList, fmtt_DATE);
+    else if (str.contains(QRegularExpression("(hh:mm:ss)"), &match))
+        AddToCreateFieldParamList(CreateList, fmtt_TIME);
+
+    return CreateList;
 }

@@ -151,6 +151,10 @@ QString fmtTypeForId(const FmtFldType &id)
 
 quint16 fmtTypeSize(const FmtFldType &Type)
 {
+    FmtFldType type = Type;
+    if (type == fmtt_DATETIME)
+        type = fmtt_DATE;
+
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
     {

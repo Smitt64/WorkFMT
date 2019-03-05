@@ -63,6 +63,8 @@ enum FmtKeyFlags
 
 enum fmtTypes
 {
+    fmtt_DATETIME = -1,
+
     fmtt_INT = 0,
     fmtt_LONG = 1,
     fmtt_BIGINT = 26,

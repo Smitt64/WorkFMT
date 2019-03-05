@@ -12,7 +12,7 @@
 typedef qint16  FmtNumber5;
 typedef qint32  FmtNumber10;
 
-typedef quint16 FmtFldType;
+typedef qint16  FmtFldType;
 typedef qint16  FmtFldIndex;
 typedef quint64 FmtRecId;
 

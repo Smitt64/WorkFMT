@@ -4,11 +4,20 @@
 #include <QtWidgets>
 #include <fmttable.h>
 
+#define CALC_SIZE -2
 typedef struct
 {
     int insertBefore;
     bool readComment, readTableName, ignoreFirstRow;
 }FmRichTextReadParam;
+
+typedef struct
+{
+    FmtFldType type;
+    int size;
+}FmRichTextCreateFieldParam;
+
+typedef QList<FmRichTextCreateFieldParam> CreateFieldParamList;
 
 class FmRichTextWidget : public QWizardPage
 {
@@ -25,7 +34,8 @@ private slots:
     void onTextChanged();
 
 private:
-    FmtFldType GetTypeSize(const QString &str, int *size, const QString &comment = QString());
+    CreateFieldParamList GetFieldsToCreate(const QString &str, const QString &comment = QString());
+    void AddToCreateFieldParamList(CreateFieldParamList &list, const FmtFldType &type, const int &size = CALC_SIZE);
     QCheckBox *m_IngnoreNumbersCol, *m_IgnoreTitleRow;
     QLabel *pNameLabel, *pTypeLabel, *pCommentLabel;
     QComboBox *pNameCombo, *pTypeCombo, *pCommentCombo;
