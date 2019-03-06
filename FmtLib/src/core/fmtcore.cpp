@@ -574,9 +574,21 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
         progress.open();
         if (dlg.getCreateTableFlag())
         {
-            stat = pTable->createDbTable();
+            QString err;
+            stat = pTable->createDbTable(&err);
+
+            if (stat)
+            {
+                QMessageBox msg(parent);
+                msg.setWindowTitle(QObject::tr("Ошибка"));
+                msg.setIcon(QMessageBox::Critical);
+                msg.setText(QObject::tr("Не удалось выполнить команду <b>CREATE TABLE</b>"));
+                msg.setDetailedText(err);
+                msg.exec();
+            }
             QApplication::processEvents();
         }
+
         if (!stat && dlg.getCreteIndexFlag())
         {
             QTemporaryFile tmp;

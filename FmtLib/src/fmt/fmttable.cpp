@@ -1316,7 +1316,7 @@ QString FmtTable::getCommentSql()
     return sql;
 }
 
-int FmtTable::createDbTable()
+int FmtTable::createDbTable(QString *err)
 {
     int stat = 0;
 
@@ -1330,7 +1330,7 @@ int FmtTable::createDbTable()
     {
         QString sql = generateCreateTableSql();
         QSqlQuery q(sql, db);
-        stat = ExecuteQuery(&q);
+        stat = ExecuteQuery(&q, err);
 
         if (!stat)
         {

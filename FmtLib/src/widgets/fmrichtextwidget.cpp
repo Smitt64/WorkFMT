@@ -89,10 +89,28 @@ void FmRichTextWidget::onTextChanged()
                 fcur.select(QTextCursor::LineUnderCursor);
                 m_ColumnsItems.appendRow(new QStandardItem(fcur.selectedText()));
             }
+
+            TryAutoMapFields();
             break;
         }
         block = block.next();
     }
+}
+
+void FmRichTextWidget::TryAutoMapFields()
+{
+    SetAutoMapField(pNameCombo, "Код");
+    SetAutoMapField(pTypeCombo, "Тип");
+    SetAutoMapField(pCommentCombo, "Комментарий");
+}
+
+void FmRichTextWidget::SetAutoMapField(QComboBox *pCombo, const QString &name)
+{
+    QList<QStandardItem*> result;
+    result = m_ColumnsItems.findItems(name, Qt::MatchContains);
+
+    if (!result.empty())
+        pCombo->setCurrentIndex(result[0]->row());
 }
 
 void FmRichTextWidget::ReadConetent(FmtSharedTablePtr &pTable, const FmRichTextReadParam &prm)
@@ -210,10 +228,14 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
         AddToCreateFieldParamList(CreateList, fmtt_DOUBLE);
     else if (str.contains("MONEY", Qt::CaseInsensitive))
         AddToCreateFieldParamList(CreateList, fmtt_MONEY);
-    else if (str.contains(QRegularExpression("STRING|VARCHAR2|SNR|UCHR[\\n\\s\\t]*\\((\\d+)\\)", QRegularExpression::CaseInsensitiveOption), &match))
+    else if (str.contains(QRegularExpression("(STRING|VARCHAR2|SNR|UCHR)[\\n\\s\\t]*\\((\\d+)\\)", QRegularExpression::CaseInsensitiveOption), &match))
     {
         FmtFldType type = fmtt_STRING;
-        int size = match.captured(1).toInt();
+        int size = match.captured(2).toInt();
+
+        if (match.captured(1).contains("VARCHAR2", Qt::CaseInsensitive))
+            size ++;
+
         AddToCreateFieldParamList(CreateList, type, size);
     }
     else if (str.contains("DATE", Qt::CaseInsensitive))
@@ -227,10 +249,10 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
     }
     else if (str.contains("TIME", Qt::CaseInsensitive))
         AddToCreateFieldParamList(CreateList, fmtt_TIME);
-    else if (str.contains(QRegularExpression("CHR|CHAR[\\n\\s\\t]*\\((\\d+)\\)*", QRegularExpression::CaseInsensitiveOption), &match))
+    else if (str.contains(QRegularExpression("(CHR|CHAR)[\\n\\s\\t]*\\((\\d+)\\)*", QRegularExpression::CaseInsensitiveOption), &match))
     {
         FmtFldType type = fmtt_CHR;
-        int size = match.captured(1).toInt();
+        int size = match.captured(2).toInt();
 
         if (size > 1)
             type = fmtt_STRING;

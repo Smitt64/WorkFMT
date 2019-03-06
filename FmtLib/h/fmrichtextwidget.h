@@ -23,7 +23,7 @@ class FmRichTextWidget : public QWizardPage
 {
     Q_OBJECT
 public:
-    explicit FmRichTextWidget(QWidget *parent = nullptr);
+    FmRichTextWidget(QWidget *parent = nullptr);
     void setDocumentMinimumSize(const QSize &size);
     void ReadConetent(FmtSharedTablePtr &pTable, const FmRichTextReadParam &prm);
     void AddCustomWidget(const QString &label, QWidget *widget);
@@ -36,6 +36,8 @@ private slots:
 private:
     CreateFieldParamList GetFieldsToCreate(const QString &str, const QString &comment = QString());
     void AddToCreateFieldParamList(CreateFieldParamList &list, const FmtFldType &type, const int &size = CALC_SIZE);
+    void TryAutoMapFields();
+    void SetAutoMapField(QComboBox *pCombo, const QString &name);
     QCheckBox *m_IngnoreNumbersCol, *m_IgnoreTitleRow;
     QLabel *pNameLabel, *pTypeLabel, *pCommentLabel;
     QComboBox *pNameCombo, *pTypeCombo, *pCommentCombo;

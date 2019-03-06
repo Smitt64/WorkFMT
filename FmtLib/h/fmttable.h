@@ -189,7 +189,7 @@ public slots:
 
     int save();
     int safeSave(const bool &IgnoreWarnings);
-    int createDbTable();
+    int createDbTable(QString *err = Q_NULLPTR);
     int dbInit(const QString &log = QString());
 
     bool checkErrors(FmtErrors *e);
