@@ -126,7 +126,9 @@ SOURCES += \
     src/fmt/undoredo/fmtundotablepastefield.cpp \
     src/widgets/editcontent/import/mapfieldspage.cpp \
     src/widgets/editcontent/import/mapfildsmodel.cpp \
-    src/models/geninterfacefactorymodel.cpp
+    src/models/geninterfacefactorymodel.cpp \
+    src/massop/massopinterface.cpp \
+    src/wizards/massoperationwizard.cpp
 
 unix {
     target.path = /usr/lib
@@ -260,7 +262,9 @@ HEADERS += \
     h/fmtundotablepastefield.h \
     src/widgets/editcontent/import/mapfieldspage.h \
     src/widgets/editcontent/import/mapfildsmodel.h \
-    h/geninterfacefactorymodel.h
+    h/geninterfacefactorymodel.h \
+    h/massopinterface.h \
+    h/massoperationwizard.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

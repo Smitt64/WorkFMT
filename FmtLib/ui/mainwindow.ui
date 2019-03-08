@@ -83,6 +83,7 @@
     <addaction name="menuUpdateScripts"/>
     <addaction name="separator"/>
     <addaction name="actionEditGroups"/>
+    <addaction name="actionMassOp"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="tearOffEnabled">
@@ -385,6 +386,11 @@
   <action name="actionGenDelScript">
    <property name="text">
     <string>Удаления полей</string>
+   </property>
+  </action>
+  <action name="actionMassOp">
+   <property name="text">
+    <string>Массовые действия</string>
    </property>
   </action>
  </widget>

@@ -21,6 +21,7 @@
 #include "selectconnectiondlg.h"
 #include "stringlistdlg.h"
 #include "fmttablelistdelegate.h"
+#include "massoperationwizard.h"
 #include "logsettingsdlg.h"
 #include <QRegExp>
 #include <QRegularExpression>
@@ -110,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionGenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
     connect(ui->actionGenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
     connect(ui->actionGenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
+    connect(ui->actionMassOp, SIGNAL(triggered(bool)), SLOT(OnMassOpAction()));
 
 #ifdef QT_NO_DEBUG
     connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
@@ -1208,4 +1210,10 @@ void MainWindow::GenDeleteFiledsScript()
             window->GenDeleteFiledsScript();
         }
     }
+}
+
+void MainWindow::OnMassOpAction()
+{
+    MassOperationWizard wizard(this);
+    wizard.exec();
 }
