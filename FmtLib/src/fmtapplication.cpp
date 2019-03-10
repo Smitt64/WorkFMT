@@ -10,6 +10,7 @@
 #include "loggingcategories.h"
 #include "fmtgeninputservicecpptemplate.h"
 #include "fmtgencppclasstemplate.h"
+#include "massop/massinittableoperation.h"
 #include <fmtdbghelp.h>
 #include <QDebug>
 #include <functional>
@@ -32,8 +33,8 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     QApplication(argc, argv)
 {
 #ifdef Q_OS_WIN
-    hOldFilter = NULL;
-    pDbgHelp = NULL;
+    hOldFilter = Q_NULLPTR;
+    pDbgHelp = Q_NULLPTR;
 #endif
     QApplication::setApplicationName("WorkFMT");
     QApplication::setApplicationVersion(GetVersionNumberString());
@@ -82,6 +83,8 @@ void FmtApplication::init()
     registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate", tr("Объектный сервис ввода"));
     registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate", tr("Класс для импорта в RSL"));
     registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix", tr("PL/SQL скрип наполнения fmt"));
+
+    registerMassOpInterface<MassInitTableOperation>("MassInitTableOperation", tr("Создание таблиц/индексов"));
 }
 
 void FmtApplication::initDbgHelp()

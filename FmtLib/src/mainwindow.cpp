@@ -1214,6 +1214,11 @@ void MainWindow::GenDeleteFiledsScript()
 
 void MainWindow::OnMassOpAction()
 {
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
     MassOperationWizard wizard(this);
     wizard.exec();
 }

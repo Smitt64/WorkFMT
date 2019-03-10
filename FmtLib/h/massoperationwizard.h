@@ -9,6 +9,9 @@ class MassOperationWizard : public QWizard
 public:
     MassOperationWizard(QWidget *parent = Q_NULLPTR);
     virtual ~MassOperationWizard();
+
+private:
+    QWizardPage *createSelectOperationPage();
 };
 
 #endif // MASSOPERATIONWIZARD_H

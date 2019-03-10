@@ -128,7 +128,9 @@ SOURCES += \
     src/widgets/editcontent/import/mapfildsmodel.cpp \
     src/models/geninterfacefactorymodel.cpp \
     src/massop/massopinterface.cpp \
-    src/wizards/massoperationwizard.cpp
+    src/wizards/massoperationwizard.cpp \
+    src/massop/massopselectoperationpage.cpp \
+    src/massop/massinittableoperation.cpp
 
 unix {
     target.path = /usr/lib
@@ -158,7 +160,8 @@ FORMS += \
     src/widgets/editcontent/import/selecttypepage.ui \
     src/widgets/editcontent/import/texteditpage.ui \
     src/widgets/editcontent/import/tablemaptofmtwidget.ui \
-    src/widgets/editcontent/import/mapfieldspage.ui
+    src/widgets/editcontent/import/mapfieldspage.ui \
+    src/massop/massopselectoperationpage.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -264,7 +267,10 @@ HEADERS += \
     src/widgets/editcontent/import/mapfildsmodel.h \
     h/geninterfacefactorymodel.h \
     h/massopinterface.h \
-    h/massoperationwizard.h
+    h/massoperationwizard.h \
+    src/core/abstractfactorymodel.hpp \
+    src/massop/massopselectoperationpage.h \
+    src/massop/massinittableoperation.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin
