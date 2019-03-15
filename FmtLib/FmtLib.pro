@@ -130,7 +130,8 @@ SOURCES += \
     src/massop/massopinterface.cpp \
     src/wizards/massoperationwizard.cpp \
     src/massop/massopselectoperationpage.cpp \
-    src/massop/massinittableoperation.cpp
+    src/massop/massinittableoperation.cpp \
+    src/massop/massopselecttablespage.cpp
 
 unix {
     target.path = /usr/lib
@@ -270,7 +271,8 @@ HEADERS += \
     h/massoperationwizard.h \
     src/core/abstractfactorymodel.hpp \
     src/massop/massopselectoperationpage.h \
-    src/massop/massinittableoperation.h
+    src/massop/massinittableoperation.h \
+    src/massop/massopselecttablespage.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

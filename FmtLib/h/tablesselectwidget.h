@@ -16,7 +16,7 @@ class FMTLIBSHARED_EXPORT TablesSelectWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TablesSelectWidget(ConnectionInfo *connection, QWidget *parent = 0);
+    explicit TablesSelectWidget(ConnectionInfo *connection, QWidget *parent = Q_NULLPTR);
     void setAddFunc(TablesSelectAddFunc func);
     void setRemFunc(TablesSelectRemFunc func);
 

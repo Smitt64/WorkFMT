@@ -1219,6 +1219,6 @@ void MainWindow::OnMassOpAction()
     if (!current)
         return;
 
-    MassOperationWizard wizard(this);
+    MassOperationWizard wizard(current, this);
     wizard.exec();
 }
