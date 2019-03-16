@@ -9,7 +9,7 @@ MassOpSelectOperationPage::MassOpSelectOperationPage(QWidget *parent) :
     pModel = new AbstractFactoryModel<MassOpInterface,QString>(&MassOpInterface::m_pMassOpInterfaceFactory, this);
     ui->listView->setModel(pModel);
     ui->listView->setModelColumn(AbstractFactoryModel<MassOpInterface,QString>::FieldAlias);
-    connect(ui->listView, SIGNAL(activated(QModelIndex)), SIGNAL(completeChanged()));
+    connect(ui->listView, SIGNAL(clicked(QModelIndex)), SIGNAL(completeChanged()));
 }
 
 MassOpSelectOperationPage::~MassOpSelectOperationPage()
@@ -20,4 +20,16 @@ MassOpSelectOperationPage::~MassOpSelectOperationPage()
 bool MassOpSelectOperationPage::isComplete() const
 {
     return ui->listView->selectionModel()->hasSelection();
+}
+
+QString MassOpSelectOperationPage::selectedItem() const
+{
+    return pModel->data(ui->listView->currentIndex(), Qt::DisplayRole).toString();
+}
+
+QString MassOpSelectOperationPage::selectedInterface() const
+{
+    QModelIndex index = ui->listView->currentIndex();
+    QString name = pModel->data(pModel->index(index.row(), AbstractFactoryModel<MassOpInterface,QString>::FieldKey), Qt::DisplayRole).toString();
+    return name;
 }

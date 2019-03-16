@@ -8,14 +8,13 @@ MassOpSelectTablesPage::MassOpSelectTablesPage(ConnectionInfo *info, QWidget *pa
     QWizardPage(parent)
 {
     pLayout = new QVBoxLayout;
-    //MassOperationWizard *pWizard = qobject_cast<MassOperationWizard*>(wizard());
     pSeletTables = new TablesSelectWidget(info, this);
 
     pLayout->addWidget(pSeletTables);
     setLayout(pLayout);
-    setTitle(tr("Выбор таблиц"));
 
-    pSeletTables->setAddFunc(std::bind(&MassOpSelectTablesPage::TablesSelectAddFunc, this, std::placeholders::_1));
+    pSeletTables->setAddFunc(std::bind(&MassOpSelectTablesPage::AddFunc, this, std::placeholders::_1));
+    pSeletTables->setRemFunc(std::bind(&MassOpSelectTablesPage::RemoveFunc, this, std::placeholders::_1));
 }
 
 MassOpSelectTablesPage::~MassOpSelectTablesPage()
@@ -23,8 +22,22 @@ MassOpSelectTablesPage::~MassOpSelectTablesPage()
 
 }
 
-bool MassOpSelectTablesPage::TablesSelectAddFunc(const QString &str)
+bool MassOpSelectTablesPage::AddFunc(const QString &str)
 {
     MassOperationWizard *pWizard = qobject_cast<MassOperationWizard*>(wizard());
     return pWizard->addTables(str);
+}
+
+bool MassOpSelectTablesPage::RemoveFunc(const QString &str)
+{
+    MassOperationWizard *pWizard = qobject_cast<MassOperationWizard*>(wizard());
+    return pWizard->removeTables(str);
+}
+
+void MassOpSelectTablesPage::initializePage()
+{
+    MassOperationWizard *pWizard = qobject_cast<MassOperationWizard*>(wizard());
+    setTitle(tr("Выбор таблиц: %1").arg(pWizard->selectedOpeation()));
+    pWizard->initInterface();
+    //QString interfaceName = pWizard->selectedInterface();
 }

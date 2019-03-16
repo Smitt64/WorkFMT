@@ -9,3 +9,13 @@ MassInitTableOperation::~MassInitTableOperation()
 {
 
 }
+
+void MassInitTableOperation::initPages()
+{
+
+}
+
+void MassInitTableOperation::deinitPages()
+{
+
+}

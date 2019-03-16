@@ -17,6 +17,8 @@ public:
     virtual ~MassOpSelectOperationPage() Q_DECL_OVERRIDE;
 
     virtual bool isComplete() const Q_DECL_OVERRIDE;
+    QString selectedItem() const;
+    QString selectedInterface() const;
 
 private:
     Ui::MassOpSelectOperationPage *ui;

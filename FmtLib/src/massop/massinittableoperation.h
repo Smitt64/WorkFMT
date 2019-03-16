@@ -9,6 +9,9 @@ class MassInitTableOperation : public MassOpInterface
 public:
     MassInitTableOperation();
     virtual ~MassInitTableOperation() Q_DECL_OVERRIDE;
+
+    void initPages() Q_DECL_OVERRIDE;
+    void deinitPages() Q_DECL_OVERRIDE;
 };
 
 #endif // MASSINITTABLEOPERATION_H
