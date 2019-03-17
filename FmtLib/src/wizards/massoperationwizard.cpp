@@ -56,13 +56,22 @@ QString MassOperationWizard::selectedOpeation() const
     return pPage->selectedItem();
 }
 
+const QStringList &MassOperationWizard::tables() const
+{
+    return m_Tables;
+}
+
 void MassOperationWizard::initInterface()
 {
     if (pInterface != Q_NULLPTR)
+    {
+        pInterface->deinitPages();
         delete pInterface;
+    }
 
     MassOpSelectOperationPage *pPage = qobject_cast<MassOpSelectOperationPage*>(page(MassOperationWizard::PageSelectOperation));
     QString interfaceName = pPage->selectedInterface();
     pInterface = MassOpInterface::m_pMassOpInterfaceFactory.create(interfaceName);
     pInterface->setWizard(this);
+    pInterface->initPages();
 }

@@ -26,3 +26,10 @@ int MassOpInterface::addPage(QWizardPage *page)
     m_PageIds.append(id);
     return id;
 }
+
+void MassOpInterface::deinitPages()
+{
+    foreach (const int &id, m_PageIds) {
+        pWizard->removePage(id);
+    }
+}

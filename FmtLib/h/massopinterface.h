@@ -15,7 +15,7 @@ public:
     virtual ~MassOpInterface();
 
     virtual void initPages() = 0;
-    virtual void deinitPages() = 0;
+    virtual void deinitPages();
 
     int addPage(QWizardPage *page);
 
@@ -28,8 +28,6 @@ public:
 
 protected:
     QList<int> m_PageIds;
-
-private:
     void setWizard(MassOperationWizard *wzrd);
     MassOperationWizard *pWizard;
 };

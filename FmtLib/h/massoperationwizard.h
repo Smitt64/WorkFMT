@@ -24,6 +24,7 @@ public:
 
     QString selectedOpeation() const;
     void initInterface();
+    const QStringList &tables() const;
 
 private:
     QWizardPage *createSelectOperationPage();
