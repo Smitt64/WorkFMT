@@ -814,6 +814,7 @@ FmtField *FmtTable::addFieldPrivate(const QMap<quint16,QVariant> &data)
         ++i;
     }
 
+    fld->setOffset(value);
     fld->m_IgnoreUndoStack = false;
     emit fieldAdded(fld);
     pFieldsModel->endInsertRows();
