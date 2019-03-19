@@ -12,7 +12,7 @@ class FMTLIBSHARED_EXPORT TablesDock : public QDockWidget
 {
     Q_OBJECT
 public:
-    TablesDock(const QString & title, QWidget * parent = Q_NULLPTR, Qt::WindowFlags flags = 0);
+    TablesDock(const QString &title, QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::Widget);
     virtual ~TablesDock();
     void setModel(FmtTablesModel *model);
     TablesDockWidget *tablesWidget();
@@ -21,6 +21,9 @@ public:
     void setItemDelegate(QAbstractItemDelegate *delegate);
 
     void setEventFilter(QObject *objEventFilter);
+
+public slots:
+    void forceRepaint();
 
 signals:
     void tableDbClicked(quint32);

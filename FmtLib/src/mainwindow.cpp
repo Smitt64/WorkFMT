@@ -781,7 +781,7 @@ void MainWindow::CreateSearchToolBar()
     pFindShortcut = new QShortcut(QKeySequence::Find, this);
 
     connect(pSearchLine, SIGNAL(textChanged(QString)), pTableListDelegate, SLOT(setHighlightText(QString)));
-    connect(pSearchLine, SIGNAL(textChanged(QString)), pTablesDock->tablesWidget()->listView()->viewport(), SLOT(repaint()));
+    connect(pSearchLine, SIGNAL(textChanged(QString)), pTablesDock, SLOT(forceRepaint()));
     connect(pFindShortcut, SIGNAL(activated()), pSearchLine, SLOT(setFocus()));
 }
 
