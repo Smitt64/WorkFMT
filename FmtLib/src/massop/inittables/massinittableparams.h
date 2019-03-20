@@ -19,6 +19,10 @@ public:
 
     virtual void initializePage() Q_DECL_OVERRIDE;
 
+private slots:
+    void selectAllCreateTables();
+    void selectAllCreateIndex();
+
 private:
     Ui::MassInitTableParams *ui;
     MassInitTablesParamModel *pModel;

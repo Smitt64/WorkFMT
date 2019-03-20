@@ -23,7 +23,7 @@ public:
         mode_MessageBox,
         mode_Widget
     };
-    explicit ErrorDlg(const qint16 &mode, QWidget *parent = 0);
+    explicit ErrorDlg(const qint16 &mode, QWidget *parent = Q_NULLPTR);
     ~ErrorDlg();
 
     void setErrors(FmtErrors *e);

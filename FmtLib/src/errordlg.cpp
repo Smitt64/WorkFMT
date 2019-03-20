@@ -6,7 +6,7 @@
 ErrorDlg::ErrorDlg(const qint16 &mode, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ErrorDlg),
-    pErrors(NULL)
+    pErrors(Q_NULLPTR)
 {
     ui->setupUi(this);
     pFilterModel = new FmtErrorFilterModel(this);
@@ -47,6 +47,7 @@ void ErrorDlg::setErrors(FmtErrors *e)
     ui->tableView->setModel(pFilterModel);
     ui->tableView->setColumnWidth(0, 150);
     ui->tableView->setColumnWidth(1, 320);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 
     ui->tableView->selectRow(0);
     onActivated(e->index(0, 1));

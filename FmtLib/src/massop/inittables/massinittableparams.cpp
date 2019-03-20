@@ -9,6 +9,8 @@ MassInitTableParams::MassInitTableParams(QWidget *parent) :
     pModel(Q_NULLPTR)
 {
     ui->setupUi(this);
+    connect(ui->pushButton, SIGNAL(clicked()), SLOT(selectAllCreateTables()));
+    connect(ui->pushButton_2, SIGNAL(clicked()), SLOT(selectAllCreateIndex()));
 }
 
 MassInitTableParams::~MassInitTableParams()
@@ -38,4 +40,28 @@ void MassInitTableParams::initializePage()
     MassOperationWizard *wzrd = qobject_cast<MassOperationWizard*>(wizard());
     setTables(wzrd->tables());
     //ui->tableView->horizontalHeader().setSe
+}
+
+void MassInitTableParams::selectAllCreateTables()
+{
+    if (pModel)
+    {
+        for (int i = 0; i < pModel->rowCount(QModelIndex()); i++)
+        {
+            pModel->setData(pModel->index(i, MassInitTablesParamModel::FieldInitTable), Qt::Checked, Qt::CheckStateRole);
+        }
+        ui->tableView->update();
+    }
+}
+
+void MassInitTableParams::selectAllCreateIndex()
+{
+    if (pModel)
+    {
+        for (int i = 0; i < pModel->rowCount(QModelIndex()); i++)
+        {
+            pModel->setData(pModel->index(i, MassInitTablesParamModel::FieldInitIndex), Qt::Checked, Qt::CheckStateRole);
+        }
+        ui->tableView->update();
+    }
 }

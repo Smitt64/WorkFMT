@@ -34,14 +34,14 @@ QVariant MassInitTablesParamModel::data(const QModelIndex &index, int role) cons
         if (index.column() == FieldInitTable)
             return param.initTable ? tr("Да") : tr("Нет");
         if (index.column() == FieldInitIndex)
-            return param.initTable ? tr("Да") : tr("Нет");
+            return param.initIndex ? tr("Да") : tr("Нет");
     }
     else if (role == Qt::CheckStateRole)
     {
         if (index.column() == FieldInitTable)
             return param.initTable ? Qt::Checked : Qt::Unchecked;
         if (index.column() == FieldInitIndex)
-            return param.initTable ? Qt::Checked : Qt::Unchecked;
+            return param.initIndex ? Qt::Checked : Qt::Unchecked;
     }
     else if (role == Qt::TextAlignmentRole)
     {
@@ -60,11 +60,13 @@ bool MassInitTablesParamModel::setData(const QModelIndex &index, const QVariant 
         if (index.column() == FieldInitTable)
         {
             param.initTable = value.toBool();
+            emit dataChanged(index, index, QVector<int>() << Qt::CheckStateRole);
             return true;
         }
         if (index.column() == FieldInitIndex)
         {
-            param.initTable = value.toBool();
+            param.initIndex = value.toBool();
+            emit dataChanged(index, index, QVector<int>() << Qt::CheckStateRole);
             return true;
         }
     }
@@ -95,11 +97,6 @@ QVariant MassInitTablesParamModel::headerData(int section, Qt::Orientation orien
         else if (section == FieldInitIndex)
             return tr("Создать индексы и триггеры");
     }
-    /*else if (role == Qt::CheckStateRole)
-    {
-        if (section != FieldTableName)
-            return Qt::Unchecked;
-    }*/
     return QAbstractTableModel::headerData(section, orientation, role);
 }
 

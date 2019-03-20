@@ -5,6 +5,7 @@
 #include <QScopedPointer>
 
 class MassInitTableParams;
+class MassInitTablesProgress;
 class MassInitTableOperation : public MassOpInterface
 {
     Q_OBJECT
@@ -17,6 +18,7 @@ public:
 
 private:
     QScopedPointer<MassInitTableParams> pParamsPage;
+    QScopedPointer<MassInitTablesProgress> pParamsProgress;
 };
 
 #endif // MASSINITTABLEOPERATION_H
