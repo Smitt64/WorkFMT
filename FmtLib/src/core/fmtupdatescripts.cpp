@@ -33,7 +33,7 @@ static QString Simplify(QString line)
     return str.simplified();
 }
 
-void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField*> flds)
+void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField*> flds, const QSharedPointer<FmtTable> &pTable)
 {
     stream << "DECLARE " << endl;
     stream << "    e_object_exists EXCEPTION;" << endl;
@@ -54,6 +54,23 @@ void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<F
         }
     }
     stream << ";" << endl;
+
+    if (!pTable.isNull())
+    {
+        stream << endl;
+
+        QSqlDriver *driver = pTable->connection()->driver();
+
+        QSqlField fld;
+        fld.setType(QVariant::String);
+        fld.setValue(pTable->comment());
+        QString comment = QString("COMMENT ON TABLE %1 IS %2").arg(pTable->name().toUpper())
+                .arg(driver->formatValue(fld, true));
+        fld.setValue(comment);
+        stream << QString("\tEXECUTE IMMEDIATE %1;")
+                  .arg(driver->formatValue(fld, true))
+               << endl;
+    }
 
     if (!flds.isEmpty())
     {
@@ -215,11 +232,6 @@ QString FmtGenModifyColumnScript(QList<FmtField*> flds)
 
 QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable)
 {
-    return FmtGenUpdateCreateTableScript(pTable.data());
-}
-
-QString FmtGenUpdateCreateTableScript(FmtTable *pTable)
-{
     QString str;
     QTextStream stream(&str, QIODevice::WriteOnly);
 
@@ -227,6 +239,6 @@ QString FmtGenUpdateCreateTableScript(FmtTable *pTable)
     for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
         flds.append(pTable->field(i));
 
-    WrapSqlBlockObjectExists(stream, pTable->generateCreateTableSql(), flds);
+    WrapSqlBlockObjectExists(stream, pTable->generateCreateTableSql(), flds, pTable);
     return str;
 }

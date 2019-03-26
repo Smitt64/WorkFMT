@@ -194,8 +194,7 @@ QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
 QString FmtGenModifyColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable);
-QString FmtGenUpdateCreateTableScript(FmtTable *pTable);
-void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField *> flds = QList<FmtField*>());
+void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField *> flds = QList<FmtField*>(), const QSharedPointer<FmtTable> &pTable = QSharedPointer<FmtTable>());
 
 FMTLIBSHARED_EXPORT QString ConstrType1RegExp();
 FMTLIBSHARED_EXPORT bool ParseConnectionString(const QString &connString, QString &user, QString &pass, QString &service);
