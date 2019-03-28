@@ -22,7 +22,7 @@ class FMTLIBSHARED_EXPORT MainWindow : public QMainWindow
     Q_OBJECT
     typedef QList<QWidget*> WorkWindowList;
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = Q_NULLPTR);
     ~MainWindow();
 
     ConnectionInfo *currentConnection();
@@ -69,6 +69,7 @@ private slots:
     void GenAddFiledsScript();
     void GenDeleteFiledsScript();
     void OnTableChangeUpdtList();
+    void OnMassOpAction();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);

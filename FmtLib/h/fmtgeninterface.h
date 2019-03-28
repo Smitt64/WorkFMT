@@ -39,7 +39,7 @@ public:
     void start(QSharedPointer<FmtTable> pTable);
     virtual bool event(QEvent *e);
 
-    virtual void propertyEditor(QWidget *parent) { /*return NULL;*/ }
+    virtual void propertyEditor(QWidget *parent) { Q_UNUSED(parent) }
     virtual bool hasPropertes() const { return false; }
 
 signals:

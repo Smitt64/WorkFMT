@@ -126,7 +126,15 @@ SOURCES += \
     src/fmt/undoredo/fmtundotablepastefield.cpp \
     src/widgets/editcontent/import/mapfieldspage.cpp \
     src/widgets/editcontent/import/mapfildsmodel.cpp \
-    src/models/geninterfacefactorymodel.cpp
+    src/models/geninterfacefactorymodel.cpp \
+    src/massop/massopinterface.cpp \
+    src/wizards/massoperationwizard.cpp \
+    src/massop/massopselectoperationpage.cpp \
+    src/massop/massinittableoperation.cpp \
+    src/massop/massopselecttablespage.cpp \
+    src/massop/inittables/massinittableparams.cpp \
+    src/massop/inittables/massinittablesparammodel.cpp \
+    src/massop/inittables/massinittablesprogress.cpp
 
 unix {
     target.path = /usr/lib
@@ -156,7 +164,10 @@ FORMS += \
     src/widgets/editcontent/import/selecttypepage.ui \
     src/widgets/editcontent/import/texteditpage.ui \
     src/widgets/editcontent/import/tablemaptofmtwidget.ui \
-    src/widgets/editcontent/import/mapfieldspage.ui
+    src/widgets/editcontent/import/mapfieldspage.ui \
+    src/massop/massopselectoperationpage.ui \
+    src/massop/inittables/massinittableparams.ui \
+    src/massop/inittables/massinittablesprogress.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -260,7 +271,16 @@ HEADERS += \
     h/fmtundotablepastefield.h \
     src/widgets/editcontent/import/mapfieldspage.h \
     src/widgets/editcontent/import/mapfildsmodel.h \
-    h/geninterfacefactorymodel.h
+    h/geninterfacefactorymodel.h \
+    h/massopinterface.h \
+    h/massoperationwizard.h \
+    src/core/abstractfactorymodel.hpp \
+    src/massop/massopselectoperationpage.h \
+    src/massop/massinittableoperation.h \
+    src/massop/massopselecttablespage.h \
+    src/massop/inittables/massinittableparams.h \
+    src/massop/inittables/massinittablesparammodel.h \
+    src/massop/inittables/massinittablesprogress.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin
