@@ -166,7 +166,6 @@ void FmtErrors::appendError(const QString &text, const qint16 &type, const QDate
         m_infoCount ++;
         emit infoCountChanged(m_infoCount);
     }
-    QApplication::processEvents();
 }
 
 void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
@@ -185,7 +184,6 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
     m_errors.append(err);
     endInsertRows();
     emit infoCountChanged(m_infoCount);
-    QApplication::processEvents();
 }
 
 bool FmtErrors::next()

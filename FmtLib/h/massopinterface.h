@@ -6,6 +6,7 @@
 
 class MassOperationWizard;
 class QWizardPage;
+class ConnectionInfo;
 class MassOpInterface : public QObject
 {
     Q_OBJECT
@@ -17,6 +18,8 @@ public:
     virtual void initPages() = 0;
     virtual void deinitPages();
 
+    ConnectionInfo *connectionInfo();
+    void setConnectionInfo(ConnectionInfo *info);
     int addPage(QWizardPage *page);
 
 signals:
@@ -30,6 +33,7 @@ protected:
     QList<int> m_PageIds;
     void setWizard(MassOperationWizard *wzrd);
     MassOperationWizard *pWizard;
+    ConnectionInfo *pInfo;
 };
 
 template<class T>

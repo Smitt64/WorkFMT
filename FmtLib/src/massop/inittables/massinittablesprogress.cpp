@@ -39,7 +39,7 @@ void MassInitTablesProgressRun::run()
 
             if (InitTable || InitIndex)
             {
-                FmtTable fmttable;
+                FmtTable fmttable(pInterface->connectionInfo());
                 if (!fmttable.load(table))
                     emit error(tr("Не удалось загрузить таблицу %1").arg(table));
                 else
@@ -81,7 +81,8 @@ void MassInitTablesProgressRun::run()
 
 MassInitTablesProgress::MassInitTablesProgress(QWidget *parent) :
     QWizardPage(parent),
-    ui(new Ui::MassInitTablesProgress)
+    ui(new Ui::MassInitTablesProgress),
+    fIsComplete(false)
 {
     ui->setupUi(this);
     setTitle(tr("Инициализация"));
@@ -98,6 +99,7 @@ MassInitTablesProgress::~MassInitTablesProgress()
 
 void MassInitTablesProgress::initializePage()
 {
+    fIsComplete = false;
     MassOperationWizard *wzrd = qobject_cast<MassOperationWizard*>(wizard());
     MassInitTableOperation *pInterface = qobject_cast<MassInitTableOperation*>(wzrd->getInterface());
     wzrd->button(QWizard::BackButton)->setEnabled(false);
@@ -109,5 +111,15 @@ void MassInitTablesProgress::initializePage()
     connect(run, &MassInitTablesProgressRun::progress, ui->progressBar, &QProgressBar::setValue);
     connect(run, SIGNAL(message(QString)), pErrors, SLOT(appendMessage(QString)));
     connect(run, SIGNAL(error(QString)), pErrors, SLOT(appendError(QString)));
+    connect(run, &MassInitTablesProgressRun::finished, [=]()
+    {
+        fIsComplete = true;
+        emit completeChanged();
+    });
     QThreadPool::globalInstance()->start(run);
+}
+
+bool MassInitTablesProgress::isComplete() const
+{
+    return fIsComplete;
 }

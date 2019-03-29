@@ -13,7 +13,7 @@ MassOperationWizard::MassOperationWizard(ConnectionInfo *info, QWidget *parent) 
     addPage(createSelectOperationPage());
     addPage(createSelectTablesPage(info));
 
-    setWizardStyle(QWizard::ClassicStyle);
+    //setWizardStyle(QWizard::ClassicStyle);
 }
 
 MassOperationWizard::~MassOperationWizard()
@@ -75,6 +75,7 @@ void MassOperationWizard::initInterface()
     QString interfaceName = pPage->selectedInterface();
     pInterface = MassOpInterface::m_pMassOpInterfaceFactory.create(interfaceName);
     pInterface->setWizard(this);
+    pInterface->setConnectionInfo(pInfo);
     pInterface->initPages();
 }
 

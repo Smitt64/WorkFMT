@@ -5,7 +5,8 @@ FmtLibFactory<MassOpInterface,QString> MassOpInterface::m_pMassOpInterfaceFactor
 
 MassOpInterface::MassOpInterface(QObject *parent) :
     QObject(parent),
-    pWizard(Q_NULLPTR)
+    pWizard(Q_NULLPTR),
+    pInfo(NULL)
 {
 
 }
@@ -32,4 +33,14 @@ void MassOpInterface::deinitPages()
     foreach (const int &id, m_PageIds) {
         pWizard->removePage(id);
     }
+}
+
+void MassOpInterface::setConnectionInfo(ConnectionInfo *info)
+{
+    pInfo = info;
+}
+
+ConnectionInfo *MassOpInterface::connectionInfo()
+{
+    return pInfo;
 }

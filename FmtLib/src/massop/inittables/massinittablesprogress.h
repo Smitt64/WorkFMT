@@ -8,6 +8,7 @@ namespace Ui {
 class MassInitTablesProgress;
 }
 
+class ConnectionInfo;
 class MassInitTableOperation;
 class MassInitTablesProgressRun Q_DECL_FINAL: public QObject, public QRunnable
 {
@@ -40,11 +41,14 @@ public:
     ~MassInitTablesProgress();
 
     void initializePage() Q_DECL_OVERRIDE;
+    bool isComplete() const Q_DECL_OVERRIDE;
+
 
 private:
     Ui::MassInitTablesProgress *ui;
     FmtErrors *pErrors;
     ErrorDlg *pErrDlg;
+    bool fIsComplete;
 };
 
 #endif // MASSINITTABLESPROGRESS_H
