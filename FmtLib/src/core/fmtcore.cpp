@@ -563,6 +563,24 @@ void ExportFmtToXml(ConnectionInfo *connection, const QStringList &files, const 
     }
 }
 
+qint16 InitFmtTableExec(FmtTable *pTable, QString *err)
+{
+    int stat = 0;
+    QTemporaryFile tmp;
+    tmp.open();
+
+    stat = pTable->dbInit(tmp.fileName());
+
+    QByteArray logcontent = tmp.readAll();
+
+    if (err)
+       *err = logcontent;
+
+    tmp.close();
+
+    return stat;
+}
+
 void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
 {
     DbInitDlg dlg(pTable, parent);
@@ -591,10 +609,8 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
 
         if (!stat && dlg.getCreteIndexFlag())
         {
-            QTemporaryFile tmp;
-            tmp.open();
-
-            stat = pTable->dbInit(tmp.fileName());
+            QString err;
+            stat = InitFmtTableExec(pTable.data(), &err);
             QApplication::processEvents();
 
             QMessageBox msg(parent);
@@ -612,18 +628,16 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
                 msg.setText(QObject::tr("<b>DbInit завершился с кодом [%1]: %2</b>").arg(stat).arg(DbInitTextError(stat)));
             }
 
-            QByteArray logcontent = tmp.readAll();
-
-            if (logcontent.size())
+            if (err.size())
             {
-                msg.setDetailedText(logcontent);
+                msg.setDetailedText(err);
                 QSpacerItem* horizontalSpacer = new QSpacerItem(500, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
                 QGridLayout* layout = (QGridLayout*)msg.layout();
                 layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
             }
             msg.exec();
 
-            tmp.close();
+
         }
         progress.close();
     }

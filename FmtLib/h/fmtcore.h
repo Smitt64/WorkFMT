@@ -176,6 +176,7 @@ void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent
 
 void ExportFmtToXml(ConnectionInfo *connection, const QStringList &file, const QString &dir, bool ShowProgress, bool ShowReport, QWidget *parent = Q_NULLPTR);
 void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent);
+qint16 InitFmtTableExec(FmtTable *pTable, QString *err);
 
 void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent);
 QString FmtTableSqlText(QSharedPointer<FmtTable> pTable);

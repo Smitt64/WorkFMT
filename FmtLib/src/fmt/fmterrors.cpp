@@ -137,6 +137,15 @@ void FmtErrors::appendError(const QString &text, const qint16 &type, const QDate
     err.text = text;
     err.type = type;
 
+    beginInsertRows(QModelIndex(), m_errors.size(), m_errors.size());
+    if (dateTime.isNull())
+        err.time = QDateTime::currentDateTime();
+    else
+        err.time = dateTime;
+
+    m_errors.append(err);
+    endInsertRows();
+
     if (type == fmtet_Error)
     {
         m_errorsCount ++;
@@ -152,15 +161,6 @@ void FmtErrors::appendError(const QString &text, const qint16 &type, const QDate
         m_infoCount ++;
         emit infoCountChanged(m_infoCount);
     }
-
-    if (dateTime.isNull())
-        err.time = QDateTime::currentDateTime();
-    else
-        err.time = dateTime;
-
-    beginInsertRows(QModelIndex(), m_errors.size(), m_errors.size());
-    m_errors.append(err);
-    endInsertRows();
     QApplication::processEvents();
 }
 
@@ -170,7 +170,6 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
     err.text = text;
     err.type = FmtErrors::fmtet_Info;
     m_infoCount ++;
-    emit infoCountChanged(m_infoCount);
 
     if (dateTime.isNull())
         err.time = QDateTime::currentDateTime();
@@ -180,6 +179,7 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
     beginInsertRows(QModelIndex(), m_errors.size(), m_errors.size());
     m_errors.append(err);
     endInsertRows();
+    emit infoCountChanged(m_infoCount);
     QApplication::processEvents();
 }
 

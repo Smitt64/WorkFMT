@@ -1317,9 +1317,9 @@ QString FmtTable::getCommentSql()
     return sql;
 }
 
-int FmtTable::createDbTable(QString *err)
+qint16 FmtTable::createDbTable(QString *err)
 {
-    int stat = 0;
+    qint16 stat = 0;
 
     if (isExists())
     {

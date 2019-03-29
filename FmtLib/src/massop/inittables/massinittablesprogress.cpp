@@ -4,14 +4,17 @@
 #include "fmterrors.h"
 #include "fmttable.h"
 #include "massoperationwizard.h"
+#include "massinittablesparammodel.h"
+#include "../massinittableoperation.h"
+#include "fmtcore.h"
 #include <QAbstractButton>
 #include <QThreadPool>
 #include <QThread>
 
-MassInitTablesProgressRun::MassInitTablesProgressRun(const QStringList &tables, QObject *parent) :
+MassInitTablesProgressRun::MassInitTablesProgressRun(MassInitTableOperation *Interface, QObject *parent) :
     QObject(parent),
     QRunnable (),
-    m_Tables(tables)
+    pInterface(Interface)
 {
     setAutoDelete(true);
 }
@@ -23,13 +26,49 @@ MassInitTablesProgressRun::~MassInitTablesProgressRun()
 
 void MassInitTablesProgressRun::run()
 {
+    MassInitTablesParamModel *pModel = pInterface->model();
     try {
-        int size = m_Tables.size();
+        int size = pModel->rowCount(QModelIndex());
         for (int i = 0; i < size; i++)
         {
-            QString table = m_Tables[i];
+            QString table = pModel->data(pModel->index(i, MassInitTablesParamModel::FieldTableName), Qt::DisplayRole).toString();
             emit message(QString("Начата обработка: %1").arg(table));
-            QThread::sleep(1);
+
+            bool InitTable =  pModel->data(pModel->index(i, MassInitTablesParamModel::FieldInitTable), Qt::CheckStateRole).toInt() == Qt::Checked;
+            bool InitIndex =  pModel->data(pModel->index(i, MassInitTablesParamModel::FieldInitIndex), Qt::CheckStateRole).toInt() == Qt::Checked;
+
+            if (InitTable || InitIndex)
+            {
+                FmtTable fmttable;
+                if (!fmttable.load(table))
+                    emit error(tr("Не удалось загрузить таблицу %1").arg(table));
+                else
+                {
+                    qint16 stat = 0;
+                    QString err;
+                    if (InitTable)
+                    {
+                        if ((stat = fmttable.createDbTable(&err)))
+                            emit error(tr("Не удалось создать таблицу: %1").arg(err));
+                        else
+                            emit message(QString("Таблица %1 создана").arg(table));
+                    }
+
+                    if (!stat && InitIndex)
+                    {
+                        stat = InitFmtTableExec(&fmttable, &err);
+
+                        if (stat)
+                            emit error(tr("<b>DbInit завершился с кодом [%1]: %2</b>")
+                                       .arg(stat)
+                                       .arg(DbInitTextError(stat)));
+                        else
+                            emit message(tr("<b>DbInit завершился с кодом [%1]: %2</b>")
+                                       .arg(stat)
+                                       .arg(DbInitTextError(stat)));
+                    }
+                }
+            }
             emit progress(i + 1);
         }
     } catch (...) {
@@ -60,10 +99,11 @@ MassInitTablesProgress::~MassInitTablesProgress()
 void MassInitTablesProgress::initializePage()
 {
     MassOperationWizard *wzrd = qobject_cast<MassOperationWizard*>(wizard());
+    MassInitTableOperation *pInterface = qobject_cast<MassInitTableOperation*>(wzrd->getInterface());
     wzrd->button(QWizard::BackButton)->setEnabled(false);
 
     ui->progressBar->setMaximum(wzrd->tables().size());
-    MassInitTablesProgressRun *run = new MassInitTablesProgressRun(wzrd->tables());
+    MassInitTablesProgressRun *run = new MassInitTablesProgressRun(pInterface, wzrd->tables());
 
     pErrors->clear();
     connect(run, &MassInitTablesProgressRun::progress, ui->progressBar, &QProgressBar::setValue);

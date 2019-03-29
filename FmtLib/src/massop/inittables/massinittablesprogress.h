@@ -8,12 +8,13 @@ namespace Ui {
 class MassInitTablesProgress;
 }
 
+class MassInitTableOperation;
 class MassInitTablesProgressRun Q_DECL_FINAL: public QObject, public QRunnable
 {
     Q_OBJECT
 
 public:
-    MassInitTablesProgressRun(const QStringList &tables, QObject *parent = Q_NULLPTR);
+    MassInitTablesProgressRun(MassInitTableOperation *Interface, QObject *parent = Q_NULLPTR);
     virtual ~MassInitTablesProgressRun() Q_DECL_OVERRIDE;
 
     void run() Q_DECL_OVERRIDE;
@@ -25,7 +26,7 @@ signals:
     void message(QString);
 
 private:
-    QStringList m_Tables;
+    MassInitTableOperation *pInterface;
 };
 
 class ErrorDlg;
