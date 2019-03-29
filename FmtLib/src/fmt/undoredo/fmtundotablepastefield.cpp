@@ -1,7 +1,8 @@
 #include "fmtundotablepastefield.h"
 #include "fmtfield.h"
 
-FmtUndoTablePasteField::FmtUndoTablePasteField(FmtTable *table, QUndoCommand *parent)
+FmtUndoTablePasteField::FmtUndoTablePasteField(FmtTable *table, QUndoCommand *parent) :
+    QUndoCommand(parent)
 {
     pTable = table;
     pField = Q_NULLPTR;

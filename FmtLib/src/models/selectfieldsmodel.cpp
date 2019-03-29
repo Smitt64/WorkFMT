@@ -23,6 +23,7 @@ void SelectFieldsModel::setFilterFieldName(const QString &name)
 
 bool SelectFieldsModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+    Q_UNUSED(sourceParent);
     FmtFildsModel *fieldModel = (FmtFildsModel*)sourceModel();
 
     if (fieldModel->isInsertRow(fieldModel->index(sourceRow, 0)))

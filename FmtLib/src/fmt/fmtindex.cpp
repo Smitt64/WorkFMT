@@ -53,13 +53,6 @@ FmtIndex::~FmtIndex()
 
 }
 
-void FmtIndex::addField(FmtField *fld)
-{
-    /*FmtSegment segment;
-    segment.pFld = fld;
-    m_Fields.append(segment);*/
-}
-
 void FmtIndex::setName(const QString &n)
 {
     m_Name = n;
@@ -465,6 +458,7 @@ bool FmtIndex::isLocal() const
 
 void FmtIndex::UpdateIndexName(const QString &value)
 {
+    Q_UNUSED(value);
     m_Name = FmtTableMakeIndexName(pTable, indexNumber());
 }
 

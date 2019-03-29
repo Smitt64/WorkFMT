@@ -67,6 +67,7 @@ void ExpResultPage::prepare()
 
 void ExpResultPage::exportFinished(int code)
 {
+    Q_UNUSED(code);
     fFinished = true;
     pWizard->pExp->parseProtocol(&pWizard->m_Errors);
     progressBar->setVisible(false);

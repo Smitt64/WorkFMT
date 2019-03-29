@@ -2,16 +2,17 @@
 #include "fmtindex.h"
 #include "fmttable.h"
 
-FmtUndoTableAddIndex::FmtUndoTableAddIndex(FmtTable *table, QUndoCommand *parent)
+FmtUndoTableAddIndex::FmtUndoTableAddIndex(FmtTable *table, QUndoCommand *parent) :
+    QUndoCommand(parent)
 {
     pTable = table;
-    pIndex = NULL;
+    pIndex = Q_NULLPTR;
     m_Row = -1;
 }
 
 FmtUndoTableAddIndex::~FmtUndoTableAddIndex()
 {
-    pIndex = NULL;
+    pIndex = Q_NULLPTR;
 }
 
 FmtIndex *FmtUndoTableAddIndex::getIndex()

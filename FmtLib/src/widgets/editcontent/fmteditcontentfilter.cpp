@@ -25,6 +25,7 @@ FieldSortFilterProxyModel::~FieldSortFilterProxyModel()
 
 bool FieldSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+    Q_UNUSED(sourceParent);
     if (sourceRow == sourceModel()->rowCount() - 1)
         return false;
     return true;
@@ -32,6 +33,7 @@ bool FieldSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInde
 
 Qt::ItemFlags FieldSortFilterProxyModel::flags(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren;
 }
 

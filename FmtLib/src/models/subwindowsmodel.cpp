@@ -92,6 +92,7 @@ SubWindowsModel::~SubWindowsModel()
 
 int SubWindowsModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 

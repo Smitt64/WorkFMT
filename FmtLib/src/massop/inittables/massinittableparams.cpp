@@ -22,6 +22,7 @@ MassInitTableParams::~MassInitTableParams()
 
 void MassInitTableParams::setTables(const QStringList &list)
 {
+    Q_UNUSED(list);
     MassOperationWizard *wzrd = qobject_cast<MassOperationWizard*>(wizard());
 
     if (!wzrd)

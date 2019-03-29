@@ -19,7 +19,7 @@ private:
     FmtTable *pTable;
     FmtIndex *pIndex;
 
-    quint16 m_Row;
+    qint16 m_Row;
 };
 
 #endif // FMTTABLEADDINDEX_H

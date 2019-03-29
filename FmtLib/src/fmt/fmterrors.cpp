@@ -18,6 +18,7 @@ FmtErrors::~FmtErrors()
 
 int FmtErrors::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 2;
 }
 
@@ -65,21 +66,25 @@ bool FmtErrors::setData(const QModelIndex &index, const QVariant &value, int rol
 
 QModelIndex FmtErrors::index(int row, int column, const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return createIndex(row, column);
 }
 
 QModelIndex FmtErrors::parent(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return QModelIndex();
 }
 
 int FmtErrors::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return m_errors.size();
 }
 
 Qt::ItemFlags FmtErrors::flags(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 

@@ -13,6 +13,7 @@ FmtIndecesModel::FmtIndecesModel(FmtTable *parent) :
 
 int FmtIndecesModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 10;
 }
 
@@ -61,7 +62,6 @@ Qt::ItemFlags FmtIndecesModel::flags(const QModelIndex &index) const
     }
     else
     {
-        FmtIndex *item = static_cast<FmtIndex*>(index.parent().internalPointer());
         if (index.column() == FmtIndecesModelItem::fld_Name || index.column() == FmtIndecesModelItem::fld_Desc
                 || index.column() == FmtIndecesModelItem::fld_ExcIndx || index.column() == FmtIndecesModelItem::fld_Comment)
             Flags |= Qt::ItemIsEditable;
@@ -151,7 +151,8 @@ void FmtIndecesModel::setPropertyChanged(FmtIndecesModelItem *item, const quint1
 
 bool FmtIndecesModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-    FmtIndecesModelItem *parentItem = NULL;
+    Q_UNUSED(count);
+    FmtIndecesModelItem *parentItem = Q_NULLPTR;
 
     if (!parent.isValid())
         parentItem = rootItem;
@@ -186,6 +187,7 @@ void FmtIndecesModel::RemoveFmtIndex(FmtIndex *pIndex)
 
 bool FmtIndecesModel::insertRows(int row, int count, const QModelIndex &parent)
 {
+    Q_UNUSED(count);
     FmtIndecesModelItem *parentItem;
 
     if (!parent.isValid())

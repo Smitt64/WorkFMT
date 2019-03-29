@@ -79,6 +79,7 @@ void FmtWorkWndGen::onFinish(const QByteArray &data)
 
 void FmtWorkWndGen::interfaceComboSelected(const QString &value)
 {
+    Q_UNUSED(value);
     const QString id = getInterfaceId();
     FmtGenInterface *pInterface = Q_NULLPTR;
 

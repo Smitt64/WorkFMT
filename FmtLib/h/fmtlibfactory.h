@@ -53,17 +53,18 @@ public:
     {
         typename FmtLibFactoryMap::const_iterator it = _FmtLibFactory.find(id);
 
-        if (it != _FmtLibFactory.end())
-            return it.value()->create();
+        if (it == _FmtLibFactory.end())
+            return Q_NULLPTR;
+        return it.value()->create();
     }
 
     Base *getInstance(const IdType &id) const
     {
         typename FmtLibFactoryMap::const_iterator it = _FmtLibFactory.find(id);
-        if (it != _FmtLibFactory.end())
-        {
-            return it.value()->create();
-        }
+        if (it == _FmtLibFactory.end())
+            return Q_NULLPTR;
+
+        return it.value()->create();
     }
 
     QList<IdType> getIds() const

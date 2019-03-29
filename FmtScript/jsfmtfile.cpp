@@ -98,13 +98,19 @@ void JsFmtFile::fromScriptValue(const QScriptValue &obj, FmtFile &ba)
 
 QScriptValue::PropertyFlags JsFmtFile::propertyFlags(const QScriptValue &/*object*/, const QScriptString &name, uint /*id*/)
 {
+    Q_UNUSED(name);
     return QScriptValue::Undeletable;
 }
 
 QScriptClass::QueryFlags JsFmtFile::queryProperty(const QScriptValue &object, const QScriptString &name, QScriptClass::QueryFlags flags, uint *id)
 {
+    Q_UNUSED(flags);
+    Q_UNUSED(name);
+    Q_UNUSED(id);
     FmtFile *file = qscriptvalue_cast<FmtFile*>(object.data());
 
     if (!file)
-        return 0;
+        return nullptr;
+
+    return QScriptClass::HandlesReadAccess;
 }

@@ -103,7 +103,7 @@ void MassInitTablesProgress::initializePage()
     wzrd->button(QWizard::BackButton)->setEnabled(false);
 
     ui->progressBar->setMaximum(wzrd->tables().size());
-    MassInitTablesProgressRun *run = new MassInitTablesProgressRun(pInterface, wzrd->tables());
+    MassInitTablesProgressRun *run = new MassInitTablesProgressRun(pInterface);
 
     pErrors->clear();
     connect(run, &MassInitTablesProgressRun::progress, ui->progressBar, &QProgressBar::setValue);

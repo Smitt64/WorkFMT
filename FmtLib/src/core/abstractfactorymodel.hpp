@@ -60,6 +60,9 @@ public:
 
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE
     {
+        Q_UNUSED(index);
+        Q_UNUSED(value);
+        Q_UNUSED(role);
         return false;
     }
 

@@ -82,7 +82,7 @@ QString OracleTnsListModel::getTNSNAMESORAFilePath(QString OracleHomeRegistryKey
 
 void OracleTnsListModel::loadTNSNames(const QString &strTNSNAMESORAFilePath)
 {
-    QString RegExPattern = "[\\n]*[\s]*[^\\(][a-zA-Z0-9_.-]+[\\s]*=[\\s]*\\(";
+    QString RegExPattern = "[\\n]*[\\s]*[^\\(][a-zA-Z0-9_.-]+[\\s]*=[\\s]*\\(";
 
     QFile f(strTNSNAMESORAFilePath);
 

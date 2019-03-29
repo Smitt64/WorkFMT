@@ -306,6 +306,7 @@ void OracleAuthDlg::PumpPrefs(const int &id)
 
 void OracleAuthDlg::SavePrefs(bool Append)
 {
+    Q_UNUSED(Append);
 	QFile f(sConfigOraFilePath);
     if(f.open(QIODevice::WriteOnly))
     {

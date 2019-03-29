@@ -50,10 +50,10 @@ void FmtErrorFilterModel::setFmtErrors(FmtErrors *e)
 
 bool FmtErrorFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+    Q_UNUSED(sourceParent);
     if (!pErrors)
-    {
         return false;
-    }
+
     bool result = false;
     qint16 type = pErrors->type(sourceRow);
 
