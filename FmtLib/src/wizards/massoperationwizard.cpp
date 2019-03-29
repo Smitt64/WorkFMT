@@ -12,6 +12,8 @@ MassOperationWizard::MassOperationWizard(ConnectionInfo *info, QWidget *parent) 
     setMinimumSize(800, 600);
     addPage(createSelectOperationPage());
     addPage(createSelectTablesPage(info));
+
+    setWizardStyle(QWizard::ClassicStyle);
 }
 
 MassOperationWizard::~MassOperationWizard()
@@ -74,4 +76,9 @@ void MassOperationWizard::initInterface()
     pInterface = MassOpInterface::m_pMassOpInterfaceFactory.create(interfaceName);
     pInterface->setWizard(this);
     pInterface->initPages();
+}
+
+MassOpInterface *MassOperationWizard::getInterface()
+{
+    return pInterface;
 }

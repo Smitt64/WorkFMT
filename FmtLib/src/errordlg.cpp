@@ -88,14 +88,17 @@ QDialogButtonBox *ErrorDlg::buttons()
 void ErrorDlg::errorsCountChanged(const quint32 &value)
 {
     ui->toolButtonError->setText(tr("Ошибки: %1").arg(value));
+    ui->tableView->scrollToBottom();
 }
 
 void ErrorDlg::warningsCountChanged(const quint32 &value)
 {
     ui->toolButtonWarning->setText(tr("Предупреждения: %1").arg(value));
+    ui->tableView->scrollToBottom();
 }
 
 void ErrorDlg::infoCountChanged(const quint32 &value)
 {
     ui->toolButtonMsg->setText(tr("Сообщения: %1").arg(value));
+    ui->tableView->scrollToBottom();
 }

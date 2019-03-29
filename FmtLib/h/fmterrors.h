@@ -30,10 +30,8 @@ public:
         fmtet_Info
     };
     Q_ENUM(FmtErrorType)
-    explicit FmtErrors(QObject *parent = 0);
+    explicit FmtErrors(QObject *parent = Q_NULLPTR);
     virtual ~FmtErrors();
-    void appendError(const QString &text, const qint16 &type = fmtet_Error, const QDateTime &dateTime = QDateTime());
-    void appendMessage(const QString &text, const QDateTime &dateTime = QDateTime());
 
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
     virtual QVariant data (const QModelIndex &index, int role = Qt::DisplayRole) const;
@@ -53,6 +51,9 @@ public slots:
     bool hasErrors();
     bool hasWarnings();
     bool isEmpty();
+
+    void appendError(const QString &text, const qint16 &type = fmtet_Error, const QDateTime &dateTime = QDateTime());
+    void appendMessage(const QString &text, const QDateTime &dateTime = QDateTime());
 
     int errorsCount();
     int warningsCount();
