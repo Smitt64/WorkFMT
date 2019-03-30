@@ -11,6 +11,7 @@
 #include "fmtgeninputservicecpptemplate.h"
 #include "fmtgencppclasstemplate.h"
 #include "massop/massinittableoperation.h"
+#include "massop/btrvtemplate/massopbtrvtemplate.h"
 #include <fmtdbghelp.h>
 #include <QDebug>
 #include <functional>
@@ -52,7 +53,7 @@ FmtApplication::~FmtApplication()
 #ifdef Q_OS_WIN
     if (hOldFilter)
         SetUnhandledExceptionFilter(hOldFilter);
-    hOldFilter = NULL;
+    hOldFilter = Q_NULLPTR;
 #endif
 }
 
@@ -79,12 +80,13 @@ void FmtApplication::init()
     initDbgHelp();
 
     registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql", tr("Скрипт TablesSql"));
-    registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate", tr("Шиблоны btrv"));
+    registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate", tr("Шаблоны btrv"));
     registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate", tr("Объектный сервис ввода"));
     registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate", tr("Класс для импорта в RSL"));
     registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix", tr("PL/SQL скрип наполнения fmt"));
 
     registerMassOpInterface<MassInitTableOperation>("MassInitTableOperation", tr("Создание таблиц/индексов"));
+    registerMassOpInterface<MassOpBtrvTemplate>("MassOpBtrvTemplate", tr("Шаблоны btrv"));
 }
 
 void FmtApplication::initDbgHelp()
