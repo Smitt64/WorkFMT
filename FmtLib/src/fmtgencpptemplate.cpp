@@ -517,6 +517,7 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
         createSkfKfFunctions(pIndex, stream);
     }
 
+    int count = 0;
     for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
@@ -524,6 +525,10 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
         if (pIndex->isUnique())
             continue;
 
+        if (count)
+            stream << endl;
+
+        count ++;
         stream << block->m_SkfFullFuncNameValue[pIndex] << endl;
         stream << "{" << endl;
         stream << tab << QString("%1 *TV = (%1 *)File%2->KeyTopVal;").arg(block->m_UnionName, block->m_StructName) << endl;

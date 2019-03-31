@@ -58,15 +58,18 @@ void MassOpBtrvTemplateResultPageRun::run()
         QSharedPointer<QByteArray> m_FuncDecl(new QByteArray());
         QSharedPointer<QByteArray> m_BfCpp(new QByteArray());
         QSharedPointer<QByteArray> m_SkfCpp(new QByteArray());
+        QSharedPointer<QByteArray> m_FindCpp(new QByteArray());
         m_Data[BFS] = m_Structs;
         m_Data[BF] = m_FuncDecl;
         m_Data[BFCPP] = m_BfCpp;
+        m_Data[FINDCPP] = m_FindCpp;
         m_Data[SKFCPP] = m_SkfCpp;
 
         QTextStream structsStream(m_Structs.data());
         QTextStream funcdeclStream(m_FuncDecl.data());
         QTextStream bfCppStream(m_BfCpp.data());
         QTextStream skfCppStream(m_SkfCpp.data());
+        QTextStream findCppStream(m_FindCpp.data());
 
         for (int i = 0; i < size; i++)
         {
@@ -89,8 +92,11 @@ void MassOpBtrvTemplateResultPageRun::run()
                 skfCppStream << endl;
             }
 
-            /*gen->createDeclExtern(tables[i], bfCppStream);
-            bfCppStream << endl;*/
+            gen->WriteTableComment(tables[i], findCppStream);
+            gen->createFindFunctions(tables[i], findCppStream);
+
+            gen->createDeclExtern(tables[i], funcdeclStream);
+            funcdeclStream << endl;
         }
 
         bfCppStream << endl;
@@ -140,6 +146,15 @@ void MassOpBtrvTemplateResultPage::initializePage()
     MassOpBtrvTemplate *pInterface = qobject_cast<MassOpBtrvTemplate*>(wzrd->getInterface());
     wzrd->button(QWizard::BackButton)->setEnabled(false);
 
+    qDeleteAll(m_Highlighter);
+    m_Highlighter.clear();
+    for (int i = ui->tabWidget->count() - 1; i > 1; i--)
+    {
+        QWidget *w = ui->tabWidget->widget(i);
+        ui->tabWidget->removeTab(i);
+        delete w;
+    }
+
     ui->progressBar->setMaximum(wzrd->tables().size());
     pErrors->clear();
 
@@ -165,6 +180,7 @@ void MassOpBtrvTemplateResultPage::addPage(const QString &title, const QString &
 void MassOpBtrvTemplateResultPage::finished(const GenDataMap &data)
 {
     fIsComplete = true;
+
     QMapIterator<QString, QSharedPointer<QByteArray>> iter(data);
     while(iter.hasNext())
     {
