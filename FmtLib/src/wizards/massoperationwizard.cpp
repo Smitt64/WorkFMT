@@ -9,6 +9,7 @@ MassOperationWizard::MassOperationWizard(ConnectionInfo *info, QWidget *parent) 
     pInterface(Q_NULLPTR)
 {
     pInfo = info;
+    setOption(QWizard::NoDefaultButton, true);
     setMinimumSize(800, 600);
     addPage(createSelectOperationPage());
     addPage(createSelectTablesPage(info));

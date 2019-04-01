@@ -12,6 +12,101 @@
 #include <QThread>
 #include <QTextStream>
 
+/*
+bfopctrl.c
+
+typedef struct {
+	OPF_UNI openOON_PT_ADR;
+	OPF_UNI openOON_PT_ADR_R;
+	OPF_UNI openOON_PT;
+	OPF_UNI openOON_PT_R;
+	OPF_UNI openOON_PTENT_NAME;
+	OPF_UNI openOON_PTENT_NAME_R;
+	OPF_UNI openOON_PTIND_BDT;
+	OPF_UNI openOON_PTIND_BDT_R;
+	OPF_UNI openOON_PTIND_BPL;
+	OPF_UNI openOON_PTIND_BPL_R;
+	OPF_UNI openOON_PTIND_DOC;
+	OPF_UNI openOON_PTIND_DOC_R;
+	OPF_UNI openOON_PTIND_NAME;
+	OPF_UNI openOON_PTIND_NAME_R;
+
+	void* prev;
+} T_FM_OPENFILESOON_FILES;
+
+typedef struct {
+	void *prev;          // ссылка на предыдущий вызов открывашки
+	T_FM_OPENFILESOON_FILES flag;
+} FMOpenFilesOONFlags;
+
+static FMOpenFilesOONFlags      *currFilesOON;
+
+void FM_CloseFilesOON()
+{
+	FMOpenFilesOONFlags *old;
+	if (currFilesOON)
+	{
+		TBfErrorInfo BfError;
+		BfSaveError(&BfError);
+
+		if (bfstat == 0) 
+			BfRestoreError(&BfError);
+
+		BankCloseFileUNI(&FileOON_PT_ADR, &currFilesOON->flag.openOON_PT_ADR);
+		BankCloseFileUNI(&FileOON_PT_ADR_R, &currFilesOON->flag.openOON_PT_ADR_R);
+		BankCloseFileUNI(&FileOON_PT, &currFilesOON->flag.openOON_PT);
+		BankCloseFileUNI(&FileOON_PT_R, &currFilesOON->flag.openOON_PT_R);
+		BankCloseFileUNI(&FileOON_PTENT_NAME, &currFilesOON->flag.openOON_PTENT_NAME);
+		BankCloseFileUNI(&FileOON_PTENT_NAME_R, &currFilesOON->flag.openOON_PTENT_NAME_R);
+		BankCloseFileUNI(&FileOON_PTIND_BDT, &currFilesOON->flag.openOON_PTIND_BDT);
+		BankCloseFileUNI(&FileOON_PTIND_BDT_R, &currFilesOON->flag.openOON_PTIND_BDT_R);
+		BankCloseFileUNI(&FileOON_PTIND_BPL, &currFilesOON->flag.openOON_PTIND_BPL);
+		BankCloseFileUNI(&FileOON_PTIND_BPL_R, &currFilesOON->flag.openOON_PTIND_BPL_R);
+		BankCloseFileUNI(&FileOON_PTIND_DOC, &currFilesOON->flag.openOON_PTIND_DOC);
+		BankCloseFileUNI(&FileOON_PTIND_DOC_R, &currFilesOON->flag.openOON_PTIND_DOC_R);
+		BankCloseFileUNI(&FileOON_PTIND_NAME, &currFilesOON->flag.openOON_PTIND_NAME);
+		BankCloseFileUNI(&FileOON_PTIND_NAME_R, &currFilesOON->flag.openOON_PTIND_NAME_R);
+
+		old = currFilesOON;
+		currFilesOON = (FMOpenFilesOONFlags*)currFilesOON->prev;
+		FreeMem((void**)&old);
+	}
+}
+
+int FM_OpenFilesOON(int fmode, int WhatToSave)
+{
+	int stat = 0;
+
+	FMOpenFilesOONFlags *newF;
+
+	newF = (FMOpenFilesOONFlags*)Allocate(sizeof(FMOpenFilesOONFlags));
+	if (!newF)
+		return OUT_OF_MEMORY;
+
+	newF->prev = (void*)currFilesOON;
+	currFilesOON = newF;
+
+	if (!stat) stat = BankOpenFileUNI(FileOON_PT_ADR, iOpenOON_PT_ADR, fmode, OPF_SaveFilters, &newF->flag.openOON_PT_ADR);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PT_ADR_R, iOpenOON_PT_ADR_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PT_ADR_R);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PT, iOpenOON_PT, fmode, OPF_SaveFilters, &newF->flag.openOON_PT);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PT_R, iOpenOON_PT_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PT_R);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTENT_NAME, iOpenOON_PTENT_NAME, fmode, OPF_SaveFilters, &newF->flag.openOON_PTENT_NAME);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTENT_NAME_R, iOpenOON_PTENT_NAME_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PTENT_NAME_R);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_BDT, iOpenOON_PTIND_BDT, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_BDT);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_BDT_R, iOpenOON_PTIND_BDT_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_BDT_R);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_BPL, iOpenOON_PTIND_BPL, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_BPL);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_BPL_R, iOpenOON_PTIND_BPL_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_BPL_R);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_DOC, iOpenOON_PTIND_DOC, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_DOC);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_DOC_R, iOpenOON_PTIND_DOC_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_DOC_R);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_NAME, iOpenOON_PTIND_NAME, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_NAME);
+	if (!stat) stat = BankOpenFileUNI(FileOON_PTIND_NAME_R, iOpenOON_PTIND_NAME_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PTIND_NAME_R);
+
+	if (stat)
+		FM_CloseFilesOON();
+	return stat;
+}
+*/
+
 MassOpBtrvTemplateResultPageRun::MassOpBtrvTemplateResultPageRun(MassOpBtrvTemplate *Interface, QObject *parent) :
     QObject(parent),
     QRunnable (),
@@ -94,9 +189,6 @@ void MassOpBtrvTemplateResultPageRun::run()
 
             gen->WriteTableComment(tables[i], findCppStream);
             gen->createFindFunctions(tables[i], findCppStream);
-
-            gen->createDeclExtern(tables[i], funcdeclStream);
-            funcdeclStream << endl;
         }
 
         bfCppStream << endl;
@@ -105,6 +197,9 @@ void MassOpBtrvTemplateResultPageRun::run()
         {
             gen->createOpenFunc(tables[i], bfCppStream);
             bfCppStream << endl << endl;
+            
+            gen->createDeclExtern(tables[i], funcdeclStream);
+            funcdeclStream << endl;
         }
 
     } catch (...) {
