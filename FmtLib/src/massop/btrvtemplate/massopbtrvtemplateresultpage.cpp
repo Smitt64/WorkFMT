@@ -267,6 +267,7 @@ void MassOpBtrvTemplateResultPage::addPage(const QString &title, const QString &
 {
     CodeEditor *pEditor = new CodeEditor;
     pEditor->setPlainText(data);
+    pEditor->setReadOnly(true);
     Highlighter *hgltr = new Highlighter(pEditor->document());
     m_Highlighter.append(hgltr);
     addPage(pEditor, title);

@@ -12,6 +12,7 @@
 #include "fmtgencppclasstemplate.h"
 #include "massop/massinittableoperation.h"
 #include "massop/btrvtemplate/massopbtrvtemplate.h"
+#include "massop/massopenfunc/massopenfunctemplate.h"
 #include <fmtdbghelp.h>
 #include <QDebug>
 #include <functional>
@@ -87,6 +88,7 @@ void FmtApplication::init()
 
     registerMassOpInterface<MassInitTableOperation>("MassInitTableOperation", tr("Создание таблиц/индексов"));
     registerMassOpInterface<MassOpBtrvTemplate>("MassOpBtrvTemplate", tr("Шаблоны btrv"));
+    registerMassOpInterface<MassOpenFuncTemplate>("MassOpenFuncTemplate", tr("Функция открытия файлов"));
 }
 
 void FmtApplication::initDbgHelp()
