@@ -86,7 +86,7 @@ int FM_OpenFilesOON(int fmode, int WhatToSave)
 	newF->prev = (void*)currFilesOON;
 	currFilesOON = newF;
 
-	if (!stat) stat = BankOpenFileUNI(FileOON_PT_ADR, iOpenOON_PT_ADR, fmode, OPF_SaveFilters, &newF->flag.openOON_PT_ADR);
+    if (!stat) stat = BankOpenFileUNI(FileOON_PT_ADR, iOpenOON_PT_ADR, fmode, OPF_SaveFilters, &newF->flag.openOON_PT_ADR);
 	if (!stat) stat = BankOpenFileUNI(FileOON_PT_ADR_R, iOpenOON_PT_ADR_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PT_ADR_R);
 	if (!stat) stat = BankOpenFileUNI(FileOON_PT, iOpenOON_PT, fmode, OPF_SaveFilters, &newF->flag.openOON_PT);
 	if (!stat) stat = BankOpenFileUNI(FileOON_PT_R, iOpenOON_PT_R, fmode, OPF_SaveFilters, &newF->flag.openOON_PT_R);

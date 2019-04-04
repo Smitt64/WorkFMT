@@ -598,9 +598,10 @@ void FmtGenCppTemplate::WrapSkfAssignValue(QTextStream &stream, const QString &k
     stream << tab << "}" << endl;
 }
 
-QString FmtGenCppTemplate::FormatName(QString &Mask, const GenCppTemplateBlock *block)
+QString FmtGenCppTemplate::FormatName(const QString &Mask, const GenCppTemplateBlock *block)
 {
-    return Mask.replace("${StructName}", block->m_StructName);
+    QString result = Mask;
+    return result.replace("${StructName}", block->m_StructName);
 }
 
 GenCppSettingsParams *FmtGenCppTemplate::param()

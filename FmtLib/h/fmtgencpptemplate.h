@@ -72,7 +72,7 @@ private:
 
     GenCppTemplateBlock *getTemplateBlock(const FmtSharedTablePtr &pTable);
     GenCppTemplateBlock *getTemplateBlock(const FmtTable *pTable);
-    QString FormatName(QString &Mask, const GenCppTemplateBlock *block);
+    QString FormatName(const QString &Mask, const GenCppTemplateBlock *block);
     GenCppSettingsParams prm;
 
     QMap<FmtTable*,GenCppTemplateBlock*> m_Blocks;

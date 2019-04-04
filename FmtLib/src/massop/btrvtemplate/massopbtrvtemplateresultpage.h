@@ -7,9 +7,9 @@
 
 #define BFS "*bfs.h"
 #define BF "*bf.h"
-#define BFCPP "bf_.cpp"
-#define SKFCPP "skf_.cpp"
-#define FINDCPP "f_.cpp"
+#define BFCPP "bf_*.cpp"
+#define SKFCPP "skf_*.cpp"
+#define FINDCPP "f_*.cpp"
 
 namespace Ui {
 class MassOpBtrvTemplateResultPage;
