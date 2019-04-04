@@ -63,14 +63,14 @@ void MassOpenFucnParams::initializePage()
 
     stream << QString("typedef struct {") << endl;
     stream << tab << QString("void *prev; // ссылка на предыдущий вызов открывашки") << endl;
-    stream << tab << QString("struct_template flag;") << endl;
+    stream << tab << QString("%1 flag;").arg(struct_template) << endl;
     stream << QString("} %1;").arg(flags_template) << endl;
 
     stream << endl;
     stream << QString("static %1 *currFiles%2;").arg(flags_template).arg(struct_template) << endl;
     stream << endl;
 
-    stream << QString("void CloseFiles%1()").arg(struct_template) << endl;
+    stream << QString("void Close%1()").arg(struct_template) << endl;
     stream << "{" << endl;
     stream << tab << QString("%1 *old;").arg(flags_template) << endl;
     stream << tab << QString("if (currFiles%1)").arg(struct_template) << endl;
@@ -105,7 +105,7 @@ void MassOpenFucnParams::initializePage()
     stream << tab << QString("newF = (%1*)Allocate(sizeof(%1));").arg(flags_template) << endl << endl;
 
     stream << tab << QString("if (!newF)") << endl;
-    stream << tab << tab << QString("return OUT_OF_MEMORY;") << endl;
+    stream << tab << tab << QString("return OUT_OF_MEMORY;") << endl << endl;
 
     stream << tab << QString("newF->prev = (void*)currFiles%1;").arg(struct_template) << endl;
     stream << tab << QString("currFiles%1 = newF;").arg(struct_template) << endl << endl;
@@ -119,7 +119,7 @@ void MassOpenFucnParams::initializePage()
     }
 
     stream << endl << tab << "if (stat)" << endl;
-    stream << tab << tab << QString("CloseFiles%1();").arg(struct_template) << endl << endl;
+    stream << tab << tab << QString("Close%1();").arg(struct_template) << endl << endl;
 
     stream << tab << "return stat;" << endl;
     stream << "}" << endl;
