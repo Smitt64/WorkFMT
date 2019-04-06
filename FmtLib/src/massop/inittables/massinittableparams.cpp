@@ -10,7 +10,7 @@ MassInitTableParams::MassInitTableParams(QWidget *parent) :
     pModel(Q_NULLPTR)
 {
     ui->setupUi(this);
-
+    setTitle(tr("Выбор действий"));
     connect(ui->pushButton, SIGNAL(clicked()), SLOT(selectAllCreateTables()));
     connect(ui->pushButton_2, SIGNAL(clicked()), SLOT(selectAllCreateIndex()));
 }

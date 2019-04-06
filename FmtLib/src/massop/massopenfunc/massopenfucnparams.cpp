@@ -18,6 +18,8 @@ MassOpenFucnParams::MassOpenFucnParams(QWidget *parent) :
     pEditor = new CodeEditor(this);
     pEditor->setReadOnly(true);
 
+    setTitle(tr("Результат"));
+
     m_Highlighter = new Highlighter(pEditor->document());
     ui->verticalLayout->addWidget(pEditor);
     connect(ui->lineEdit, SIGNAL(textChanged(QString)), this, SLOT(textChanged(QString)));
