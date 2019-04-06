@@ -76,6 +76,7 @@ void FmtFieldDlg::ResetMaping()
 
 void FmtFieldDlg::typeChanged(const int &index)
 {
+    Q_UNUSED(index);
     /*int indx = mapper->currentIndex();
     QAbstractItemModel *model = mapper->model();
     mapper->setModel(NULL);

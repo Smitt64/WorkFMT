@@ -18,6 +18,7 @@ FmtErrors::~FmtErrors()
 
 int FmtErrors::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 2;
 }
 
@@ -65,21 +66,25 @@ bool FmtErrors::setData(const QModelIndex &index, const QVariant &value, int rol
 
 QModelIndex FmtErrors::index(int row, int column, const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return createIndex(row, column);
 }
 
 QModelIndex FmtErrors::parent(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return QModelIndex();
 }
 
 int FmtErrors::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return m_errors.size();
 }
 
 Qt::ItemFlags FmtErrors::flags(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
@@ -137,6 +142,15 @@ void FmtErrors::appendError(const QString &text, const qint16 &type, const QDate
     err.text = text;
     err.type = type;
 
+    beginInsertRows(QModelIndex(), m_errors.size(), m_errors.size());
+    if (dateTime.isNull())
+        err.time = QDateTime::currentDateTime();
+    else
+        err.time = dateTime;
+
+    m_errors.append(err);
+    endInsertRows();
+
     if (type == fmtet_Error)
     {
         m_errorsCount ++;
@@ -152,16 +166,6 @@ void FmtErrors::appendError(const QString &text, const qint16 &type, const QDate
         m_infoCount ++;
         emit infoCountChanged(m_infoCount);
     }
-
-    if (dateTime.isNull())
-        err.time = QDateTime::currentDateTime();
-    else
-        err.time = dateTime;
-
-    beginInsertRows(QModelIndex(), m_errors.size(), m_errors.size());
-    m_errors.append(err);
-    endInsertRows();
-    QApplication::processEvents();
 }
 
 void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
@@ -170,7 +174,6 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
     err.text = text;
     err.type = FmtErrors::fmtet_Info;
     m_infoCount ++;
-    emit infoCountChanged(m_infoCount);
 
     if (dateTime.isNull())
         err.time = QDateTime::currentDateTime();
@@ -180,7 +183,7 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
     beginInsertRows(QModelIndex(), m_errors.size(), m_errors.size());
     m_errors.append(err);
     endInsertRows();
-    QApplication::processEvents();
+    emit infoCountChanged(m_infoCount);
 }
 
 bool FmtErrors::next()

@@ -65,6 +65,7 @@ FmtIndecesModelItem *FmtIndecesModelItem::take(int i)
 
 void FmtIndecesModelItem::insertItem(int after)
 {
+    Q_UNUSED(after);
     //childItems.insert();
 }
 

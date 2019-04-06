@@ -53,13 +53,6 @@ FmtIndex::~FmtIndex()
 
 }
 
-void FmtIndex::addField(FmtField *fld)
-{
-    /*FmtSegment segment;
-    segment.pFld = fld;
-    m_Fields.append(segment);*/
-}
-
 void FmtIndex::setName(const QString &n)
 {
     m_Name = n;
@@ -386,8 +379,12 @@ FmtSegment *FmtIndex::addSegment(const quint32 &row)
 FmtSegment *FmtIndex::addSegmentPrivate(const quint32 &row)
 {
     QModelIndex modelIndex = pTable->pIndecesModel->indexForItem(this);
+    int parentCount = pTable->pIndecesModel->rowCount(modelIndex);
 
-    pTable->pIndecesModel->beginInsertRows(modelIndex, row, row);
+    if (parentCount)
+        pTable->pIndecesModel->beginInsertRows(modelIndex, row, row);
+    else
+        pTable->pIndecesModel->beginInsertRows(modelIndex, 0, 0);
     FmtSegment *segment = new FmtSegment(this);
     segment->m_fSetIgnoreUndoStack = true;
     segment->setField(pTable->m_pFields.first());
@@ -465,6 +462,7 @@ bool FmtIndex::isLocal() const
 
 void FmtIndex::UpdateIndexName(const QString &value)
 {
+    Q_UNUSED(value);
     m_Name = FmtTableMakeIndexName(pTable, indexNumber());
 }
 

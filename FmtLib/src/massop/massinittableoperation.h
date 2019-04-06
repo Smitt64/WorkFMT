@@ -6,6 +6,7 @@
 
 class MassInitTableParams;
 class MassInitTablesProgress;
+class MassInitTablesParamModel;
 class MassInitTableOperation : public MassOpInterface
 {
     Q_OBJECT
@@ -16,9 +17,12 @@ public:
     void initPages() Q_DECL_OVERRIDE;
     void deinitPages() Q_DECL_OVERRIDE;
 
+    MassInitTablesParamModel *model();
+
 private:
     QScopedPointer<MassInitTableParams> pParamsPage;
     QScopedPointer<MassInitTablesProgress> pParamsProgress;
+    QScopedPointer<MassInitTablesParamModel> pModel;
 };
 
 #endif // MASSINITTABLEOPERATION_H

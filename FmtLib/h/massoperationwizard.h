@@ -24,6 +24,7 @@ public:
 
     QString selectedOpeation() const;
     void initInterface();
+    MassOpInterface *getInterface();
     const QStringList &tables() const;
 
 private:

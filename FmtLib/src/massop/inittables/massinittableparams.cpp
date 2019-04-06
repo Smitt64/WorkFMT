@@ -2,6 +2,7 @@
 #include "ui_massinittableparams.h"
 #include "massinittablesparammodel.h"
 #include "massoperationwizard.h"
+#include "../massinittableoperation.h"
 
 MassInitTableParams::MassInitTableParams(QWidget *parent) :
     QWizardPage(parent),
@@ -9,6 +10,7 @@ MassInitTableParams::MassInitTableParams(QWidget *parent) :
     pModel(Q_NULLPTR)
 {
     ui->setupUi(this);
+    setTitle(tr("Выбор действий"));
     connect(ui->pushButton, SIGNAL(clicked()), SLOT(selectAllCreateTables()));
     connect(ui->pushButton_2, SIGNAL(clicked()), SLOT(selectAllCreateIndex()));
 }
@@ -20,9 +22,18 @@ MassInitTableParams::~MassInitTableParams()
 
 void MassInitTableParams::setTables(const QStringList &list)
 {
+    Q_UNUSED(list);
+    MassOperationWizard *wzrd = qobject_cast<MassOperationWizard*>(wizard());
+
+    if (!wzrd)
+        return;
+
+    MassInitTableOperation *pInterface = qobject_cast<MassInitTableOperation*>(wzrd->getInterface());
+
     if (pModel == Q_NULLPTR)
     {
-        pModel = new MassInitTablesParamModel(list, this);
+        pModel = pInterface->model();
+        pModel->setTables(wzrd->tables());
         ui->tableView->setModel(pModel);
         ui->tableView->setColumnWidth(MassInitTablesParamModel::FieldInitTable, 200);
         ui->tableView->setColumnWidth(MassInitTablesParamModel::FieldInitIndex, 200);
@@ -30,7 +41,6 @@ void MassInitTableParams::setTables(const QStringList &list)
     }
     else
     {
-        MassOperationWizard *wzrd = qobject_cast<MassOperationWizard*>(wizard());
         pModel->setTables(wzrd->tables());
     }
 }
@@ -39,7 +49,6 @@ void MassInitTableParams::initializePage()
 {
     MassOperationWizard *wzrd = qobject_cast<MassOperationWizard*>(wizard());
     setTables(wzrd->tables());
-    //ui->tableView->horizontalHeader().setSe
 }
 
 void MassInitTableParams::selectAllCreateTables()

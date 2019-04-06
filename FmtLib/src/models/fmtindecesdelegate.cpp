@@ -18,6 +18,7 @@ void FmtIndecesDelegate::setFmtTable(FmtTable *table)
 
 QSize FmtIndecesDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     QSize size(option.rect.width(), 25);
     return size;
 }

@@ -46,7 +46,6 @@ QVariant FmtSegment::data(int column, int role) const
     if (!pFld)
         return QVariant();
 
-    const FmtIndex *const index = (FmtIndex*)pParentItem;
     if (column == FmtIndecesModelItem::fld_Name)
     {
         if (role == Qt::DisplayRole)

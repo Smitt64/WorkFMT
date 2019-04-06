@@ -134,7 +134,11 @@ SOURCES += \
     src/massop/massopselecttablespage.cpp \
     src/massop/inittables/massinittableparams.cpp \
     src/massop/inittables/massinittablesparammodel.cpp \
-    src/massop/inittables/massinittablesprogress.cpp
+    src/massop/inittables/massinittablesprogress.cpp \
+    src/massop/btrvtemplate/massopbtrvtemplate.cpp \
+    src/massop/btrvtemplate/massopbtrvtemplateresultpage.cpp \
+    src/massop/massopenfunc/massopenfunctemplate.cpp \
+    src/massop/massopenfunc/massopenfucnparams.cpp
 
 unix {
     target.path = /usr/lib
@@ -167,7 +171,9 @@ FORMS += \
     src/widgets/editcontent/import/mapfieldspage.ui \
     src/massop/massopselectoperationpage.ui \
     src/massop/inittables/massinittableparams.ui \
-    src/massop/inittables/massinittablesprogress.ui
+    src/massop/inittables/massinittablesprogress.ui \
+    src/massop/btrvtemplate/massopbtrvtemplateresultpage.ui \
+    src/massop/massopenfunc/massopenfucnparams.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -280,7 +286,11 @@ HEADERS += \
     src/massop/massopselecttablespage.h \
     src/massop/inittables/massinittableparams.h \
     src/massop/inittables/massinittablesparammodel.h \
-    src/massop/inittables/massinittablesprogress.h
+    src/massop/inittables/massinittablesprogress.h \
+    src/massop/btrvtemplate/massopbtrvtemplate.h \
+    src/massop/btrvtemplate/massopbtrvtemplateresultpage.h \
+    src/massop/massopenfunc/massopenfunctemplate.h \
+    src/massop/massopenfunc/massopenfucnparams.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

@@ -96,7 +96,6 @@ private:
     QToolBar *pSearch;
     FmtTableListDelegate *pTableListDelegate;
     QShortcut *pFindShortcut;
-    //QUndoView *pUndoView;
 
     TreeComboBox *pWindowsComboBox;
 

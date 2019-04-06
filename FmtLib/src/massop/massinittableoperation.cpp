@@ -1,12 +1,14 @@
 #include "massinittableoperation.h"
 #include "inittables/massinittableparams.h"
 #include "inittables/massinittablesprogress.h"
+#include "inittables/massinittablesparammodel.h"
 #include "massoperationwizard.h"
 
 MassInitTableOperation::MassInitTableOperation(QObject *parant) :
     MassOpInterface(parant),
     pParamsPage(new MassInitTableParams()),
-    pParamsProgress(new MassInitTablesProgress())
+    pParamsProgress(new MassInitTablesProgress()),
+    pModel(new MassInitTablesParamModel(QStringList()))
 {
 }
 
@@ -25,4 +27,9 @@ void MassInitTableOperation::initPages()
 void MassInitTableOperation::deinitPages()
 {
     MassOpInterface::deinitPages();
+}
+
+MassInitTablesParamModel *MassInitTableOperation::model()
+{
+    return pModel.data();
 }

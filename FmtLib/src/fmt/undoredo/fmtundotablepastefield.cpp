@@ -1,6 +1,8 @@
 #include "fmtundotablepastefield.h"
+#include "fmtfield.h"
 
-FmtUndoTablePasteField::FmtUndoTablePasteField(FmtTable *table, QUndoCommand *parent)
+FmtUndoTablePasteField::FmtUndoTablePasteField(FmtTable *table, QUndoCommand *parent) :
+    QUndoCommand(parent)
 {
     pTable = table;
     pField = Q_NULLPTR;
@@ -21,6 +23,7 @@ FmtField *FmtUndoTablePasteField::getField() const
 void FmtUndoTablePasteField::setData(const QMap<quint16,QVariant> &data)
 {
     fldDataMap = data;
+    setText(QObject::tr("Вставка поля из буффера %1").arg(data[FmtField::fld_Name].toString()));
 }
 
 void FmtUndoTablePasteField::setInsertBefor(const FmtFldIndex &befor)

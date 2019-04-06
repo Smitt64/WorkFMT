@@ -18,6 +18,7 @@ FmtFildsModel::~FmtFildsModel()
 
 int FmtFildsModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 5 + 1;
 }
 
@@ -237,16 +238,19 @@ void FmtFildsModel::setFieldPropertyChanged(const FmtField *fld, const FmtFldInd
 
 QModelIndex FmtFildsModel::index(int row, int column, const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return createIndex(row, column);
 }
 
 QModelIndex FmtFildsModel::parent(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return QModelIndex();
 }
 
 int FmtFildsModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     if (parent.isValid())
         return 0;
 
@@ -328,12 +332,16 @@ FmtTable *FmtFildsModel::fmtTable()
 
 bool FmtFildsModel::insertRows(int row, int count, const QModelIndex &parent)
 {
+    Q_UNUSED(parent);
+    Q_UNUSED(count);
     pTable->insertField(row, "t_unnamedfld", fmtt_INT);
     return true;
 }
 
 bool FmtFildsModel::removeRows(int row, int count, const QModelIndex &parent)
 {
+    Q_UNUSED(parent);
+    Q_UNUSED(count);
     pTable->removeField(row);
     return true;
 }

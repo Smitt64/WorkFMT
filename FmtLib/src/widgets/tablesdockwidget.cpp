@@ -112,6 +112,7 @@ void TablesDockWidget::filterTriggered(bool checked)
 
 void TablesDockWidget::filterTextChanged(const QString &text)
 {
+    Q_UNUSED(text);
     if (pFilterAction->isChecked())
     {
         pFilterAction->setChecked(false);

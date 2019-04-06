@@ -23,6 +23,12 @@ typedef struct
 class FmtGenCppTemplate : public FmtGenInterface
 {
 public:
+    enum
+    {
+        SkfMode_Create = 0x01,
+        SkfMode_Display = 0x02,
+        SkfMode_All = SkfMode_Create | SkfMode_Display,
+    };
     FmtGenCppTemplate();
     virtual ~FmtGenCppTemplate();
 
@@ -31,21 +37,29 @@ public:
     virtual void propertyEditor(QWidget *parent);
     virtual bool hasPropertes() const { return false; }//{ return true; }
 
-protected:
-    virtual QByteArray makeContent(FmtSharedTablePtr pTable);
+    void initSettings();
+    void CreateBlocks(const FmtSharedTablePtr &pTable);
 
-private:
-    void createOpenFuncDecl(const FmtSharedTablePtr &pTable, QTextStream &stream);
+    GenCppSettingsParams *param();
+
+    void createOpenFuncDecl(const FmtSharedTablePtr &pTable, QTextStream &stream, bool inlineComment = false);
     void createStruct(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createKeysUnion(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createKeysEnum(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createOpenFunc(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createFindFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream);
-    void createSkfDeclFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream);
+    void createSkfDeclFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream, const int &Mode = SkfMode_All);
     void createSkfFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream);
 
     void createSkfKfReturnSegment(const QString &fldName, const QString &keyNam, QTextStream &stream, bool asString = false, bool descOrder = false);
     void createSkfKfFunctions(FmtIndex *pIndex, QTextStream &stream);
+    void createDeclExtern(const FmtSharedTablePtr &pTable, QTextStream &stream);
+    void WriteTableComment(const FmtSharedTablePtr &pTable, QTextStream &stream, bool inlineComment = false);
+
+protected:
+    virtual QByteArray makeContent(FmtSharedTablePtr pTable);
+
+private:
     void WrapSkfAssignValue(QTextStream &stream, const QString &keyName, const QString &fldName, const QString &minval, const QString &maxval, const QString &zeroval);
 
     qint16 calcMaxCppLenght(qint16 *maxfieldname, const FmtSharedTablePtr &pTable);
@@ -54,14 +68,11 @@ private:
 
     void CreateFindFuncForIndex(FmtIndex *pIndex, const FmtSharedTablePtr &pTable, QTextStream &stream, bool isDefault, int IndexNum);
 
-    void CreateBlocks(const FmtSharedTablePtr &pTable);
     void AppendFunctionDeclExtern(GenCppTemplateBlock *block, const QString &func);
-    void createDeclExtern(const FmtSharedTablePtr &pTable, QTextStream &stream);
-    void WriteTableComment(const FmtSharedTablePtr &pTable, QTextStream &stream);
 
     GenCppTemplateBlock *getTemplateBlock(const FmtSharedTablePtr &pTable);
     GenCppTemplateBlock *getTemplateBlock(const FmtTable *pTable);
-    QString FormatName(QString &Mask, const GenCppTemplateBlock *block);
+    QString FormatName(const QString &Mask, const GenCppTemplateBlock *block);
     GenCppSettingsParams prm;
 
     QMap<FmtTable*,GenCppTemplateBlock*> m_Blocks;

@@ -56,7 +56,6 @@ signals:
 
 public slots:
     void NormalizeFlags();
-    void addField(FmtField *fld);
     void removeField(FmtField *pFld);
     void removeSegment(const quint16 &segmentIndex);
     qint32 indexNumber() const;

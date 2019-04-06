@@ -93,6 +93,7 @@ void TextEditPage::updateFieldsMap()
         combo->disconnect();
         connect(combo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index)
         {
+            Q_UNUSED(index);
             fieldsMap.clear();
             for (int j = 0; j < pTableModel->columnCount(); j++)
             {
@@ -100,7 +101,6 @@ void TextEditPage::updateFieldsMap()
                 int comboBoxIndex = comboBox->currentIndex();
                 fieldsMap[comboBoxIndex] = j + 1;
             }
-            qDebug() << fieldsMap;
         });
         connect(combo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(tableMapChanged()));
     }

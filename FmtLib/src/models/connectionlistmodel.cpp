@@ -9,6 +9,7 @@ ConnectionListModel::ConnectionListModel(QList<ConnectionInfo *> list, QObject *
 
 int ConnectionListModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 
@@ -47,20 +48,24 @@ bool ConnectionListModel::setData(const QModelIndex &index, const QVariant &valu
 
 QModelIndex ConnectionListModel::index(int row, int column, const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return createIndex(row, column);
 }
 
 QModelIndex ConnectionListModel::parent(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return QModelIndex();
 }
 
 int ConnectionListModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return m_Items.size();
 }
 
 Qt::ItemFlags ConnectionListModel::flags(const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     return Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable;
 }

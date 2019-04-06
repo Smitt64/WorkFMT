@@ -814,6 +814,7 @@ FmtField *FmtTable::addFieldPrivate(const QMap<quint16,QVariant> &data)
         ++i;
     }
 
+    fld->setOffset(value);
     fld->m_IgnoreUndoStack = false;
     emit fieldAdded(fld);
     pFieldsModel->endInsertRows();
@@ -1096,7 +1097,12 @@ FmtIndex *FmtTable::addIndex()
 FmtIndex *FmtTable::addIndexPrivate(const FmtFldIndex &row)
 {
     FmtFldIndex iRow = row == -1 ? static_cast<FmtFldIndex>(m_pIndeces.size()) : row;
-    pIndecesModel->beginInsertRows(QModelIndex(), iRow, iRow);
+
+    if (iRow != 0)
+        pIndecesModel->beginInsertRows(QModelIndex(), iRow, iRow);
+    else
+        pIndecesModel->beginResetModel();
+
     FmtIndex *indx = new FmtIndex(this);
     indx->pParentItem = pIndecesModel->rootItem;
     indx->setFlags(0);
@@ -1105,12 +1111,15 @@ FmtIndex *FmtTable::addIndexPrivate(const FmtFldIndex &row)
     //m_pIndeces.append(indx);
     m_pIndeces.insert(iRow, indx);
 
-    if (row == -1)
+    if (iRow == 0)
         pIndecesModel->rootItem->appendChild(indx);
     else
-        pIndecesModel->rootItem->insertChild(row, indx);
+        pIndecesModel->rootItem->insertChild(iRow, indx);
 
-    pIndecesModel->endInsertRows();
+    if (iRow != 0)
+        pIndecesModel->endInsertRows();
+    else
+        pIndecesModel->endResetModel();
 
     connect(indx, SIGNAL(indexChanged()), SLOT(onIndexChanged()));
     connect(this, SIGNAL(nameChanged(QString)), indx, SLOT(UpdateIndexName(QString)));
@@ -1316,9 +1325,9 @@ QString FmtTable::getCommentSql()
     return sql;
 }
 
-int FmtTable::createDbTable(QString *err)
+qint16 FmtTable::createDbTable(QString *err)
 {
-    int stat = 0;
+    qint16 stat = 0;
 
     if (isExists())
     {
@@ -1340,10 +1349,6 @@ int FmtTable::createDbTable(QString *err)
                 qf.prepare(sql);
                 ExecuteQuery(&qf);
             }
-        }
-        else
-        {
-            qDebug() << sql;
         }
     }
 

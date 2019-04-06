@@ -14,11 +14,13 @@ MapFildsModel::~MapFildsModel()
 
 int MapFildsModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return pTable->fieldsCount();
 }
 
 int MapFildsModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 2;
 }
 
@@ -30,11 +32,8 @@ QVariant MapFildsModel::data(const QModelIndex &index, int role) const
     FmtField *pFld = pTable->field(static_cast<FmtNumber5>(index.row()));
     if (index.column() == 0)
         return pFld->undecorateName();
-    else {
-        return m_Data[index.row()];
-    }
 
-    return QVariant();
+    return m_Data[index.row()];
 }
 
 bool MapFildsModel::setData(const QModelIndex &index, const QVariant &value, int role)

@@ -8,8 +8,8 @@
 
 TablesDock::TablesDock(const QString &title, QWidget *parent, Qt::WindowFlags flags) :
     QDockWidget(title, parent, flags),
-    pDelegate(Q_NULLPTR),
     pInfo(Q_NULLPTR),
+    pDelegate(Q_NULLPTR),
     pEventFilter(Q_NULLPTR)
 {
     pLayout = new QHBoxLayout();
@@ -117,6 +117,7 @@ void TablesDock::setItemDelegate(QAbstractItemDelegate *delegate)
 void TablesDock::addFilterTab()
 {
     TablesDockWidget *tablesWidget = new TablesDockWidget();
+    tablesWidget->listView()->setItemDelegate(pDelegate);
     pWidget.append(tablesWidget);
 
     FmtTablesModel *model = pInfo->addModel();
@@ -133,4 +134,12 @@ void TablesDock::tabCloseRequested(const int &index)
     TablesDockWidget* widget = pWidget.takeAt(index);
     delete widget;
     pInfo->deleteModel(index);
+}
+
+void TablesDock::forceRepaint()
+{
+    foreach(TablesDockWidget *item, pWidget)
+    {
+        item->listView()->viewport()->repaint();
+    }
 }

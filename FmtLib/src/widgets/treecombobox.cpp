@@ -3,7 +3,8 @@
 #include <QHeaderView>
 #include <QMouseEvent>
 
-TreeComboBox::TreeComboBox(QWidget *parent)
+TreeComboBox::TreeComboBox(QWidget *parent) :
+    QComboBox(parent)
 {
     pView = new QTreeView(this);
     pView->setRootIsDecorated(false);

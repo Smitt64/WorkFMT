@@ -29,6 +29,11 @@ FmtGenCppTemplate::~FmtGenCppTemplate()
 
 }
 
+void FmtGenCppTemplate::initSettings()
+{
+    GenCppSettings::ReadGenSettings(&prm);
+}
+
 QByteArray FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
@@ -103,14 +108,20 @@ qint16 FmtGenCppTemplate::calcMaxCppLenght(qint16 *maxfieldname, const FmtShared
     return len;
 }
 
-void FmtGenCppTemplate::createOpenFuncDecl(const FmtSharedTablePtr &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createOpenFuncDecl(const FmtSharedTablePtr &pTable, QTextStream &stream, bool inlineComment)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
         return;
 
-    WriteTableComment(pTable, stream);
-    stream << QString("BTRVFILE *File%1 = NULL;").arg(block->m_StructName) << endl;
+    if (!inlineComment)
+        WriteTableComment(pTable, stream);
+    stream << QString("BTRVFILE *File%1 = NULL; ").arg(block->m_StructName);
+
+    if (inlineComment)
+        WriteTableComment(pTable, stream, inlineComment);
+
+    stream << endl;
     AppendFunctionDeclExtern(block, QString("BTRVFILE *File%1").arg(block->m_StructName));
 }
 
@@ -368,18 +379,21 @@ void FmtGenCppTemplate::createFindFunctions(const FmtSharedTablePtr &pTable, QTe
     }
 }
 
-void FmtGenCppTemplate::createSkfDeclFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream)
+void FmtGenCppTemplate::createSkfDeclFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream, const int &Mode)
 {
     GenCppTemplateBlock *block = getTemplateBlock(pTable);
     if (!block)
         return;
 
-    if (prm.SkfFunc.fAllSkf)
+    if (prm.SkfFunc.fAllSkf && (Mode & SkfMode_Display) == SkfMode_Display)
     {
          stream << QString("extern void %1(int keynum, %2);")
                   .arg(block->m_SkfDefaultFunc)
                   .arg(block->m_SkfDefaultParams) << endl;
     }
+
+    if ((Mode & SkfMode_Create) != SkfMode_Create)
+        return;
 
     for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
@@ -484,7 +498,7 @@ void FmtGenCppTemplate::createSkfKfFunctions(FmtIndex *pIndex, QTextStream &stre
         }
     }
     stream << ");" << endl;
-    stream << "}" << endl;
+    stream << "}" << endl << endl;
 }
 
 void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream)
@@ -503,8 +517,7 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
         createSkfKfFunctions(pIndex, stream);
     }
 
-    stream << endl;
-
+    int count = 0;
     for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
@@ -512,6 +525,10 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
         if (pIndex->isUnique())
             continue;
 
+        if (count)
+            stream << endl;
+
+        count ++;
         stream << block->m_SkfFullFuncNameValue[pIndex] << endl;
         stream << "{" << endl;
         stream << tab << QString("%1 *TV = (%1 *)File%2->KeyTopVal;").arg(block->m_UnionName, block->m_StructName) << endl;
@@ -581,9 +598,15 @@ void FmtGenCppTemplate::WrapSkfAssignValue(QTextStream &stream, const QString &k
     stream << tab << "}" << endl;
 }
 
-QString FmtGenCppTemplate::FormatName(QString &Mask, const GenCppTemplateBlock *block)
+QString FmtGenCppTemplate::FormatName(const QString &Mask, const GenCppTemplateBlock *block)
 {
-    return Mask.replace("${StructName}", block->m_StructName);
+    QString result = Mask;
+    return result.replace("${StructName}", block->m_StructName);
+}
+
+GenCppSettingsParams *FmtGenCppTemplate::param()
+{
+    return &prm;
 }
 
 void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
@@ -697,9 +720,12 @@ void FmtGenCppTemplate::AppendFunctionDeclExtern(GenCppTemplateBlock *block, con
     block->m_Decl.append(QString("extern %1;").arg(func));
 }
 
-void FmtGenCppTemplate::WriteTableComment(const QSharedPointer<FmtTable> &pTable, QTextStream &stream)
+void FmtGenCppTemplate::WriteTableComment(const QSharedPointer<FmtTable> &pTable, QTextStream &stream, bool inlineComment)
 {
-    stream << QString("// %1").arg(pTable->comment()) << endl;
+    stream << QString("// %1").arg(pTable->comment());
+
+    if (!inlineComment)
+        stream << endl;
 }
 
 void FmtGenCppTemplate::createDeclExtern(const FmtSharedTablePtr &pTable, QTextStream &stream)
