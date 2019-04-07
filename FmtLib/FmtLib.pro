@@ -138,7 +138,10 @@ SOURCES += \
     src/massop/btrvtemplate/massopbtrvtemplate.cpp \
     src/massop/btrvtemplate/massopbtrvtemplateresultpage.cpp \
     src/massop/massopenfunc/massopenfunctemplate.cpp \
-    src/massop/massopenfunc/massopenfucnparams.cpp
+    src/massop/massopenfunc/massopenfucnparams.cpp \
+    src/massop/destribcreate/massdestribcreate.cpp \
+    src/massop/destribcreate/massdestribparamspage.cpp \
+    src/massop/destribcreate/massdestribparammodel.cpp
 
 unix {
     target.path = /usr/lib
@@ -173,7 +176,8 @@ FORMS += \
     src/massop/inittables/massinittableparams.ui \
     src/massop/inittables/massinittablesprogress.ui \
     src/massop/btrvtemplate/massopbtrvtemplateresultpage.ui \
-    src/massop/massopenfunc/massopenfucnparams.ui
+    src/massop/massopenfunc/massopenfucnparams.ui \
+    src/massop/destribcreate/massdestribparamspage.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -290,7 +294,10 @@ HEADERS += \
     src/massop/btrvtemplate/massopbtrvtemplate.h \
     src/massop/btrvtemplate/massopbtrvtemplateresultpage.h \
     src/massop/massopenfunc/massopenfunctemplate.h \
-    src/massop/massopenfunc/massopenfucnparams.h
+    src/massop/massopenfunc/massopenfucnparams.h \
+    src/massop/destribcreate/massdestribcreate.h \
+    src/massop/destribcreate/massdestribparamspage.h \
+    src/massop/destribcreate/massdestribparammodel.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin
