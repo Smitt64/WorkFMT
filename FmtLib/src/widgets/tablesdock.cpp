@@ -58,6 +58,18 @@ void TablesDock::setModel(FmtTablesModel *model)
     tablesWidget->setModel(model);
 }
 
+void TablesDock::closeConnection()
+{
+    for (int i = pWidget.size() - 1; i >= 1; i--)
+    {
+        TablesDockWidget* widget = pWidget.takeAt(i);
+        delete widget;
+        pTabBar->removeTab(i);
+    }
+
+    setModel(Q_NULLPTR);
+}
+
 TablesDockWidget *TablesDock::tablesWidget()
 {
     int index = pTabBar->currentIndex();

@@ -79,6 +79,16 @@ QVariant MassDestribParamModel::data(const QModelIndex &index, int role) const
             }
         }
     }
+    else if (role == Qt::BackgroundRole)
+    {
+        if (!parent(index).isValid())
+            return QColor(Qt::yellow).lighter();
+        else
+        {
+            if (index.column() > fld_Action)
+                return QColor(Qt::lightGray);
+        }
+    }
     return QVariant();
 }
 

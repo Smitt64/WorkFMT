@@ -529,7 +529,8 @@ void MainWindow::actionDisconnectTriggered()
                 current->db().close();
                 ui->tabToolBar->removeAction(active);
                 m_ConnectionsGroup->removeAction(active);
-                pTablesDock->setModel(NULL);
+                pTablesDock->closeConnection();
+                //pTablesDock->setModel(nullptr);
 
                 QList<QMdiSubWindow*> windows = pMdi->subWindowList();
                 foreach (QMdiSubWindow *w, windows)

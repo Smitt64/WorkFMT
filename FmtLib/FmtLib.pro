@@ -141,7 +141,8 @@ SOURCES += \
     src/massop/massopenfunc/massopenfucnparams.cpp \
     src/massop/destribcreate/massdestribcreate.cpp \
     src/massop/destribcreate/massdestribparamspage.cpp \
-    src/massop/destribcreate/massdestribparammodel.cpp
+    src/massop/destribcreate/massdestribparammodel.cpp \
+    src/massop/destribcreate/massdestribitemparamdelegate.cpp
 
 unix {
     target.path = /usr/lib
@@ -297,7 +298,8 @@ HEADERS += \
     src/massop/massopenfunc/massopenfucnparams.h \
     src/massop/destribcreate/massdestribcreate.h \
     src/massop/destribcreate/massdestribparamspage.h \
-    src/massop/destribcreate/massdestribparammodel.h
+    src/massop/destribcreate/massdestribparammodel.h \
+    src/massop/destribcreate/massdestribitemparamdelegate.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

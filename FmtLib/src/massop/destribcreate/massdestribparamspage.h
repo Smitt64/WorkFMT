@@ -7,6 +7,7 @@ namespace Ui {
 class MassDestribParamsPage;
 }
 
+class MassDestribItemParamDelegate;
 class MassDestribParamsPage : public QWizardPage
 {
     Q_OBJECT
@@ -19,6 +20,7 @@ public:
 
 private:
     Ui::MassDestribParamsPage *ui;
+    MassDestribItemParamDelegate *pDelegate;
 };
 
 #endif // MASSDESTRIBPARAMSPAGE_H

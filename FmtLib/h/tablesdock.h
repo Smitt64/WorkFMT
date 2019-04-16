@@ -19,7 +19,7 @@ public:
 
     void setConnection(ConnectionInfo *info);
     void setItemDelegate(QAbstractItemDelegate *delegate);
-
+    void closeConnection();
     void setEventFilter(QObject *objEventFilter);
 
 public slots:

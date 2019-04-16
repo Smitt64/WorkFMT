@@ -3,12 +3,15 @@
 #include "massoperationwizard.h"
 #include "massdestribcreate.h"
 #include "massdestribparammodel.h"
+#include "massdestribitemparamdelegate.h"
 
 MassDestribParamsPage::MassDestribParamsPage(QWidget *parent) :
     QWizardPage(parent),
     ui(new Ui::MassDestribParamsPage)
 {
     ui->setupUi(this);
+    pDelegate = new MassDestribItemParamDelegate(this);
+    ui->treeView->setItemDelegate(pDelegate);
 }
 
 MassDestribParamsPage::~MassDestribParamsPage()
