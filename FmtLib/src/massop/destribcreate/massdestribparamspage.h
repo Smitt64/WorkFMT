@@ -18,6 +18,9 @@ public:
 
     virtual void initializePage() Q_DECL_OVERRIDE;
 
+public slots:
+    void selectFolder();
+
 private:
     Ui::MassDestribParamsPage *ui;
     MassDestribItemParamDelegate *pDelegate;

@@ -297,6 +297,13 @@ QString CheckSymbol()
     return "✓";
 }
 
+QString CheckSymbolFromVariant(const bool &value)
+{
+    if (value)
+        return CheckSymbol();
+    return QString();
+}
+
 QString NullString(const int &index)
 {
     QString v = "";
