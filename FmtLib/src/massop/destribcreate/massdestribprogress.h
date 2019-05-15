@@ -21,6 +21,8 @@ public:
     MassDestribProgressRun(MassDestribCreate *Interface, QObject *parent = Q_NULLPTR);
     virtual ~MassDestribProgressRun() Q_DECL_OVERRIDE;
 
+    void setDsn(const QString &dsn);
+
     void run() Q_DECL_OVERRIDE;
 
 signals:
@@ -33,6 +35,7 @@ private:
     QDir getDir(const QDir &top, const QString &dirpath);
     void writefile(const QDir &dir, const QString &filename, const QString &data);
     MassDestribCreate *pInterface;
+    QString m_dsn;
     QSettings *m_pPrm;
 };
 

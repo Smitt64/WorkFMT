@@ -601,7 +601,7 @@ void ExportFmtToXml(ConnectionInfo *connection, const QStringList &files, const 
 
 qint16 InitFmtTableExec(FmtTable *pTable, QString *err)
 {
-    int stat = 0;
+    qint16 stat = 0;
     QTemporaryFile tmp;
     tmp.open();
 

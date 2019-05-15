@@ -70,8 +70,13 @@ bool FmtImpExpWrp::isNoXsd()
 
 QString FmtImpExpWrp::connectionString() const
 {
+    QString dsn = m_dsn;
+
+    if (dsn.isEmpty())
+        dsn = DatasourceFromService(pConnection->service());
+
     return QString("dsn=%1;user id=%2;password=%3")
-            .arg(DatasourceFromService(pConnection->service()))
+            .arg(dsn)
             .arg(pConnection->user())
             .arg(pConnection->password());
 }
@@ -84,9 +89,7 @@ bool FmtImpExpWrp::isRunning()
 void FmtImpExpWrp::cancel()
 {
     if (isRunning())
-    {
         pFmtXml->terminate();
-    }
 }
 
 void FmtImpExpWrp::processReadyReadStandardOutput()
@@ -136,6 +139,11 @@ QString FmtImpExpWrp::protocol() const
 {
     QString path = m_Protocol;
     return FileContent(path);
+}
+
+void FmtImpExpWrp::setDsn(const QString &dsn)
+{
+    m_dsn = dsn;
 }
 
 void FmtImpExpWrp::parseProtocol(FmtErrors *ptr)

@@ -14,6 +14,7 @@ public:
     virtual ~FmtDbfToolWrp();
 
     FmtErrors *fmterrors();
+    void setDsn(const QString &dsn);
 
 signals:
     void started();
@@ -33,6 +34,7 @@ private:
     FmtErrors *err;
     QScopedPointer<QProcess> proc;
     ConnectionInfo *pInfo;
+    QString m_dsn;
 };
 
 #endif // FMTDBFTOOLWRP_H

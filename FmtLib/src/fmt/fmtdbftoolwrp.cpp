@@ -29,6 +29,11 @@ FmtErrors *FmtDbfToolWrp::fmterrors()
     return err;
 }
 
+void FmtDbfToolWrp::setDsn(const QString &dsn)
+{
+    m_dsn = dsn;
+}
+
 void FmtDbfToolWrp::stop()
 {
     proc->kill();
@@ -47,17 +52,18 @@ void FmtDbfToolWrp::readyReadStandardOutput()
 
 void FmtDbfToolWrp::unload(const QString &ExportDir, const QString &dbt)
 {
+    QString dsn = m_dsn;
     err->clear();
     QEventLoop loop;
     connect(proc.data(), SIGNAL(finished(int)), &loop, SLOT(quit()));
 
+    if (dsn.isEmpty())
+        dsn = DatasourceFromService(pInfo->service());
+
     QStringList args;
     if (!ExportDir.isEmpty())
         args << "--edir" << ExportDir;
-    args << "--cs" << QString("dsn=%1;user id=%2;password=%3")
-            .arg(DatasourceFromService(pInfo->service()),
-                 pInfo->user(),
-                 pInfo->password());
+    args << "--cs" << QString("dsn=%1;user id=%2;password=%3").arg(m_dsn, pInfo->user(), pInfo->password());
     args << "--e" << "--dbt" << dbt;
 
     proc->setArguments(args);

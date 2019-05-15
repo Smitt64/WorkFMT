@@ -61,6 +61,12 @@ void MassDestribProgressRun::writefile(const QDir &dir, const QString &filename,
     }
     file.close();
 }
+
+void MassDestribProgressRun::setDsn(const QString &dsn)
+{
+    m_dsn = dsn;
+}
+
 void MassDestribProgressRun::run()
 {
     FmtApplication *app = (FmtApplication*)qApp;
@@ -114,6 +120,7 @@ void MassDestribProgressRun::run()
             if (element->UnloadFmt) {
                 emit message(QString("Выгрузка fmt"));
                 QScopedPointer<FmtImpExpWrp> imp(new FmtImpExpWrp(element->table->connection()));
+                imp->setDsn(m_dsn);
                 imp->addTable(table);
                 imp->exportTable(m_FmtDir.path());
                 imp->parseProtocol(tmp.data());
@@ -128,6 +135,7 @@ void MassDestribProgressRun::run()
                 connect(wrp.data()->fmterrors(), &FmtErrors::newMessage, this, &MassDestribProgressRun::message);
                 wrp->disconnect(wrp.data()->fmterrors(), &FmtErrors::newError, Q_NULLPTR, Q_NULLPTR);
                 wrp->disconnect(wrp.data()->fmterrors(), &FmtErrors::newMessage, Q_NULLPTR, Q_NULLPTR);
+                wrp->setDsn(m_dsn);
                 wrp->unload(m_DatDir.path(), table);
                 //dlg.setErrors(tmp.da);
             }
@@ -179,6 +187,15 @@ void MassDestribProgress::initializePage()
         fIsComplete = true;
         emit completeChanged();
     });
+
+    MassDestribParamModel *pModel = pInterface->model();
+    if (pModel->rowCount())
+    {
+        QString dsn;
+        const MassDestribParamModelElement *element = pModel->getTableParam(0);
+        dsn = DatasourceFromService(element->table->connection()->service());
+        run->setDsn(dsn);
+    }
     QThreadPool::globalInstance()->start(run);
 }
 

@@ -39,6 +39,8 @@ public slots:
     QString protocol() const;
     void parseProtocol(FmtErrors *ptr);
 
+    void setDsn(const QString &dsn);
+
     int importDir(const QString &impdir);
     void importFile(const QString &file);
     void exportTable(const QString &dir);
@@ -55,6 +57,7 @@ private:
     QString m_Protocol;
     ConnectionInfo *pConnection;
     QStringList m_Tables;
+    QString m_dsn;
 };
 
 #endif // FMTIMPEXPWRP_H
