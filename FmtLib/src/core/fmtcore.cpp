@@ -20,6 +20,7 @@
 #include <QSpacerItem>
 #include <QGridLayout>
 #include <QFileDialog>
+#include <QInputDialog>
 
 static QStringList FmtTypesList = QStringList()
         << "INT"
@@ -297,6 +298,13 @@ QString CheckSymbol()
     return "✓";
 }
 
+QString CheckSymbolFromVariant(const bool &value)
+{
+    if (value)
+        return CheckSymbol();
+    return QString();
+}
+
 QString NullString(const int &index)
 {
     QString v = "";
@@ -387,12 +395,40 @@ QString DatasourceFromService(const QString &service)
 
     if (model)
     {
-        QModelIndexList lst = model->match(model->index(0, OracleTnsListModel::mtns_ServiceName), Qt::DisplayRole, service.simplified());
-        if (lst.size())
+        QModelIndexList lst = model->match(model->index(0, OracleTnsListModel::mtns_ServiceName), Qt::DisplayRole, service.simplified(), 10);
+        QStringList values;
+        QListIterator<QModelIndex> iter(lst);
+
+        while(iter.hasNext())
         {
-            QModelIndex first = lst.at(0);
-            QModelIndex index = model->index(first.row(), OracleTnsListModel::mtns_Name);
-            str = index.data().toString();
+            QModelIndex element = iter.next();
+            QModelIndex index = model->index(element.row(), OracleTnsListModel::mtns_Name);
+            values.append(index.data().toString());
+        }
+
+        if (values.isEmpty())
+            return service;
+
+        if (values.size() == 1)
+            return values.first();
+        else
+        {
+            QWidget *parent = Q_NULLPTR;
+            QWidgetList windows = qApp->topLevelWidgets();
+            QListIterator<QWidget*> witer(windows);
+            while(witer.hasNext())
+            {
+                QMainWindow *w = qobject_cast<QMainWindow*>(witer.next());
+
+                if (w)
+                {
+                    parent = w;
+                    break;
+                }
+            }
+
+            str = QInputDialog::getItem(parent, QObject::tr("Выбор DSN"), QObject::tr("Сервису '%1' соответствуют DSN:").arg(service),
+                                        values, 0, false, nullptr, Qt::Dialog);
         }
     }
 
@@ -565,7 +601,7 @@ void ExportFmtToXml(ConnectionInfo *connection, const QStringList &files, const 
 
 qint16 InitFmtTableExec(FmtTable *pTable, QString *err)
 {
-    int stat = 0;
+    qint16 stat = 0;
     QTemporaryFile tmp;
     tmp.open();
 

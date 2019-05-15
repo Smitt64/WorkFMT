@@ -39,6 +39,7 @@ SOURCES += \
     src/fmtworkwindow.cpp \
     src/impexpparams.cpp \
     src/mainwindow.cpp \
+    src/massop/destribcreate/massdestribprogress.cpp \
     src/oracleauthdlg.cpp \
     src/tablesgroupsdlg.cpp \
     src/windowslistdlg.cpp \
@@ -138,7 +139,11 @@ SOURCES += \
     src/massop/btrvtemplate/massopbtrvtemplate.cpp \
     src/massop/btrvtemplate/massopbtrvtemplateresultpage.cpp \
     src/massop/massopenfunc/massopenfunctemplate.cpp \
-    src/massop/massopenfunc/massopenfucnparams.cpp
+    src/massop/massopenfunc/massopenfucnparams.cpp \
+    src/massop/destribcreate/massdestribcreate.cpp \
+    src/massop/destribcreate/massdestribparamspage.cpp \
+    src/massop/destribcreate/massdestribparammodel.cpp \
+    src/massop/destribcreate/massdestribitemparamdelegate.cpp
 
 unix {
     target.path = /usr/lib
@@ -146,6 +151,7 @@ unix {
 }
 
 FORMS += \
+    src/massop/destribcreate/massdestribprogress.ui \
     ui/aboutdlg.ui \
     ui/dbinitdlg.ui \
     ui/documentwindow.ui \
@@ -173,7 +179,8 @@ FORMS += \
     src/massop/inittables/massinittableparams.ui \
     src/massop/inittables/massinittablesprogress.ui \
     src/massop/btrvtemplate/massopbtrvtemplateresultpage.ui \
-    src/massop/massopenfunc/massopenfucnparams.ui
+    src/massop/massopenfunc/massopenfucnparams.ui \
+    src/massop/destribcreate/massdestribparamspage.ui
 
 RESOURCES += \
     res/fmt.qrc
@@ -260,6 +267,7 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    src/massop/destribcreate/massdestribprogress.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
     h/logsettingsdlg.h \
     h/datelineedit.h \
@@ -290,7 +298,11 @@ HEADERS += \
     src/massop/btrvtemplate/massopbtrvtemplate.h \
     src/massop/btrvtemplate/massopbtrvtemplateresultpage.h \
     src/massop/massopenfunc/massopenfunctemplate.h \
-    src/massop/massopenfunc/massopenfucnparams.h
+    src/massop/massopenfunc/massopenfucnparams.h \
+    src/massop/destribcreate/massdestribcreate.h \
+    src/massop/destribcreate/massdestribparamspage.h \
+    src/massop/destribcreate/massdestribparammodel.h \
+    src/massop/destribcreate/massdestribitemparamdelegate.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

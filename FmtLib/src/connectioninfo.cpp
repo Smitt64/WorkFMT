@@ -19,7 +19,6 @@ ConnectionInfo::ConnectionInfo(const QString &dbalias) :
 
 ConnectionInfo::~ConnectionInfo()
 {
-    delete pModel;
     qDeleteAll(pModels);
     pModels.clear();
 }

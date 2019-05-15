@@ -16,4 +16,4 @@ typedef qint16  FmtFldType;
 typedef qint16  FmtFldIndex;
 typedef quint64 FmtRecId;
 
-#endif // FMTLIB_GLOBAL_H
+#endif // FMTLIzx _GLOBAL_H

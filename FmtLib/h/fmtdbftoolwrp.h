@@ -14,6 +14,7 @@ public:
     virtual ~FmtDbfToolWrp();
 
     FmtErrors *fmterrors();
+    void setDsn(const QString &dsn);
 
 signals:
     void started();
@@ -31,8 +32,9 @@ private slots:
 private:
     QTextCodec *codec;
     FmtErrors *err;
-    QProcess proc;
+    QScopedPointer<QProcess> proc;
     ConnectionInfo *pInfo;
+    QString m_dsn;
 };
 
 #endif // FMTDBFTOOLWRP_H

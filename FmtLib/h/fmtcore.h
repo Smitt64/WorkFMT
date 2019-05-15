@@ -135,6 +135,7 @@ QString PlusButtonCss();
 QString MinusButtonCss();
 QString AddTabButtonCss();
 QString CheckSymbol();
+QString CheckSymbolFromVariant(const bool &value);
 QString NullString(const int &index);
 
 QSettings *settings();

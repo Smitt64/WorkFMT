@@ -10,7 +10,8 @@
 #include <QTextStream>
 #include <QRegExpValidator>
 
-FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) : QObject(parent)
+FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) :
+    QObject(parent)
 {
     pConnection = connection;
     pFmtXml = new QProcess(this);
@@ -21,6 +22,11 @@ FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) : QObjec
     connect(pFmtXml, SIGNAL(finished(int)), SIGNAL(finished(int)));
     connect(pFmtXml, SIGNAL(error(QProcess::ProcessError)), SLOT(processError(QProcess::ProcessError)));
     connect(pFmtXml, SIGNAL(readyReadStandardOutput()), SLOT(processReadyReadStandardOutput()));
+}
+
+FmtImpExpWrp::~FmtImpExpWrp()
+{
+
 }
 
 void FmtImpExpWrp::addTable(const QString &table)
@@ -64,8 +70,13 @@ bool FmtImpExpWrp::isNoXsd()
 
 QString FmtImpExpWrp::connectionString() const
 {
+    QString dsn = m_dsn;
+
+    if (dsn.isEmpty())
+        dsn = DatasourceFromService(pConnection->service());
+
     return QString("dsn=%1;user id=%2;password=%3")
-            .arg(DatasourceFromService(pConnection->service()))
+            .arg(dsn)
             .arg(pConnection->user())
             .arg(pConnection->password());
 }
@@ -78,9 +89,7 @@ bool FmtImpExpWrp::isRunning()
 void FmtImpExpWrp::cancel()
 {
     if (isRunning())
-    {
         pFmtXml->terminate();
-    }
 }
 
 void FmtImpExpWrp::processReadyReadStandardOutput()
@@ -130,6 +139,11 @@ QString FmtImpExpWrp::protocol() const
 {
     QString path = m_Protocol;
     return FileContent(path);
+}
+
+void FmtImpExpWrp::setDsn(const QString &dsn)
+{
+    m_dsn = dsn;
 }
 
 void FmtImpExpWrp::parseProtocol(FmtErrors *ptr)

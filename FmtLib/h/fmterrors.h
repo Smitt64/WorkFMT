@@ -46,6 +46,8 @@ signals:
     void errorsCountChanged(quint32);
     void warningsCountChanged(quint32);
     void infoCountChanged(quint32);
+    void newError(const QString &text);
+    void newMessage(const QString &text);
 
 public slots:
     bool hasErrors();

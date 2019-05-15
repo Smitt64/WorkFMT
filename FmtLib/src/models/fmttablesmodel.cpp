@@ -12,6 +12,11 @@ FmtTablesModel::FmtTablesModel(ConnectionInfo *ConInfo, QObject *parent) :
     tmpTableIcon = QIcon(":/tablet");
 }
 
+FmtTablesModel::~FmtTablesModel()
+{
+
+}
+
 void FmtTablesModel::updateFmtList()
 {
     if (pQuery == Q_NULLPTR)
