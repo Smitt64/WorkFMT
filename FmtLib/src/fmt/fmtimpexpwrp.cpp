@@ -10,7 +10,8 @@
 #include <QTextStream>
 #include <QRegExpValidator>
 
-FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) : QObject(parent)
+FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) :
+    QObject(parent)
 {
     pConnection = connection;
     pFmtXml = new QProcess(this);
@@ -21,6 +22,11 @@ FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) : QObjec
     connect(pFmtXml, SIGNAL(finished(int)), SIGNAL(finished(int)));
     connect(pFmtXml, SIGNAL(error(QProcess::ProcessError)), SLOT(processError(QProcess::ProcessError)));
     connect(pFmtXml, SIGNAL(readyReadStandardOutput()), SLOT(processReadyReadStandardOutput()));
+}
+
+FmtImpExpWrp::~FmtImpExpWrp()
+{
+
 }
 
 void FmtImpExpWrp::addTable(const QString &table)

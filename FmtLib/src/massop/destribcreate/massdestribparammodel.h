@@ -80,6 +80,8 @@ public:
 
     void setTables(const QStringList &list);
 
+    const MassDestribParamModelElement *getTableParam(const int &index);
+
 private:
     QList<MassDestribParamModelElement*> m_Tables;
     MassDestribCreate *pInfo;

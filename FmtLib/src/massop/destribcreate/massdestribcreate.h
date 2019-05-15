@@ -6,6 +6,7 @@
 
 class MassDestribParamsPage;
 class MassDestribParamModel;
+class MassDestribProgress;
 class MassDestribCreate: public MassOpInterface
 {
     Q_OBJECT
@@ -20,6 +21,7 @@ public:
 
 private:
     QScopedPointer<MassDestribParamsPage> mParams;
+    QScopedPointer<MassDestribProgress> mProgress;
     MassDestribParamModel *pModel;
 };
 

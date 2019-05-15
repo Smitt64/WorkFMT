@@ -4,6 +4,7 @@
 #include "massdestribcreate.h"
 #include "massdestribparammodel.h"
 #include "massdestribitemparamdelegate.h"
+#include "fmtapplication.h"
 #include <QFileDialog>
 #include <QAction>
 
@@ -12,6 +13,14 @@ MassDestribParamsPage::MassDestribParamsPage(QWidget *parent) :
     ui(new Ui::MassDestribParamsPage)
 {
     ui->setupUi(this);
+
+    FmtApplication *app = (FmtApplication*)qApp;
+    m_pPrm = app->settings();
+
+    m_pPrm->beginGroup("MassDestrib");
+    ui->lineEdit->setText(m_pPrm->value("unloaddir", QDir::currentPath()).toString());
+    m_pPrm->endGroup();
+
     pDelegate = new MassDestribItemParamDelegate(this);
     ui->treeView->setItemDelegate(pDelegate);
     connect(ui->toolButton, &QToolButton::clicked, this, &MassDestribParamsPage::selectFolder);
@@ -42,6 +51,11 @@ void MassDestribParamsPage::initializePage()
 
 void MassDestribParamsPage::selectFolder()
 {
-    QString dir = QFileDialog::getExistingDirectory(this);
+    QString dir = QFileDialog::getExistingDirectory(this, QString(), ui->lineEdit->text());
     ui->lineEdit->setText(dir);
+
+    m_pPrm->beginGroup("MassDestrib");
+    m_pPrm->setValue("unloaddir", dir);
+    m_pPrm->endGroup();
+    m_pPrm->sync();
 }

@@ -278,3 +278,8 @@ const QStringList &MassDestribParamModel::getFieldsActions() const
 {
     return m_FldsActions;
 }
+
+const MassDestribParamModelElement *MassDestribParamModel::getTableParam(const int &index)
+{
+    return m_Tables[index];
+}

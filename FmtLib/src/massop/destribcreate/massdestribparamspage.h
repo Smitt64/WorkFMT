@@ -7,6 +7,7 @@ namespace Ui {
 class MassDestribParamsPage;
 }
 
+class QSettings;
 class MassDestribItemParamDelegate;
 class MassDestribParamsPage : public QWizardPage
 {
@@ -24,6 +25,7 @@ public slots:
 private:
     Ui::MassDestribParamsPage *ui;
     MassDestribItemParamDelegate *pDelegate;
+    QSettings *m_pPrm;
 };
 
 #endif // MASSDESTRIBPARAMSPAGE_H

@@ -38,7 +38,7 @@ class MassInitTablesProgress : public QWizardPage
 
 public:
     explicit MassInitTablesProgress(QWidget *parent = nullptr);
-    ~MassInitTablesProgress();
+    virtual ~MassInitTablesProgress();
 
     void initializePage() Q_DECL_OVERRIDE;
     bool isComplete() const Q_DECL_OVERRIDE;

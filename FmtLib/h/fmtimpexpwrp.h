@@ -12,7 +12,8 @@ class FMTLIBSHARED_EXPORT FmtImpExpWrp : public QObject
 {
     Q_OBJECT
 public:
-    explicit FmtImpExpWrp(ConnectionInfo *connection, QObject *parent = 0);
+    explicit FmtImpExpWrp(ConnectionInfo *connection, QObject *parent = Q_NULLPTR);
+    virtual ~FmtImpExpWrp();
 
 signals:
     void finished(int exitCode = 0);

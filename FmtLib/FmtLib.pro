@@ -39,6 +39,7 @@ SOURCES += \
     src/fmtworkwindow.cpp \
     src/impexpparams.cpp \
     src/mainwindow.cpp \
+    src/massop/destribcreate/massdestribprogress.cpp \
     src/oracleauthdlg.cpp \
     src/tablesgroupsdlg.cpp \
     src/windowslistdlg.cpp \
@@ -150,6 +151,7 @@ unix {
 }
 
 FORMS += \
+    src/massop/destribcreate/massdestribprogress.ui \
     ui/aboutdlg.ui \
     ui/dbinitdlg.ui \
     ui/documentwindow.ui \
@@ -265,6 +267,7 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    src/massop/destribcreate/massdestribprogress.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
     h/logsettingsdlg.h \
     h/datelineedit.h \

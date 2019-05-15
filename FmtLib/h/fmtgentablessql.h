@@ -11,7 +11,6 @@ public:
     virtual ~FmtGenTablesSql();
     virtual GenType getContentType() const { return FmtGenInterface::GenSql; }
 
-protected:
     virtual QByteArray makeContent(FmtSharedTablePtr pTable);
 };
 

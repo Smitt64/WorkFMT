@@ -31,7 +31,7 @@ private slots:
 private:
     QTextCodec *codec;
     FmtErrors *err;
-    QProcess proc;
+    QScopedPointer<QProcess> proc;
     ConnectionInfo *pInfo;
 };
 

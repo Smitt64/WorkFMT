@@ -17,6 +17,7 @@ QByteArray FmtGenTablesSql::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
+    stream << QString("-- %1").arg(pTable->comment()) << endl;
     stream << pTable->generateCreateTableSql().toLocal8Bit() << ";";
     stream << endl << endl;
     stream << pTable->getCommentSql();
