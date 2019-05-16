@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     setWindowTitle(tr("FMT"));
-    setWindowIcon(QIcon("://icon"));
+    setWindowIcon(QIcon(":/img/icon128.png"));
     pTablesDock = new TablesDock(tr("Таблицы"), this);
     addDockWidget(Qt::LeftDockWidgetArea, pTablesDock);
     //pTablesDock->tablesWidget()->installEventFilter(this);

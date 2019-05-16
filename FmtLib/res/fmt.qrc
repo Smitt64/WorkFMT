@@ -84,5 +84,7 @@
         <file>img/PasteHS.png</file>
         <file>img/ImportContent.png</file>
         <file>img/EditTableHS.png</file>
+        <file>img/base_cylinder_72.png</file>
+        <file>img/icon128.png</file>
     </qresource>
 </RCC>
