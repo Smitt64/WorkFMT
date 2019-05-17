@@ -146,3 +146,5 @@ WorkFMT/fmtopt\.ini
 *.autosave
 
 WorkFMT\.pro\.user\.4\.9-pre1
+
+*.bin
