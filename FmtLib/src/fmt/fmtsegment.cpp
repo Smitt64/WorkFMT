@@ -46,67 +46,70 @@ QVariant FmtSegment::data(int column, int role) const
     if (!pFld)
         return QVariant();
 
-    if (column == FmtIndecesModelItem::fld_Name)
+    if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
-        if (role == Qt::DisplayRole)
-            return pFld->undecorateName();
-        else if (role == Qt::EditRole)
-            return pFld->index();
-    }
-    if (column == FmtIndecesModelItem::fld_Comment)
-            return m_Comment;
-    if (column == FmtIndecesModelItem::fld_Type)
-        return fmtTypeForId(pFld->type());
-    if(column == FmtIndecesModelItem::fld_Dup)
-        return (isDup()) ? CheckSymbol() : "";
-    if(column == FmtIndecesModelItem::fld_Desc)
-    {
-        if (role == Qt::DisplayRole)
-            return descOrder() ? CheckSymbol() : "";
-        else if (role == Qt::EditRole)
-            return descOrder() ? true : false;
-    }
-    if (column == FmtIndecesModelItem::fld_NotNull)
-    {
-        // исключить из null
-        FmtIndex *pIndex = (FmtIndex*)pParentItem;
-
-        if (pIndex->nullValue())
+        if (column == FmtIndecesModelItem::fld_Name)
         {
-            if (isNotNull())
+            if (role == Qt::DisplayRole)
+                return pFld->undecorateName();
+            else if (role == Qt::EditRole)
+                return pFld->index();
+        }
+        if (column == FmtIndecesModelItem::fld_Comment)
+            return m_Comment;
+        if (column == FmtIndecesModelItem::fld_Type)
+            return fmtTypeForId(pFld->type());
+        if(column == FmtIndecesModelItem::fld_Dup)
+            return (isDup()) ? CheckSymbol() : "";
+        if(column == FmtIndecesModelItem::fld_Desc)
+        {
+            if (role == Qt::DisplayRole)
+                return descOrder() ? CheckSymbol() : "";
+            else if (role == Qt::EditRole)
+                return descOrder() ? true : false;
+        }
+        if (column == FmtIndecesModelItem::fld_NotNull)
+        {
+            // исключить из null
+            FmtIndex *pIndex = (FmtIndex*)pParentItem;
+
+            if (pIndex->nullValue())
             {
-                if (role == Qt::DisplayRole)
-                    return "";
-                else if (role == Qt::EditRole)
-                    return false;
-            }
-            else
-            {
-                if (role == Qt::DisplayRole)
-                    return CheckSymbol();
-                else if (role == Qt::EditRole)
-                    return true;
+                if (isNotNull())
+                {
+                    if (role == Qt::DisplayRole)
+                        return "";
+                    else if (role == Qt::EditRole)
+                        return false;
+                }
+                else
+                {
+                    if (role == Qt::DisplayRole)
+                        return CheckSymbol();
+                    else if (role == Qt::EditRole)
+                        return true;
+                }
             }
         }
-    }
-    if(column == FmtIndecesModelItem::fld_Null)
-    {
-        FmtIndex *pIndex = (FmtIndex*)pParentItem;
-        if (role == Qt::DisplayRole)
-            return NullString(pIndex->nullValue());
-        else if (role == Qt::EditRole)
-            return pIndex->nullValue();
-    }
-    if (column == FmtIndecesModelItem::fld_AutoInc)
-        return pParentItem->data(FmtIndecesModelItem::fld_AutoInc, Qt::DisplayRole);
-    if (column == FmtIndecesModelItem::fld_Local)
-        return pParentItem->data(FmtIndecesModelItem::fld_Local, Qt::DisplayRole);
-    if (column == FmtIndecesModelItem::fld_ExcIndx)
-    {
-        if (role == Qt::DisplayRole)
-            return m_IsReal ? CheckSymbol() : "";
-        else if (role == Qt::EditRole)
-            return m_IsReal;
+        if(column == FmtIndecesModelItem::fld_Null)
+        {
+            FmtIndex *pIndex = (FmtIndex*)pParentItem;
+            if (role == Qt::DisplayRole)
+                return NullString(pIndex->nullValue());
+            else if (role == Qt::EditRole)
+                return pIndex->nullValue();
+        }
+        if (column == FmtIndecesModelItem::fld_AutoInc)
+            return pParentItem->data(FmtIndecesModelItem::fld_AutoInc, Qt::DisplayRole);
+        if (column == FmtIndecesModelItem::fld_Local)
+            return pParentItem->data(FmtIndecesModelItem::fld_Local, Qt::DisplayRole);
+        if (column == FmtIndecesModelItem::fld_ExcIndx)
+        {
+            if (role == Qt::DisplayRole)
+                return m_IsReal ? CheckSymbol() : "";
+            else if (role == Qt::EditRole)
+                return m_IsReal;
+        }
     }
 
     return QVariant();

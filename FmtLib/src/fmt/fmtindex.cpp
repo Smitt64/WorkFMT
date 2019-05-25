@@ -37,14 +37,14 @@ QString FmtUndoMacroTitle(const QString &name, const quint16 &prop)
     \ingroup tools
 */
 FmtIndex::FmtIndex(FmtTable *table, QObject *parent):
-    FmtIndecesModelItem(0, parent)
+    FmtIndecesModelItem(Q_NULLPTR, parent)
 {
     m_fDup = false;
     m_NullValue = 0;
     m_fIgnoreStack = false;
 
     pTable = table;
-    pLastCommand = NULL;
+    pLastCommand = Q_NULLPTR;
     pUndoStack = pTable->undoStack();
 }
 
@@ -65,48 +65,57 @@ void FmtIndex::setType(const FmtNumber5 &n)
 
 QVariant FmtIndex::data(int column, int role) const
 {
-    if (column == FmtIndecesModelItem::fld_Name)
-        return m_Name;
-
-    if (column == FmtIndecesModelItem::fld_Dup)
+    if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
-        if (role == Qt::DisplayRole)
-            return isDup() ? CheckSymbol() : "";
-        else if (role == Qt::EditRole)
-            return isDup();
-    }
+        if (column == FmtIndecesModelItem::fld_Name)
+            return m_Name;
 
-    if (column == FmtIndecesModelItem::fld_Null)
-    {
-        if (role == Qt::EditRole)
-            return m_NullValue;
-        else
+        if (column == FmtIndecesModelItem::fld_Dup)
         {
-            return NullString(m_NullValue);
+            if (role == Qt::DisplayRole)
+                return isDup() ? CheckSymbol() : "";
+            else if (role == Qt::EditRole)
+                return isDup();
+        }
+
+        if (column == FmtIndecesModelItem::fld_Null)
+        {
+            if (role == Qt::EditRole)
+                return m_NullValue;
+            else
+                return NullString(m_NullValue);
+        }
+
+        if (column == FmtIndecesModelItem::fld_AutoInc)
+        {
+            if (role == Qt::EditRole)
+                return isAutoInc();
+            else
+            {
+                if (isAutoInc())
+                    return CheckSymbol();
+            }
+        }
+
+        if (column == FmtIndecesModelItem::fld_Local)
+        {
+            if (role == Qt::EditRole)
+                return isLocal();
+            else
+            {
+                if (isLocal())
+                    return CheckSymbol();
+            }
         }
     }
-
-    if (column == FmtIndecesModelItem::fld_AutoInc)
+    else if (role == Qt::DecorationRole)
     {
-        if (role == Qt::EditRole)
+        if (column == FmtIndecesModelItem::fld_Name)
         {
-            return isAutoInc();
-        }
-        else
-        {
-            if (isAutoInc())
-                return CheckSymbol();
-        }
-    }
-
-    if (column == FmtIndecesModelItem::fld_Local)
-    {
-        if (role == Qt::EditRole)
-            return isLocal();
-        else
-        {
-            if (isLocal())
-                return CheckSymbol();
+            if (isPrimary())
+                return QPixmap(":/img/PrimaryKeyHS.png");
+            else
+                return QVariant();
         }
     }
 

@@ -8,7 +8,7 @@ FmtIndecesModel::FmtIndecesModel(FmtTable *parent) :
     QAbstractItemModel((QObject*)parent)
 {
     pTable = parent;
-    rootItem = new FmtSegment(NULL);
+    rootItem = new FmtSegment(Q_NULLPTR);
 }
 
 int FmtIndecesModel::columnCount(const QModelIndex &parent) const
@@ -25,7 +25,7 @@ FmtIndecesModelItem *FmtIndecesModel::getItem(const QModelIndex &index) const
         if (item)
             return item;
     }
-    return NULL;
+    return Q_NULLPTR;
 }
 
 QVariant FmtIndecesModel::data(const QModelIndex &index, int role) const
@@ -33,14 +33,11 @@ QVariant FmtIndecesModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
-    {
+    if (role != Qt::DisplayRole && role != Qt::DecorationRole)
         return QVariant();
-    }
 
     FmtIndecesModelItem *item = static_cast<FmtIndecesModelItem*>(index.internalPointer());
-
-    return item->data(index.column());
+    return item->data(index.column(), role);
 }
 
 Qt::ItemFlags FmtIndecesModel::flags(const QModelIndex &index) const
