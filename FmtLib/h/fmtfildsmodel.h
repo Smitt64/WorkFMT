@@ -56,7 +56,8 @@ public:
     void endRemoveField();
 
     FmtTable *fmtTable();
-    QVariant ProcessHighlightFields(const QModelIndex &index, int role, const QString &HighlightText = QString()) const;
+    QVariant ProcessHighlightFields(const QModelIndex &index, int role, const QString &HighlightText = QString(), const QString &color = QString("9BFF9B")) const;
+    QVariant ProcessHighlightFieldsEx(const QString &text, const QString &HighlightText = QString(), const QString &color = QString("9BFF9B")) const;
 
 signals:
     void AddedToLast(FmtField *fld, const QModelIndex &index);

@@ -25,7 +25,7 @@ void ColumnAlignedLayout::setGeometry(const QRect &r)
     if (!pHeaderView)
         return;
 
-    Q_ASSERT_X(pHeaderView->count() == count(), "layout", "there must be as many items in the layout as there are columns in the table");
+    //Q_ASSERT_X(pHeaderView->count() == count(), "layout", "there must be as many items in the layout as there are columns in the table");
     if (pHeaderView->count() != count())
         return;
 

@@ -8,6 +8,8 @@
 #include "fmttable.h"
 #include "fmtlib_global.h"
 #include "mdisubinterface.h"
+#include "src/widgets/filteredtablewidget.h"
+#include "fmtfieldstableheaderdelegate.h"
 
 namespace Ui {
 class FmtWorkWindow;
@@ -23,6 +25,20 @@ class LineEditAction;
 class QMdiSubWindow;
 class QShortcut;
 class FmtFieldsTableHeaderDelegate;
+class FilteredTableWidget;
+class FmtFieldsTableViewFilterController;
+
+class FmtFieldsTableViewFilterController: public QObject, public FilteredControlHandler
+{
+    Q_OBJECT
+public:
+    FmtFieldsTableViewFilterController(FmtFieldsDelegate *delegate);
+    QWidget *create(const int &index) Q_DECL_OVERRIDE;
+
+private:
+    FmtFieldsDelegate *pDelegate;
+};
+
 class FMTLIBSHARED_EXPORT FmtWorkWindow : public MdiSubInterface
 {
     Q_OBJECT
@@ -111,6 +127,8 @@ private:
     FmtFieldsTableView *pTableView;
     FmtIndexTreeView   *pTreeView;
     FmtFieldsTableHeaderDelegate *pTableHeaderDelegate;
+    FilteredTableWidget *pFilteredTableView;
+    FmtFieldsTableViewFilterController *pFieldsFilterController;
 
     QDataWidgetMapper *pMapper;
     FmtFieldsDelegate *pFieldsDelegate;

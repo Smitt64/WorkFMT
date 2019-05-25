@@ -42,6 +42,7 @@ SOURCES += \
     src/massop/destribcreate/massdestribprogress.cpp \
     src/oracleauthdlg.cpp \
     src/tablesgroupsdlg.cpp \
+    src/widgets/filteredtablewidget.cpp \
     src/windowslistdlg.cpp \
     src/core/fmtcore.cpp \
     src/core/fmtlib.cpp \
@@ -302,7 +303,8 @@ HEADERS += \
     src/massop/destribcreate/massdestribcreate.h \
     src/massop/destribcreate/massdestribparamspage.h \
     src/massop/destribcreate/massdestribparammodel.h \
-    src/massop/destribcreate/massdestribitemparamdelegate.h
+    src/massop/destribcreate/massdestribitemparamdelegate.h \
+    src/widgets/filteredtablewidget.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

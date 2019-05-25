@@ -12,6 +12,7 @@ TableMapToFmtWidget::TableMapToFmtWidget(FmtSharedTablePtr table, QWidget *paren
     ui->setupUi(this);
     pTable = table;
 
+    alignedLayout->setMargin(0);
     alignedLayout = new ColumnAlignedLayout();
     ui->widget->setLayout(alignedLayout);
     alignedLayout->setTableColumnsToTrack(ui->tableView->horizontalHeader());
