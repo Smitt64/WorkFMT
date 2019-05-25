@@ -122,23 +122,23 @@ void GenCppSettings::ReadGenSettings(GenCppSettingsParams *Prm)
     Prm->fGenUnion = Setttings->value("GenUnion", true).toBool();
     Prm->GenUnion.sNameMask = Setttings->value("GenUnion.NameMask", "${StructName}_KEYS").toString();
     Prm->GenUnion.fAlignNames = Setttings->value("GenUnion.AlignNames", true).toBool();
-    Prm->GenUnion.iSegmentNameType = Setttings->value("GenUnion.SegmentNameType", usn_Short).toInt();
+    Prm->GenUnion.iSegmentNameType = Setttings->value("GenUnion.SegmentNameType", /*usn_Short*/usn_FromNames).toInt();
     Prm->GenUnion.iUseComments = Setttings->value("GenUnion.Comments", 0).toInt();
 
     Prm->fGenEnum = Setttings->value("GenEnum", true).toBool();
-    Prm->GenEnum.iNameType = Setttings->value("GenEnum.NameType", usn_Short).toInt();
+    Prm->GenEnum.iNameType = Setttings->value("GenEnum.NameType", /*usn_Short*/usn_FromNames).toInt();
     Prm->GenEnum.sNameMask = Setttings->value("GenEnum.NameMask", "${StructName}_KEYNUM").toString();
 
     Prm->fGenBTRVFILE = Setttings->value("GenBTRVFILE", true).toBool();
     Prm->fGenOpenFunc = Setttings->value("GenOpenFunc", true).toBool();
     Prm->fGenFindFunctions = Setttings->value("GenFindFunc", true).toBool();
 
-    Prm->FindFunc.iNameType = Setttings->value("GenFindFunc.NameType", ffdf_PkKey).toInt();
+    Prm->FindFunc.iNameType = Setttings->value("GenFindFunc.NameType", usn_FromNames).toInt();
     Prm->FindFunc.iDefaultType = Setttings->value("GenFindFunc.DefaultType", 0).toInt();
 
     Prm->fGenSkf = Setttings->value("GenSkf", true).toBool();
     Prm->SkfFunc.fAllSkf = Setttings->value("GenSkf.AllSkf", true).toBool();
     Prm->SkfFunc.fDefaultSkf = Setttings->value("GenSkf.DefaultSkf", true).toBool();
-    Prm->SkfFunc.iNameType = Setttings->value("GenSkf.NameType", 0).toInt();
+    Prm->SkfFunc.iNameType = Setttings->value("GenSkf.NameType", usn_FromNames).toInt();
     Setttings->endGroup();
 }

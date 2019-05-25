@@ -104,10 +104,11 @@ QVariant FmtFildsModel::ProcessHighlightFieldsEx(const QString &text, const QStr
     if (!HighlightText.isEmpty())
     {
         QString str = value.toString();
-        QString rxstring = QString("(%1)").arg(HighlightText);
+        // (<[^>]+>|\\n+)*(date)(<[^>]+>|\\n+)*
+        QString rxstring = QString("(<[^>]+>|\\\\n+)*(%1)(<[^>]+>|\\\\n+)*").arg(HighlightText);
         QRegExp rx(rxstring);
         rx.setCaseSensitivity(Qt::CaseInsensitive);
-        value = str.replace(rx, QString("<span style=\" background-color:#%1;\">\\1</span>").arg(color));
+        value = str.replace(rx, QString("<span style=\"background-color:#%1;\">\\2</span>").arg(color));
     }
     return value;
 }

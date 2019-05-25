@@ -460,6 +460,11 @@ bool FmtIndex::isLocal() const
     return (m_Flags & fmtkf_Local) == fmtkf_Local;
 }
 
+bool FmtIndex::isPrimary() const
+{
+    return pTable->pkIDx() == pTable->tableIndexNum(this);
+}
+
 void FmtIndex::UpdateIndexName(const QString &value)
 {
     Q_UNUSED(value);

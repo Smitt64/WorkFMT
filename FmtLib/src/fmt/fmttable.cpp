@@ -1166,9 +1166,9 @@ void FmtTable::removeIndexPrivate(const FmtFldIndex &index, bool AutoDelete)
     emit indexRemoved(index);
 }
 
-FmtFldIndex FmtTable::tableIndexNum(FmtIndex *pIndex)
+FmtFldIndex FmtTable::tableIndexNum(const FmtIndex *pIndex)
 {
-    return static_cast<FmtFldIndex>(m_pIndeces.indexOf(pIndex));
+    return static_cast<FmtFldIndex>(m_pIndeces.indexOf(const_cast<FmtIndex*>(pIndex)));
 }
 
 int FmtTable::SaveTrn()

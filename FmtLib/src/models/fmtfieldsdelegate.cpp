@@ -66,8 +66,8 @@ void FmtFieldsDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
         if (index.column() == FmtFildsModel::fld_Comment && !m_CommentText.isEmpty())
             text = pModel->ProcessHighlightFields(index, FmtFildsModel::FindSubTextRole, m_CommentText);
 
-        if (!m_HighlightText.isEmpty())
-            text = pModel->ProcessHighlightFields(index, FmtFildsModel::FindSubTextRole, m_HighlightText, "fff19b");
+        /*if (!m_HighlightText.isEmpty())
+            text = pModel->ProcessHighlightFieldsEx(text.toString(), m_HighlightText, "fff19b");*/
     }
     /*if(index.column() == FmtFildsModel::fld_Name || index.column() == FmtFildsModel::fld_Comment && !m_HighlightText.isEmpty())
         text = pModel->ProcessHighlightFields(index, FmtFildsModel::FindSubTextRole, m_HighlightText);
