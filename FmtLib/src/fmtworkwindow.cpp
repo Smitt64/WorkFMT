@@ -22,7 +22,7 @@
 #include "fmtscriptwindow.h"
 #include "fmrichtextwidget.h"
 #include "fmteditcontentwindow.h"
-#include "fmtfieldstableheaderdelegate.h"
+#include "widgets/filteredtablewidget.h"
 #include "widgets/editcontent/import/importwizard.h"
 #include <QtWidgets>
 #include <QClipboard>
@@ -30,6 +30,40 @@
 #include <QShortcut>
 #include <QTemporaryFile>
 #include <QProgressDialog>
+
+
+FmtFieldsTableViewFilterController::FmtFieldsTableViewFilterController(FmtFieldsDelegate *delegate) :
+    pDelegate(delegate)
+{
+
+}
+
+QWidget *FmtFieldsTableViewFilterController::create(const int &index)
+{
+    QLineEdit *w = new QLineEdit();
+    w->setClearButtonEnabled(true);
+    if (index == FmtFildsModel::fld_Name)
+    {
+        connect(w, &QLineEdit::textChanged, pDelegate, &FmtFieldsDelegate::setNameText);
+        w->setPlaceholderText(tr("Значение для поиска"));
+    }
+    if (index == FmtFildsModel::fld_Comment)
+    {
+        connect(w, &QLineEdit::textChanged, pDelegate, &FmtFieldsDelegate::setCommentText);
+        w->setPlaceholderText(tr("Значение для поиска"));
+    }
+    else if (index == FmtFildsModel::fld_Type)
+        w->setEnabled(false);
+    else if (index == FmtFildsModel::fld_Size)
+        w->setEnabled(false);
+    else if (index == FmtFildsModel::fld_DbName)
+        w->setEnabled(false);
+    else if (index == FmtFildsModel::fld_DbName + 1)
+        w->setEnabled(false);
+    return w;
+}
+
+// ===============================================================================
 
 FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     MdiSubInterface(parent),
@@ -43,6 +77,9 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     pTableHeaderDelegate = new FmtFieldsTableHeaderDelegate(Qt::Horizontal, this);
     pTableView = new FmtFieldsTableView;
     pTreeView = new FmtIndexTreeView;
+    pFilteredTableView = new FilteredTableWidget();
+    pFieldsFilterController = new FmtFieldsTableViewFilterController(pFieldsDelegate);
+    pFilteredTableView->setController(pFieldsFilterController);
 
     pTableView->setItemDelegate(pFieldsDelegate);
     pTableView->verticalHeader()->setDefaultSectionSize(25);
@@ -50,16 +87,17 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     pTableView->setHorizontalHeader(pTableHeaderDelegate);
+    pFilteredTableView->setTableView(pTableView);
 
-    ui->tabWidget->widget(0)->layout()->addWidget(pTableView);
-    ui->tabWidget->widget(1)->layout()->addWidget(pTreeView);
+    ui->tabWidget->widget(0)->layout()->addWidget(pFilteredTableView);
 
     pAddIndex = new QPushButton("Добавить индекс", ui->tabWidget->widget(1));
     pHorizontalSpacer = new QSpacerItem(100, 20, QSizePolicy::Expanding);
     pHBoxLayout = new QHBoxLayout;
-    pHBoxLayout->addSpacerItem(pHorizontalSpacer);
     pHBoxLayout->addWidget(pAddIndex);
+    pHBoxLayout->addSpacerItem(pHorizontalSpacer);
     ui->tabWidget->widget(1)->layout()->addItem(pHBoxLayout);
+    ui->tabWidget->widget(1)->layout()->addWidget(pTreeView);
 
     QList<QAbstractButton*> pButtomList = ui->buttonBox->buttons();
     foreach (QAbstractButton *pBtn, pButtomList) {
@@ -156,7 +194,7 @@ ConnectionInfo *FmtWorkWindow::connection() const
 
 void FmtWorkWindow::setupFind()
 {
-    pFindLineEdit = new LineEditAction(this);
+    /*pFindLineEdit = new LineEditAction(this);
     pFindBtn = new QToolButton(this);
     pFindMenu = new QMenu(this);
     pFindShortcut = new QShortcut(QKeySequence::Find, this);
@@ -169,7 +207,7 @@ void FmtWorkWindow::setupFind()
 
     connect(pFindLineEdit, SIGNAL(textChanged(QString)), pFieldsDelegate, SLOT(setHighlightText(QString)));
     connect(pFindMenu, SIGNAL(aboutToShow()), pFindLineEdit, SLOT(setFocus()));
-    connect(pFindShortcut, SIGNAL(activated()), pFindBtn, SLOT(showMenu()));
+    connect(pFindShortcut, SIGNAL(activated()), pFindBtn, SLOT(showMenu()));*/
 }
 
 void FmtWorkWindow::SetUnclosableSystemTabs()

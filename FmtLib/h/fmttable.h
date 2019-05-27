@@ -174,7 +174,7 @@ public slots:
 
     FmtIndex *addIndex();
     FmtIndex *tableIndex(const FmtNumber5 &index);
-    FmtFldIndex tableIndexNum(FmtIndex *pIndex);
+    FmtFldIndex tableIndexNum(const FmtIndex *pIndex);
     void removeIndex(const FmtFldIndex &index);
 
     QString generateCreateTableSql();

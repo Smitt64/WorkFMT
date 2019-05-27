@@ -84,13 +84,10 @@ void MassOpBtrvTemplateResultPageRun::run()
 
             gen->createOpenFuncDecl(tables[i], bfCppStream, true);
 
-            if (tables[i]->hasNonUniqueIndexes())
-            {
-                gen->WriteTableComment(tables[i], skfCppStream);
-                gen->createSkfDeclFunctions(tables[i], skfCppStream, FmtGenCppTemplate::SkfMode_Create);
-                gen->createSkfFunctions(tables[i], skfCppStream);
-                skfCppStream << endl;
-            }
+            gen->WriteTableComment(tables[i], skfCppStream);
+            gen->createSkfDeclFunctions(tables[i], skfCppStream, FmtGenCppTemplate::SkfMode_Create);
+            gen->createSkfFunctions(tables[i], skfCppStream);
+            skfCppStream << endl;
 
             gen->WriteTableComment(tables[i], findCppStream);
             gen->createFindFunctions(tables[i], findCppStream);

@@ -242,10 +242,17 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
     {
         FmtFldType type = fmtt_DATE;
 
-        if (str.contains("TIME", Qt::CaseInsensitive) || str.contains("Время", Qt::CaseInsensitive) || comment.contains("TIME", Qt::CaseInsensitive) || comment.contains("Время", Qt::CaseInsensitive))
-            type = fmtt_TIME;
+        if (str.contains("Дата", Qt::CaseInsensitive) || comment.contains("Date", Qt::CaseInsensitive) || comment.contains("Дата", Qt::CaseInsensitive))
+        {
+            type = fmtt_DATE;
+            AddToCreateFieldParamList(CreateList, type);
+        }
 
-        AddToCreateFieldParamList(CreateList, type);
+        if (str.contains("TIME", Qt::CaseInsensitive) || str.contains("Время", Qt::CaseInsensitive) || comment.contains("TIME", Qt::CaseInsensitive) || comment.contains("Время", Qt::CaseInsensitive))
+        {
+            type = fmtt_TIME;
+            AddToCreateFieldParamList(CreateList, type);
+        }
     }
     else if (str.contains("TIME", Qt::CaseInsensitive))
         AddToCreateFieldParamList(CreateList, fmtt_TIME);

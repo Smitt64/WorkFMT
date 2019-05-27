@@ -47,6 +47,7 @@ public:
     bool isUnique() const;
     bool isDup() const;
     bool isLocal() const;
+    bool isPrimary() const;
 
     virtual QVariant data(int column, int role = Qt::DisplayRole) const;
     virtual bool setData(int column, const QVariant &value);

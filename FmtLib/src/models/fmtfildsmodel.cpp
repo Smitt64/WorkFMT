@@ -98,7 +98,22 @@ QVariant FmtFildsModel::data(const QModelIndex &index, int role) const
     return value;
 }
 
-QVariant FmtFildsModel::ProcessHighlightFields(const QModelIndex &index, int role, const QString &HighlightText) const
+QVariant FmtFildsModel::ProcessHighlightFieldsEx(const QString &text, const QString &HighlightText, const QString &color) const
+{
+    QVariant value = text;
+    if (!HighlightText.isEmpty())
+    {
+        QString str = value.toString();
+        // (<[^>]+>|\\n+)*(date)(<[^>]+>|\\n+)*
+        QString rxstring = QString("(<[^>]+>|\\\\n+)*(%1)(<[^>]+>|\\\\n+)*").arg(HighlightText);
+        QRegExp rx(rxstring);
+        rx.setCaseSensitivity(Qt::CaseInsensitive);
+        value = str.replace(rx, QString("<span style=\"background-color:#%1;\">\\2</span>").arg(color));
+    }
+    return value;
+}
+
+QVariant FmtFildsModel::ProcessHighlightFields(const QModelIndex &index, int role, const QString &HighlightText, const QString &color) const
 {
     if (index.row() >= pTable->m_pFields.size())
         return QVariant();
@@ -117,13 +132,7 @@ QVariant FmtFildsModel::ProcessHighlightFields(const QModelIndex &index, int rol
     }
 
     if (role == FindSubTextRole && !HighlightText.isEmpty())
-    {
-        QString str = value.toString();
-        QString rxstring = QString("(%1)").arg(HighlightText);
-        QRegExp rx(rxstring);
-        rx.setCaseSensitivity(Qt::CaseInsensitive);
-        value = str.replace(rx, QString("<span style=\" background-color:#9BFF9B;\">\\1</span>"));
-    }
+        value = ProcessHighlightFieldsEx(value.toString(), HighlightText, color);
 
     return value;
 }

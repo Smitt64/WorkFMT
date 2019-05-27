@@ -213,8 +213,10 @@ void MainWindow::ExportXmlAction()
     if (!cur)
         return;
 
+#ifndef _DEBUG
     if (!CheckConnectionType(cur, ConnectionInfo::CON_ORA, true, this))
         return;
+#endif
 
     ExportToXmlWizard wizard(cur, this);
     if (wizard.exec() == QDialog::Accepted)
@@ -229,8 +231,10 @@ void MainWindow::ImpDirAction()
     if (!current)
         return;
 
+#ifndef _DEBUG
     if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
         return;
+#endif
 
     FmtImpExpWrp imp(current, this);
     QString dir = QFileDialog::getExistingDirectory(this, tr("Импорт каталога"), imp.lastImportDir());
@@ -266,8 +270,10 @@ void MainWindow::ImportAction()
     if (!current)
         return;
 
+#ifndef _DEBUG
     if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
         return;
+#endif
 
     FmtImpExpWrp imp(current, this);
     QStringList files = QFileDialog::getOpenFileNames(this, tr("Импорт файлов"), imp.lastImportDir(), "Xml файлы(*.xml)");

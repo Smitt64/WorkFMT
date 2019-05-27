@@ -69,9 +69,9 @@ QByteArray FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
     createOpenFunc(pTable, stream);
     stream << endl;
 
-    if (prm.fGenSkf && pTable->hasNonUniqueIndexes())
+    if (prm.fGenSkf)
     {
-        createSkfDeclFunctions(pTable, stream);
+        createSkfDeclFunctions(pTable, stream, FmtGenCppTemplate::SkfMode_Create);
         createSkfFunctions(pTable, stream);
         stream << endl;
     }
@@ -399,9 +399,6 @@ void FmtGenCppTemplate::createSkfDeclFunctions(const FmtSharedTablePtr &pTable, 
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
 
-        if (pIndex->isUnique())
-            continue;
-
         QString params;
         for (int i = 0; i < pIndex->segmentsCount(); i++)
         {
@@ -510,10 +507,6 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
     for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
-
-        if (pIndex->isUnique())
-            continue;
-
         createSkfKfFunctions(pIndex, stream);
     }
 
@@ -521,9 +514,6 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
     for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
-
-        if (pIndex->isUnique())
-            continue;
 
         if (count)
             stream << endl;
@@ -641,7 +631,7 @@ void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
         {
             EnumName = block->m_StructName;
             for (int i = 0; i < index->segmentsCount(); i++)
-                EnumName += normalizeFieldName(index->segment(i)->field()->name()).toLower();
+                EnumName += "_" + normalizeFieldName(index->segment(i)->field()->name()).toLower();
         }
 
         block->m_IndexEnumValue[index] = EnumName.toUpper();
@@ -654,12 +644,12 @@ void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
         else if (prm.GenUnion.iSegmentNameType == GenCppSettings::usn_FromNames)
         {
             for (int i = 0; i < index->segmentsCount(); i++)
-                UnionName += normalizeFieldName(index->segment(i)->field()->name()).toLower();
+                UnionName += "_" + normalizeFieldName(index->segment(i)->field()->name()).toLower();
         }
 
         block->m_IndexUnionValue[index] = UnionName;
 
-        if (!index->isUnique())
+        if (!index->isPrimary())
         {
             if (prm.SkfFunc.iNameType == GenCppSettings::usn_Short)
             {
@@ -674,18 +664,21 @@ void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
                 for (int i = 0; i < index->segmentsCount(); i++)
                     SkfName += normalizeFieldName(index->segment(i)->field()->name()).toUpper();
             }
+        }
+        else {
+            SkfName = QString("SKF_%1")
+                    .arg(block->m_StructName);
+        }
 
-            block->m_SkfNameValue[index] = SkfName;
+        block->m_SkfNameValue[index] = SkfName;
 
+        for (int i = 0; i < index->segmentsCount(); i++)
+        {
+            FmtSegment *seg = index->segment(i);
+            FmtField *fld = seg->field();
 
-            for (int i = 0; i < index->segmentsCount(); i++)
-            {
-                FmtSegment *seg = index->segment(i);
-                FmtField *fld = seg->field();
-
-                if (!fields.contains(fld))
-                    fields.append(fld);
-            }
+            if (!fields.contains(fld))
+                fields.append(fld);
         }
     }
 

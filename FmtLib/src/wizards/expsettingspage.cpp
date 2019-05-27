@@ -54,6 +54,8 @@ ExpSettingsPage::ExpSettingsPage(ExportToXmlWizard *parent)
     UpdateButtons();
 
     setButtonText(QWizard::NextButton, tr("Начать"));
+
+    connect(dirComboBox, SIGNAL(activated(int)), this, SLOT(dirComboItemActivated(int)));
 }
 
 void ExpSettingsPage::UpdateDirCombo()

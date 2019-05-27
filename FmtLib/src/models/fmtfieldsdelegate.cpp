@@ -57,22 +57,28 @@ void FmtFieldsDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
     QTextDocument doc;
     doc.setDefaultFont(optionV4.font);
 
-    QVariant text;
-    if(index.column() == FmtFildsModel::fld_Name || index.column() == FmtFildsModel::fld_Comment && !m_HighlightText.isEmpty())
+    QVariant text = optionV4.text;
+    if (index.column() == FmtFildsModel::fld_Name || index.column() == FmtFildsModel::fld_Comment)
+    {
+        if (index.column() == FmtFildsModel::fld_Name && !m_NameText.isEmpty())
+            text = pModel->ProcessHighlightFields(index, FmtFildsModel::FindSubTextRole, m_NameText);
+
+        if (index.column() == FmtFildsModel::fld_Comment && !m_CommentText.isEmpty())
+            text = pModel->ProcessHighlightFields(index, FmtFildsModel::FindSubTextRole, m_CommentText);
+
+        /*if (!m_HighlightText.isEmpty())
+            text = pModel->ProcessHighlightFieldsEx(text.toString(), m_HighlightText, "fff19b");*/
+    }
+    /*if(index.column() == FmtFildsModel::fld_Name || index.column() == FmtFildsModel::fld_Comment && !m_HighlightText.isEmpty())
         text = pModel->ProcessHighlightFields(index, FmtFildsModel::FindSubTextRole, m_HighlightText);
     else
-        text = optionV4.text;
+        text = optionV4.text;*/
 
     doc.setHtml(text.toString());
     optionV4.text = QString();
     style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
     QAbstractTextDocumentLayout::PaintContext ctx;
-
-    // Highlighting text if item is selected
-    /*if (optionV4.state & QStyle::State_Selected)
-        ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));*/
-
     QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
     painter->save();
     painter->translate(textRect.topLeft());
@@ -141,4 +147,14 @@ void FmtFieldsDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
 void FmtFieldsDelegate::setHighlightText(const QString &str)
 {
     m_HighlightText = str;
+}
+
+void FmtFieldsDelegate::setNameText(const QString &str)
+{
+    m_NameText = str;
+}
+
+void FmtFieldsDelegate::setCommentText(const QString &str)
+{
+    m_CommentText = str;
 }

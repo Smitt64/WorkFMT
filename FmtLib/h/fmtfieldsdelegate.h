@@ -18,9 +18,11 @@ public:
 
 public slots:
     void setHighlightText(const QString &str);
+    void setNameText(const QString &str);
+    void setCommentText(const QString &str);
 
 private:
-    QString m_HighlightText;
+    QString m_HighlightText, m_NameText, m_CommentText;
 };
 
 #endif // FMTFIELDSDELEGATE_H
