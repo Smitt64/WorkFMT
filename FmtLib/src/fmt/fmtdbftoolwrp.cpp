@@ -63,7 +63,7 @@ void FmtDbfToolWrp::unload(const QString &ExportDir, const QString &dbt)
     QStringList args;
     if (!ExportDir.isEmpty())
         args << "--edir" << ExportDir;
-    args << "--cs" << QString("dsn=%1;user id=%2;password=%3").arg(m_dsn, pInfo->user(), pInfo->password());
+    args << "--cs" << QString("dsn=%1;user id=%2;password=%3").arg(dsn, pInfo->user(), pInfo->password());
     args << "--e" << "--dbt" << dbt;
 
     proc->setArguments(args);

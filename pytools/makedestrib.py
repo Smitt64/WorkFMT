@@ -270,3 +270,5 @@ try:
 
 except Exception as inst:
     print(inst.args[0])
+    
+os.system("pause")

@@ -148,3 +148,5 @@ WorkFMT/fmtopt\.ini
 WorkFMT\.pro\.user\.4\.9-pre1
 
 *.bin
+
+pytools/destrib/
