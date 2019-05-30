@@ -161,7 +161,8 @@ void FmRichTextWidget::ReadConetent(FmtSharedTablePtr &pTable, const FmRichTextR
 
                 int size = 0;
                 QString comment = fcur3.selectedText().simplified();
-                CreateFieldParamList fldsList = GetFieldsToCreate(fcur2.selectedText().simplified(), comment);
+                QString ttype = fcur2.selectedText().simplified();
+                CreateFieldParamList fldsList = GetFieldsToCreate(ttype, comment);
 
                 foreach(const FmRichTextCreateFieldParam &fldParam, fldsList)
                 {
@@ -238,7 +239,7 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
 
         AddToCreateFieldParamList(CreateList, type, size);
     }
-    else if (str.contains("DATE", Qt::CaseInsensitive))
+    else if (str.contains("DATE", Qt::CaseInsensitive) || str.contains("DATA", Qt::CaseInsensitive))
     {
         FmtFldType type = fmtt_DATE;
 
