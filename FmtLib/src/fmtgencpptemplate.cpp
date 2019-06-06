@@ -550,9 +550,14 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
                 stream << tab << tab << QString("strcpy(BV->%1.%2, %2);")
                        .arg(keyName, fldName)<< endl;
                 stream << tab << "}" << endl << "\telse" << endl << "\t{" << endl;
-                stream << tab << tab << QString("memset(TV->%1.%2, 0, sizeof(TV->%1.%2));")
+                stream << tab << tab << QString("memset(TV->%1.%2, DB_UINT8_ZERO, sizeof(TV->%1.%2));")
                        .arg(keyName, fldName)<< endl;
-                stream << tab << tab << QString("memset(BV->%1.%2, 0, sizeof(BV->%1.%2));")
+                stream << tab << tab << QString("memset(BV->%1.%2, DB_UINT8_MAX, sizeof(BV->%1.%2));")
+                       .arg(keyName, fldName)<< endl;
+
+                stream << tab << tab << QString("TV->%1.%2[sizeof(TV->%1.%2) - 1] = '\\0';")
+                       .arg(keyName, fldName)<< endl;
+                stream << tab << tab << QString("BV->%1.%2[sizeof(BV->%1.%2) - 1] = '\\0';")
                        .arg(keyName, fldName)<< endl;
                 stream << tab << "}" << endl;
             }
