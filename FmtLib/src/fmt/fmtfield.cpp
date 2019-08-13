@@ -381,8 +381,7 @@ FmtRecId FmtField::FindFirstEmptyID()
 {
     int id = 1;
     QSqlQuery q(pTable->db);
-    q.prepare("SELECT min(t.T_ID) + 1 as free FROM FMT_FIELDS t WHERE (SELECT T_ID FROM FMT_FIELDS "
-              "WHERE T_ID = t.T_ID + 1 ) IS NULL");
+    q.prepare(FmtTableFindFirstEmptyIDSql("FMT_FIELDS", "T_ID"));
     if (q.exec() && q.next())
         id = q.value(0).toInt();
 

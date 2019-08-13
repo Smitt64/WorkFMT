@@ -268,6 +268,7 @@ private:
 QString FmtTablePropertyByFieldId(const FmtFldIndex &fld);
 QString FmtTablePropertyTextByFieldId(const FmtFldIndex &fld);
 QString FmtTableMakeIndexName(FmtTable *pTable, const FmtFldIndex &indexNum);
+QString FmtTableFindFirstEmptyIDSql(const QString &table, const QString &fld);
 typedef QSharedPointer<FmtTable> FmtSharedTablePtr;
 
 #endif // FMTTABLE_H

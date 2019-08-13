@@ -1064,12 +1064,19 @@ int FmtTable::deleteDbTable()
     return stat;
 }
 
+QString FmtTableFindFirstEmptyIDSql(const QString &table, const QString &fld)
+{
+    return QString("SELECT t1.%2 + 1 "
+        "    FROM %1 t1 LEFT OUTER JOIN %1 t2 ON (t1.%2 + 1 = t2.%2) "
+        "   WHERE t2.%2 IS NULL AND ROWNUM = 1 "
+        "ORDER BY t1.%2").arg(table, fld);
+}
+
 FmtRecId FmtTable::FindFirstEmptyID()
 {
     FmtRecId id = 1;
     QSqlQuery q(db);
-    q.prepare("SELECT min(t.T_ID) + 1 as free FROM FMT_NAMES t WHERE (SELECT T_ID FROM FMT_NAMES "
-              "WHERE T_ID = t.T_ID + 1 ) IS NULL");
+    q.prepare(FmtTableFindFirstEmptyIDSql("FMT_NAMES", "T_ID"));
     if (q.exec() && q.next())
         id = static_cast<FmtRecId>(q.value(0).toInt());
 
