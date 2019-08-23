@@ -79,6 +79,7 @@ private:
     bool m_fSetIgnoreUndoStack;
     FmtNumber10 m_Flags;
     bool m_IsReal;
+    int m_ExcludeNull;
     QString m_Comment;
 };
 

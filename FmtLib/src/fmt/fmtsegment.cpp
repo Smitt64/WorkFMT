@@ -18,7 +18,7 @@ FmtSegment::FmtSegment(FmtIndecesModelItem *parent)
     :FmtIndecesModelItem(parent)
 {
     m_Flags = 0;
-    pFld = NULL;
+    pFld = nullptr;
     m_IsReal = false;
     m_fSetIgnoreUndoStack = false;
 }
@@ -132,12 +132,12 @@ FmtField *FmtSegment::field()
 
 quint32 FmtSegment::segmentFlags() const
 {
-    return m_Flags;
+    return static_cast<quint32>(m_Flags);
 }
 
 quint32 FmtSegment::type() const
 {
-    return fmtIndexFromFmtType(pFld->type());
+    return fmtIndexFromFmtType(static_cast<quint32>(pFld->type()));
 }
 
 bool FmtSegment::isReal() const

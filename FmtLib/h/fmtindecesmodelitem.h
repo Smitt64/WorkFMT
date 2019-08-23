@@ -23,11 +23,12 @@ public:
         fld_Desc,
         fld_ExcIndx,
         fld_Local,
+        fld_Panel,
         fld_Comment,
 
         fld_MAXCOUNT
     };
-    FmtIndecesModelItem(FmtIndecesModelItem *parent = 0, QObject *parentObject = 0);
+    FmtIndecesModelItem(FmtIndecesModelItem *parent = Q_NULLPTR, QObject *parentObject = Q_NULLPTR);
     virtual ~FmtIndecesModelItem();
 
     FmtIndecesModelItem *child(int number);

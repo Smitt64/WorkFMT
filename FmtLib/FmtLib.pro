@@ -43,6 +43,7 @@ SOURCES += \
     src/oracleauthdlg.cpp \
     src/tablesgroupsdlg.cpp \
     src/widgets/filteredtablewidget.cpp \
+    src/widgets/fmtsegmentflagsdlg.cpp \
     src/windowslistdlg.cpp \
     src/core/fmtcore.cpp \
     src/core/fmtlib.cpp \
@@ -153,6 +154,7 @@ unix {
 
 FORMS += \
     src/massop/destribcreate/massdestribprogress.ui \
+    src/widgets/fmtsegmentflagsdlg.ui \
     ui/aboutdlg.ui \
     ui/dbinitdlg.ui \
     ui/documentwindow.ui \
@@ -304,7 +306,8 @@ HEADERS += \
     src/massop/destribcreate/massdestribparamspage.h \
     src/massop/destribcreate/massdestribparammodel.h \
     src/massop/destribcreate/massdestribitemparamdelegate.h \
-    src/widgets/filteredtablewidget.h
+    src/widgets/filteredtablewidget.h \
+    h/fmtsegmentflagsdlg.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

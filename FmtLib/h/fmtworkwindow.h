@@ -90,6 +90,7 @@ private slots:
 
     void CheckTable();
     void Clicked(const QModelIndex &index);
+    void SegmentButtonClicked(const QModelIndex &index);
     void OnOk();
     void CreateTableSql();
     void CopyAction();

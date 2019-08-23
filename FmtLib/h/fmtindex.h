@@ -28,7 +28,7 @@ class FMTLIBSHARED_EXPORT FmtIndex : public FmtIndecesModelItem
     Q_PROPERTY(bool isUnique READ isUnique)
     Q_PROPERTY(bool isLocal READ isLocal WRITE setLocal)
 public:
-    explicit FmtIndex(FmtTable *table, QObject *parent = 0);
+    explicit FmtIndex(FmtTable *table, QObject *parent = Q_NULLPTR);
     ~FmtIndex();
 
     QString name() const { return m_Name; }

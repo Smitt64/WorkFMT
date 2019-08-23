@@ -4,7 +4,7 @@
 
 FmtIndexTreeView::FmtIndexTreeView(QWidget *parent)
     :QTreeView(parent),
-      pFmtTable(NULL)
+      pFmtTable(Q_NULLPTR)
 {
     setItemsExpandable(false);
     setRootIsDecorated(false);

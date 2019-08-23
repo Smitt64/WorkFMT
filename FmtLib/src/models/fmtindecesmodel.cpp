@@ -14,7 +14,7 @@ FmtIndecesModel::FmtIndecesModel(FmtTable *parent) :
 int FmtIndecesModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 10;
+    return 11;
 }
 
 FmtIndecesModelItem *FmtIndecesModel::getItem(const QModelIndex &index) const
@@ -33,6 +33,9 @@ QVariant FmtIndecesModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
+    if (role == Qt::SizeHintRole && index.column() == FmtIndecesModelItem::fld_Panel)
+        return QSize(50, 25);
+
     if (role != Qt::DisplayRole && role != Qt::DecorationRole)
         return QVariant();
 
@@ -42,7 +45,7 @@ QVariant FmtIndecesModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags FmtIndecesModel::flags(const QModelIndex &index) const
 {
-    quint32 Flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    qint32 Flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     if (!index.parent().isValid())
     {
         if (index.column() == FmtIndecesModelItem::fld_AutoInc)
@@ -73,7 +76,7 @@ Qt::ItemFlags FmtIndecesModel::flags(const QModelIndex &index) const
                 Flags |= Qt::ItemIsEditable;
         }
     }
-    return (Qt::ItemFlags)Flags;
+    return static_cast<Qt::ItemFlags>(Flags);
 }
 
 QVariant FmtIndecesModel::headerData(int section, Qt::Orientation orientation,

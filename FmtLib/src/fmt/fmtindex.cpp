@@ -14,7 +14,7 @@ QString FmtIndexPropertyTextByFieldId(const quint16 &section)
 {
     static QStringList headers = QStringList()
             << "Имя" << "Тип" << "Dup" << "NULL" << "Исключить\nиз NUL" << "Auto\nInc" << "Desc\norder"
-            << "Исключить\nиз индекса" << "LOCAL" << "Комментарий";
+            << "Исключить\nиз индекса" << "LOCAL" << "Флаги" << "Комментарий" ;
 
     if (headers.size() <= section || section < 0)
         return QString();

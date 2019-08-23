@@ -22,6 +22,9 @@
 #include "fmtscriptwindow.h"
 #include "fmrichtextwidget.h"
 #include "fmteditcontentwindow.h"
+#include "fmtindecesmodelitem.h"
+#include "fmtsegmentflagsdlg.h"
+#include "fmtsegment.h"
 #include "widgets/filteredtablewidget.h"
 #include "widgets/editcontent/import/importwizard.h"
 #include <QtWidgets>
@@ -128,6 +131,7 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     connect(ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked(bool)), SLOT(OnOk()));
     connect(ui->pushButton, SIGNAL(clicked(bool)), SLOT(InitDB()));
     connect(pTableView, SIGNAL(clicked(QModelIndex)), SLOT(Clicked(QModelIndex)));
+    connect(pTreeView, SIGNAL(clicked(QModelIndex)), SLOT(SegmentButtonClicked(QModelIndex)));
     connect(ui->checkButton, SIGNAL(clicked(bool)), SLOT(CheckTable()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(TabCloseRequested(int)));
     connect(ui->scriptButton, SIGNAL(clicked(bool)), SLOT(OpenScriptEditorWindow()));
@@ -250,7 +254,7 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
             << 150 << 65 << 50 << 200 << 150 << 50;
 
     static QList<int> m_iWidth = QList<int>()
-            << 175 << 65 << 35 << 40 << 70 << 35 << 40 << 70 << 50 << 100;
+            << 175 << 65 << 35 << 40 << 70 << 35 << 40 << 70 << 50 << 50 << 175;
 
     for (int i = 0; i < m_iWidth.size(); i++)
         pTreeView->setColumnWidth(i, m_iWidth[i]);
@@ -279,6 +283,9 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     }
 
     ui->scriptButton->setEnabled(true);
+
+    /*pTableView->horizontalHeader()->setSectionResizeMode(FmtIndecesModelItem::fld_Comment, QHeaderView::Stretch);
+    pTableView->horizontalHeader()->setSectionResizeMode(FmtIndecesModelItem::fld_Panel, QHeaderView::Fixed);*/
 
     connect(pTable->indecesModel(), SIGNAL(modelReset()), SLOT(indexModelReseted()));
     connect(pTable->indecesModel(), SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(indexModelInserted(QModelIndex,int,int)));
@@ -841,4 +848,14 @@ void FmtWorkWindow::OnImport()
 {
     ImportWizard dlg(pTable);
     dlg.exec();
+}
+
+void FmtWorkWindow::SegmentButtonClicked(const QModelIndex &index)
+{
+    if (index.parent().isValid() && index.column() == FmtIndecesModelItem::fld_Panel)
+    {
+        FmtSegment *pSegment = static_cast<FmtSegment*>(index.internalPointer());
+        FmtSegmentFlagsDlg dlg(pSegment, this);
+        dlg.exec();
+    }
 }
