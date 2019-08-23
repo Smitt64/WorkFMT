@@ -20,7 +20,7 @@ class FMTLIBSHARED_EXPORT FmtSegment : public FmtIndecesModelItem
     Q_PROPERTY(bool isDup READ isDup)
     Q_PROPERTY(bool isAutoInc READ isAutoInc)
     Q_PROPERTY(bool isLocal READ isLocal)
-    Q_PROPERTY(quint32 type READ type)
+    Q_PROPERTY(FmtFldType type READ type)
     Q_PROPERTY(quint32 segmentFlags READ segmentFlags)
 
     friend class FmtIndex;
@@ -43,7 +43,7 @@ public:
     bool isAutoInc() const;
     bool isLocal() const;
     bool isDup() const;
-    quint32 type() const;
+    FmtFldType type() const;
     quint32 segmentFlags() const;
 
     void setNotNull(bool use);
@@ -56,12 +56,12 @@ public:
 public slots:
     FmtField *field();
     void setField(FmtField *fld);
-    void setField(const quint32 &fld);
-    quint16 fieldIndex();
+    void setField(const FmtFldIndex &fld);
+    FmtFldIndex fieldIndex();
 
     FmtIndex *index();
     FmtTable *table();
-    quint16 segmentNumber();
+    FmtFldIndex segmentNumber();
 
 signals:
     void isRealChanged(bool);

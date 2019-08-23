@@ -639,6 +639,15 @@ void FmtTable::FillIndex()
                 segment->m_Comment = q.value(fkc_Comment).toString();
                 segment->m_Flags = static_cast<FmtNumber10>(q.value(fkc_Flags).toInt());
                 segment->m_IsReal = q.value(fkc_IsReal).toInt() ? true : false;
+                segment->m_ExcludeNull = q.value(fkc_NullVal).toInt();
+
+                if (q.value(fkc_SegNum).toInt() == 0)
+                {
+                    if (segment->m_Flags & fmtkf_NullVal)
+                        ptr->m_NullValue = keynullval_All;
+                    else if ((segment->m_Flags & fmtkf_NullVal) != fmtkf_NullVal && (segment->m_Flags & fmtkf_Manual))
+                        ptr->m_NullValue = keynullval_Any;
+                }
 
                 segment->setFlag(1);
                 ptr->appendChild(segment);

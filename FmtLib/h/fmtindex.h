@@ -5,6 +5,7 @@
 #include "fmtfield.h"
 #include "fmtindecesmodelitem.h"
 #include "fmtlib_global.h"
+#include "fmtcore.h"
 
 class FmtTable;
 class FmtSegment;
@@ -48,10 +49,11 @@ public:
     bool isDup() const;
     bool isLocal() const;
     bool isPrimary() const;
+    FmtKeyNullVal nullType() const;
 
     virtual QVariant data(int column, int role = Qt::DisplayRole) const;
     virtual bool setData(int column, const QVariant &value);
-    virtual void insertItem(int after);
+    virtual void insertItem(const quint16 after);
 signals:
     void indexChanged();
 
@@ -59,12 +61,12 @@ public slots:
     void NormalizeFlags();
     void removeField(FmtField *pFld);
     void removeSegment(const quint16 &segmentIndex);
-    qint32 indexNumber() const;
+    FmtFldIndex indexNumber() const;
     qint32 segmentsCount() const;
     void copyTo(FmtIndex *other);
 
     FmtSegment *segment(const qint32 &index);
-    FmtSegment *addSegment(const quint32 &row);
+    FmtSegment *addSegment(const quint16 &row);
     bool hasField(FmtField *pFld);
 
 private slots:
@@ -76,10 +78,10 @@ protected:
 
 private:
     void EmitIndexPropertyChange(const quint16 &prop);
-    void PushUndoSegmentProperty(FmtSegment *segment, const quint32 &oldFlags);
-    void setDataPrivate(const quint16 &fld, const QVariant &value);
-    FmtSegment *addSegmentPrivate(const quint32 &row);
-    void removeSegmentPrivate(const quint32 &index, bool AutoDelete);
+    void PushUndoSegmentProperty(FmtSegment *segment, const qint32 &oldFlags);
+    void setDataPrivate(const FmtFldIndex &fld, const QVariant &value);
+    FmtSegment *addSegmentPrivate(const FmtFldIndex &row);
+    void removeSegmentPrivate(const FmtFldIndex &index, bool AutoDelete);
     int save();
     FmtNumber10 m_Flags;
     FmtNumber5 m_Type;

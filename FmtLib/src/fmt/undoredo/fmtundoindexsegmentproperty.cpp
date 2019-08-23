@@ -24,7 +24,7 @@ void FmtUndoIndexSegmentProperty::setValueToRedo(const QVariant &value)
     m_RedoValue = value;
 }
 
-void FmtUndoIndexSegmentProperty::setProperty(const quint16 &index, const quint16 &segment, const quint16 &property)
+void FmtUndoIndexSegmentProperty::setProperty(const FmtFldIndex &index, const FmtFldIndex &segment, const quint16 &property)
 {
     m_Index = index;
     m_Segment = segment;

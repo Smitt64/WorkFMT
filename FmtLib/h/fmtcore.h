@@ -12,6 +12,7 @@
 #define AutoIncType 15
 #define BTNS_OFFSET 25
 #define COLOR_GOLDEN_RATIO 0.618033988749895
+#define EXCLUDENULL_TRUE 255
 
 enum FmtNamesColumn
 {
@@ -59,6 +60,13 @@ enum FmtKeyFlags
     fmtkf_Extended   = 0x0100,
     fmtkf_Manual     = 0x0200,
     fmtkf_Local      = 0x4000,
+};
+
+enum FmtKeyNullVal
+{
+    keynullval_None = 0,
+    keynullval_All,
+    keynullval_Any,
 };
 
 enum fmtTypes
@@ -153,7 +161,7 @@ FMTLIBSHARED_EXPORT bool fmtTypeCanHaveCustomSize(const FmtFldType &Type);
 quint32 fmtTypeIndexForId(const quint32 &id);
 FmtFldType fmtTypeFromIndex(const FmtFldIndex &id);
 FmtFldIndex fmtIndexForType(const FmtFldType &id);
-quint16 fmtIndexFromFmtType(const quint32 &id);
+FmtFldType fmtIndexFromFmtType(const FmtFldType &id);
 QString fmtTypeNameForType(const FmtFldType &type);
 
 quint16 fmtTypeSize(const FmtFldType &Type);

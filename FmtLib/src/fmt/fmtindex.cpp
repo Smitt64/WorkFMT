@@ -16,7 +16,7 @@ QString FmtIndexPropertyTextByFieldId(const quint16 &section)
             << "Имя" << "Тип" << "Dup" << "NULL" << "Исключить\nиз NUL" << "Auto\nInc" << "Desc\norder"
             << "Исключить\nиз индекса" << "LOCAL" << "Флаги" << "Комментарий" ;
 
-    if (headers.size() <= section || section < 0)
+    if (headers.size() <= section)
         return QString();
 
     return headers.at(section);
@@ -122,7 +122,7 @@ QVariant FmtIndex::data(int column, int role) const
     return QVariant();
 }
 
-void FmtIndex::PushUndoSegmentProperty(FmtSegment *segment, const quint32 &oldFlags)
+void FmtIndex::PushUndoSegmentProperty(FmtSegment *segment, const qint32 &oldFlags)
 {
     FmtUndoIndexSegmentProperty *segCmd = new FmtUndoIndexSegmentProperty(pTable);
     segCmd->setValueToUndo(oldFlags);
@@ -150,7 +150,7 @@ void FmtIndex::setDup(bool use)
         foreach (FmtIndecesModelItem *item, childItems) {
             FmtSegment *segment = static_cast<FmtSegment*>(item);
 
-            quint32 oldFlags = segment->m_Flags;
+            qint32 oldFlags = segment->m_Flags;
             if (!use)
                 segment->m_Flags &= ~fmtkf_Duplicates;
             else
@@ -197,11 +197,19 @@ void FmtIndex::setNullValue(const quint16 &val)
         foreach (FmtIndecesModelItem *item, childItems) {
             FmtSegment *segment = static_cast<FmtSegment*>(item);
 
-            quint32 oldFlags = segment->m_Flags;
+            qint32 oldFlags = segment->m_Flags;
             if (!m_NullValue)
                 segment->m_Flags &= ~fmtkf_NullVal;
             else
-                segment->m_Flags |= fmtkf_NullVal;
+            {
+                if (m_NullValue == keynullval_All)
+                    segment->m_Flags |= fmtkf_NullVal;
+                else
+                {
+                    segment->m_Flags &= ~fmtkf_NullVal;
+                    segment->m_Flags |= fmtkf_Manual;
+                }
+            }
 
             PushUndoSegmentProperty(segment, oldFlags);
         }
@@ -278,7 +286,7 @@ void FmtIndex::setLocal(bool use)
         foreach (FmtIndecesModelItem *item, childItems) {
             FmtSegment *segment = static_cast<FmtSegment*>(item);
 
-            quint32 oldFlags = segment->m_Flags;
+            qint32 oldFlags = segment->m_Flags;
             if (!use)
                 segment->m_Flags &= ~fmtkf_Local;
             else
@@ -319,7 +327,7 @@ bool FmtIndex::setData(int column, const QVariant &value)
 
     if (column == FmtIndecesModelItem::fld_Null)
     {
-        setNullValue(value.toInt());
+        setNullValue(value.value<quint16>());
         changed = true;
     }
 
@@ -360,23 +368,23 @@ void FmtIndex::removeField(FmtField *pFld)
     QList<int> rows;
     for (int i = 0; i < childItems.size(); i++)
     {
-        FmtSegment *segment = (FmtSegment*)childItems[i];
+        FmtSegment *segment = dynamic_cast<FmtSegment*>(childItems[i]);
 
         if (segment->field() == pFld)
             rows.append(i);
     }
 
-    foreach (const quint16 &row, rows) {
-        removeSegment(row);
+    foreach (const int &row, rows) {
+        removeSegment(static_cast<quint16>(row));
     }
 }
 
-void FmtIndex::insertItem(int after)
+void FmtIndex::insertItem(const quint16 after)
 {
     addSegment(after);
 }
 
-FmtSegment *FmtIndex::addSegment(const quint32 &row)
+FmtSegment *FmtIndex::addSegment(const quint16 &row)
 {
     FmtUndoIndexAddSegment *cmd = new FmtUndoIndexAddSegment(pTable);
     cmd->setSegmentRow(row, this);
@@ -385,7 +393,7 @@ FmtSegment *FmtIndex::addSegment(const quint32 &row)
     return cmd->segment();
 }
 
-FmtSegment *FmtIndex::addSegmentPrivate(const quint32 &row)
+FmtSegment *FmtIndex::addSegmentPrivate(const FmtFldIndex &row)
 {
     QModelIndex modelIndex = pTable->pIndecesModel->indexForItem(this);
     int parentCount = pTable->pIndecesModel->rowCount(modelIndex);
@@ -404,9 +412,9 @@ FmtSegment *FmtIndex::addSegmentPrivate(const quint32 &row)
     return segment;
 }
 
-qint32 FmtIndex::indexNumber() const
+FmtFldIndex FmtIndex::indexNumber() const
 {
-    return pTable->m_pIndeces.indexOf((FmtIndex *const)this);
+    return static_cast<FmtFldIndex>(pTable->m_pIndeces.indexOf(const_cast<FmtIndex*>(this)));
 }
 
 qint32 FmtIndex::segmentsCount() const
@@ -421,7 +429,7 @@ FmtTable *FmtIndex::table()
 
 FmtSegment *FmtIndex::segment(const qint32 &index)
 {
-    return (FmtSegment*)child(index);
+    return dynamic_cast<FmtSegment*>(child(index));
 }
 
 void FmtIndex::NormalizeFlags()
@@ -488,15 +496,14 @@ void FmtIndex::removeSegment(const quint16 &segmentIndex)
     pUndoStack->push(cmd);
 }
 
-void FmtIndex::removeSegmentPrivate(const quint32 &index, bool AutoDelete)
+void FmtIndex::removeSegmentPrivate(const FmtFldIndex &index, bool AutoDelete)
 {
-    if (index > childCount() || index < 0)
+    if (index > childCount())
         return;
 
     QModelIndex itemIndex = pTable->pIndecesModel->indexForItem(this);
     pTable->pIndecesModel->beginRemoveRows(itemIndex, index, index);
-    FmtSegment *item = (FmtSegment*)childItems.takeAt(index);
-    //pTable->pIndecesModel->RemoveFmtIndex(item);
+    FmtSegment *item = dynamic_cast<FmtSegment*>(childItems.takeAt(index));
     pTable->pIndecesModel->endRemoveRows();
 
     if (AutoDelete)
@@ -508,7 +515,7 @@ bool FmtIndex::hasField(FmtField *pFld)
     bool hr = false;
     for (int i = 0; i < childItems.size(); i++)
     {
-        FmtSegment *segment = (FmtSegment*)childItems[i];
+        FmtSegment *segment = dynamic_cast<FmtSegment*>(childItems[i]);
 
         if (segment->field() == pFld)
             hr = true;
@@ -519,7 +526,7 @@ bool FmtIndex::hasField(FmtField *pFld)
 void FmtIndex::storeData(QByteArray *data)
 {
     QMap<quint16,QVariant> storedData;
-    for (int i = 0; i < FmtIndecesModelItem::fld_MAXCOUNT; i++)
+    for (quint16 i = 0; i < FmtIndecesModelItem::fld_MAXCOUNT; i++)
     {
         switch(i)
         {
@@ -545,7 +552,7 @@ void FmtIndex::storeData(QByteArray *data)
     stream << storedData;
 }
 
-void FmtIndex::setDataPrivate(const quint16 &fld, const QVariant &value)
+void FmtIndex::setDataPrivate(const FmtFldIndex &fld, const QVariant &value)
 {
     m_fIgnoreStack = true;
     switch(fld)
@@ -557,7 +564,7 @@ void FmtIndex::setDataPrivate(const quint16 &fld, const QVariant &value)
         setDup(value.toBool());
         break;
     case FmtIndecesModelItem::fld_Null:
-        setNullValue(value.toInt());
+        setNullValue(value.value<quint16>());
         break;
     case FmtIndecesModelItem::fld_AutoInc:
         setAutoInc(value.toBool());
@@ -613,7 +620,7 @@ int FmtIndex::save()
         if (stat)
             break;
 
-        FmtSegment *segment = (FmtSegment*)childItems[i];
+        FmtSegment *segment = dynamic_cast<FmtSegment*>(childItems[i]);
 
         int prm = 0;
         QSqlQuery qfld(pTable->db);
@@ -625,7 +632,7 @@ int FmtIndex::save()
         qfld.bindValue(prm++, segment->field()->id());
         qfld.bindValue(prm++, segment->m_Flags);
         qfld.bindValue(prm++, isAutoInc() ? AutoIncType : fmtIndexFromFmtType(segment->field()->type()));
-        qfld.bindValue(prm++, m_NullValue);
+        qfld.bindValue(prm++, segment->m_ExcludeNull);
         qfld.bindValue(prm++, segment->m_IsReal ? 1 : 0);
         qfld.bindValue(prm++, segment->m_Comment);
 
@@ -647,8 +654,20 @@ void FmtIndex::copyTo(FmtIndex *other)
 
     for (int i = 0; i < childItems.size(); i++)
     {
-        FmtSegment *segment = (FmtSegment*)childItems[i];
-        FmtSegment *seg = other->addSegmentPrivate(childItems.size() - 1);
+        FmtFldIndex index = static_cast<FmtFldIndex>(childItems.size() - 1);
+        FmtSegment *segment = dynamic_cast<FmtSegment*>(childItems[i]);
+        FmtSegment *seg = other->addSegmentPrivate(index);
         segment->copyTo(seg);
     }
+}
+
+FmtKeyNullVal FmtIndex::nullType() const
+{
+    FmtKeyNullVal value = keynullval_None;
+    if ((m_Flags & fmtkf_NullVal) == fmtkf_NullVal)
+        value = keynullval_All;
+    else if ((m_Flags & fmtkf_NullVal) != fmtkf_NullVal && (m_Flags & fmtkf_Manual))
+        value = keynullval_Any;
+
+    return value;
 }

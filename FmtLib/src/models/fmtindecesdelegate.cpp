@@ -203,7 +203,7 @@ void FmtIndecesDelegate::setModelData(QWidget *editor, QAbstractItemModel *model
         {
             QCheckBox *check = qobject_cast<QCheckBox*>(editor);
             FmtIndecesModelItem *item = static_cast<FmtIndecesModelItem*>(index.internalPointer());
-            item->setData(index.column(), !check->isChecked());
+            item->setData(index.column(), check->isChecked());
         }
         if (index.column() == FmtIndecesModelItem::fld_Desc
                 || index.column() == FmtIndecesModelItem::fld_ExcIndx)

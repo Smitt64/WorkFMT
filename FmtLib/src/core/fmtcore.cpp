@@ -258,7 +258,7 @@ quint16 fmtTypeIndexSize(const FmtFldType &id)
     return FmtTypesMap[FmtTypesList[id]]._size;
 }
 
-quint16 fmtIndexFromFmtType(const quint32 &id)
+FmtFldType fmtIndexFromFmtType(const FmtFldType &id)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -308,9 +308,9 @@ QString CheckSymbolFromVariant(const bool &value)
 QString NullString(const int &index)
 {
     QString v = "";
-    if (index == 1)
+    if (index == keynullval_All)
         v = "All";
-    else if (index == 2)
+    else if (index == keynullval_Any)
         v = "Any";
     return v;
 }

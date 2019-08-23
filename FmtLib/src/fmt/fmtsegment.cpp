@@ -18,6 +18,7 @@ FmtSegment::FmtSegment(FmtIndecesModelItem *parent)
     :FmtIndecesModelItem(parent)
 {
     m_Flags = 0;
+    m_ExcludeNull = 0;
     pFld = nullptr;
     m_IsReal = false;
     m_fSetIgnoreUndoStack = false;
@@ -25,7 +26,7 @@ FmtSegment::FmtSegment(FmtIndecesModelItem *parent)
 
 void FmtSegment::insertItem(int after)
 {
-    FmtIndex *index = (FmtIndex*)pParentItem;
+    FmtIndex *index = dynamic_cast<FmtIndex*>(pParentItem);
     FmtSegment *segment = new FmtSegment(pParentItem);
     setField(index->pTable->m_pFields[0]);
     pParentItem->insertChild(after + 1, segment);
@@ -38,7 +39,7 @@ bool FmtSegment::isDup() const
 
 bool FmtSegment::isNotNull() const
 {
-    return (m_Flags & fmtkf_NullVal) != fmtkf_NullVal;
+    return m_ExcludeNull == EXCLUDENULL_TRUE ? true : false;
 }
 
 QVariant FmtSegment::data(int column, int role) const
@@ -71,11 +72,11 @@ QVariant FmtSegment::data(int column, int role) const
         if (column == FmtIndecesModelItem::fld_NotNull)
         {
             // исключить из null
-            FmtIndex *pIndex = (FmtIndex*)pParentItem;
+            FmtIndex *pIndex = dynamic_cast<FmtIndex*>(pParentItem);
 
-            if (pIndex->nullValue())
+            if (pIndex->nullValue() == keynullval_Any)
             {
-                if (isNotNull())
+                if (!isNotNull())
                 {
                     if (role == Qt::DisplayRole)
                         return "";
@@ -90,10 +91,14 @@ QVariant FmtSegment::data(int column, int role) const
                         return true;
                 }
             }
+            else {
+                if (role == Qt::DisplayRole)
+                    return "";
+            }
         }
         if(column == FmtIndecesModelItem::fld_Null)
         {
-            FmtIndex *pIndex = (FmtIndex*)pParentItem;
+            FmtIndex *pIndex = dynamic_cast<FmtIndex*>(pParentItem);
             if (role == Qt::DisplayRole)
                 return NullString(pIndex->nullValue());
             else if (role == Qt::EditRole)
@@ -135,9 +140,9 @@ quint32 FmtSegment::segmentFlags() const
     return static_cast<quint32>(m_Flags);
 }
 
-quint32 FmtSegment::type() const
+FmtFldType FmtSegment::type() const
 {
-    return fmtIndexFromFmtType(static_cast<quint32>(pFld->type()));
+    return fmtIndexFromFmtType(static_cast<FmtFldType>(pFld->type()));
 }
 
 bool FmtSegment::isReal() const
@@ -157,7 +162,7 @@ void FmtSegment::setNotNull(bool use)
 
     if (!m_fSetIgnoreUndoStack)
     {
-        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), NULL);
+        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), Q_NULLPTR);
         cmd->setValueToUndo(isNotNull());
         cmd->setValueToRedo(use);
         cmd->setProperty(index()->indexNumber(), segmentNumber(), FmtIndecesModelItem::fld_NotNull);
@@ -167,18 +172,18 @@ void FmtSegment::setNotNull(bool use)
     else
     {
         if (use)
-            m_Flags &= ~fmtkf_NullVal;
+            m_ExcludeNull = EXCLUDENULL_TRUE;
         else
-            m_Flags |= fmtkf_NullVal;
+            m_ExcludeNull = 0;
     }
 
     FmtTable *pTable = table();
     emit pTable->pIndecesModel->setPropertyChanged(this, FmtIndecesModelItem::fld_NotNull);
 }
 
-quint16 FmtSegment::segmentNumber()
+FmtFldIndex FmtSegment::segmentNumber()
 {
-    return parent()->indexOfChild(this);
+    return static_cast<FmtFldIndex>(parent()->indexOfChild(this));
 }
 
 void FmtSegment::setComment(const QString &val)
@@ -188,7 +193,7 @@ void FmtSegment::setComment(const QString &val)
 
     if (!m_fSetIgnoreUndoStack)
     {
-        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), NULL);
+        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), Q_NULLPTR);
         cmd->setValueToUndo(m_Comment);
         cmd->setValueToRedo(val);
         cmd->setProperty(index()->indexNumber(), segmentNumber(), FmtIndecesModelItem::fld_Comment);
@@ -211,7 +216,7 @@ void FmtSegment::setDescOrder(bool use)
 
     if (!m_fSetIgnoreUndoStack)
     {
-        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), NULL);
+        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), Q_NULLPTR);
         cmd->setValueToUndo(descOrder());
         cmd->setValueToRedo(use);
         cmd->setProperty(index()->indexNumber(), segmentNumber(), FmtIndecesModelItem::fld_Desc);
@@ -237,7 +242,7 @@ void FmtSegment::setIsReal(bool use)
 
     if (!m_fSetIgnoreUndoStack)
     {
-        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), NULL);
+        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), Q_NULLPTR);
         cmd->setValueToUndo(m_IsReal);
         cmd->setValueToRedo(use);
         cmd->setProperty(index()->indexNumber(), segmentNumber(), FmtIndecesModelItem::fld_ExcIndx);
@@ -258,25 +263,27 @@ bool FmtSegment::descOrder() const
     return (m_Flags & fmtkf_Descending) == fmtkf_Descending;
 }
 
-quint16 FmtSegment::fieldIndex()
+FmtFldIndex FmtSegment::fieldIndex()
 {
-    return table()->m_pFields.indexOf(pFld);
+    return static_cast<FmtFldIndex>(table()->m_pFields.indexOf(pFld));
 }
 
 void FmtSegment::setField(FmtField *fld)
 {
-    FmtIndex *parentIndex = (FmtIndex*)parent();
-    setField(parentIndex->pTable->m_pFields.indexOf(fld));
+    FmtIndex *parentIndex = dynamic_cast<FmtIndex*>(parent());
+    FmtField *const cpFld = const_cast<FmtField*>(fld);
+    FmtFldIndex iFld = static_cast<FmtFldIndex>(parentIndex->pTable->m_pFields.indexOf(cpFld));
+    setField(iFld);
 }
 
-void FmtSegment::setField(const quint32 &fld)
+void FmtSegment::setField(const FmtFldIndex &fld)
 {
     if (fieldIndex() == fld)
         return;
 
     if (!m_fSetIgnoreUndoStack)
     {
-        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), NULL);
+        FmtUndoIndexSegmentProperty *cmd = new FmtUndoIndexSegmentProperty(table(), Q_NULLPTR);
         cmd->setValueToUndo(fieldIndex());
         cmd->setValueToRedo(fld);
         cmd->setProperty(index()->indexNumber(), segmentNumber(), FmtIndecesModelItem::fld_Name);
@@ -285,7 +292,6 @@ void FmtSegment::setField(const quint32 &fld)
     }
     else
     {
-        //m_FieldId = fld;
         pFld = table()->m_pFields[fld];
     }
 
@@ -318,7 +324,7 @@ bool FmtSegment::setData(int column, const QVariant &value)
     }
     if (column == FmtIndecesModelItem::fld_Name)
     {
-        setField(value.toInt());
+        setField(value.value<FmtFldIndex>());
         changed = true;
     }
 
@@ -337,7 +343,7 @@ void FmtSegment::setDataPrivate(const QVariant &value, const quint16 &column)
     if (column == FmtIndecesModelItem::fld_ExcIndx)
         setIsReal(value.toBool());
     if (column == FmtIndecesModelItem::fld_Name)
-        setField(value.toInt());
+        setField(value.value<FmtFldIndex>());
 
     if (column == FmtIndecesModelItem::fld_MAXCOUNT)
         m_Flags = value.toInt();
@@ -347,7 +353,7 @@ void FmtSegment::setDataPrivate(const QVariant &value, const quint16 &column)
 void FmtSegment::storeData(QByteArray *data)
 {
     QMap<quint16,QVariant> storedData;
-    for (int i = 0; i < FmtIndecesModelItem::fld_MAXCOUNT; i++)
+    for (quint16 i = 0; i < FmtIndecesModelItem::fld_MAXCOUNT; i++)
     {
         if (i == FmtIndecesModelItem::fld_Comment)
             storedData[i] = comment();
@@ -363,7 +369,6 @@ void FmtSegment::storeData(QByteArray *data)
 
         if (i == FmtIndecesModelItem::fld_ExcIndx)
             storedData[i] = isReal();
-
     }
 
     storedData[FmtIndecesModelItem::fld_MAXCOUNT] = m_Flags;
@@ -374,7 +379,7 @@ void FmtSegment::storeData(QByteArray *data)
 
 FmtIndex *FmtSegment::index()
 {
-    return (FmtIndex*)parent();
+    return dynamic_cast<FmtIndex*>(parent());
 }
 
 FmtTable *FmtSegment::table()
@@ -405,4 +410,5 @@ void FmtSegment::copyTo(FmtSegment *other)
     other->m_Flags = m_Flags;
     other->m_IsReal = m_IsReal;
     other->m_Comment = m_Comment;
+    other->m_ExcludeNull = m_ExcludeNull;
 }

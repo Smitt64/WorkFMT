@@ -3,17 +3,18 @@
 
 #include <QUndoCommand>
 #include <QVariant>
+#include "fmtcore.h"
 
 class FmtTable;
 class FmtUndoIndexSegmentProperty : public QUndoCommand
 {
 public:
-    FmtUndoIndexSegmentProperty(FmtTable *table, QUndoCommand *parent = NULL);
+    FmtUndoIndexSegmentProperty(FmtTable *table, QUndoCommand *parent = Q_NULLPTR);
     virtual ~FmtUndoIndexSegmentProperty();
 
     void setValueToUndo(const QVariant &value);
     void setValueToRedo(const QVariant &value);
-    void setProperty(const quint16 &index, const quint16 &segment, const quint16 &property);
+    void setProperty(const FmtFldIndex &index, const FmtFldIndex &segment, const quint16 &property);
 
     virtual void undo();
     virtual void redo();

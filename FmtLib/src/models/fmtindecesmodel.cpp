@@ -5,7 +5,7 @@
 #include "fmtsegment.h"
 
 FmtIndecesModel::FmtIndecesModel(FmtTable *parent) :
-    QAbstractItemModel((QObject*)parent)
+    QAbstractItemModel(dynamic_cast<QObject*>(parent))
 {
     pTable = parent;
     rootItem = new FmtSegment(Q_NULLPTR);
@@ -69,10 +69,9 @@ Qt::ItemFlags FmtIndecesModel::flags(const QModelIndex &index) const
         if (index.column() == FmtIndecesModelItem::fld_NotNull)
         {
             QModelIndex p = index.parent();
-            FmtIndecesModelItem *item = static_cast<FmtIndecesModelItem*>(this->index(p.row(), 0).internalPointer());
+            FmtIndex *item = static_cast<FmtIndex*>(this->index(p.row(), 0).internalPointer());
 
-            int value = item->data(FmtIndecesModelItem::fld_Null, Qt::EditRole).toInt();
-            if (value != 0)
+            if (item->nullValue() == keynullval_Any)
                 Flags |= Qt::ItemIsEditable;
         }
     }
