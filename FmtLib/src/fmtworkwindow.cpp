@@ -852,7 +852,7 @@ void FmtWorkWindow::OnImport()
 
 void FmtWorkWindow::SegmentButtonClicked(const QModelIndex &index)
 {
-    if (index.parent().isValid() && index.column() == FmtIndecesModelItem::fld_Panel)
+    if (index.parent().isValid() && index.column() == FmtIndecesModelItem::fld_Flag)
     {
         FmtSegment *pSegment = static_cast<FmtSegment*>(index.internalPointer());
         FmtSegmentFlagsDlg dlg(pSegment, this);

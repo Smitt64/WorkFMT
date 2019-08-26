@@ -145,6 +145,11 @@ FmtFldType FmtSegment::type() const
     return fmtIndexFromFmtType(static_cast<FmtFldType>(pFld->type()));
 }
 
+FmtNumber10 FmtSegment::flags() const
+{
+    return m_Flags;
+}
+
 bool FmtSegment::isReal() const
 {
     return m_IsReal;
@@ -153,6 +158,28 @@ bool FmtSegment::isReal() const
 QString FmtSegment::comment() const
 {
     return m_Comment;
+}
+
+void FmtSegment::setFlags(const FmtNumber10 &value)
+{
+    if (flags() == value)
+        return;
+
+    FmtTable *pTable = table();
+    if (!m_fSetIgnoreUndoStack)
+    {
+        FmtNumber10 oldFlags = flags();
+        FmtUndoIndexSegmentProperty *segCmd = new FmtUndoIndexSegmentProperty(pTable);
+        segCmd->setValueToUndo(oldFlags);
+        segCmd->setValueToRedo(value);
+        segCmd->setProperty(index()->indexNumber(), segmentNumber(), FmtIndecesModelItem::fld_Flag);
+
+        pTable->undoStack()->push(segCmd);
+    }
+    else
+    {
+        m_Flags = value;
+    }
 }
 
 void FmtSegment::setNotNull(bool use)

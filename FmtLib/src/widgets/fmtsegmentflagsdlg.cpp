@@ -30,6 +30,8 @@ FmtSegmentFlagsDlg::FmtSegmentFlagsDlg(FmtSegment *Segment, QWidget *parent) :
     }
 
     CheckBySegment();
+
+    connect(this, SIGNAL(accepted()), SLOT(ApplyFlags()));
 }
 
 FmtSegmentFlagsDlg::~FmtSegmentFlagsDlg()
@@ -89,4 +91,9 @@ void FmtSegmentFlagsDlg::CheckBySegment()
         if (Flags & fmtkf_Local)
             ui->checkLocal->setChecked(true);
     }
+}
+
+void FmtSegmentFlagsDlg::ApplyFlags()
+{
+    pSegment->setFlags(ui->spinFlags->value());
 }

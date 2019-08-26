@@ -44,12 +44,14 @@ public:
     bool isLocal() const;
     bool isDup() const;
     FmtFldType type() const;
+    FmtNumber10 flags() const;
     quint32 segmentFlags() const;
 
     void setNotNull(bool use);
     void setComment(const QString &val);
     void setDescOrder(bool use);
     void setIsReal(bool use);
+    void setFlags(const FmtNumber10 &value);
 
     void copyTo(FmtSegment *other);
 

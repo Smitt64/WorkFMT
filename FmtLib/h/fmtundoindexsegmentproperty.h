@@ -23,7 +23,8 @@ private:
     FmtTable *pTable;
 
     QString m_PropertyDisplayName;
-    quint16 m_Property, m_Index, m_Segment;
+    FmtFldIndex m_Index, m_Segment;
+    quint16 m_Property;
     QVariant m_UndoValue, m_RedoValue;
 };
 

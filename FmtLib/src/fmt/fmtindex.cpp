@@ -14,7 +14,7 @@ QString FmtIndexPropertyTextByFieldId(const quint16 &section)
 {
     static QStringList headers = QStringList()
             << "Имя" << "Тип" << "Dup" << "NULL" << "Исключить\nиз NUL" << "Auto\nInc" << "Desc\norder"
-            << "Исключить\nиз индекса" << "LOCAL" << "Флаги" << "Комментарий" ;
+            << "Исключить\nиз индекса" << "LOCAL" << "Флаг" << "Комментарий" ;
 
     if (headers.size() <= section)
         return QString();
@@ -122,9 +122,9 @@ QVariant FmtIndex::data(int column, int role) const
     return QVariant();
 }
 
-void FmtIndex::PushUndoSegmentProperty(FmtSegment *segment, const qint32 &oldFlags)
+void FmtIndex::PushUndoSegmentProperty(FmtSegment *segment, const qint32 &oldFlags, QUndoCommand *parentCommand)
 {
-    FmtUndoIndexSegmentProperty *segCmd = new FmtUndoIndexSegmentProperty(pTable);
+    FmtUndoIndexSegmentProperty *segCmd = new FmtUndoIndexSegmentProperty(pTable, parentCommand);
     segCmd->setValueToUndo(oldFlags);
     segCmd->setValueToRedo(segment->m_Flags);
     segCmd->setProperty(indexNumber(), segment->segmentNumber(), FmtIndecesModelItem::fld_MAXCOUNT);
@@ -213,6 +213,8 @@ void FmtIndex::setNullValue(const quint16 &val)
 
             PushUndoSegmentProperty(segment, oldFlags);
         }
+
+        NormalizeFlags();
 
         pUndoStack->endMacro();
     }
@@ -439,15 +441,24 @@ void FmtIndex::NormalizeFlags()
     bool first = true;
     foreach (FmtIndecesModelItem *item, childItems) {
         FmtSegment *segment = static_cast<FmtSegment*>(item);
+        qint32 oldFlags = segment->m_Flags;
+
         if (!use)
             segment->m_Flags &= ~fmtkf_Local;
         else
             segment->m_Flags |= fmtkf_Local;
 
-        if (!m_NullValue)
+        if (m_NullValue != keynullval_All)
             segment->m_Flags &= ~fmtkf_NullVal;
         else
-            segment->m_Flags |= fmtkf_NullVal;
+        {
+            if (m_NullValue == keynullval_All)
+            {
+                segment->m_Flags |= fmtkf_NullVal;
+                segment->m_Flags &= ~fmtkf_Manual;
+                segment->setNotNull(false);
+            }
+        }
 
         if ((m_Flags & fmtkf_Duplicates) == fmtkf_Duplicates)
             segment->m_Flags |= fmtkf_Duplicates;
@@ -458,7 +469,9 @@ void FmtIndex::NormalizeFlags()
         if (!first)
             segment->m_Flags |= fmtkf_Segment;
         else
-            first = true;
+            first = false;
+
+        PushUndoSegmentProperty(segment, oldFlags);
     }
 }
 

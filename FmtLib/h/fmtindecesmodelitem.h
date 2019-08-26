@@ -23,7 +23,7 @@ public:
         fld_Desc,
         fld_ExcIndx,
         fld_Local,
-        fld_Panel,
+        fld_Flag,
         fld_Comment,
 
         fld_MAXCOUNT

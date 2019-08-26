@@ -33,7 +33,7 @@ QVariant FmtIndecesModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role == Qt::SizeHintRole && index.column() == FmtIndecesModelItem::fld_Panel)
+    if (role == Qt::SizeHintRole && index.column() == FmtIndecesModelItem::fld_Flag)
         return QSize(50, 25);
 
     if (role != Qt::DisplayRole && role != Qt::DecorationRole)

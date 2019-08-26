@@ -75,7 +75,7 @@ void FmtIndecesDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     painter->drawLine(QPoint(opt.rect.bottomLeft().x() - BTNS_OFFSET, opt.rect.bottomLeft().y()), opt.rect.bottomRight());
     painter->restore();
 
-    if (index.parent().isValid() && index.column() == FmtIndecesModelItem::fld_Panel)
+    if (index.parent().isValid() && index.column() == FmtIndecesModelItem::fld_Flag)
     {
         QStyleOptionButton button;
         button.rect = option.rect;

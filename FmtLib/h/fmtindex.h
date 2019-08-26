@@ -78,7 +78,7 @@ protected:
 
 private:
     void EmitIndexPropertyChange(const quint16 &prop);
-    void PushUndoSegmentProperty(FmtSegment *segment, const qint32 &oldFlags);
+    void PushUndoSegmentProperty(FmtSegment *segment, const qint32 &oldFlags, QUndoCommand *parentCommand = Q_NULLPTR);
     void setDataPrivate(const FmtFldIndex &fld, const QVariant &value);
     FmtSegment *addSegmentPrivate(const FmtFldIndex &row);
     void removeSegmentPrivate(const FmtFldIndex &index, bool AutoDelete);

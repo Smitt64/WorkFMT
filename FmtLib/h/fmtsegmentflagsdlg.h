@@ -18,6 +18,7 @@ public:
 
 private slots:
     void UpdateFlagValue();
+    void ApplyFlags();
 
 private:
     void CheckBySegment();
