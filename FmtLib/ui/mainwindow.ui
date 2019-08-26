@@ -108,6 +108,7 @@
      <string>Справка</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionConfluence"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -391,6 +392,15 @@
   <action name="actionMassOp">
    <property name="text">
     <string>Массовые действия</string>
+   </property>
+  </action>
+  <action name="actionConfluence">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/confluence.png</normaloff>:/img/confluence.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сonfluence</string>
    </property>
   </action>
  </widget>

@@ -70,6 +70,7 @@ private slots:
     void GenDeleteFiledsScript();
     void OnTableChangeUpdtList();
     void OnMassOpAction();
+    void OnConfluence();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);

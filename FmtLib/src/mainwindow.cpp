@@ -27,6 +27,7 @@
 #include <QRegularExpression>
 #include <QFileDialog>
 #include <QProgressDialog>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -112,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionGenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
     connect(ui->actionGenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
     connect(ui->actionMassOp, SIGNAL(triggered(bool)), SLOT(OnMassOpAction()));
+    connect(ui->actionConfluence, SIGNAL(triggered(bool)), SLOT(OnConfluence()));
 
 #ifdef QT_NO_DEBUG
     connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
@@ -1228,4 +1230,9 @@ void MainWindow::OnMassOpAction()
 
     MassOperationWizard wizard(current, this);
     wizard.exec();
+}
+
+void MainWindow::OnConfluence()
+{
+    QDesktopServices::openUrl(QUrl("http://confluence/pages/viewpage.action?pageId=397967369"));
 }
