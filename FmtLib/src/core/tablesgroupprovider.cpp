@@ -236,7 +236,7 @@ QString TablesGroupProvider::selectGroupUid(const QString &name)
     return uid;
 }
 
-QSqlDatabase TablesGroupProvider::db()
+QSqlDatabase &TablesGroupProvider::db()
 {
     return _db;
 }

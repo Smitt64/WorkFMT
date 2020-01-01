@@ -29,7 +29,7 @@
      <x>0</x>
      <y>0</y>
      <width>1164</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -84,6 +84,7 @@
     <addaction name="separator"/>
     <addaction name="actionEditGroups"/>
     <addaction name="actionMassOp"/>
+    <addaction name="actionQuery"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="tearOffEnabled">
@@ -401,6 +402,11 @@
    </property>
    <property name="text">
     <string>Сonfluence</string>
+   </property>
+  </action>
+  <action name="actionQuery">
+   <property name="text">
+    <string>Создать запрос</string>
    </property>
   </action>
  </widget>

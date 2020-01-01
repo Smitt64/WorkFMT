@@ -17,7 +17,7 @@ SelectConnectionDlg::~SelectConnectionDlg()
     delete pModel;
 }
 
-QList<ConnectionInfo*> SelectConnectionDlg::сheckedItems() const
+QList<ConnectionInfo*> SelectConnectionDlg::checkedItems() const
 {
-    return pModel->сheckedItems();
+    return pModel->checkedItems();
 }

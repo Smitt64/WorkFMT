@@ -191,11 +191,6 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
-ConnectionInfo *FmtWorkWindow::connection() const
-{
-    return pTable->connection();
-}
-
 void FmtWorkWindow::setupFind()
 {
     /*pFindLineEdit = new LineEditAction(this);
@@ -551,7 +546,7 @@ void FmtWorkWindow::UpdateCopyMenu(const QString &table)
     QMdiSubWindow *mdiWnd = mdiWindow();
 
     if (mdiWnd)
-        mdiWnd->setWindowTitle(makeWindowTitle(pTable));
+        mdiWnd->setWindowTitle(makeWindowTitle());
 }
 
 void FmtWorkWindow::CopyAction()
@@ -858,4 +853,12 @@ void FmtWorkWindow::SegmentButtonClicked(const QModelIndex &index)
         FmtSegmentFlagsDlg dlg(pSegment, this);
         dlg.exec();
     }
+}
+
+QString FmtWorkWindow::makeWindowTitle()
+{
+    QString schemeName = connection()->schemeName();
+    return QString("%1@%2")
+            .arg(schemeName.trimmed())
+            .arg(pTable->name());
 }

@@ -48,7 +48,7 @@ public:
     {
         FmtWinTabs_Columns = 0,
         FmtWinTabs_Index,
-        FmtWinTabs_Code,
+        FmtWinTabs_Code
     };
 
     explicit FmtWorkWindow(QWidget *parent = Q_NULLPTR);
@@ -61,9 +61,8 @@ public:
     void setDialogButtonsVisible(bool f);
     void setInitButtonVisible(bool f);
 
-    ConnectionInfo *connection() const;
-
     QUndoStack *tableUndoStack();
+    QString makeWindowTitle() Q_DECL_OVERRIDE;
 
 signals:
 

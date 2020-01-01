@@ -41,7 +41,7 @@ bool ConnectionInfo::isOpen() const
     return _db.isOpen();
 }
 
-QSqlDatabase ConnectionInfo::db()
+QSqlDatabase &ConnectionInfo::db()
 {
     return _db;
 }

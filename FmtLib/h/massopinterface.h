@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "fmtlibfactory.h"
+#include "loggingcategories.h"
 
 class MassOperationWizard;
 class QWizardPage;

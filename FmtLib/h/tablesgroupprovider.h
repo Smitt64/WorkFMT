@@ -25,7 +25,7 @@ public:
     bool addGroup(const QString &name, QString *uid = NULL);
 
     QStringList getGroupsList();
-    QSqlDatabase db();
+    QSqlDatabase &db();
 
 signals:
 

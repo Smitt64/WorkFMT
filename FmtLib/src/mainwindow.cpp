@@ -23,6 +23,7 @@
 #include "fmttablelistdelegate.h"
 #include "massoperationwizard.h"
 #include "logsettingsdlg.h"
+#include "queryeditor/queryeditor.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -115,6 +116,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionMassOp, SIGNAL(triggered(bool)), SLOT(OnMassOpAction()));
     connect(ui->actionConfluence, SIGNAL(triggered(bool)), SLOT(OnConfluence()));
 
+    ui->actionQuery->setVisible(false);
+    connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
+
 #ifdef QT_NO_DEBUG
     connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
     ui->actionHotFix->setVisible(false);
@@ -185,9 +189,13 @@ void MainWindow::subWindowActivated(QMdiSubWindow *window)
     if (!window)
         return;
 
-    FmtWorkWindow *wnd = (FmtWorkWindow*)window->widget();
-    QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
-    pWindowsComboBox->setCurrentIndex(index);
+    MdiSubInterface *wnd = qobject_cast<MdiSubInterface*>(window->widget());
+
+    if (wnd)
+    {
+        QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
+        pWindowsComboBox->setCurrentIndex(index);
+    }
 }
 
 void MainWindow::subWindowIndexChanged(const QModelIndex &index)
@@ -440,23 +448,33 @@ void MainWindow::OnTableChangeUpdtList()
         list->updateList();
 }
 
+QMdiSubWindow *MainWindow::CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection)
+{
+    m_Windows[pConnection].push_back(window);
+    QMdiSubWindow *wnd = pMdi->addSubWindow(window);
+    wnd->setAttribute(Qt::WA_DeleteOnClose);
+    window->setParentWnd(wnd);
+    window->setConnection(pConnection);
+    wnd->setWindowTitle(window->makeWindowTitle());
+    connect(window, SIGNAL(destroyed(QObject*)), SLOT(WorkWindowDestroyed(QObject*)));
+
+    QModelIndex index = pWindowsModel->addWindow(pConnection, wnd);
+    pWindowsComboBox->setCurrentIndex(index);
+
+    return wnd;
+}
+
 QMdiSubWindow *MainWindow::CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow)
 {
     FmtWorkWindow *window = new FmtWorkWindow;
-    m_Windows[table->connection()].push_back(window);
-
-    QMdiSubWindow *wnd = pMdi->addSubWindow(window);
-    wnd->setAttribute(Qt::WA_DeleteOnClose);
-    wnd->setWindowTitle(window->makeWindowTitle(table));
-    wnd->setWindowIcon(QIcon(":/table"));
-    window->setParentWnd(wnd);
     window->setFmtTable(table);
+    //m_Windows[table->connection()].push_back(window);
+    QMdiSubWindow *wnd = CreateMdiWindow(window, table->connection());
+    wnd->setWindowIcon(QIcon(":/table"));
 
-    QModelIndex index = pWindowsModel->addWindow(table->connection(), wnd);
-    pWindowsComboBox->setCurrentIndex(index);
+
     connect(window, SIGNAL(accepted()), wnd, SLOT(deleteLater()));
     connect(window, SIGNAL(rejected()), wnd, SLOT(deleteLater()));
-    connect(window, SIGNAL(destroyed(QObject*)), SLOT(WorkWindowDestroyed(QObject*)));
     connect(window, SIGNAL(needUpdateTableList()), SLOT(OnTableChangeUpdtList()));
 
     if (pWindow)
@@ -574,7 +592,8 @@ void MainWindow::createFromText()
     FmtFromRichText wizard(current, this);
     if (wizard.exec() == QDialog::Accepted)
     {
-        QMdiSubWindow *wnd = CreateDocument(wizard.fmtTable());
+        QSharedPointer<FmtTable> table = wizard.fmtTable();
+        QMdiSubWindow *wnd = CreateDocument(table);
         wnd->show();
     }
 }
@@ -887,7 +906,7 @@ void MainWindow::CopyTableTo()
             dlg.setWindowTitle(tr("Копировать в..."));
             if (dlg.exec() == QDialog::Accepted)
             {
-                QList<ConnectionInfo*> checkedItems = dlg.сheckedItems();
+                QList<ConnectionInfo*> checkedItems = dlg.checkedItems();
                 foreach (ConnectionInfo *info, checkedItems) {
                     QSharedPointer<FmtTable> cTable(new FmtTable(info));
                     table->copyTo(cTable);
@@ -1235,4 +1254,12 @@ void MainWindow::OnMassOpAction()
 void MainWindow::OnConfluence()
 {
     QDesktopServices::openUrl(QUrl("http://confluence/pages/viewpage.action?pageId=397967369"));
+}
+
+void MainWindow::OnCreateQuery()
+{
+    QueryEditor *editor = new QueryEditor();
+    QMdiSubWindow *wnd = CreateMdiWindow(editor, currentConnection());
+
+    wnd->show();
 }

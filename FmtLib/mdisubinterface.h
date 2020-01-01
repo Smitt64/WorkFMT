@@ -5,6 +5,7 @@
 #include <QtWidgets>
 #include "fmttable.h"
 
+class ConnectionInfo;
 class FMTLIBSHARED_EXPORT MdiSubInterface : public QDialog
 {
     Q_OBJECT
@@ -15,13 +16,17 @@ public:
     void setParentWnd(QMdiSubWindow *wnd);
     QMdiSubWindow *mdiWindow() { return pParentWnd; }
 
-    QString makeWindowTitle(const FmtSharedTablePtr &pTable);
+    virtual QString makeWindowTitle() = 0;
+
+    ConnectionInfo *connection() const;
+    void setConnection(ConnectionInfo *Connection);
 
 signals:
     void needUpdateTableList();
 
 protected:
     QMdiSubWindow *pParentWnd;
+    ConnectionInfo *pConnection;
 };
 
 #endif // MDISUBINTERFACE_H

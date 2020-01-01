@@ -31,7 +31,7 @@ public:
     virtual ~ConnectionInfo();
 
     FmtTablesModel *tablesModel();
-    QSqlDatabase db();
+    QSqlDatabase &db();
     QSqlDriver *driver();
 
     /**

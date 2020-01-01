@@ -17,6 +17,7 @@ class TreeComboBox;
 class SubWindowsModel;
 class WindowsComboAction;
 class FmtTableListDelegate;
+class MdiSubInterface;
 class FMTLIBSHARED_EXPORT MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -71,6 +72,7 @@ private slots:
     void OnTableChangeUpdtList();
     void OnMassOpAction();
     void OnConfluence();
+    void OnCreateQuery();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
@@ -89,6 +91,7 @@ private:
     QAction *CreateConnectionActio(const QString &ShemeName, ConnectionInfo *info);
     void tablesContextMenu(QContextMenuEvent *event, QListView *view);
     QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
+    QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
     Ui::MainWindow *ui;
     TablesDock *pTablesDock;
     QMdiArea *pMdi;

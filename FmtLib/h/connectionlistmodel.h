@@ -17,7 +17,7 @@ public:
     virtual Qt::ItemFlags flags(const QModelIndex &index) const;
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
-    QList<ConnectionInfo*> сheckedItems() const { return m_CheckedItems; }
+    QList<ConnectionInfo*> checkedItems() const { return m_CheckedItems; }
 
 private:
     QList<ConnectionInfo*> m_Items;

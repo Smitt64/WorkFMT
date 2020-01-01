@@ -17,7 +17,7 @@ public:
     explicit SelectConnectionDlg(const QList<ConnectionInfo*> list, QWidget *parent = Q_NULLPTR);
     virtual ~SelectConnectionDlg();
 
-    QList<ConnectionInfo*> сheckedItems() const;
+    QList<ConnectionInfo*> checkedItems() const;
 
 private:
     Ui::SelectConnectionDlg *ui;

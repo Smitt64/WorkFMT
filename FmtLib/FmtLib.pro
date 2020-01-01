@@ -41,11 +41,11 @@ SOURCES += \
     src/mainwindow.cpp \
     src/massop/destribcreate/massdestribprogress.cpp \
     src/oracleauthdlg.cpp \
+    src/queryeditor/queryeditor.cpp \
     src/tablesgroupsdlg.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
     src/windowslistdlg.cpp \
-    src/core/fmtcore.cpp \
     src/core/fmtlib.cpp \
     src/core/hotfixhelp.cpp \
     src/core/tablesgroupprovider.cpp \
@@ -271,6 +271,7 @@ HEADERS += \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
     src/massop/destribcreate/massdestribprogress.h \
+    src/queryeditor/queryeditor.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
     h/logsettingsdlg.h \
     h/datelineedit.h \

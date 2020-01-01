@@ -34,7 +34,9 @@ QVariant FmtFildsModel::data(const QModelIndex &index, int role) const
     {
         bool isValidName = true; int pos = 0;
         QRegExpValidator validator(QRegExp("([a-zA-Z_][a-zA-Z0-9]*)*"));
-        isValidName = !(validator.validate(fld->name(), pos) == QValidator::Invalid);
+
+        QString name = fld->name();
+        isValidName = !(validator.validate(name, pos) == QValidator::Invalid);
 
         if (role == Qt::DecorationRole && index.column() == FmtFildsModel::fld_Name)
         {
