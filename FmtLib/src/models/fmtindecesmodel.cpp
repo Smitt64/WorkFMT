@@ -202,11 +202,12 @@ bool FmtIndecesModel::insertRows(int row, int count, const QModelIndex &parent)
     }
     else
     {
-        if (dynamic_cast<FmtIndex*>(parentItem))
-            parentItem->insertItem(0);
+        FmtIndex *pIndex = dynamic_cast<FmtIndex*>(parentItem);
+        if (pIndex != Q_NULLPTR)
+            pIndex->insertItem(0);
         else
         {
-            FmtIndex *pIndex = dynamic_cast<FmtIndex*>(parentItem->parent());
+            pIndex = dynamic_cast<FmtIndex*>(parentItem->parent());
             pIndex->insertItem(row + 1);
         }
     }

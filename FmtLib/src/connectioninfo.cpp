@@ -133,3 +133,8 @@ int ConnectionInfo::modelCount() const
 {
     return pModels.size();
 }
+
+ConnectionInfo::operator int() const
+{
+    return reinterpret_cast<qintptr>(this);
+}

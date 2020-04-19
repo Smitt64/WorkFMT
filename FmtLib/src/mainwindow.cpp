@@ -24,6 +24,7 @@
 #include "massoperationwizard.h"
 #include "logsettingsdlg.h"
 #include "queryeditor/queryeditor.h"
+#include "selectfolderdlg.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -90,7 +91,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionImpExpPrm, SIGNAL(triggered(bool)), SLOT(ImpExpSettings()));
     connect(ui->actionImportDir, SIGNAL(triggered(bool)), SLOT(ImpDirAction()));
     connect(ui->actionImport, SIGNAL(triggered(bool)), SLOT(ImportAction()));
-    connect(ui->actionExport, SIGNAL(triggered(bool)), SLOT(ExportXmlAction()));
 
     connect(actionEdit, SIGNAL(triggered(bool)), SLOT(actionEditFmt()));
     connect(actionExport, SIGNAL(triggered(bool)), SLOT(actionExportTableXml()));
@@ -215,24 +215,6 @@ void MainWindow::ImpExpSettings()
 {
     ImpExpParams dlg(this);
     dlg.exec();
-}
-
-void MainWindow::ExportXmlAction()
-{
-    ConnectionInfo *cur = currentConnection();
-    if (!cur)
-        return;
-
-#ifndef _DEBUG
-    if (!CheckConnectionType(cur, ConnectionInfo::CON_ORA, true, this))
-        return;
-#endif
-
-    ExportToXmlWizard wizard(cur, this);
-    if (wizard.exec() == QDialog::Accepted)
-    {
-
-    }
 }
 
 void MainWindow::ImpDirAction()
@@ -367,7 +349,7 @@ QAction *MainWindow::CreateConnectionActio(const QString &ShemeName, ConnectionI
     a->setChecked(true);
 
     a->setIcon(info->colorIcon());
-    a->setData(reinterpret_cast<int>(info));
+    a->setData(reinterpret_cast<qintptr>(info));
     pWindowsModel->addConnection(info);
 
     info->updateFmtList();
@@ -605,18 +587,19 @@ void MainWindow::actionExportTableXml()
     if (!current)
         return;
 
+#ifndef QT_DEBUG
     if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
         return;
+#endif
 
     QString table = actionExport->data().toString();
 
-    FmtImpExpWrp tmp(current);
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Экспорт файла"), tmp.lastImportDir());
-
-    if (dir.isEmpty())
-        return;
-
-    ExportFmtToXml(current, QStringList() << table, dir, true, true, this);
+    SelectFolderDlg folder(RsFmtUnlDirContext, tr("Экспорт в xml файл"), this);
+    if (folder.exec() == QDialog::Accepted)
+    {
+        ExportFmtToXml(current, QStringList()
+                       << table, folder.selectedPath(), true, true, this);
+    }
 }
 
 void MainWindow::actionInit()
@@ -956,12 +939,7 @@ void MainWindow::LoadDbf()
     {
         QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
         QString table = index.data(Qt::UserRole).toString();
-
-        QString RsExpUnlDir = settings()->value("RsExpUnlDir").toString();
-        QString file = QFileDialog::getOpenFileName(this, QString(), RsExpUnlDir, QString("%1.dat (%1.dat)").arg(table));
-
-        if (!file.isEmpty())
-            StartLoadDbf(current, file, this);
+        StartLoadDbfSelectFile(current, table, this);
     }
 }
 

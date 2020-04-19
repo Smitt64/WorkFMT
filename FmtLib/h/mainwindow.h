@@ -50,7 +50,6 @@ private slots:
     void ImpExpSettings();
     void ImpDirAction();
     void ImportAction();
-    void ExportXmlAction();
     void CreateTableSql();
     void HotFixCreate();
     void EditGroups();
@@ -72,7 +71,6 @@ private slots:
     void OnTableChangeUpdtList();
     void OnMassOpAction();
     void OnConfluence();
-    void OnCreateQuery();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);

@@ -263,7 +263,7 @@ QAction *DbMainWindow::CreateConnectionAction(const QString &ShemeName, Connecti
     a->setChecked(true);
 
     a->setIcon(info->colorIcon());
-    a->setData(reinterpret_cast<int>(info));
+    a->setData(reinterpret_cast<qintptr>(info));
 
     info->updateFmtList();
     m_pConnections.append(info);

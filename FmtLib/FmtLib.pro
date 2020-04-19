@@ -45,6 +45,7 @@ SOURCES += \
     src/tablesgroupsdlg.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
+    src/widgets/selectfolderdlg.cpp \
     src/windowslistdlg.cpp \
     src/core/fmtlib.cpp \
     src/core/hotfixhelp.cpp \
@@ -155,6 +156,7 @@ unix {
 FORMS += \
     src/massop/destribcreate/massdestribprogress.ui \
     src/widgets/fmtsegmentflagsdlg.ui \
+    src/widgets/selectfolderdlg.ui \
     ui/aboutdlg.ui \
     ui/dbinitdlg.ui \
     ui/documentwindow.ui \
@@ -308,7 +310,8 @@ HEADERS += \
     src/massop/destribcreate/massdestribparammodel.h \
     src/massop/destribcreate/massdestribitemparamdelegate.h \
     src/widgets/filteredtablewidget.h \
-    h/fmtsegmentflagsdlg.h
+    h/fmtsegmentflagsdlg.h \
+    h/selectfolderdlg.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = ../bin

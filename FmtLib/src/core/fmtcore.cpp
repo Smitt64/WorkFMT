@@ -9,6 +9,7 @@
 #include "oracletnslistmodel.h"
 #include "loggingcategories.h"
 #include "fmtdbftoolwrp.h"
+#include "selectfolderdlg.h"
 #include <Windows.h>
 #include <QtCore>
 #include <QSqlError>
@@ -538,24 +539,25 @@ QString FmtTableSqlText(QSharedPointer<FmtTable> pTable)
 
 void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent)
 {
-    QSettings *s = settings();
-    QString lastCreateTableSqlDir = s->value("LastCreateTableSqlDir", ".").toString();
-    QString fileName = QFileDialog::getSaveFileName(parent, QObject::tr("CreateTableSql"), QString("%2/%1.sql")
-                                                    .arg(pTable->name().toUpper())
-                                                    .arg(lastCreateTableSqlDir), "SQL (*.sql)");
+    SelectFolderDlg folder(RsCreateSqlContext, parent);
 
-    if (fileName.isEmpty())
-        return;
-
-    QFile file(fileName);
-    if (file.open(QIODevice::WriteOnly))
+    if (folder.exec() == QDialog::Accepted)
     {
-        QFileInfo info(fileName);
-        s->setValue("LastCreateTableSqlDir", info.filePath());
-        QTextStream stream(&file);
-        stream.setCodec("IBM 866");
-        stream << FmtTableSqlText(pTable);
-        file.close();
+        QString fileName = QString("%1.sql").arg(pTable->name().toUpper());
+        QDir dir = folder.selectedPath();
+
+        if (dir.exists())
+        {
+            QFile file(dir.absoluteFilePath(fileName));
+            if (file.open(QIODevice::WriteOnly))
+            {
+                QFileInfo info(fileName);
+                QTextStream stream(&file);
+                stream.setCodec("IBM 866");
+                stream << FmtTableSqlText(pTable);
+                file.close();
+            }
+        }
     }
 }
 
@@ -1080,7 +1082,10 @@ void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *pare
     QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
     QObject::connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
     QObject::connect(&wrp, SIGNAL(startError()), &dlg, SLOT(exec()));
-    wrp.unload(settings()->value("RsExpUnlDir").toString(), table);
+
+    SelectFolderDlg folder(RsExpUnlDirContext, parent);
+    if (folder.exec() == QDialog::Accepted)
+        wrp.unload(folder.selectedPath(), table);
 }
 
 void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
@@ -1094,4 +1099,19 @@ void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent
     QObject::connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
     QObject::connect(&wrp, SIGNAL(startError()), &dlg, SLOT(exec()));
     wrp.load(table);
+}
+
+void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidget *parent)
+{
+    SelectFolderDlg folder(RsExpUnlDirContext, parent);
+    if (folder.exec() == QDialog::Accepted)
+    {
+        QString file = QString("%1.dat").arg(table.toUpper());
+        QDir selectedFolder = folder.selectedPath();
+
+        if (selectedFolder.exists(file))
+            StartLoadDbf(current, selectedFolder.absoluteFilePath(file), parent);
+        else
+            QMessageBox::critical(parent, QObject::tr("Ошибка"), QObject::tr("Файл <b>%1</b> не найден в выбранном каталоге.").arg(file));
+    }
 }

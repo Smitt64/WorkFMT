@@ -14,6 +14,10 @@
 #define COLOR_GOLDEN_RATIO 0.618033988749895
 #define EXCLUDENULL_TRUE 255
 
+#define RsExpUnlDirContext "RsExpUnlDir"
+#define RsFmtUnlDirContext "RsFmtUnlDir"
+#define RsCreateSqlContext "RsCreateSqlDir"
+
 enum FmtNamesColumn
 {
     fnc_Id,
@@ -182,6 +186,7 @@ QString BoolToString(bool value);
 QColor GenerateColor();
 void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent);
 void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent);
+void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidget *parent);
 
 void ExportFmtToXml(ConnectionInfo *connection, const QStringList &file, const QString &dir, bool ShowProgress, bool ShowReport, QWidget *parent = Q_NULLPTR);
 void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent);

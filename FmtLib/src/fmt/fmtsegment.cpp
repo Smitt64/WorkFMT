@@ -371,6 +371,8 @@ void FmtSegment::setDataPrivate(const QVariant &value, const quint16 &column)
         setIsReal(value.toBool());
     if (column == FmtIndecesModelItem::fld_Name)
         setField(value.value<FmtFldIndex>());
+    if (column == FmtIndecesModelItem::fld_Flag)
+        setFlags(value.value<FmtNumber10>());
 
     if (column == FmtIndecesModelItem::fld_MAXCOUNT)
         m_Flags = value.toInt();
@@ -396,6 +398,9 @@ void FmtSegment::storeData(QByteArray *data)
 
         if (i == FmtIndecesModelItem::fld_ExcIndx)
             storedData[i] = isReal();
+
+        if (i == FmtIndecesModelItem::fld_Flag)
+            storedData[i] = flags();
     }
 
     storedData[FmtIndecesModelItem::fld_MAXCOUNT] = m_Flags;

@@ -137,7 +137,9 @@ LONG FmtApplication::UnhandledExceptionFilter(PEXCEPTION_POINTERS pExInfo)
 
     qCCritical(logDbgHelp()) << "Exception:" << QString("0x%1").arg(pExInfo->ExceptionRecord->ExceptionCode, 8, 16, QLatin1Char('0')) << ExceptionCodeShort;
     qCCritical(logDbgHelp()) << ExceptionCodeText;
-    qCCritical(logDbgHelp()) << "Address:" << QString("0x%1").arg((DWORD)pExInfo->ExceptionRecord->ExceptionAddress, 8, 16, QLatin1Char('0'));
+
+    DWORD ExceptionAddress = *reinterpret_cast<DWORD*>(pExInfo->ExceptionRecord->ExceptionAddress);
+    qCCritical(logDbgHelp()) << "Address:" << QString("0x%1").arg(ExceptionAddress, 8, 16, QLatin1Char('0'));
     QDir dbgDir(applicationDirPath());
     QString dumpFile = dbgDir.absoluteFilePath("FmtApplication.dmp");
 

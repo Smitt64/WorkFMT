@@ -71,6 +71,8 @@ public:
     int lastIndex() const;
     int modelCount() const;
 
+    explicit operator int() const;
+
 protected:
     QString m_Alias, m_SchemeName, m_Host, m_Service, m_User, m_Password, m_DSN;
     qint32 m_Port;

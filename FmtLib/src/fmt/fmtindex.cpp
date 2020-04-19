@@ -381,9 +381,9 @@ void FmtIndex::removeField(FmtField *pFld)
     }
 }
 
-void FmtIndex::insertItem(const quint16 after)
+void FmtIndex::insertItem(int after)
 {
-    addSegment(after);
+    addSegment(static_cast<quint16>(after));
 }
 
 FmtSegment *FmtIndex::addSegment(const quint16 &row)

@@ -21,7 +21,7 @@ public:
     bool isCreateTable() { return CreateTableCheck->isChecked(); }
     bool isCreateIndex() { return CreateIndexCheck->isChecked(); }
 
-    QSharedPointer<FmtTable> fmtTable() { return pFmtTable; }
+    QSharedPointer<FmtTable> &fmtTable() { return pFmtTable; }
 
 private slots:
     void onPageChanged(const int &id);

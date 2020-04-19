@@ -1504,7 +1504,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
             e->appendError(tr("Уже существует таблица <b>%1</b> с идентификатором %2: %3")
                            .arg(q.value(1).toString())
                            .arg(q.value(0).toString())
-                           .arg(q.value(2).toString()));
+                           .arg(q.value(2).toString()), FmtErrors::fmtet_Warning);
         }
     }
 
@@ -1518,7 +1518,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
             e->appendError(tr("Поле №%1 <b>%2</b> (%3) имеет недопустимое имя")
                            .arg(i + 1)
                            .arg(fld->name())
-                           .arg(fld->comment()));
+                           .arg(fld->comment()), FmtErrors::fmtet_Warning);
         }
 
         if (!fld->size())
@@ -1527,7 +1527,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
                            .arg(i + 1)
                            .arg(fld->name())
                            .arg(fld->comment())
-                           .arg(fmtTypeForId(fld->type())));
+                           .arg(fmtTypeForId(fld->type())), FmtErrors::fmtet_Warning);
         }
         else
         {
@@ -1553,7 +1553,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
                                    .arg(i + 1)
                                    .arg(fld->name())
                                    .arg(fld->comment())
-                                   .arg(fmtTypeForId(fld->type())));
+                                   .arg(fmtTypeForId(fld->type())), FmtErrors::fmtet_Warning);
                 }
             }
         }
@@ -1564,7 +1564,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
         FmtIndex *ind = m_pIndeces[i];
         if (!ind->childCount())
         {
-            e->appendError(tr("У индекса <b>%1</b> не заданы сегменты").arg(ind->name()));
+            e->appendError(tr("У индекса <b>%1</b> не заданы сегменты").arg(ind->name()), FmtErrors::fmtet_Warning);
         }
 
         if (ind->isAutoInc())
@@ -1577,7 +1577,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
 
             if (ind->childCount() > 1)
             {
-                e->appendError(tr("Индекс <b>%1</b> указан автоинкрементным, но имеет несколько сегментов").arg(ind->name()));
+                e->appendError(tr("Индекс <b>%1</b> указан автоинкрементным, но имеет несколько сегментов").arg(ind->name()), FmtErrors::fmtet_Warning);
             }
             /*else if (ind->childCount() == 1)
             {

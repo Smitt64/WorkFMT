@@ -27,6 +27,7 @@
 #include "fmtsegment.h"
 #include "widgets/filteredtablewidget.h"
 #include "widgets/editcontent/import/importwizard.h"
+#include "selectfolderdlg.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -162,8 +163,8 @@ void FmtWorkWindow::SetupActionsMenu()
     m_unloadDbf = pActionsMenu->addAction(tr("Выгрузить содержимое в *.dat"));
     m_loadDbf = pActionsMenu->addAction(tr("Загрузить содержимое из *.dat"));
     pActionsMenu->addSeparator();
-    m_ImportData = pActionsMenu->addAction(QIcon(":/img/ImportContent.png"), tr("Загрузить данные"));
-    pActionsMenu->addSeparator();
+    /*m_ImportData = pActionsMenu->addAction(QIcon(":/img/ImportContent.png"), tr("Загрузить данные"));
+    pActionsMenu->addSeparator();*/
     m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
     m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
     pActionsMenu->addSeparator();
@@ -188,7 +189,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_EditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
     connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
     connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
-    connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
+    //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
 void FmtWorkWindow::setupFind()
@@ -271,11 +272,13 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     dcolor = info->color().darker();
     color = info->color();
 
+#ifndef QT_DEBUG
     if (info->type() != ConnectionInfo::CON_ORA)
     {
         ui->pushButton->setEnabled(false);
         m_saveToXml->setEnabled(false);
     }
+#endif
 
     ui->scriptButton->setEnabled(true);
 
@@ -497,21 +500,17 @@ void FmtWorkWindow::CheckTable()
         dlg.exec();
     }
     else
-    {
         QMessageBox::information(this, tr("Результат"), tr("Проверка ошибок не выявила!"));
-    }
 }
 
 void FmtWorkWindow::ExportXml()
 {
-    FmtImpExpWrp imp(pTable->connection(), this);
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Экспорт файла"), imp.lastImportDir());
-
-    if (dir.isEmpty() || !pTable->isExists())
-        return;
-
-    ExportFmtToXml(pTable->connection(), QStringList()
-                   << pTable->name(), dir, true, true, this);
+    SelectFolderDlg folder(RsFmtUnlDirContext, tr("Экспорт в xml файл"), this);
+    if (folder.exec() == QDialog::Accepted)
+    {
+        ExportFmtToXml(pTable->connection(),QStringList()
+                       << pTable->name(), folder.selectedPath(), true, true, this);
+    }
 }
 
 void FmtWorkWindow::AddedToLast(FmtField *fld, const QModelIndex &index)
@@ -619,11 +618,7 @@ void FmtWorkWindow::UnloadToDbf()
 
 void FmtWorkWindow::LoadFromDbf()
 {
-    QString RsExpUnlDir = settings()->value("RsExpUnlDir").toString();
-    QString file = QFileDialog::getOpenFileName(this, QString(), RsExpUnlDir, QString("%1.dat (%1.dat)").arg(pTable->name()));
-
-    if (!file.isEmpty())
-        StartLoadDbf(pTable->connection(), file, this);
+    StartLoadDbfSelectFile(pTable->connection(), pTable->name(), this);
 }
 
 void FmtWorkWindow::TabCloseRequested(int index)

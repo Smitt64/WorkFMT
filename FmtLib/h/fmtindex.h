@@ -53,7 +53,7 @@ public:
 
     virtual QVariant data(int column, int role = Qt::DisplayRole) const;
     virtual bool setData(int column, const QVariant &value);
-    virtual void insertItem(const quint16 after);
+    virtual void insertItem(int after) Q_DECL_OVERRIDE;
 signals:
     void indexChanged();
 

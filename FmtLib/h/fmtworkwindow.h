@@ -48,7 +48,7 @@ public:
     {
         FmtWinTabs_Columns = 0,
         FmtWinTabs_Index,
-        FmtWinTabs_Code
+        FmtWinTabs_Code,
     };
 
     explicit FmtWorkWindow(QWidget *parent = Q_NULLPTR);

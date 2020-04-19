@@ -393,7 +393,7 @@ int FmtField::save()
     int stat = 0;
 
     QSqlQuery qfld(pTable->db);
-    qfld.prepare("insert into FMT_FIELDS values(?,?,?,?,?,?,?,?,CHR(0),?)");
+    qfld.prepare("insert into FMT_FIELDS(T_ID,T_FMTID,T_NAME,T_TYPE,T_SIZE,T_OFFSET,T_OUTLEN,T_DECPOINT,T_HIDDEN,T_COMMENT) values(?,?,?,?,?,?,?,?,CHR(0),?)");
 
     m_Id = FindFirstEmptyID();
     int prm = 0;
