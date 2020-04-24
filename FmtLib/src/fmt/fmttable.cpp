@@ -529,7 +529,7 @@ void FmtTable::copyTo(FmtSharedTablePtr cTable)
     cTable->m_PkIDx = m_PkIDx;
     cTable->m_BlobType = m_BlobType;
 
-    foreach (FmtField *pFld, m_pFields) {
+    for (FmtField *pFld: m_pFields) {
         FmtField *fld = cTable->addFieldPrivate(pFld->undecorateName(), pFld->type());
         fld->m_Id = 0;
         fld->m_Size = pFld->m_Size;
@@ -542,10 +542,23 @@ void FmtTable::copyTo(FmtSharedTablePtr cTable)
         fld->m_isHidden = pFld->m_isHidden;
     }
 
-    foreach (FmtIndex *pIndex, m_pIndeces) {
+    for (FmtIndex *pIndex: m_pIndeces) {
         FmtIndex *nIndex = cTable->addIndexPrivate();
         pIndex->copyTo(nIndex);
     }
+}
+
+void FmtTable::copyToAsTmp(QSharedPointer<FmtTable> cTable)
+{
+    copyTo(cTable);
+    cTable->setIsTemporary(true);
+
+    QString name = m_Name;
+    int pos = name.lastIndexOf('_');
+    name = name.remove(pos, name.length() - pos);
+    name += QString("_tmp");
+
+    cTable->setName(name);
 }
 
 FmtField *FmtTable::FindField(const FmtRecId &Id)
@@ -1593,4 +1606,9 @@ bool FmtTable::checkErrors(FmtErrors *e)
         }
     }
     return e->isEmpty();
+}
+
+const QList<FmtField*> &FmtTable::getFieldsList() const
+{
+    return m_pFields;
 }

@@ -72,6 +72,7 @@
     <addaction name="separator"/>
     <addaction name="actionCopyTable"/>
     <addaction name="actionCopyTableAs"/>
+    <addaction name="actionCopyTableTmp"/>
     <addaction name="separator"/>
     <addaction name="actionInit"/>
     <addaction name="actionSql"/>

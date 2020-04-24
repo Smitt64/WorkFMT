@@ -56,6 +56,7 @@ private slots:
     void OpenRecentConnection();
     void CopyTable();
     void CopyTableTo();
+    void CopyTableToTmp();
     void RsExpExportDir();
     void UnloadDbf();
     void LoadDbf();

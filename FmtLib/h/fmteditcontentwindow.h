@@ -19,6 +19,7 @@ private slots:
     void OnDoubleClicked(const QModelIndex &index);
     void OnFilter();
     void OnImport();
+    void OnSelectColumns();
 
 private:
     void SetupColWidth();
@@ -28,6 +29,9 @@ private:
 
     QToolBar *pToolBar;
     QAction *pAddRecord, *pRemoveRecord, *pRefrash, *pFilter, *pImportAction;
+    QAction *pSelectColumns;
+
+    QList<FmtField*> pFldList;
 };
 
 #endif // FMTEDITCONTENTWINDOW_H

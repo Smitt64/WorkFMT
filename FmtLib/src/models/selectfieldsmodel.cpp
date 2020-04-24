@@ -88,3 +88,8 @@ QList<FmtField*> SelectFieldsModel::checkedFields()
 {
     return m_pChecked;
 }
+
+void SelectFieldsModel::checkFields(const QList<FmtField*> &list)
+{
+    m_pChecked = list;
+}

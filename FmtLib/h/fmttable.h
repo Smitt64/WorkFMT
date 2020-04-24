@@ -141,6 +141,7 @@ public:
     void setIsRecord(const bool &v);
 
     void copyTo(QSharedPointer<FmtTable> cTable);
+    void copyToAsTmp(QSharedPointer<FmtTable> cTable);
 
 signals:
     void idChanged(FmtRecId);
@@ -198,6 +199,8 @@ public slots:
     FmtFildsModel *fieldsModel() { return pFieldsModel; }
     FmtIndecesModel *indecesModel() { return pIndecesModel; }
     QStringList uniqueIndeces() const;
+
+    const QList<FmtField*> &getFieldsList() const;
 
 private slots:
     /// @private

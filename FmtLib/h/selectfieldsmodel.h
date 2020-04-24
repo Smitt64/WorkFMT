@@ -19,6 +19,7 @@ public:
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
     QList<FmtField*> checkedFields();
+    void checkFields(const QList<FmtField*> &list);
 
 public slots:
     void setFilterFieldName(const QString &name);

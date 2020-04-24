@@ -88,5 +88,6 @@
         <file>img/icon128.png</file>
         <file>img/PrimaryKeyHS.png</file>
         <file>img/confluence.png</file>
+        <file>img/LayoutSelectColumn.png</file>
     </qresource>
 </RCC>

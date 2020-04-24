@@ -101,6 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionEditGroups, SIGNAL(triggered(bool)), SLOT(EditGroups()));
     connect(ui->actionCopyTable, SIGNAL(triggered(bool)), SLOT(CopyTable()));
     connect(ui->actionCopyTableAs, SIGNAL(triggered(bool)), SLOT(CopyTableTo()));
+    connect(ui->actionCopyTableTmp, SIGNAL(triggered(bool)), SLOT(CopyTableToTmp()));
     connect(ui->actionRsexpDir, SIGNAL(triggered(bool)), SLOT(RsExpExportDir()));
     connect(ui->actionUnloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadDbf()));
     connect(ui->actionLoadDbf, SIGNAL(triggered(bool)), SLOT(LoadDbf()));
@@ -714,6 +715,7 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.addSeparator();
     menu.addAction(ui->actionCopyTable);
     menu.addAction(ui->actionCopyTableAs);
+    menu.addAction(ui->actionCopyTableTmp);
     menu.addSeparator();
     menu.addAction(actionExport);
 
@@ -760,6 +762,9 @@ void MainWindow::CreateWindowFunctional()
     ui->windowToolBar->addWidget(pWindowsComboBox);
     ui->windowToolBar->addAction(ui->actionPrevWnd);
     ui->windowToolBar->addAction(ui->actionNextWnd);
+    ui->windowToolBar->addSeparator();
+    ui->windowToolBar->addAction(ui->actionCloseWnd);
+    ui->windowToolBar->addAction(ui->actionCloseAllWnd);
 
     connect(ui->actionNextWnd, SIGNAL(triggered(bool)), pMdi, SLOT(activateNextSubWindow()));
     connect(ui->actionPrevWnd, SIGNAL(triggered(bool)), pMdi, SLOT(activatePreviousSubWindow()));
@@ -896,6 +901,28 @@ void MainWindow::CopyTableTo()
                     CreateDocument(cTable)->show();
                 }
             }
+        }
+    }
+}
+
+void MainWindow::CopyTableToTmp()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            QSharedPointer<FmtTable> cTable(new FmtTable(current));
+            table->copyToAsTmp(cTable);
+            CreateDocument(cTable)->show();
         }
     }
 }

@@ -5,6 +5,9 @@
 #include "fmtfield.h"
 #include "import/importwizard.h"
 #include "connectioninfo.h"
+#include "selectfiltereddlg.h"
+#include "selectfieldsmodel.h"
+#include "fmtfildsmodel.h"
 
 FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *parent) :
     QMainWindow(parent)
@@ -25,7 +28,12 @@ FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *par
     pRefrash = pToolBar->addAction(QIcon(":/img/RepeatHS.png"), tr("Обновить записи"));
     pToolBar->addSeparator();
     pImportAction = pToolBar->addAction(QIcon(":/img/ImportContent.png"), tr("Загрузить данные"));
+    pSelectColumns = pToolBar->addAction(QIcon(":/img/LayoutSelectColumn.png"), tr("Выбор колонок"));
+
     pTable = table;
+    pFldList = pTable->getFieldsList();
+
+    pImportAction->setVisible(false);
 
     try
     {
@@ -36,6 +44,7 @@ FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *par
         connect(pFilter, SIGNAL(triggered(bool)), SLOT(OnFilter()));
         connect(pImportAction, SIGNAL(triggered(bool)), SLOT(OnImport()));
         connect(pTableView, SIGNAL(doubleClicked(QModelIndex)), SLOT(OnDoubleClicked(QModelIndex)));
+        connect(pSelectColumns, SIGNAL(triggered(bool)), SLOT(OnSelectColumns()));
 
         if (table->connection()->type() == ConnectionInfo::CON_ORA)
         {
@@ -167,4 +176,41 @@ void FmtEditContentWindow::OnImport()
 {
     ImportWizard dlg(pTable);
     dlg.exec();
+}
+
+void FmtEditContentWindow::OnSelectColumns()
+{
+    SelectFieldsModel selFldModel(pTable.data(), this);
+    SelectFilteredDlg dlg(this);
+    dlg.setWindowTitle("Выбор колонок для отображения");
+    dlg.setFilteredModel(&selFldModel);
+    dlg.setHidenColumns(QList<int>()
+                        << FmtFildsModel::fld_Size
+                        << FmtFildsModel::fld_DbName
+                        << FmtFildsModel::fld_Custom
+                        << FmtFildsModel::fld_Offset
+                        << FmtFildsModel::fld_Outlen
+                        << FmtFildsModel::fld_Decpoint
+                        << FmtFildsModel::fld_Hidden
+                        << FmtFildsModel::fld_Id
+                        << FmtFildsModel::fld_FmtId
+                        << FmtFildsModel::fld_TypeIndex);
+    dlg.setColumnWidth(FmtFildsModel::fld_Name, 150);
+    selFldModel.checkFields(pFldList);
+    connect(&dlg, SIGNAL(textChanged(QString)), &selFldModel, SLOT(setFilterFieldName(QString)));
+
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        const QList<FmtField*> &tableFlds = pTable->getFieldsList();
+        pFldList = selFldModel.checkedFields();
+
+        for (FmtField* fld : tableFlds)
+        {
+            if (pFldList.contains(fld))
+                pTableView->showColumn(fld->index());
+            else
+                pTableView->hideColumn(fld->index());
+        }
+
+    }
 }
