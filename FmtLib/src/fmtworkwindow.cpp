@@ -628,31 +628,7 @@ void FmtWorkWindow::TabCloseRequested(int index)
 
 int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList)
 {
-    int stat = 0;
-
-    SelectFieldsModel selFldModel(pTable.data(), this);
-    SelectFilteredDlg dlg(this);
-    dlg.setWindowTitle(title);
-    dlg.setFilteredModel(&selFldModel);
-    dlg.setHidenColumns(QList<int>()
-                        << FmtFildsModel::fld_Size
-                        << FmtFildsModel::fld_DbName
-                        << FmtFildsModel::fld_Custom
-                        << FmtFildsModel::fld_Offset
-                        << FmtFildsModel::fld_Outlen
-                        << FmtFildsModel::fld_Decpoint
-                        << FmtFildsModel::fld_Hidden
-                        << FmtFildsModel::fld_Id
-                        << FmtFildsModel::fld_FmtId
-                        << FmtFildsModel::fld_TypeIndex);
-    dlg.setColumnWidth(FmtFildsModel::fld_Name, 150);
-    connect(&dlg, SIGNAL(textChanged(QString)), &selFldModel, SLOT(setFilterFieldName(QString)));
-    stat = dlg.exec();
-
-    if (pFldList && stat == QDialog::Accepted)
-        *pFldList = selFldModel.checkedFields();
-
-    return stat;
+    return SelectTableFieldsDlg(pTable, title, pFldList, this);
 }
 
 void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab)

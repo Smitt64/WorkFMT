@@ -34,3 +34,8 @@ void SelectFilteredDlg::setColumnWidth(const int &col, const int &w)
 {
     ui->treeView->setColumnWidth(col, w);
 }
+
+QDialogButtonBox *SelectFilteredDlg::dialogButtonBox()
+{
+    return ui->buttonBox;
+}

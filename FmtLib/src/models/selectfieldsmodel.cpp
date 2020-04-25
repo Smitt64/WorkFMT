@@ -2,6 +2,7 @@
 #include "fmttable.h"
 #include "fmtfield.h"
 #include "fmtfildsmodel.h"
+#include <QDebug>
 
 SelectFieldsModel::SelectFieldsModel(FmtTable *table, QObject *parent) :
     QSortFilterProxyModel(parent)
@@ -71,6 +72,20 @@ bool SelectFieldsModel::setData(const QModelIndex &index, const QVariant &value,
         return true;
     }
     return QSortFilterProxyModel::setData(index, value, role);
+}
+
+void SelectFieldsModel::selectAll()
+{
+    //int size = sourceModel()->rowCount();
+    m_pChecked.clear();
+    m_pChecked = pTable->getFieldsList();
+    emit dataChanged(index(0, 0), index(rowCount(), 0));
+}
+
+void SelectFieldsModel::deselectAll()
+{
+    m_pChecked.clear();
+    emit dataChanged(index(0, 0), index(rowCount(), 0));
 }
 
 QModelIndex	SelectFieldsModel::parent(const QModelIndex &child) const

@@ -276,7 +276,7 @@ void FmtImpExpWrp::importFile(const QString &file)
     }
 }
 
-void FmtImpExpWrp::exportTable(const QString &dir)
+void FmtImpExpWrp::exportTable(const QString &dir, bool waitForFinished, bool waitForStarted)
 {
     if (dir.isEmpty())
         return;
@@ -297,7 +297,7 @@ void FmtImpExpWrp::exportTable(const QString &dir)
         m_Protocol = dir + "/protocol.out";
         pFmtXml->setWorkingDirectory(m_TempDir.path());
         qCInfo(logCore()) << "FmtXml export table started: " << programName() << arg;
-        CoreStartProcess(pFmtXml, programName(), arg, false);
+        CoreStartProcess(pFmtXml, programName(), arg, waitForFinished, waitForStarted);
     }
 }
 

@@ -8,6 +8,7 @@ class SelectFilteredDlg;
 }
 
 class QSortFilterProxyModel;
+class QDialogButtonBox;
 class SelectFilteredDlg : public QDialog
 {
     Q_OBJECT
@@ -19,6 +20,8 @@ public:
     void setFilteredModel(QSortFilterProxyModel *model);
     void setHidenColumns(const QList<int> &lst);
     void setColumnWidth(const int &col, const int &w);
+
+    QDialogButtonBox *dialogButtonBox();
 
 signals:
     void textChanged(QString);

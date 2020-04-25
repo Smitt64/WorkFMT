@@ -43,7 +43,7 @@ public slots:
 
     int importDir(const QString &impdir);
     void importFile(const QString &file);
-    void exportTable(const QString &dir);
+    void exportTable(const QString &dir, bool waitForFinished = false, bool waitForStarted = false);
 
 private slots:
     void processError(QProcess::ProcessError error);

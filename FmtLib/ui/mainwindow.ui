@@ -405,6 +405,11 @@
     <string>Сonfluence</string>
    </property>
   </action>
+  <action name="actionCopyTableTmp">
+   <property name="text">
+    <string>Копировать таблицу как временную</string>
+   </property>
+  </action>
   <action name="actionQuery">
    <property name="text">
     <string>Создать запрос</string>

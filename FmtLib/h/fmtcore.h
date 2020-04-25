@@ -220,4 +220,6 @@ FMTLIBSHARED_EXPORT bool CheckConnectionType(ConnectionInfo *pInfo, const int &T
 
 FMTLIBSHARED_EXPORT int ShowCodeDialog(QWidget *parent, const QString &title, const int &type, const QString &code);
 
+FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR);
+
 #endif // FMTCORE_H

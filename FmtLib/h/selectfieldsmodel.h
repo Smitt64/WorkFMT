@@ -2,6 +2,7 @@
 #define SELECTFIELDSMODEL_H
 
 #include <QSortFilterProxyModel>
+#include <QDialogButtonBox>
 
 class FmtTable;
 class FmtField;
@@ -23,6 +24,8 @@ public:
 
 public slots:
     void setFilterFieldName(const QString &name);
+    void selectAll();
+    void deselectAll();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;

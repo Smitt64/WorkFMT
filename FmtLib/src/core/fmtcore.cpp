@@ -10,6 +10,9 @@
 #include "loggingcategories.h"
 #include "fmtdbftoolwrp.h"
 #include "selectfolderdlg.h"
+#include "selectfiltereddlg.h"
+#include "selectfieldsmodel.h"
+#include "fmtfildsmodel.h"
 #include <Windows.h>
 #include <QtCore>
 #include <QSqlError>
@@ -22,6 +25,7 @@
 #include <QGridLayout>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QPushButton>
 
 static QStringList FmtTypesList = QStringList()
         << "INT"
@@ -1114,4 +1118,41 @@ void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidg
         else
             QMessageBox::critical(parent, QObject::tr("Ошибка"), QObject::tr("Файл <b>%1</b> не найден в выбранном каталоге.").arg(file));
     }
+}
+
+int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
+{
+    int stat = 0;
+
+    SelectFieldsModel selFldModel(pTable.data(), parent);
+    SelectFilteredDlg dlg(parent);
+    dlg.setWindowTitle(title);
+    dlg.setFilteredModel(&selFldModel);
+    dlg.setHidenColumns(QList<int>()
+                        << FmtFildsModel::fld_Size
+                        << FmtFildsModel::fld_DbName
+                        << FmtFildsModel::fld_Custom
+                        << FmtFildsModel::fld_Offset
+                        << FmtFildsModel::fld_Outlen
+                        << FmtFildsModel::fld_Decpoint
+                        << FmtFildsModel::fld_Hidden
+                        << FmtFildsModel::fld_Id
+                        << FmtFildsModel::fld_FmtId
+                        << FmtFildsModel::fld_TypeIndex);
+    dlg.setColumnWidth(FmtFildsModel::fld_Name, 150);
+
+    QPushButton *allSelect = dlg.dialogButtonBox()->addButton(QObject::tr("Выбрать всё"), QDialogButtonBox::ActionRole);
+    QPushButton *allDeSelect = dlg.dialogButtonBox()->addButton(QObject::tr("Снять всё"), QDialogButtonBox::ActionRole);
+
+    selFldModel.checkFields(*pFldList);
+    QObject::connect(&dlg, SIGNAL(textChanged(QString)), &selFldModel, SLOT(setFilterFieldName(QString)));
+    QObject::connect(allSelect, SIGNAL(clicked(bool)), &selFldModel, SLOT(selectAll()));
+    QObject::connect(allDeSelect, SIGNAL(clicked(bool)), &selFldModel, SLOT(deselectAll()));
+
+    stat = dlg.exec();
+
+    if (pFldList && stat == QDialog::Accepted)
+        *pFldList = selFldModel.checkedFields();
+
+    return stat;
 }

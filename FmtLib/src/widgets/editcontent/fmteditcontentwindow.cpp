@@ -8,6 +8,7 @@
 #include "selectfiltereddlg.h"
 #include "selectfieldsmodel.h"
 #include "fmtfildsmodel.h"
+#include "fmtcore.h"
 
 FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *parent) :
     QMainWindow(parent)
@@ -180,7 +181,7 @@ void FmtEditContentWindow::OnImport()
 
 void FmtEditContentWindow::OnSelectColumns()
 {
-    SelectFieldsModel selFldModel(pTable.data(), this);
+    /*SelectFieldsModel selFldModel(pTable.data(), this);
     SelectFilteredDlg dlg(this);
     dlg.setWindowTitle("Выбор колонок для отображения");
     dlg.setFilteredModel(&selFldModel);
@@ -197,12 +198,11 @@ void FmtEditContentWindow::OnSelectColumns()
                         << FmtFildsModel::fld_TypeIndex);
     dlg.setColumnWidth(FmtFildsModel::fld_Name, 150);
     selFldModel.checkFields(pFldList);
-    connect(&dlg, SIGNAL(textChanged(QString)), &selFldModel, SLOT(setFilterFieldName(QString)));
-
-    if (dlg.exec() == QDialog::Accepted)
+    connect(&dlg, SIGNAL(textChanged(QString)), &selFldModel, SLOT(setFilterFieldName(QString)));*/
+    int stat = SelectTableFieldsDlg(pTable, tr("Выбор колонок для отображения"), &pFldList, this);
+    if (stat == QDialog::Accepted)
     {
         const QList<FmtField*> &tableFlds = pTable->getFieldsList();
-        pFldList = selFldModel.checkedFields();
 
         for (FmtField* fld : tableFlds)
         {
@@ -211,6 +211,5 @@ void FmtEditContentWindow::OnSelectColumns()
             else
                 pTableView->hideColumn(fld->index());
         }
-
     }
 }
