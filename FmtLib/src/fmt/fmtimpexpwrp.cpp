@@ -9,6 +9,7 @@
 #include <QProgressDialog>
 #include <QTextStream>
 #include <QRegExpValidator>
+#include <QEventLoop>
 
 FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) :
     QObject(parent)
@@ -20,6 +21,7 @@ FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) :
     m_pPrm = app->settings();
 
     connect(pFmtXml, SIGNAL(finished(int)), SIGNAL(finished(int)));
+    connect(pFmtXml, SIGNAL(started()), SIGNAL(started()));
     connect(pFmtXml, SIGNAL(error(QProcess::ProcessError)), SLOT(processError(QProcess::ProcessError)));
     connect(pFmtXml, SIGNAL(readyReadStandardOutput()), SLOT(processReadyReadStandardOutput()));
 }
@@ -276,12 +278,8 @@ void FmtImpExpWrp::importFile(const QString &file)
     }
 }
 
-void FmtImpExpWrp::exportTable(const QString &dir, bool waitForFinished, bool waitForStarted)
+void FmtImpExpWrp::getArgs(const QString &dir, QStringList &arg)
 {
-    if (dir.isEmpty())
-        return;
-
-    QStringList arg;
     arg << QString("-cp:%1").arg(codePage())
         << QString("-cs:%1").arg(connectionString())
         << "/d";
@@ -291,6 +289,15 @@ void FmtImpExpWrp::exportTable(const QString &dir, bool waitForFinished, bool wa
 
     arg << dir
         << m_Tables;
+}
+
+void FmtImpExpWrp::exportTable(const QString &dir, bool waitForFinished, bool waitForStarted)
+{
+    if (dir.isEmpty())
+        return;
+
+    QStringList arg;
+    getArgs(dir, arg);
 
     if (m_TempDir.isValid())
     {
@@ -300,6 +307,33 @@ void FmtImpExpWrp::exportTable(const QString &dir, bool waitForFinished, bool wa
         CoreStartProcess(pFmtXml, programName(), arg, waitForFinished, waitForStarted);
     }
 }
+
+/*void FmtImpExpWrp::exportTableEventLoop(const QString &dir)
+{
+    if(dir.isEmpty())
+        return;
+
+    QStringList arg;
+    getArgs(dir, arg);
+
+    if (m_TempDir.isValid())
+    {
+        m_Protocol = dir + "/protocol.out";
+        pFmtXml->setWorkingDirectory(m_TempDir.path());
+        qCInfo(logCore()) << "FmtXml export table started: " << programName() << arg;
+
+        QObject::connect(pFmtXml, &QProcess::stateChanged, [&pFmtXml](QProcess::ProcessState newState)
+        {
+            qCInfo(logCore()) << QString("Process state changed to: %1 (%2)")
+                                 .arg(newState).arg(ProcessStateText(newState));
+        });
+        QObject::connect(pFmtXml, &QProcess::errorOccurred, [](QProcess::ProcessError error)
+        {
+            qCInfo(logCore()) << QString("Process error occurred: %1 (%2)")
+                                 .arg(error).arg(GetProcessErrorText(error));
+        });
+    }
+}*/
 
 int FmtImpExpWrp::tablesCount()
 {

@@ -17,6 +17,7 @@ public:
 
 signals:
     void finished(int exitCode = 0);
+    void started();
     void error();
 
 public slots:
@@ -44,12 +45,14 @@ public slots:
     int importDir(const QString &impdir);
     void importFile(const QString &file);
     void exportTable(const QString &dir, bool waitForFinished = false, bool waitForStarted = false);
+    //void exportTableEventLoop(const QString &dir);
 
 private slots:
     void processError(QProcess::ProcessError error);
     void processReadyReadStandardOutput();
 
 private:
+    void getArgs(const QString &dir, QStringList &arg);
     QSettings *m_pPrm;
     QString FileContent(const QString &filename) const;
     QTemporaryDir m_TempDir;

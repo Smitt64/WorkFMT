@@ -29,7 +29,7 @@
      <x>0</x>
      <y>0</y>
      <width>1164</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -413,6 +413,11 @@
   <action name="actionQuery">
    <property name="text">
     <string>Создать запрос</string>
+   </property>
+  </action>
+  <action name="actionCopyTableTmp">
+   <property name="text">
+    <string>Копировать таблицу как временную</string>
    </property>
   </action>
  </widget>

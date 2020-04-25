@@ -150,6 +150,7 @@ void FmtErrors::appendError(const QString &text, const qint16 &type, const QDate
 
     m_errors.append(err);
     endInsertRows();
+    emit newError(text);
 
     if (type == fmtet_Error)
     {
@@ -183,6 +184,7 @@ void FmtErrors::appendMessage(const QString &text, const QDateTime &dateTime)
     beginInsertRows(QModelIndex(), m_errors.size(), m_errors.size());
     m_errors.append(err);
     endInsertRows();
+    emit newMessage(text);
     emit infoCountChanged(m_infoCount);
 }
 

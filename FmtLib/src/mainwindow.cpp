@@ -1261,10 +1261,10 @@ void MainWindow::OnConfluence()
     QDesktopServices::openUrl(QUrl("http://confluence/pages/viewpage.action?pageId=397967369"));
 }
 
-void MainWindow::OnCreateQuery()
+/*void MainWindow::OnCreateQuery()
 {
     QueryEditor *editor = new QueryEditor();
     QMdiSubWindow *wnd = CreateMdiWindow(editor, currentConnection());
 
     wnd->show();
-}
+}*/

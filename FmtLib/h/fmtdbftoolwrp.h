@@ -10,7 +10,7 @@ class FmtDbfToolWrp : public QObject
 {
     Q_OBJECT
 public:
-    explicit FmtDbfToolWrp(ConnectionInfo *info, QObject *parent = 0);
+    explicit FmtDbfToolWrp(ConnectionInfo *info, QObject *parent = nullptr);
     virtual ~FmtDbfToolWrp();
 
     FmtErrors *fmterrors();
@@ -19,6 +19,7 @@ public:
 signals:
     void started();
     void startError();
+    void finished(int exitCode = 0);
 
 public slots:
     void unload(const QString &ExportDir, const QString &dbt);

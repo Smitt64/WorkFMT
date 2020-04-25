@@ -16,6 +16,7 @@ FmtDbfToolWrp::FmtDbfToolWrp(ConnectionInfo *info, QObject *parent) :
     proc->setProgram(d.absoluteFilePath("DBFileTool.exe"));
     connect(proc.data(), SIGNAL(readyReadStandardError()), SLOT(readyReadStandardError()));
     connect(proc.data(), SIGNAL(readyReadStandardOutput()), SLOT(readyReadStandardOutput()));
+    connect(proc.data(), SIGNAL(finished(int)), SIGNAL(finished(int)));
 }
 
 FmtDbfToolWrp::~FmtDbfToolWrp()

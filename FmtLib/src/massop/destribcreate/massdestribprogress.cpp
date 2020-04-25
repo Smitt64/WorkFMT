@@ -16,6 +16,7 @@
 #include <QTextStream>
 #include <QThreadPool>
 #include <QThread>
+#include <QEventLoop>
 
 MassDestribProgressRun::MassDestribProgressRun(MassDestribCreate *Interface, QObject *parent) :
     QObject(parent),
@@ -106,11 +107,13 @@ void MassDestribProgressRun::run()
             QString table = pModel->data(pModel->index(i, MassDestribParamModel::fld_Name), Qt::DisplayRole).toString();
             emit message(QString("Начата обработка: %1").arg(table));
             QString tableUpper = table.toUpper();
+            QString tableName = element->table->name();
 
             if (element->UnloadCreateTables) {
                 FmtGenTablesSql gen;
                 QString code = QString::fromLocal8Bit(gen.makeContent(element->table));
-                emit message(QString("Выгрузка CreateTables"));
+                QString UnloadCreateTablesTitle = QString("Выгрузка CreateTables для %1").arg(tableName);
+                emit message(UnloadCreateTablesTitle);
                 writefile(m_CreateTables, QString("%1.sql").arg(tableUpper), code);
                 code = FmtGenUpdateCreateTableScript(element->table);
                 emit message(QString("Выгрузка скрипта создания таблицы"));
@@ -118,25 +121,34 @@ void MassDestribProgressRun::run()
             }
 
             if (element->UnloadFmt) {
-                emit message(QString("Выгрузка fmt"));
+                emit message(QString("Выгрузка fmt xml для %1").arg(tableName));
+
+                QEventLoop loop;
                 QScopedPointer<FmtImpExpWrp> imp(new FmtImpExpWrp(element->table->connection()));
+                connect(imp.data(), &FmtImpExpWrp::finished, &loop, &QEventLoop::quit);
+
                 imp->setDsn(m_dsn);
                 imp->addTable(table);
                 imp->exportTable(m_FmtDir.path());
+                loop.exec();
                 imp->parseProtocol(tmp.data());
             }
 
             if (element->UnloadDat) {
-                emit message(QString("Выгрузка *.dat"));
+                emit message(QString("Выгрузка таблицы %1 в *.dat").arg(tableName));
                 tmp->clear();
 
+                QEventLoop loop;
                 QScopedPointer<FmtDbfToolWrp> wrp(new FmtDbfToolWrp(element->table->connection()));
                 connect(wrp.data()->fmterrors(), &FmtErrors::newError, this, &MassDestribProgressRun::error);
                 connect(wrp.data()->fmterrors(), &FmtErrors::newMessage, this, &MassDestribProgressRun::message);
+                connect(wrp.data(), &FmtDbfToolWrp::finished, &loop, &QEventLoop::quit);
+
                 wrp->disconnect(wrp.data()->fmterrors(), &FmtErrors::newError, Q_NULLPTR, Q_NULLPTR);
                 wrp->disconnect(wrp.data()->fmterrors(), &FmtErrors::newMessage, Q_NULLPTR, Q_NULLPTR);
                 wrp->setDsn(m_dsn);
                 wrp->unload(m_DatDir.path(), table);
+                loop.exec();
                 //dlg.setErrors(tmp.da);
             }
 
