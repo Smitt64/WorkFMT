@@ -308,33 +308,6 @@ void FmtImpExpWrp::exportTable(const QString &dir, bool waitForFinished, bool wa
     }
 }
 
-/*void FmtImpExpWrp::exportTableEventLoop(const QString &dir)
-{
-    if(dir.isEmpty())
-        return;
-
-    QStringList arg;
-    getArgs(dir, arg);
-
-    if (m_TempDir.isValid())
-    {
-        m_Protocol = dir + "/protocol.out";
-        pFmtXml->setWorkingDirectory(m_TempDir.path());
-        qCInfo(logCore()) << "FmtXml export table started: " << programName() << arg;
-
-        QObject::connect(pFmtXml, &QProcess::stateChanged, [&pFmtXml](QProcess::ProcessState newState)
-        {
-            qCInfo(logCore()) << QString("Process state changed to: %1 (%2)")
-                                 .arg(newState).arg(ProcessStateText(newState));
-        });
-        QObject::connect(pFmtXml, &QProcess::errorOccurred, [](QProcess::ProcessError error)
-        {
-            qCInfo(logCore()) << QString("Process error occurred: %1 (%2)")
-                                 .arg(error).arg(GetProcessErrorText(error));
-        });
-    }
-}*/
-
 int FmtImpExpWrp::tablesCount()
 {
     return m_Tables.count();

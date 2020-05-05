@@ -30,8 +30,8 @@ QWidget *MassDestribItemParamDelegate::createEditor(QWidget *parent, const QStyl
             return pAction;
         }
         else if (index.column() == MassDestribParamModel::fld_UnloadFmt ||
-                 index.column() == MassDestribParamModel::fld_UnloadCreateTables ||
-                 index.column() == MassDestribParamModel::fld_UnloadDat)
+                 index.column() == MassDestribParamModel::fld_UnloadCreateTables /*||
+                 index.column() == MassDestribParamModel::fld_UnloadDat*/)
         {
             QCheckBox *check = new QCheckBox(tr("Да"), parent);
             return check;

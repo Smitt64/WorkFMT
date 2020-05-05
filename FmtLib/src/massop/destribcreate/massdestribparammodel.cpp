@@ -109,11 +109,11 @@ QVariant MassDestribParamModel::data(const QModelIndex &index, int role) const
             if (!pointer)
                 return CheckSymbolFromVariant(m_Tables[index.row()]->UnloadCreateTables);
         }
-        else if (index.column() == fld_UnloadDat)
+        /*else if (index.column() == fld_UnloadDat)
         {
             if (!pointer)
                 return CheckSymbolFromVariant(m_Tables[index.row()]->UnloadDat);
-        }
+        }*/
     }
     else if (role == Qt::BackgroundRole)
     {
@@ -151,11 +151,11 @@ QVariant MassDestribParamModel::data(const QModelIndex &index, int role) const
             if (!pointer)
                 return m_Tables[index.row()]->UnloadCreateTables;
         }
-        else if (index.column() == fld_UnloadDat)
+        /*else if (index.column() == fld_UnloadDat)
         {
             if (!pointer)
                 return m_Tables[index.row()]->UnloadDat;
-        }
+        }*/
     }
     return QVariant();
 }
@@ -201,11 +201,11 @@ bool MassDestribParamModel::setData(const QModelIndex &index, const QVariant &va
             m_Tables[index.row()]->UnloadCreateTables = value.toBool();
             return true;
         }
-        else if (index.column() == fld_UnloadDat)
+        /*else if (index.column() == fld_UnloadDat)
         {
             m_Tables[index.row()]->UnloadDat = value.toBool();
             return true;
-        }
+        }*/
     }
     return false;
 }
@@ -224,8 +224,8 @@ QVariant MassDestribParamModel::headerData(int section, Qt::Orientation orientat
                 return tr("Выгрузить Fmt в xml");
             else if (section == fld_UnloadCreateTables)
                 return tr("Выгрузить CreateTables");
-            else if (section == fld_UnloadDat)
-                return tr("Выгрузить *.dat");
+            /*else if (section == fld_UnloadDat)
+                return tr("Выгрузить *.dat");*/
         }
     }
     return QAbstractItemModel::headerData(section, orientation, role);

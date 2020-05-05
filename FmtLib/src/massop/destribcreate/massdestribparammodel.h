@@ -43,7 +43,7 @@ public:
         fld_Action,
         fld_UnloadFmt,
         fld_UnloadCreateTables,
-        fld_UnloadDat,
+        //fld_UnloadDat,
 
         fld_Count
     };

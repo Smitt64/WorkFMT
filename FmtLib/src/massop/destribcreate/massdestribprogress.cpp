@@ -93,6 +93,8 @@ void MassDestribProgressRun::run()
     QDir m_UpdateScript = getDir(m_Dir, "Update");
     QDir m_FmtDir = getDir(m_Dir, "fmt");
     QDir m_DatDir = getDir(m_Dir, "dbfile");
+    QStringList updScript;
+
     MassDestribParamModel *pModel = pInterface->model();
     try {
         QScopedPointer<FmtErrors> tmp(new FmtErrors());
@@ -104,7 +106,8 @@ void MassDestribProgressRun::run()
         {
             tmp->clear();
             const MassDestribParamModelElement *element = pModel->getTableParam(i);
-            QString table = pModel->data(pModel->index(i, MassDestribParamModel::fld_Name), Qt::DisplayRole).toString();
+            QModelIndex index = pModel->index(i, MassDestribParamModel::fld_Name);
+            QString table = pModel->data(index, Qt::DisplayRole).toString();
             emit message(QString("Начата обработка: %1").arg(table));
             QString tableUpper = table.toUpper();
             QString tableName = element->table->name();
@@ -152,8 +155,54 @@ void MassDestribProgressRun::run()
                 //dlg.setErrors(tmp.da);
             }
 
-            //if (element->)
+            QList<FmtField*> addFldList;
+            QList<FmtField*> updFldList;
+            QList<FmtField*> remFldList;
+
+            for (int j = 0; j < pModel->rowCount(index); j++)
+            {
+                qint16 action = pModel->data(pModel->index(j, MassDestribParamModel::fld_Action, index), Qt::EditRole).value<qint16>();
+
+                switch(action)
+                {
+                case MassDestribParamModel::ActionFldAdd:
+                    addFldList.append(element->table->field(j));
+                    break;
+                case MassDestribParamModel::ActionFldEdit:
+                    updFldList.append(element->table->field(j));
+                    break;
+                case MassDestribParamModel::ActionFldRemove:
+                    remFldList.append(element->table->field(j));
+                    break;
+                }
+            }
+
+            if (!addFldList.isEmpty())
+                updScript.append(FmtGenUpdateAddColumnScript(addFldList));
+
+            if (!updFldList.isEmpty())
+                updScript.append(FmtGenModifyColumnScript(updFldList));
+
+            if (!remFldList.isEmpty())
+                updScript.append(FmtGenUpdateDeleteColumnScript(remFldList));
+
             emit progress(i + 1);
+        }
+
+        if (!updScript.isEmpty())
+        {
+            QString updtFileName = m_UpdateScript.absoluteFilePath("updt.sql");
+            emit message(QString("Создание скрипта обновления таблиц: %1").arg(updtFileName));
+            QFile updtFile(updtFileName);
+
+            if (updtFile.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
+                QTextStream stream(&updtFile);
+                stream.setCodec("IBM 866");
+                for (const QString &sql : updScript)
+                    stream << sql << endl;
+                updtFile.close();
+            }
         }
     } catch (...) {
         emit error(tr("Exception handled"));
