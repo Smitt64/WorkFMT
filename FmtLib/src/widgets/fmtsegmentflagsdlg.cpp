@@ -29,7 +29,9 @@ FmtSegmentFlagsDlg::FmtSegmentFlagsDlg(FmtSegment *Segment, QWidget *parent) :
         connect(check, SIGNAL(stateChanged(int)), SLOT(UpdateFlagValue()));
     }
 
+#if QT_VERSION >= 0x050900
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
+#endif
 
     CheckBySegment();
 
