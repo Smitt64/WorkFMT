@@ -97,6 +97,15 @@ bool ConnectionInfo::openSqlite(const QString &filename)
     return hr;
 }
 
+bool ConnectionInfo::openSqlteMemory()
+{
+    m_SchemeName = ":memory:";
+    _db = QSqlDatabase::addDatabase("QSQLITE", m_Alias);
+    _db.setDatabaseName(m_SchemeName);
+    bool hr = _db.open();
+    return hr;
+}
+
 FmtTablesModel *ConnectionInfo::addModel()
 {
     FmtTablesModel *model = new FmtTablesModel(this);

@@ -1,0 +1,189 @@
+/*******************************************************************************
+ FILE         :   NASTR.HSS
+
+ COPYRIGHT    :   R-Style Software Lab, 2002
+
+ DESCRIPTION  :   Literal string declaration for NALG library
+
+ PROGRAMMED BY:   Alexey Lebedev
+
+ CREATION DATE:   01 Mar 2002
+
+ VERSION INFO :   $Archive: $
+                  $Revision: $
+                  $Date: $
+                  $Author: $
+                  $Modtime: $
+*******************************************************************************/
+
+#ifndef __NASTR_HSS
+#define __NASTR_HSS
+
+#include <platform.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const char RSL_FAR _APPSTART_STR_1[];
+extern const char RSL_FAR _APPSTART_STR_2[];
+extern const char RSL_FAR _APPSTART_STR_3[];
+extern const char RSL_FAR _APPSTART_STR_4[];
+extern const char RSL_FAR _APPSTART_STR_5[];
+
+extern const char RSL_FAR _APPSTART_STR_9904[];
+extern const char RSL_FAR _APPSTART_STR_9905[];
+extern const char RSL_FAR _APPSTART_STR_9906[];
+
+extern const char RSL_FAR _APPSTART_STR_NSDM_1[];
+extern const char RSL_FAR _APPSTART_STR_NSDM_2[];
+extern const char RSL_FAR _APPSTART_STR_NSDM_H[];
+extern const char RSL_FAR _APPSTART_STR_NSDM_S[];
+
+extern const char RSL_FAR _BFITEM_STR_0[];
+extern const char RSL_FAR _BFITEM_STR_1[];
+
+extern const char RSL_FAR _BS_PR_STR_1[];
+extern const char RSL_FAR _BS_PR_STR_2[];
+extern const char RSL_FAR _BS_PR_STR_3[];
+extern const char RSL_FAR _BS_PR_STR_4[];
+extern const char RSL_FAR _BS_PR_STR_5[];
+extern const char RSL_FAR _BS_PR_STR_6[];
+extern const char RSL_FAR _BS_PR_STR_7[];
+extern const char RSL_FAR _BS_PR_STR_8[];
+extern const char RSL_FAR _BS_PR_STR_9[];
+extern const char RSL_FAR _BS_PR_STR_10[];
+extern const char RSL_FAR _BS_PR_STR_11[];
+extern const char RSL_FAR _BS_PR_STR_12[];
+
+extern const char RSL_FAR _CL_RV_STR_0[];
+
+extern const char RSL_FAR * const _CL_CNT_STR_MONTHS[];
+extern const char RSL_FAR _CL_CNT_STR_13[];
+extern const char RSL_FAR _CL_CNT_STR_14[];
+extern const char RSL_FAR _CL_CNT_STR_15[];
+
+extern const char RSL_FAR _INOPER_STR_0[];
+extern const char RSL_FAR _INOPER_STR_1[];
+extern const char RSL_FAR _INOPER_STR_2[];
+extern const char RSL_FAR _INOPER_STR_3[];
+extern const char RSL_FAR _INOPER_STR_4[];
+extern const char RSL_FAR _INOPER_STR_5[];
+
+extern const char RSL_FAR _NAITEM_STR_0[];
+extern const char RSL_FAR _NAITEM_STR_1[];
+extern const char RSL_FAR _NAITEM_STR_2[];
+extern const char RSL_FAR _NAITEM_STR_3[];
+
+extern const char RSL_FAR _LISTFILE_STR_0[];
+
+extern const char RSL_FAR _L_ITEM_STR_0[];
+
+extern const char RSL_FAR _L_OPER_STR_0[];
+
+extern const char RSL_FAR _L_MENUOP_STR_0[];
+
+extern const char RSL_FAR _MENUFILE_STR_0[];
+extern const char RSL_FAR _MENUFILE_STR_1[];
+extern const char RSL_FAR _MENUFILE_STR_2[];
+
+extern const char RSL_FAR _MENUTYPE_STR_0[];
+extern const char RSL_FAR _MENUTYPE_STR_1[];
+extern const char RSL_FAR _MENUTYPE_STR_2[];
+extern const char RSL_FAR _MENUTYPE_STR_3[];
+extern const char RSL_FAR _MENUTYPE_STR_4[];
+extern const char RSL_FAR _MENUTYPE_STR_5[];
+extern const char RSL_FAR _MENUTYPE_STR_6[];
+
+extern const char RSL_FAR _NAMEALG_STR_0[];
+
+extern const char RSL_FAR _OPERMAN_STR_0[];
+extern const char RSL_FAR _OPERMAN_STR_1[];
+extern const char RSL_FAR _OPERMAN_STR_2[];
+
+extern const char RSL_FAR _PLAYPROC_STR_0[];
+extern const char RSL_FAR _PLAYPROC_STR_1[];
+extern const char RSL_FAR _PLAYPROC_STR_2[];
+
+extern const char RSL_FAR _PROFILE_STR_0[];
+extern const char RSL_FAR _PROFILE_STR_1[];
+extern const char RSL_FAR _PROFILE_STR_2[];
+extern const char RSL_FAR _PROFILE_STR_3[];
+extern const char RSL_FAR _PROFILE_STR_4[];
+
+extern const char RSL_FAR _S_PR_STR_1[];
+
+extern const char RSL_FAR _TYPEAC_STR_0[];
+
+extern const char RSL_FAR _VIEW_REP_STR_0[];
+extern const char RSL_FAR _VIEW_REP_STR_1[];
+
+extern const char RSL_FAR _CHKOPLOG_STR_BERR[];
+extern const char RSL_FAR _CHKOPLOG_STR_FAILED[];
+extern const char RSL_FAR _CHKOPLOG_STR_STATUS[];
+
+extern const char RSL_FAR _FLTROPLOG_CHR_ADMIN;
+extern const char RSL_FAR _FLTROPLOG_CHR_RADIO;
+extern const char RSL_FAR _FLTROPLOG_STR_FILTR_NOTSUPPORT[];
+extern const char RSL_FAR _FLTROPLOG_STR_ENTRY_NOTFOUND[];
+extern const char RSL_FAR _FLTROPLOG_STR_FNAME_MESSAGE[];
+extern const char RSL_FAR _FLTROPLOG_STR_FNAME_NOTFOUND[];
+extern const char RSL_FAR _FLTROPLOG_STR_FMT_BEFORE[];
+extern const char RSL_FAR _FLTROPLOG_STR_FMT_AFTER[];
+extern const char RSL_FAR _FLTROPLOG_STR_FMT_EQUAL[];
+extern const char RSL_FAR _FLTROPLOG_STR_FMT_NOTEQUAL[];
+extern const char RSL_FAR _FLTROPLOG_STR_FMT_LESS[];
+extern const char RSL_FAR _FLTROPLOG_STR_FMT_GREAT[];
+extern const char RSL_FAR _FLTROPLOG_APPLY_XML[] ;
+extern const char RSL_FAR *_FLTROPLOG_STR_APPLY1[];
+extern const char RSL_FAR *_FLTROPLOG_STR_APPLY2[];
+extern const char RSL_FAR *_FLTROPLOG_STR_BUTTON[];
+extern const char RSL_FAR _FLTROPLOG_STR_LIST_TABLE[];
+
+extern const char RSL_FAR _NAOPLOG_STR_OP2[];
+extern const char RSL_FAR _NAOPLOG_STR_OP3[];
+extern const char RSL_FAR _NAOPLOG_STR_OP4[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1000[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1001[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1002[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1003[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1004[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1005[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1006[];
+extern const char RSL_FAR _NAOPLOG_STR_OP1007[];
+
+extern const char RSL_FAR _VIEWENTRY_STR_MESG1[];
+
+extern const char RSL_FAR _INPDLG_STR_STATUS[];
+extern const char RSL_FAR _INPDLG_STR_STATUS2[];
+extern const char RSL_FAR _INPDLG_STR_MESSAGE[];
+extern const char RSL_FAR _INPDLG_STR_FROM[];
+extern const char RSL_FAR _INPDLG_STR_TO[];
+
+extern const char RSL_FAR _FINDDLG_STR_TITLE[];
+extern const char RSL_FAR _FINDDLG_STR_TITLE2[];
+extern const char RSL_FAR _FINDDLG_STR_STATUS[];
+extern const char RSL_FAR _FINDDLG_STR_STATUS2[];
+extern const char RSL_FAR _FINDDLG_STR_MESSAGE[];
+
+extern const char RSL_FAR _FILTRDLG_STR_TITLE[];
+extern const char RSL_FAR _FILTRDLG_STR_STATUS[];
+extern const char RSL_FAR _FILTRDLG_STR_STATUS2[];
+extern const char RSL_FAR _FILTRDLG_STR_MESSAGE[];
+
+extern const char RSL_FAR _FILTRDLG_INPUTTABLE_STATUS[];
+
+extern const char RSL_FAR _LISTDLG_STR_TITLE[];
+extern const char RSL_FAR _LISTDLG_STR_STATUS[];
+
+extern const char RSL_FAR _VIEWOPLOG_STR_SORTTITLE[];
+extern const char RSL_FAR _VIEWOPLOG_STR_NOTFOUND[];
+extern const char RSL_FAR _VIEWOPLOG_STR_NOERROR[];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // NASTR.HSS
+
+/* <-- EOF --> */

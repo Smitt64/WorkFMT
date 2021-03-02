@@ -39,11 +39,13 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     hOldFilter = Q_NULLPTR;
     pDbgHelp = Q_NULLPTR;
 #endif
+    QDir current(QDir::current());
     QApplication::setApplicationName("WorkFMT");
     QApplication::setApplicationVersion(GetVersionNumberString());
     pSettings = new QSettings("fmtopt.ini", QSettings::IniFormat, this);
     addLibraryPath(QFileInfo(QCoreApplication::applicationFilePath()).path());
-    addLibraryPath(QDir::current().path());
+    addLibraryPath(current.absolutePath());
+    addLibraryPath(current.absoluteFilePath("platforms"));
     qRegisterMetaType<RecentList>("RecentList");
 
     //qDebug() << QStyleFactory::keys();

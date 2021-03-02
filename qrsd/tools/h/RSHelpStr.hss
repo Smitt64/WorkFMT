@@ -1,0 +1,32 @@
+// -------------------------------------------------------------------------------------------------
+// 2013-11-18
+
+#ifndef _RSHELPSTR_HSS_
+#define _RSHELPSTR_HSS_
+
+
+// -----------------------------------------------------------------------------
+extern const char  *_RSH_STR_SelectRecordType[];
+
+// -----------------------------------------------------------------------------
+extern const char  *_RSH_STR_SelectSourceType_Code[];
+extern const char  *_RSH_STR_SelectSourceType_Name[];
+
+// -----------------------------------------------------------------------------
+extern const char  *_RSH_STR_SelectResType_Code[];
+extern const char  *_RSH_STR_SelectResType_Name[];
+
+extern char  *_RSH_Status_Lister_SS;
+// -----------------------------------------------------------------------------
+extern const char  *_RSH_STR_ERR_LbrNoOpen;
+extern const char  *_RSH_STR_ERR_LbrReadError;
+extern const char  *_RSH_STR_ERR_ReadMenuError;
+
+// -----------------------------------------------------------------------------
+int GetRecordTypeSize(void);
+int GetSourceTypeSize(void);
+int GetResTypeSize(void);
+
+#endif // _RSHELPSTR_HSS_
+
+/* <-- EOF --> */

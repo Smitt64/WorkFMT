@@ -1,0 +1,409 @@
+/*******************************************************************************
+ FILE         :   APPTL.HSS
+
+ COPYRIGHT    :   R-Style Software Lab, 1998
+
+ DESCRIPTION  :   Literal string declaration for APPTL library
+
+ PROGRAMMED BY:   Alexey Lebedev
+
+ CREATION DATE:   11 Sep 1998
+
+ VERSION INFO :   $Archive: $
+                  $Revision: $
+                  $Date: $
+                  $Author: $
+                  $Modtime: $
+*******************************************************************************/
+
+#ifndef __APPTL_HSS
+#define __APPTL_HSS
+
+#include <platform.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const char RSL_FAR _APPTL_STR_LCLDATA_NMON[];
+
+enum
+   {
+    _APPTL_STR_LCLDATA_NMON_M = 0,
+    _APPTL_STR_LCLDATA_NMON_K,
+    _APPTL_STR_LCLDATA_NMON_P
+   };
+
+extern const char RSL_FAR _BTMES_STR_0[];
+extern const char RSL_FAR _BTMES_STR_1[];
+extern const char RSL_FAR _BTMES_STR_2[];
+extern const char RSL_FAR _BTMES_STR_0_A[];
+extern const char RSL_FAR _BTMES_STR_1_A[];
+extern const char RSL_FAR _BTMES_STR_2_A[];
+                          
+extern const char RSL_FAR _BTMES_KEYBUFF[];
+extern const char RSL_FAR _BTMES_KEYBUFF_A[];
+
+extern const char RSL_FAR _RSLRES_STR_0[];
+extern const char RSL_FAR _RSLRES_STR_1[];
+extern const char RSL_FAR _RSLRES_STR_0_A[];
+extern const char RSL_FAR _RSLRES_STR_1_A[];
+
+extern const char RSL_FAR _BFOPLOG_STR_NAMEFIELDS[];
+extern const char RSL_FAR _BFOPLOG_STR_TEXTFIELDS[];
+extern const char RSL_FAR _BFOPLOG_STR_OP2[];
+extern const char RSL_FAR _BFOPLOG_STR_OP3[];
+extern const char RSL_FAR _BFOPLOG_STR_OP4[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1000[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1001[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1002[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1003[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1004[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1005[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1006[];
+extern const char RSL_FAR _BFOPLOG_STR_OP1007[];
+extern const char RSL_FAR _BFOPLOG_STR_RETRY[];
+
+
+extern const char RSL_FAR _BFOPLOGX_STR_FLDNAMES3[];
+extern const char RSL_FAR _BFOPLOGX_STR_SORTNAMES3[];
+extern const char RSL_FAR _BFOPLOGX_STR_FLDCOMMENTS3[];
+extern const char RSL_FAR _BFOPLOGX_STR_SORTNAMES2[];
+extern const char RSL_FAR _BFOPLOGX_STR_GETRECORD[];
+extern const char RSL_FAR _BFOPLOGX_STR_PUTRECORD[];
+extern const char RSL_FAR _BFOPLOGX_STR_PUTRECFMT[];
+extern const char RSL_FAR _BFOPLOGX_STR_FINDRECORD[];
+extern const char RSL_FAR _BFOPLOGX_STR_FINDSTATUS[];
+extern const char RSL_FAR _BFOPLOGX_STR_RETRY[];
+extern const char RSL_FAR _BFOPLOGX_STR_BATCHINSERT[];
+
+extern const char RSL_FAR _CNVDB_STR_ERR[];
+
+extern const char RSL_FAR _CONAPP_STR_TRACE1[];
+extern const char RSL_FAR _CONAPP_STR_TRACE1a[];
+extern const char RSL_FAR _CONAPP_STR_TRACE2[];
+extern const char RSL_FAR _CONAPP_STR_TRACE3[];
+extern const char RSL_FAR _CONAPP_STR_TRACE4[];
+extern const char RSL_FAR _CONAPP_STR_TRACE5[];
+extern const char RSL_FAR _CONAPP_STR_TRACE5a[];
+
+extern const char RSL_FAR _CONAPP_STR_NOTIFY1[];
+extern const char RSL_FAR _CONAPP_STR_NOTIFY2[];
+
+extern const char RSL_FAR _CONAPP_STR_BADSYSTEM[];
+extern const char RSL_FAR _CONAPP_STR_BADVERSION[];
+
+extern const char RSL_FAR * const _DAYS_STR_MONTHS[];
+extern const char RSL_FAR * const _DAYS_STR_QUARTER[];
+extern const char RSL_FAR * const _DAYS_STR_DAYRANGE[];
+extern const char RSL_FAR _DAYS_STR_STATUS[];
+
+extern const char RSL_FAR * const _DOSFILE_STR_WARN[];
+extern const char RSL_FAR _DOSFILE_STR_REQ[];
+
+extern const char RSL_FAR _ESCSEQ_STR_STATUS[];
+extern const char RSL_FAR _ESCSEQ_STR_W2[];
+extern const char RSL_FAR _ESCSEQ_STR_W3[];
+extern const char RSL_FAR _ESCSEQ_STR_W4[];
+
+extern const char RSL_FAR _EXTEDIT_STR_SYNC[];
+extern const char RSL_FAR * const _EXTEDIT_STR_ERRTEXT[];
+
+extern const char RSL_FAR _FILEMSG_STR_0[];
+extern const char RSL_FAR _FILEMSG_STR_1[];
+extern const char RSL_FAR _FILEMSG_STR_2[];
+extern const char RSL_FAR _FILEMSG_STR_4[];
+extern const char RSL_FAR * const _FILEMSG_STR_5[];
+extern const char RSL_FAR _FILEMSG_STR_6[];
+
+extern const char RSL_FAR _IMPTXT_STR_0[];
+extern const char RSL_FAR _IMPTXT_STR_1[];
+
+extern const char RSL_FAR _MENUMODE_STR_0[];
+extern const char RSL_FAR _MENUMODE_STR_1[];
+
+extern const char RSL_FAR _RSEDIT_STR_0[];
+extern const char RSL_FAR _RSEDIT_STR_1[];
+extern const char RSL_FAR _RSEDIT_STR_2[];
+extern const char RSL_FAR _RSEDIT_STR_3[];
+
+extern const char RSL_FAR * const _RSFILEX_STR_ERRTEXT[];
+
+extern const char RSL_FAR _RSLMENU_STR_STATUS[];
+extern const char RSL_FAR _RSLMENU_STR_HEADER[];
+
+extern const char RSL_FAR _SHOWREG_STR_0[];
+
+extern const char RSL_FAR _SOPERLOG_STR_BAR[];
+
+extern const char RSL_FAR _SOPERLOG_STR_10[];
+extern const char RSL_FAR _SOPERLOG_STR_11[];
+extern const char RSL_FAR _SOPERLOG_STR_12[];
+extern const char RSL_FAR _SOPERLOG_STR_13[];
+extern const char RSL_FAR _SOPERLOG_STR_14[];
+extern const char RSL_FAR _SOPERLOG_STR_15[];
+extern const char RSL_FAR _SOPERLOG_STR_16[];
+
+extern const char RSL_FAR _SOPERLOG_ST_1[];
+extern const char RSL_FAR _SOPERLOG_TEXT_1[];
+extern const char RSL_FAR _SOPERLOG_STR_17[];
+extern const char RSL_FAR _SOPERLOG_STR_18[];
+extern const char RSL_FAR _SOPERLOG_STR_19[];
+extern const char RSL_FAR _SOPERLOG_STR_20[];
+
+extern const char RSL_FAR _SYNCFILE_STR_TOTERM[];
+extern const char RSL_FAR _SYNCFILE_STR_TOSERV[];
+extern const char RSL_FAR _SYNCFILE_STR_BATCH[];
+
+extern const char RSL_FAR _EDIT_STR_MSTATUS[];
+
+extern const char RSL_FAR _EDIT_STR_MENU1[];
+extern const char RSL_FAR _EDIT_STR_MENU2[];
+extern const char RSL_FAR _EDIT_STR_MENU3[];
+extern const char RSL_FAR _EDIT_STR_MENU4[];
+extern const char RSL_FAR _EDIT_STR_MENU5_ASCII[];
+extern const char RSL_FAR _EDIT_STR_MENU5_[];
+extern const char RSL_FAR _EDIT_STR_MENU6[];
+extern const char RSL_FAR _EDIT_STR_MENU7[];
+extern const char RSL_FAR _EDIT_RSDESIGNER[];
+extern const char RSL_FAR _EDIT_RSDESIGNER_RES[];
+extern const char RSL_FAR _EDIT_STR_MENU8[];
+extern const char RSL_FAR _EDIT_STR_MENU9[];
+extern const char RSL_FAR _EDIT_STR_MENU10[];
+extern const char RSL_FAR _EDIT_STR_MENU11[];
+extern const char RSL_FAR _EDIT_STR_MENU12[];
+extern const char RSL_FAR _EDIT_STR_MENU13[];
+extern const char RSL_FAR _EDIT_STR_MENU14[];
+extern const char RSL_FAR _EDIT_STR_MENU15[];
+extern const char RSL_FAR _EDIT_STR_MENU16[];
+extern const char RSL_FAR _EDIT_STR_MENU17[];
+extern const char RSL_FAR _EDIT_STR_MENU18[];
+extern const char RSL_FAR _EDIT_STR_MENU19[];
+extern const char RSL_FAR _EDIT_STR_MENU20[];
+extern const char RSL_FAR _EDIT_STR_MENU21[];
+extern const char RSL_FAR _EDIT_STR_MENU22[];
+extern const char RSL_FAR _EDIT_STR_RSLHLP[];
+extern const char RSL_FAR _EDIT_STR_BKM[];
+extern const char RSL_FAR _EDIT_STR_HIDETAG[];
+extern const char RSL_FAR _EDIT_STR_UNDO[];
+extern const char RSL_FAR _EDIT_STR_EXITEDIT[];
+extern const char RSL_FAR _EDIT_STR_CODEP[];
+
+extern const char RSL_FAR _EDIT_STR_MENU_EE[];
+extern const char RSL_FAR _EDIT_SS_MENU_EE[];
+
+extern const char RSL_FAR _EDIT_SS_MENU16[];
+                                                 
+extern const char RSL_FAR _EDIT_STR_ADDBKM[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM0[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM1[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM2[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM3[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM4[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM5[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM6[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM7[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM8[];
+extern const char RSL_FAR _EDIT_STR_ADDBKM9[];
+
+extern const char RSL_FAR _EDIT_STR_MENU23[];
+extern const char RSL_FAR _EDIT_STR_RUNNODEBUG[];
+extern const char RSL_FAR _EDIT_STR_MENU24[];
+extern const char RSL_FAR _EDIT_STR_MENU25[];
+extern const char RSL_FAR _EDIT_STR_MENU26[];
+extern const char RSL_FAR _EDIT_STR_MENU27[];
+extern const char RSL_FAR _EDIT_STR_MENU28[];
+extern const char RSL_FAR _EDIT_STR_MENU29[];
+extern const char RSL_FAR _EDIT_STR_MENU30[];
+extern const char RSL_FAR _EDIT_STR_MENU31[];
+extern const char RSL_FAR _EDIT_STR_MENU32[];
+extern const char RSL_FAR _EDIT_STR_MENU33[];
+extern const char RSL_FAR _EDIT_STR_ERRSHOW[];
+extern const char RSL_FAR _EDIT_ALTPRINT[];
+extern const char RSL_FAR _EDIT_STR_MENU34[];
+extern const char RSL_FAR _EDIT_STR_MENU35[];
+
+extern const char RSL_FAR _E_SIGN_MAKE[];
+extern const char RSL_FAR _E_SIGN_CHECK[];
+
+extern const char RSL_FAR _EDIT_STR_W1[];
+extern const char RSL_FAR _EDIT_STR_W2[];
+extern const char RSL_FAR _EDIT_STR_W3[];
+extern const char RSL_FAR _EDIT_STR_W4[];
+extern const char RSL_FAR _EDIT_STR_W5[];
+extern const char RSL_FAR _EDIT_VIEW_SYS_FILE[];
+
+extern const char RSL_FAR _EDIT_SS_NEWFILE[];
+extern const char RSL_FAR _EDIT_SS_MENU1[];
+extern const char RSL_FAR _EDIT_SS_MENU2[];
+extern const char RSL_FAR _EDIT_SS_MENU3[];
+extern const char RSL_FAR _EDIT_SS_SENDFILE[];
+extern const char RSL_FAR _EDIT_SS_MENU4[];
+extern const char RSL_FAR _EDIT_SS_MENU5_[];
+extern const char RSL_FAR _EDIT_SS_MENU6[];
+extern const char RSL_FAR _EDIT_SS_CODEP[];
+extern const char RSL_FAR _EDIT_SS_EDITFILE[];
+extern const char RSL_FAR _EDIT_SS_FORMINS[];
+extern const char RSL_FAR _EDIT_SS_HIDETAG[];
+extern const char RSL_FAR _EDIT_SS_RSDESIGNER[];
+extern const char RSL_FAR _EDIT_SS_MENU7[];
+extern const char RSL_FAR _E_SS_SIGN_MAKE[];
+extern const char RSL_FAR _E_SS_SIGN_CHECK[];
+
+extern const char RSL_FAR _EDIT_SS_UNDO[];
+extern const char RSL_FAR _EDIT_SS_MENU8[];
+extern const char RSL_FAR _EDIT_SS_MENU9[];
+extern const char RSL_FAR _EDIT_SS_MENU10[];
+extern const char RSL_FAR _EDIT_SS_MENU11[];
+extern const char RSL_FAR _EDIT_SS_MENU12[];
+extern const char RSL_FAR _EDIT_SS_MENU13[];
+extern const char RSL_FAR _EDIT_SS_MENU14[];
+extern const char RSL_FAR _EDIT_SS_MENU15[];
+extern const char RSL_FAR _EDIT_SS_SAVEPOS[];
+extern const char RSL_FAR _EDIT_SS_RESTPOS[];
+
+extern const char RSL_FAR _EDIT_SS_MENU20[];
+extern const char RSL_FAR _EDIT_SS_MENU21[];
+extern const char RSL_FAR _EDIT_SS_ALTPRINT[];
+
+extern const char RSL_FAR _EDIT_SS_MENU22[];
+extern const char RSL_FAR _EDIT_SS_RSLHLP[];
+                           
+extern const char RSL_FAR _EDIT_SS_MACRO_RUN[];
+extern const char RSL_FAR _EDIT_SS_MACRO_DEBUG[];
+                           
+extern const char RSL_FAR _EDIT_SRCEDIT_ERR1[];
+
+extern const char RSL_FAR _DBTFILE_STR_W1[];
+extern const char RSL_FAR _DBTFILE_STR_W2[];
+
+extern const char RSL_FAR _HISTLIST_STR_PSTATUS[];
+extern const char RSL_FAR _HISTLIST_STR_PHEAD[];
+
+extern const char RSL_FAR _PLAYREP_STR_0[];
+extern const char RSL_FAR _PLAYREP_STR_USERBREAK[];
+extern const char RSL_FAR _PLAYREP_STR_1[];
+extern const char RSL_FAR _PLAYREP_STR_2[];
+extern const char RSL_FAR _PLAYREP_STR_3[];
+extern const char RSL_FAR _PLAYREP_STR_4[];
+extern const char RSL_FAR _PLAYREP_STR_5[];
+extern const char RSL_FAR _PLAYREP_STR_6[];
+extern const char RSL_FAR _PLAYREP_STR_7[];
+extern const char RSL_FAR _PLAYREP_STR_8[];
+
+extern const char RSL_FAR _PLAYREP_STR_DBG_0[];
+extern const char RSL_FAR _PLAYREP_STR_DBG_1[];
+
+extern const char RSL_FAR RSL_BTRMACFILE[];
+
+
+extern const char RSL_FAR _REGIST_STR_0[];
+extern const char RSL_FAR _REGIST_STR_1[];
+extern const char RSL_FAR _REGIST_STR_2[];
+extern const char RSL_FAR _REGIST_STR_3[];
+extern const char RSL_FAR _REGIST_STR_4[];
+
+extern const char RSL_FAR _NOTGEN_PCODE[];
+extern const char RSL_FAR _NULLOUTPUT[];
+
+extern const char RSL_FAR _RSEXT_CALLPROC[];
+extern const char RSL_FAR _RSEXT_CALLFILE[];
+extern const char RSL_FAR _RSEXT_CALLRSEXT[];
+
+extern const char RSL_FAR _EDIT_TAGS_UPDATE[];
+extern const char RSL_FAR _EDIT_TAGS_UPDERR[];
+extern const char RSL_FAR _EDIT_NOTAG[];
+extern const char RSL_FAR _EDIT_NOTAGFILE[];
+extern const char RSL_FAR _EDIT_BEGINHIST[];  
+extern const char RSL_FAR _EDIT_ENDHIST[];
+extern const char RSL_FAR _EDIT_BKMDROP[];
+extern const char RSL_FAR _EDIT_NOBKM[];
+extern const char RSL_FAR _EDIT_NOFORM[];
+extern const char RSL_FAR _EDIT_FORMNAME[];
+extern const char RSL_FAR _EDIT_STR_FORMINS[];
+extern const char RSL_FAR _EDIT_STR_SAVEPOS[];
+extern const char RSL_FAR _EDIT_STR_RESTPOS[];
+extern const char RSL_FAR _EDIT_GOBKM[];
+extern const char RSL_FAR _EDIT_NOPOPSTACK[];
+extern const char RSL_FAR _EDIT_POPSTACK[];
+extern const char RSL_FAR _EDIT_TAGHEAD[];
+extern const char RSL_FAR _EDIT_BKMHEAD[];
+extern const char RSL_FAR _EDIT_STR_BKMLST[];
+extern const char RSL_FAR _EDIT_STR_TAGWORD[];
+extern const char RSL_FAR _EDIT_STR_NEWFILE[];
+extern const char RSL_FAR _EDIT_STR_EDITFILE[];
+extern const char RSL_FAR _EDIT_STR_SENDFILE[];
+
+extern const char RSL_FAR  _TREE_STR_0[];
+extern const char RSL_FAR *_TREE_STR_1[1];
+extern const char RSL_FAR  _TREE_STR_2[];
+extern const char RSL_FAR  _TREE_STR_3[];
+extern const char RSL_FAR  _TREE_STR_4[];
+extern const char RSL_FAR *_TREE_STR_btn[3];
+extern const char RSL_FAR  _TREE_STR_7[];
+extern const char RSL_FAR  _TREE_STR_8[];
+extern const char RSL_FAR  _TREE_STR_9[];
+extern const char RSL_FAR  _TREE_STR_10[];
+extern const char RSL_FAR  _TREE_STR_11[];
+extern const char RSL_FAR  _TREE_STR_12[];
+extern const char RSL_FAR *_TREE_STR_13[1];
+extern const char RSL_FAR  _TREE_STR_14[];
+extern const char RSL_FAR  _TREE_STR_15[];
+
+extern const char RSL_FAR * const _TREE_STR_CONFMSG[];
+
+extern const char RSL_FAR _TREE_STR_FILTR[];
+
+extern const char RSL_FAR _TREE_MENU_0[];
+extern const char RSL_FAR _TREE_MENU_1[];
+extern const char RSL_FAR _TREE_MENU_2[];
+extern const char RSL_FAR _TREE_MENU_3[];
+extern const char RSL_FAR _TREE_MENU_4[];
+extern const char RSL_FAR _TREE_MENU_5[];
+extern const char RSL_FAR _TREE_MENU_6[];
+extern const char RSL_FAR _TREE_MENU_7[];
+extern const char RSL_FAR _TREE_MENU_8[];
+extern const char RSL_FAR _TREE_MENU_9[];
+extern const char RSL_FAR _TREE_MENU_10[];
+extern const char RSL_FAR _TREE_MENU_11[];
+extern const char RSL_FAR _TREE_MENU_12[];
+
+extern const char RSL_FAR _TREE_HELP_0[];
+extern const char RSL_FAR _TREE_HELP_1[];
+extern const char RSL_FAR _TREE_HELP_2[];
+extern const char RSL_FAR _TREE_HELP_3[];
+extern const char RSL_FAR _TREE_HELP_4[];
+extern const char RSL_FAR _TREE_HELP_5[];
+extern const char RSL_FAR _TREE_HELP_6[];
+extern const char RSL_FAR _TREE_HELP_7[];
+extern const char RSL_FAR _TREE_HELP_8[];
+extern const char RSL_FAR _TREE_HELP_9[];
+extern const char RSL_FAR _TREE_HELP_10[];
+extern const char RSL_FAR _TREE_HELP_11[];
+extern const char RSL_FAR _TREE_HELP_12[];
+
+extern const char RSL_FAR _TREE_MENU_NAME[];
+extern const char RSL_FAR _TREE_MENU_HELP[];
+
+extern const char RSL_FAR _TREE_CONTEXT_MENU_0[];
+extern const char RSL_FAR _TREE_CONTEXT_MENU_1[];
+extern const char RSL_FAR _TREE_CONTEXT_MENU_2[];
+
+extern const char RSL_FAR _TREE_CONTEXT_HELP_0[];
+extern const char RSL_FAR _TREE_CONTEXT_HELP_1[];
+extern const char RSL_FAR _TREE_CONTEXT_HELP_2[];
+
+extern const char RSL_FAR _VCS_STR_SYNCERR[];
+extern const char RSL_FAR _VCS_STR_LOCKERR[];
+
+extern const char RSL_FAR _ALSETCAL_STR_12[];
+extern const char RSL_FAR _ALSETCAL_STR_13[];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // __APPTL_HSS
+
+/* <-- EOF --> */

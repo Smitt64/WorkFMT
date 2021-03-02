@@ -72,6 +72,7 @@ private slots:
     void OnTableChangeUpdtList();
     void OnMassOpAction();
     void OnConfluence();
+    void CreateFromXml();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);

@@ -1,0 +1,250 @@
+#ifndef __ICMP_HSS
+#define __ICMP_HSS
+/*******************************************************************************
+ FILE         :   ICMP.HSS
+
+ COPYRIGHT    :   R-Style Software Lab, 1998
+
+ DESCRIPTION  :   Literal string declaration for ICMP library
+
+ PROGRAMMED BY:   Alexey Lebedev
+
+ CREATION DATE:   04 Nov 1998
+
+ VERSION INFO :   $Archive: $
+                  $Revision: $
+                  $Date: $
+                  $Author: $
+                  $Modtime: $
+*******************************************************************************/
+
+#ifndef __PLATFORM_H
+#include <platform.h>
+#endif // PLATFORM.H
+
+#ifdef __cplusplus
+extern "C" {
+#endif                                                         
+
+extern const char RSL_FAR _IERROR_STR_ANSI_badelif[];
+extern const char RSL_FAR _IERROR_STR_OEM_badelif[];
+
+extern const char RSL_FAR _IERROR_STR_ANSI_nestclass[];
+extern const char RSL_FAR _IERROR_STR_OEM_nestclass[];
+
+extern const char RSL_FAR _RSVREP_NOTFOUND[];
+extern const char RSL_FAR _RSVREP_NOTFOUND_A[];
+         
+extern const char RSL_FAR _IBFILE_TRNPAR[];
+extern const char RSL_FAR _IBFILE_TRNPAR_A[];
+
+
+extern const char RSL_FAR _IBFILE_STR_0[];
+extern const char RSL_FAR _IBFILE_STR_1[];         
+extern const char RSL_FAR _IBFILE_STR_0_A[];
+extern const char RSL_FAR _IBFILE_STR_1_A[];
+
+extern const char RSL_FAR _IEXOPER_STR_0_ANSI[];
+extern const char RSL_FAR _IEXOPER_STR_0_OEM[];
+extern const char RSL_FAR _IEXOPER_STR_YEAR_ANSI[];
+extern const char RSL_FAR _IEXOPER_STR_YEAR_OEM[];
+
+extern const char RSL_FAR _ISTDMOD_STR_0[];
+extern const char RSL_FAR _ISTDMOD_STR_0_A[];
+
+extern const char RSL_FAR _OBTR_STR_0[];
+extern const char RSL_FAR _OBTR_STR_0_A[];
+                                          
+extern const char RSL_FAR *_ISTDMOD_MONNAME_ANSI[];
+extern const char RSL_FAR *_ISTDMOD_MONNAME_OEM[];
+extern const char RSL_FAR *_ISTDMOD_MONNAME_ANSI_G[];
+extern const char RSL_FAR *_ISTDMOD_MONNAME_OEM_G[];
+
+extern const char RSL_FAR _IERROR_STR_ANSI_mes2[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes3[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes4[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes5[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes6[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes7[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes8[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes9[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes10[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes10a[]; // IER_MISSBASENAME
+extern const char RSL_FAR _IERROR_STR_ANSI_mes10b[]; // IER_BADBASENAME
+extern const char RSL_FAR _IERROR_STR_ANSI_mes10c[]; // IER_MISSCLASSNAME
+
+extern const char RSL_FAR _IERROR_STR_ANSI_mes11[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes12[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes13[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes14[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes15[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes16[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes17[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes18[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes19[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes20[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes21[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes22[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes23[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes24[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes25[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes26[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes261[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes262[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes263[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes264[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes265[];
+
+extern const char RSL_FAR _IERROR_STR_ANSI_mes27[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes28[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes29[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes30[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes31[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes31a[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes31b[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes32[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes33[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes34[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes35[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes36[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes37[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes38[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes39[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes40[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes41[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes42[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes43[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes44[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes45[];
+extern const char RSL_FAR _IERROR_STR_ANSI_mes46[]; // IER_CREATEGENOBJECT
+extern const char RSL_FAR _IERROR_STR_ANSI_mes47[]; // IER_SETPROP
+extern const char RSL_FAR _IERROR_STR_ANSI_mes48[]; // IER_GETPROP
+extern const char RSL_FAR _IERROR_STR_ANSI_mes49[]; // IER_RUNMETHOD
+extern const char RSL_FAR _IERROR_STR_ANSI_mes50[]; // IER_OPENMODULE
+extern const char RSL_FAR _IERROR_STR_ANSI_mes51[]; // IER_METHODASSIGN
+
+extern const char RSL_FAR _IERROR_STR_ANSI_mes52[]; // IER_BAD_TYPE_NAME
+extern const char RSL_FAR _IERROR_STR_ANSI_mes53[]; // IER_FDECIMAL
+
+extern const char RSL_FAR _IERROR_STR_ANSI_mes54[]; // IER_PCODE_INIOPEN
+extern const char RSL_FAR _IERROR_STR_ANSI_mes55[]; // IER_PCODE_BADFILE
+extern const char RSL_FAR _IERROR_STR_ANSI_mes56[]; // IER_PCODE_BADSIGNATURE
+extern const char RSL_FAR _IERROR_STR_ANSI_mes57[]; // IER_PCODE_NOMEM
+extern const char RSL_FAR _IERROR_STR_ANSI_mes58[]; // IER_PCODE_BADINDEX
+extern const char RSL_FAR _IERROR_STR_ANSI_mes59[]; // IER_PCODE_BADREF
+extern const char RSL_FAR _IERROR_STR_ANSI_mes60[]; // IER_PCODE_NOTDBF
+extern const char RSL_FAR _IERROR_STR_ANSI_mes61[]; // IER_PCODE_NOTFILE
+extern const char RSL_FAR _IERROR_STR_ANSI_mes62[]; // IER_PCODE_NOTRECORD
+extern const char RSL_FAR _IERROR_STR_ANSI_cycle[]; 
+extern const char RSL_FAR _IERROR_STR_OEM_cycle[]; 
+
+extern const char RSL_FAR _IERROR_STR_OEM_toolong[];
+extern const char RSL_FAR _IERROR_STR_ANSI_toolong[];
+extern const char RSL_FAR _IERROR_STR_ANSI_tmpval[];
+extern const char RSL_FAR _IERROR_STR_ANSI_unplus[];
+extern const char RSL_FAR _IERROR_STR_ANSI_oob[];
+
+extern const char RSL_FAR _IERROR_STR_ANSI_TRNABORT[];
+extern const char RSL_FAR _IERROR_STR_OEM_TRNABORT[];
+
+
+extern const char RSL_FAR _PCODE_STR_ANSI_NOTACTUAL[];
+extern const char RSL_FAR _PCODE_STR_ANSI_DSBLGEN[];
+extern const char RSL_FAR _PCODE_STR_ANSI_ALLACTUAL[];
+extern const char RSL_FAR _PCODE_STR_ANSI_BEGINGEN[];
+extern const char RSL_FAR _PCODE_STR_ANSI_ERRGEN[];
+extern const char RSL_FAR _PCODE_STR_ANSI_ENDGEN[];
+
+extern const char RSL_FAR _IERROR_STR_OEM_mes2[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes3[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes4[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes5[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes6[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes7[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes8[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes9[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes10[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes10a[]; // IER_MISSBASENAME
+extern const char RSL_FAR _IERROR_STR_OEM_mes10b[]; // IER_BADBASENAME
+extern const char RSL_FAR _IERROR_STR_OEM_mes10c[]; // IER_MISSCLASSNAME
+
+extern const char RSL_FAR _IERROR_STR_OEM_mes11[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes12[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes13[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes14[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes15[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes16[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes17[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes18[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes19[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes20[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes21[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes22[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes23[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes24[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes25[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes26[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes261[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes262[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes263[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes264[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes265[];
+extern const char RSL_FAR _IERROR_STR_OEM_tmpval[];
+extern const char RSL_FAR _IERROR_STR_OEM_unplus[];
+extern const char RSL_FAR _IERROR_STR_OEM_oob[];
+
+extern const char RSL_FAR _IERROR_STR_OEM_mes27[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes28[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes29[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes30[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes31[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes31a[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes31b[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes32[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes33[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes34[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes35[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes36[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes37[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes38[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes39[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes40[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes41[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes42[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes43[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes44[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes45[];
+extern const char RSL_FAR _IERROR_STR_OEM_mes46[]; // IER_CREATEGENOBJECT
+extern const char RSL_FAR _IERROR_STR_OEM_mes47[]; // IER_SETPROP
+extern const char RSL_FAR _IERROR_STR_OEM_mes48[]; // IER_GETPROP
+extern const char RSL_FAR _IERROR_STR_OEM_mes49[]; // IER_RUNMETHOD
+extern const char RSL_FAR _IERROR_STR_OEM_mes50[]; // IER_OPENMODULE
+extern const char RSL_FAR _IERROR_STR_OEM_mes51[]; // IER_METHODASSIGN
+
+extern const char RSL_FAR _IERROR_STR_OEM_mes52[]; // IER_BAD_TYPE_NAME
+extern const char RSL_FAR _IERROR_STR_OEM_mes53[]; // IER_FDECIMAL
+
+extern const char RSL_FAR _IERROR_STR_OEM_mes54[]; // IER_PCODE_INIOPEN
+extern const char RSL_FAR _IERROR_STR_OEM_mes55[]; // IER_PCODE_BADFILE
+extern const char RSL_FAR _IERROR_STR_OEM_mes56[]; // IER_PCODE_BADSIGNATURE
+extern const char RSL_FAR _IERROR_STR_OEM_mes57[]; // IER_PCODE_NOMEM
+extern const char RSL_FAR _IERROR_STR_OEM_mes58[]; // IER_PCODE_BADINDEX
+extern const char RSL_FAR _IERROR_STR_OEM_mes59[]; // IER_PCODE_BADREF
+extern const char RSL_FAR _IERROR_STR_OEM_mes60[]; // IER_PCODE_NOTDBF
+extern const char RSL_FAR _IERROR_STR_OEM_mes61[]; // IER_PCODE_NOTFILE
+extern const char RSL_FAR _IERROR_STR_OEM_mes62[]; // IER_PCODE_NOTRECORD
+
+extern const char RSL_FAR _PCODE_STR_OEM_NOTACTUAL[];
+extern const char RSL_FAR _PCODE_STR_OEM_DSBLGEN[];
+extern const char RSL_FAR _PCODE_STR_OEM_ALLACTUAL[];
+extern const char RSL_FAR _PCODE_STR_OEM_BEGINGEN[];
+extern const char RSL_FAR _PCODE_STR_OEM_ERRGEN[];
+extern const char RSL_FAR _PCODE_STR_OEM_ENDGEN[];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // __ICMP_HSS
+
+/* <-- EOF --> */

@@ -7,16 +7,19 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     FmtLib \
+    HotfixCreator \
     WorkFMT \
     DBFileTool \
     FmtDbgHelp \
     FmtScript \
-    FmtScriptTest
+    FmtScriptTest \
+    qrsd
 
 WorkFMT.depends = FmtLib
 FmtScript.depends = FmtLib
 FmtScriptTest.depends = FmtLib FmtScript
 DBFileTool.depends = FmtLib
+HotfixCreator.depends = FmtLib
 
 RESOURCES += \
     FmtLib/ui/fmt.qrc

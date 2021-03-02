@@ -163,9 +163,11 @@ public slots:
     ConnectionInfo *connection();
     bool load(const FmtRecId &id);
     bool load(const QString &name);
+    bool loadFromXml(const QString &filename, const QString &tableName = QString());
 
     FmtField *addField(const QString &name, const FmtFldType &type);
     FmtField *addField(const QMap<quint16,QVariant> &data);
+
     FmtField *insertField(const FmtFldIndex &befor, const QString &name, const FmtFldType &type);
     FmtField *field(const FmtNumber5 &index);
     FmtFldIndex fieldNum(FmtField *fld);

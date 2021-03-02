@@ -1,0 +1,249 @@
+{print},        // -c
+{Message},      // -c
+{LocMsgBox},       // -c -e_MsgBox
+
+
+{GetParm},      // -c -d
+{PutParm},
+{GetNumParm},   // -c -d
+{ReturnVal},    // -c -d
+
+{AddSymGlobal},   // -c -d
+{FindSymbolProc}, // -c -d
+{SymGlobalSet},   // -c -d
+{SymGlobalGet},   // -c -d
+
+{AddStdProc},     // -c -d
+{RslError},       // -c
+
+
+{GetStdDataBase},
+{GetStdDataPath},
+
+
+{toupc},        // -c -d
+{stricmpR},        // -c -d
+{strnicmpR},        // -c -d
+{toDownc},        // -c -d
+{struprR},           // -c -d
+{strnuprR},           // -c -d
+{strlwrR},            // -c -d
+{strnlwrR},           // -c -d
+{MakeFirstPath},      // -c -d
+{FindIncFile},        // -c -d
+{RunPath},            // -c -d
+{BtTestExistFile},      // -c -d
+{RslSplitFile},       // -c -d
+{RslMergeFile},       // -c -d
+
+
+// Begin Data Base Interface
+{BtOpenDataBase},
+{BtOpenDataBaseEx},
+{BtCloseDataBase},
+{BtErrorDialog},
+{BtSetAltColProc},
+{BtSetBlobType},
+{BtCreateTable},
+{BtOpenTable},
+{BtCloseTable},
+{BtSetLockFlag},
+{BtSetNoCurChangeFlag},
+{BtGetVarlenInfo},
+{BtGetVarlenSize},
+{BtSetVarlenSize},
+{BtFetchNext},
+{BtFetchPrev},
+{BtUpdate},
+{BtInsert},
+{BtDelete},
+{BtReset},
+{BtGetEQ},
+{BtGetGE},
+{BtGetLE},
+{BtGetPos},
+{BtGetDirect},
+{BtUnlock},
+{BtGetLastError},
+{BtBindField},
+{BtUnbindField},
+{BtUnbindAll},
+{BtGetFieldID},
+{BtGetField},
+{BtPutField},
+{BtBeginTransaction},
+{BtEndTransaction},
+{BtAbortTransaction},
+{BtSetBlobBuffSize},
+{BtOpenBlob},
+{BtCloseBlob},
+{BtReadBlob},
+{BtWriteBlob},
+{BtPosBlob},
+{BtGetBlobSize},
+{BtTruncateBlob},
+{BtErrorText},
+{BtStopClient},
+
+// Add at June 26,1997
+{BtLoopTables},
+{BtGetGT},
+{BtGetLT},
+{BtChangeKeyPath},
+
+{AddObjectProviderMod},  // -c -d
+
+{ValueMake},   // -c -d
+{ValueClear},  // -c -d
+{ValueCopy},   // -c -d
+{ValueIseq},   // -c -d
+{ValueMove},   // -c -d
+{ValueSet},    // -c -d
+{PushValue},   // -c -d
+{PopValue},    // -c -d
+
+{PutParm2},
+{ReturnVal2},    // -c -d
+
+{LobjInitList},
+{LobjDoneList},
+{LobjRemove},     // -c -d
+{LobjForEach},    // -c -d
+{LobjForEachL},   // -c -d
+{LobjFirstThat},  // -c -d
+{LobjLastThat},   // -c -d
+{LobjNitems},     // -c -d
+{LobjInsert},     // -c -d
+{LobjPrevItem},   // -c -d
+{LobjNextItem},   // -c -d
+{LobjFirstItem},  // -c -d
+{LobjLastItem},   // -c -d
+{SobjInit},       // -c -d -e_LocSobjInit
+{SobjUnlink},     // -c -d
+
+{FindMacroEx},    // -c -d -e_FindMacro
+{SwitchToMethod}, // -c -d -e_SwitchToMacro
+{AddObjectProviderModEx},  // -c -d
+
+{UserNumber},
+{RunMacro},       // -c -d
+{BtClearRecordBuff},
+
+{fs_screenSize},
+{fs_saveStat},
+{fs_restStat},
+{fs_event},
+{fs_wrtnatr},      // -c -d
+{fs_setattr},      // -c -d
+{fs_curattr},      // -c -d
+{fs_wrtstr},       // -c -d
+{fs_wrtncell},     // -c -d
+{fs_gettext},      // -c -d
+{fs_puttext},      // -c -d
+{fs_movetext},     // -c -d
+{fs_clr},          // -c -d
+{fs_bar},          // -c -d
+{fs_box},          // -c -d
+{fs_setcurtype},   // -c -d
+{fs_setcurpoz},    // -c -d
+{fs_getcurpoz},    // -c -d
+{fs_version},      // -c -d
+{fs_padstr},       // -c -d
+{fs_wrtItemStr},   // -c -d
+{fs_wrtMarkStr},   // -c -d
+{fs_saveStat},     // -c -d
+{fs_restStat},     // -c -d
+{fs_statLine},     // -c -d
+{fs_getBuffSize},  // -c -d
+{fs_event},        // -c -d
+{fs_screenSize},   // -c -d
+{NWcallEx},        // -c -d
+
+{fs_getDeferBuff},     // -c -d
+{fs_queueMessage},     // -c -d
+{fs_getSendBuff},      // -c -d
+{fs_sendMessage},      // -c -d
+{fs_transactMessage},  // -c -d
+{copyToLow},           // -c -d
+{copyFromLow},         // -c -d
+{GetLowMem},           // -c -d
+{FreeLowMem},          // -c -d
+
+{RslReadConfig},           // -c -d -e_ReadIniFile
+{Run_prog},             // -c -d -e_RunProg
+{GetParmAttr},          // -c -d
+{LocRslDlmVersion},
+
+{LocRslTArrayID},
+{LocRslTArrayCreate},
+{LocRslTArrayPut},
+{LocRslTArrayGet},
+{LocRslTArraySize},
+{LocInstBuf},
+{LociNewMem},
+{LociNewMemNull},
+{LociDoneMem},
+{LocRslObjGetUniqID},
+{LocRslObjMemberFromID},
+{LocRslObjInvoke},
+{LocRslObjMemberFromName},
+
+{LocDoRaiseEvents},
+{LocRslGetInstance},
+{LocRslSetInstance},
+{LocRslLockInstance},
+{LocRslUnLockInstance},
+{LocRslInstGetNumModule},
+{LocRslSendMes},
+{LocRslTArrayCnvType},
+{LocRslGetInstSymbol},
+{LocRslCallInstSymbol},
+{LocRslIsTArray},
+{LocSetSymAttr},
+
+{LocRslAddUniClass},
+{LocCreateObjectOfClass},
+{LocUniObjectInit},
+{LocAddObjectProviderModEx2},
+{LocRslGetInnerObj},
+{LocGenObjCreateEx},
+{LocRslUniPropPtr},
+
+{LocCreateObjectOfClassEx},
+{LocRslFindUniClass},
+{LocRslGetUniClass},
+{LocRslUniCast},
+
+{LocBtSetCnvMode},
+{LocBtGetErrorInfo},
+{LocBtOpenDataBaseSimple},
+{LocBtGetStructure},
+{LocBtFreeStructure},
+{LocBtStrGetFieldName},
+{LocBtStrGetComment},
+
+{LocImportModule},             
+
+{Locfs_addDispTable},
+{Locfs_remDispTable},
+{Locfs_makeEvent},
+
+{LocRslActiveXCreateEx},
+{LocRslObjGetIDispatch},
+{LocRslObjGetTGenObj},
+{LocRslGetActiveXDispatch},
+
+{LocCreateObjectOfRslClass},
+{LocRslAddObjVar},
+{LocRslAddVar},
+{LocRslSetClientData},
+{LocRslGetClientData},
+{LocSobjFirstItem},
+{LocSobjLastItem},
+{LocSobjNextItem},
+{LocSobjPrevItem},
+{LocImportModulePath},
+{LocGetInterpreterInterface},
+{GetRecordHandlerInfo},    // -c -d -e_LocGetRecordHandlerInfo
+{LocCreateRecordHandler},
+{Locfs_getAppIntf}                       // in DLM version 317

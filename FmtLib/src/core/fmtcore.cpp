@@ -26,6 +26,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QPushButton>
+#include "DataStructure.hpp"
 
 static QStringList FmtTypesList = QStringList()
         << "INT"
@@ -42,6 +43,23 @@ static QStringList FmtTypesList = QStringList()
         << "UCHR"
         << "NUMERIC";
 
+/*typedef struct tagFmtTypeInfoT : public
+        DataStructure
+        <
+        FmtFldType, // type;
+        quint16,    // size;
+        quint16,    // indexType;
+        QString,    // oraType;
+        QString,    // cppType;
+        QString,    // cppDbType;
+        QString,    // cppDbBaseType;
+        QString,    // rslType;
+        QString     // rslValueName;
+        >
+{
+
+}FmtTypeInfoT;*/
+
 typedef struct tagFmtTypeInfo
 {
     FmtFldType _type;
@@ -53,6 +71,7 @@ typedef struct tagFmtTypeInfo
     QString _cppDbBaseType;
     QString _rslType;
     QString _rslValueName;
+    QString _xmlTypeName;
 
     tagFmtTypeInfo
     (
@@ -64,7 +83,9 @@ typedef struct tagFmtTypeInfo
             const QString &cppDbType = QString(),
             const QString &cppDbBaseType = QString(),
             const QString &rslType = QString(),
-            const QString &rslValueName = QString())
+            const QString &rslValueName = QString(),
+            const QString &xmlTypeName = QString()
+            )
     {
        _type = type;
        _size = size;
@@ -75,6 +96,7 @@ typedef struct tagFmtTypeInfo
        _cppDbBaseType = cppDbBaseType;
        _rslType = rslType;
        _rslValueName = rslValueName;
+       _xmlTypeName = xmlTypeName;
     }
 }FmtTypeInfo;
 
@@ -90,8 +112,9 @@ static FmtTypesMapType FmtTypesMap;
 
 void FmtInit()
 {
+    //tagFmtTypeInfoT::
     //                                       type     size  oraType          indexType      cppType      cppDbType     cppDbBaseType     rslType
-    FmtTypesMap["INT"]     = tagFmtTypeInfo(fmtt_INT,    2, "NUMBER(5)",     fmtk_Einteger, "int16",     "db_int16",   "db_baseint16",   "V_INTEGER",    "intval");
+    /*FmtTypesMap["INT"]     = tagFmtTypeInfo(fmtt_INT,    2, "NUMBER(5)",     fmtk_Einteger, "int16",     "db_int16",   "db_baseint16",   "V_INTEGER",    "intval");
     FmtTypesMap["LONG"]    = tagFmtTypeInfo(fmtt_LONG,   4, "NUMBER(10)",    fmtk_Einteger, "int32",     "db_int32",   "db_baseint32",   "V_INTEGER",    "intval");
     FmtTypesMap["BIGINT"]  = tagFmtTypeInfo(fmtt_BIGINT, 8, "NUMBER(19)",    fmtk_Einteger, "int64_t",   "db_int64",   "db_baseint64",   "V_BIGINT",     "bigint");
     FmtTypesMap["FLOAT"]   = tagFmtTypeInfo(fmtt_FLOAT,  4, "FLOAT(24)",     fmtk_Efloat,   "float",     "db_float",   "db_basefloat",   "V_DOUBLE",     "doubvalL");
@@ -103,7 +126,25 @@ void FmtInit()
     FmtTypesMap["TIME"]    = tagFmtTypeInfo(fmtt_TIME,   4, "DATE",          fmtk_Etime,    "btime",     "btime",      "btime",          "V_TIME",       "time");
     FmtTypesMap["CHR"]     = tagFmtTypeInfo(fmtt_CHR,    1, "CHAR",          fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval");
     FmtTypesMap["UCHR"]    = tagFmtTypeInfo(fmtt_UCHR,   1, "RAW",           fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string");
-    FmtTypesMap["NUMERIC"] = tagFmtTypeInfo(fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_lmoney",  "db_lbasemoney",  "V_NUMERIC",    "decimal");
+    FmtTypesMap["NUMERIC"] = tagFmtTypeInfo(fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_lmoney",  "db_lbasemoney",  "V_NUMERIC",    "decimal");*/
+
+    FmtTypesMap =
+    {
+        //           type      size  oraType          indexType      cppType      cppDbType     cppDbBaseType     rslType     rslValueName
+        {"INT"    , {fmtt_INT,    2, "NUMBER(5)",     fmtk_Einteger, "int16",     "db_int16",   "db_baseint16",   "V_INTEGER",    "intval"  , "FT_INT16"} },
+        {"LONG"   , {fmtt_LONG,   4, "NUMBER(10)",    fmtk_Einteger, "int32",     "db_int32",   "db_baseint32",   "V_INTEGER",    "intval"  , "FT_INT32"} },
+        {"BIGINT" , {fmtt_BIGINT, 8, "NUMBER(19)",    fmtk_Einteger, "int64_t",   "db_int64",   "db_baseint64",   "V_BIGINT",     "bigint"  , "FT_INT64"} },
+        {"FLOAT"  , {fmtt_FLOAT,  4, "FLOAT(24)",     fmtk_Efloat,   "float",     "db_float",   "db_basefloat",   "V_DOUBLE",     "doubvalL", "FT_FLOAT"} },
+        {"DOUBLE" , {fmtt_DOUBLE, 8, "FLOAT(53)",     fmtk_Ebfloat,  "double",    "db_double",  "db_basedouble",  "V_DOUBLE",     "doubvalL", "FT_DOUBLE"} },
+        {"MONEY"  , {fmtt_MONEY,  8, "NUMBER(19,4)",  fmtk_Emoney,   "lmoney",    "db_lmoney",  "db_lbasemoney",  "V_MONEY_FDEC", "numVal"  , "FT_LDMON"} },
+        {"STRING" , {fmtt_STRING, 0, "VARCHAR2",      fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string"  , "FT_STRING"} },
+        {"SNR"    , {fmtt_SNR,    0, "VARCHAR2",      fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string"  , "FT_SNR"} },
+        {"DATE"   , {fmtt_DATE,   4, "DATE",          fmtk_Edate,    "bdate",     "bdate",      "bdate",          "V_DATE",       "date"    , "FT_DATE"} },
+        {"TIME"   , {fmtt_TIME,   4, "DATE",          fmtk_Etime,    "btime",     "btime",      "btime",          "V_TIME",       "time"    , "FT_TIME"} },
+        {"CHR"    , {fmtt_CHR,    1, "CHAR",          fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval" , "FT_CHR"} },
+        {"UCHR"   , {fmtt_UCHR,   1, "RAW",           fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string"  , "FT_UCHR"} },
+        {"NUMERIC", {fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_lmoney",  "db_lbasemoney",  "V_NUMERIC",    "decimal" , "FT_NUMERIC"} }
+    };
 }
 
 bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)
@@ -245,6 +286,19 @@ QString fmtTypeNameForType(const FmtFldType &type)
     if (index < 0 || index >= FmtTypesList.size())
         return "Unknown";
     return FmtTypesList[fmtIndexForType(type)];
+}
+
+FmtFldType fmtTypeFromXmlType(const QString &type)
+{
+    QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
+    while(iterator.hasNext())
+    {
+        iterator.next();
+        if (iterator.value()._xmlTypeName == type)
+            return iterator.value()._type;
+    }
+
+    return fmtt_INT;
 }
 
 FmtFldType fmtTypeFromIndex(const FmtFldIndex &id)
@@ -1155,4 +1209,57 @@ int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, 
         *pFldList = selFldModel.checkedFields();
 
     return stat;
+}
+
+void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote)
+{
+    enum class CSVState : quint8
+    {
+        UnquotedField,
+        QuotedField,
+        QuotedQuote
+    };
+
+    CSVState state = CSVState::UnquotedField;
+    qsizetype i = 0;
+    fields.push_back("");
+
+    for (QChar c : row)
+    {
+        switch (state)
+        {
+        case CSVState::UnquotedField:
+            if (c == ',')
+            {
+                fields.append("");
+                ++i;
+            }
+            else if (c == quote)
+                state = CSVState::QuotedField;
+            else
+                fields[i].push_back(c);
+            break;
+        case CSVState::QuotedField:
+            if (c == quote)
+                state = CSVState::QuotedQuote;
+            else
+                fields[i].push_back(c);
+            break;
+        case CSVState::QuotedQuote:
+            if (c == ',')
+            {
+                fields.push_back("");
+                i++;
+                state = CSVState::UnquotedField;
+            }
+            else if (c == quote)
+            {
+                fields[i].push_back('"');
+                state = CSVState::QuotedField;
+            }
+            else
+                state = CSVState::UnquotedField;
+            break;
+        }
+    }
 }

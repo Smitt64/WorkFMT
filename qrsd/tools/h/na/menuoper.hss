@@ -1,0 +1,76 @@
+/*******************************************************************************
+ FILE         :   MENUOPER.HSS
+
+ COPYRIGHT    :   R-Style Software Lab, 1998
+
+ DESCRIPTION  :   Literal string declaration for NALG library, module MENUOPER
+
+ PROGRAMMED BY:   Yakov E. Markovitch
+
+ CREATION DATE:   11 Sep 1998
+
+ VERSION INFO :   $Archive: $
+                  $Revision: $
+                  $Date: $
+                  $Author: $
+                  $Modtime: $
+*******************************************************************************/
+
+#ifndef __MENUOPER_HSS
+#define __MENUOPER_HSS
+
+#include <platform.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const char RSL_FAR _MENUOPER_STR_0[];
+extern const char RSL_FAR _MENUOPER_STR_LINE[];
+
+extern const char RSL_FAR _MENUOPER_STR_MENU10[];
+extern const char RSL_FAR _MENUOPER_STR_MENU11[];
+extern const char RSL_FAR _MENUOPER_STR_MENU12[];
+extern const char RSL_FAR _MENUOPER_STR_MENU13[];
+extern const char RSL_FAR _MENUOPER_STR_MENU14[];
+extern const char RSL_FAR _MENUOPER_STR_MENU15[];
+extern const char RSL_FAR _MENUOPER_STR_MENU16[];
+
+extern const char RSL_FAR _MENUOPER_STR_MENU20[];
+extern const char RSL_FAR _MENUOPER_STR_MENU21[];
+extern const char RSL_FAR _MENUOPER_STR_MENU22[];
+
+extern const char RSL_FAR _MENUOPER_STR_MENU30[];
+extern const char RSL_FAR _MENUOPER_STR_MENU31[];
+extern const char RSL_FAR _MENUOPER_STR_MENU32[];
+extern const char RSL_FAR _MENUOPER_STR_MENU33[];
+extern const char RSL_FAR _MENUOPER_STR_MENU34[];
+extern const char RSL_FAR _MENUOPER_STR_MENU35[];
+
+extern const char RSL_FAR _MENUOPER_STR_MENU3_TIP0[];
+extern const char RSL_FAR _MENUOPER_STR_MENU3_TIP1[];
+extern const char RSL_FAR _MENUOPER_STR_MENU3_TIP2[];
+extern const char RSL_FAR _MENUOPER_STR_MENU3_TIP3[];
+
+extern const char RSL_FAR _MENUOPER_STR_MENU40[];
+extern const char RSL_FAR _MENUOPER_STR_MENU41[];
+extern const char RSL_FAR _MENUOPER_STR_MENU42[];
+
+extern const char RSL_FAR _MENUOPER_STR_23[];
+extern const char RSL_FAR _MENUOPER_STR_24[];
+extern const char RSL_FAR _MENUOPER_STR_25[];
+extern const char RSL_FAR _MENUOPER_STR_26[];
+extern const char RSL_FAR _MENUOPER_STR_27[];
+extern const char RSL_FAR _MENUOPER_STR_28[];
+extern const char RSL_FAR _MENUOPER_STR_29[];
+
+#define  _MENUOPER_ITEM(m, n)  (char *)_MENUOPER_STR_MENU##m##n
+#define  _MENUOPER_TIP(m, n)   (char *)_MENUOPER_STR_MENU##m##_TIP##n
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // MENUOPER.HSS
+
+/* <-- EOF --> */

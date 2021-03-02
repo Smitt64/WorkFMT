@@ -1,0 +1,76 @@
+/*******************************************************************************
+ FILE         :   TOOLS.HSS
+
+ COPYRIGHT    :   R-Style Software Lab, 1998
+
+ DESCRIPTION  :   Literal string declaration for TOOLS library
+
+ PROGRAMMED BY:   Yakov E. Markovitch
+
+ CREATION DATE:   7 Sep 1998
+
+ VERSION INFO :   $Archive: $
+                  $Revision: $
+                  $Date: $
+                  $Author: $
+                  $Modtime: $
+*******************************************************************************/
+
+#ifndef __TOOLS_HSS
+#define __TOOLS_HSS
+
+#include <platform.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const char RSL_FAR _TOOL_STR_LCLDATA_NEG[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_RUBX[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_KOPX[];
+
+extern const char RSL_FAR _TOOL_STR_LCLDATA_RUB[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_KOP[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_TSC[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_MLN[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_MRD[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_TRN[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_YEAR[];
+
+extern const char RSL_FAR * const _TOOL_STR_LCLDATA_M1[];
+extern const char RSL_FAR * const _TOOL_STR_LCLDATA_D1[];
+extern const char RSL_FAR * const _TOOL_STR_LCLDATA_N[];
+extern const char RSL_FAR * const _TOOL_STR_LCLDATA_N1[];
+extern const char RSL_FAR * const _TOOL_STR_LCLDATA_N10[];
+extern const char RSL_FAR * const _TOOL_STR_LCLDATA_N100[];
+
+extern const char RSL_FAR _TOOL_STR_FDECIMAL_OVERFLOW[];
+extern const char RSL_FAR _TOOL_STR_FDECIMAL_DIVBYZERO[];
+extern const char RSL_FAR _TOOL_STR_FDECIMAL_DATAERROR[];
+
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FTEN[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FHND[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FTSC[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FTTS[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FHTS[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FMLN[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FTML[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FHML[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FMRD[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FTMR[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FHMR[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FTRN[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FTTR[];
+extern const char RSL_FAR _TOOL_STR_LCLDATA_FHTR[];
+
+extern const char RSL_FAR _TOOL_STR_LCLDATA_IVAL[];
+
+extern const char RSL_FAR _TOOL_STR_APPSERV_MIN_VERSION[];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // __TOOLS_HSS
+
+/* <-- EOF --> */

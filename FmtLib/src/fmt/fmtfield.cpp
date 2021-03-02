@@ -69,10 +69,23 @@ FmtField::FmtField(QObject *parent) : QObject(parent)
     m_Comment = "";
 
     pTable = dynamic_cast<FmtTable*>(parent);
-    pUndoStack = pTable->undoStack();
+
+    if (pTable)
+    {
+        pUndoStack = pTable->undoStack();
+        pFieldsModel = pTable->fieldsModel();
+        m_IgnoreUndoStack = false;
+    }
+    else
+    {
+        pUndoStack = Q_NULLPTR;
+        pFieldsModel = Q_NULLPTR;
+        m_IgnoreUndoStack = true;
+
+        m_IgnoreUndoStack.lock();
+    }
+
     pLastCommand = Q_NULLPTR;
-    pFieldsModel = pTable->fieldsModel();
-    m_IgnoreUndoStack = false;
 }
 
 /*!
@@ -188,10 +201,14 @@ void FmtField::setSize(const FmtNumber10 &v)
     else
     {
         m_Size = v;
-        bool old = pTable->m_IgnoreUndoStack;
-        pTable->m_IgnoreUndoStack = true;
-        pTable->rebuildOffsets();
-        pTable->m_IgnoreUndoStack = old;
+
+        if (pTable)
+        {
+            bool old = pTable->m_IgnoreUndoStack;
+            pTable->m_IgnoreUndoStack = true;
+            pTable->rebuildOffsets();
+            pTable->m_IgnoreUndoStack = old;
+        }
     }
 }
 
@@ -227,10 +244,13 @@ void FmtField::setType(const FmtFldType &v)
         if (v != fmtt_STRING && v != fmtt_CHR && v != fmtt_UCHR && v != fmtt_SNR)
             setSize(fmtTypeSize(v));
 
-        bool old = pTable->m_IgnoreUndoStack;
-        pTable->m_IgnoreUndoStack = true;
-        pTable->rebuildOffsets();
-        pTable->m_IgnoreUndoStack = old;
+        if (pTable)
+        {
+            bool old = pTable->m_IgnoreUndoStack;
+            pTable->m_IgnoreUndoStack = true;
+            pTable->rebuildOffsets();
+            pTable->m_IgnoreUndoStack = old;
+        }
     }
 }
 

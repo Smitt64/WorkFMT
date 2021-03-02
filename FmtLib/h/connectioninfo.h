@@ -63,6 +63,7 @@ public:
     int type() const;
 
     bool openSqlite(const QString &filename);
+    bool openSqlteMemory();
 
     FmtTablesModel *addModel();
     FmtTablesModel *getModel(const int &index);

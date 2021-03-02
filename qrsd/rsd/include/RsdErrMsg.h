@@ -1,0 +1,84 @@
+/*******************************************************************************
+ FILE         :   RsdErrMsg.h
+ COPYRIGHT    :   R-Style, 2001
+ DESCRIPTION  :   Сообщения об ошибках
+ PROGRAMMED BY:   Sergey Khorev
+ CREATION DATE:   02/2001
+*******************************************************************************/
+
+#ifndef	__RSDERRMSG_H
+
+#define __RSDERRMSG_H
+
+extern const char* ErrorTable[];
+
+#define RSD_E_READONLY_INDEX	0
+#define RSD_E_PLAIN_INDEX		1
+#define RSD_E_SQL_INDEX			2
+#define RSD_E_NOGETINTF_INDEX	3
+#define RSD_E_ILLEGALINTF_INDEX	4
+#define RSD_E_NODRVANME_INDEX	5
+#define RSD_E_CANTLOADLIB_INDEX	6
+#define RSD_E_CREATEENV_INDEX	7
+
+#define RSD_E_PARAMEXPECTED_INDEX	8
+#define RSD_E_INVALIDPARAM_INDEX	9
+#define RSD_E_INVALIDERRINDEX_INDEX	10
+#define RSD_E_CANTCRERROR_INDEX	11
+
+#define RSD_E_INVALIDENV_INDEX	12
+
+#define RSD_E_INVALIDDEFENV_INDEX	13
+#define RSD_E_INVALIDDEFCONN_INDEX	14
+#define RSD_E_INVALIDOBJ_INDEX		15
+#define RSD_E_INVALIDCON_INDEX		16
+#define RSD_E_INVALIDCMD_INDEX		17
+#define RSD_E_CREATERSET_INDEX		18
+#define RSD_E_INVALIDFLDINDEX_INDEX	19
+#define RSD_E_INVALIDFLDNAME_INDEX	20
+
+#define RSD_E_INVALIDPARAMNAME_INDEX	21
+#define RSD_E_INVALIDPARAMINDEX_INDEX	22
+
+#define RSD_E_CREATEMULTI_INDEX		23
+#define RSD_E_INVALIDCURRSET_INDEX  24
+#define RSD_E_FIRSTMOVE_INDEX       25
+
+#define RSD_E_READONLY		(char*)ErrorTable[RSD_E_READONLY_INDEX]
+#define RSD_E_PLAIN			(char*)ErrorTable[RSD_E_PLAIN_INDEX]
+#define RSD_E_SQL			(char*)ErrorTable[RSD_E_SQL_INDEX]
+#define RSD_E_NOGETINTF		(char*)ErrorTable[RSD_E_NOGETINTF_INDEX]
+#define RSD_E_ILLEGALINTF	(char*)ErrorTable[RSD_E_ILLEGALINTF_INDEX]
+#define RSD_E_NODRVANME		(char*)ErrorTable[RSD_E_NODRVANME_INDEX]
+#define RSD_E_CANTLOADLIB	(char*)ErrorTable[RSD_E_CANTLOADLIB_INDEX]
+#define RSD_E_CREATEENV		(char*)ErrorTable[RSD_E_CREATEENV_INDEX]
+
+#define RSD_E_PARAMEXPECTED	(char*)ErrorTable[RSD_E_PARAMEXPECTED_INDEX]
+#define RSD_E_INVALIDPARAM	(char*)ErrorTable[RSD_E_INVALIDPARAM_INDEX]
+#define RSD_E_INVALIDERRINDEX	(char*)ErrorTable[RSD_E_INVALIDERRINDEX_INDEX]
+#define RSD_E_CANTCRERROR	(char*)ErrorTable[RSD_E_CANTCRERROR_INDEX]
+
+#define RSD_E_INVALIDENV	(char*)ErrorTable[RSD_E_INVALIDENV_INDEX]
+
+#define RSD_E_INVALIDDEFENV	(char*)ErrorTable[RSD_E_INVALIDDEFENV_INDEX]
+#define RSD_E_INVALIDDEFCONN	(char*)ErrorTable[RSD_E_INVALIDDEFCONN_INDEX]
+
+#define RSD_E_INVALIDOBJ	(char*)ErrorTable[RSD_E_INVALIDOBJ_INDEX]
+
+#define RSD_E_INVALIDCON	(char*)ErrorTable[RSD_E_INVALIDCON_INDEX]
+
+#define RSD_E_INVALIDCMD	(char*)ErrorTable[RSD_E_INVALIDCMD_INDEX]
+
+#define RSD_E_CREATERSET	(char*)ErrorTable[RSD_E_CREATERSET_INDEX]
+
+#define RSD_E_INVALIDFLDINDEX	(char*)ErrorTable[RSD_E_INVALIDFLDINDEX_INDEX]
+#define RSD_E_INVALIDFLDNAME	(char*)ErrorTable[RSD_E_INVALIDFLDNAME_INDEX]
+
+#define RSD_E_INVALIDPARAMNAME	(char*)ErrorTable[RSD_E_INVALIDPARAMNAME_INDEX]
+#define RSD_E_INVALIDPARAMINDEX	(char*)ErrorTable[RSD_E_INVALIDPARAMINDEX_INDEX]
+
+#define RSD_E_CREATEMULTI (char*)ErrorTable[RSD_E_CREATEMULTI_INDEX]
+#define RSD_E_INVALIDCURRSET (char*)ErrorTable[RSD_E_INVALIDCURRSET_INDEX]
+#define RSD_E_FIRSTMOVE (char*)ErrorTable[RSD_E_FIRSTMOVE_INDEX]
+
+#endif

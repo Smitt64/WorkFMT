@@ -116,6 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionGenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
     connect(ui->actionMassOp, SIGNAL(triggered(bool)), SLOT(OnMassOpAction()));
     connect(ui->actionConfluence, SIGNAL(triggered(bool)), SLOT(OnConfluence()));
+    connect(ui->actionCreateXml, SIGNAL(triggered(bool)), SLOT(CreateFromXml()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
@@ -1259,6 +1260,26 @@ void MainWindow::OnMassOpAction()
 void MainWindow::OnConfluence()
 {
     QDesktopServices::openUrl(QUrl("http://confluence/pages/viewpage.action?pageId=397967369"));
+}
+
+void MainWindow::CreateFromXml()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QString fileName = QFileDialog::getOpenFileName(this, QString(), QString(), "Файлы Fmt (*.xml);");
+    if (!fileName.isEmpty())
+    {
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->loadFromXml(fileName))
+        {
+            QMdiSubWindow *wnd = CreateDocument(table);
+            wnd->show();
+        }
+    }
 }
 
 /*void MainWindow::OnCreateQuery()

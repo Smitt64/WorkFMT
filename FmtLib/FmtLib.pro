@@ -23,6 +23,7 @@ RCC_DIR = build
 #QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
 
 DEFINES += FMTLIB_LIBRARY QT_DEPRECATED_WARNINGS QT_LOGGING_DEBUG FMTLIB_ABOUT_EXCEPTION
+#DEFINES += FMT_RSD_DRIVER
 
 INCLUDEPATH += ./h
 INCLUDEPATH += .
@@ -31,6 +32,7 @@ LIBS += -lversion
 SOURCES += \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
+    src/datfile.cpp \
     src/dbinitdlg.cpp \
     src/documentwindow.cpp \
     src/errordlg.cpp \
@@ -191,6 +193,8 @@ RESOURCES += \
     res/fmt.qrc
 
 HEADERS += \
+    h/DataStructure.hpp \
+    h/LockVar.hpp \
     h/connectioninfo.h \
     h/dbinitdlg.h \
     h/documentwindow.h \
@@ -311,8 +315,9 @@ HEADERS += \
     src/massop/destribcreate/massdestribitemparamdelegate.h \
     src/widgets/filteredtablewidget.h \
     h/fmtsegmentflagsdlg.h \
-    h/selectfolderdlg.h
+    h/selectfolderdlg.h \
+    h/datfile.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
-target.path = ../bin
+target.path = $$PWD/../bin
 INSTALLS += target

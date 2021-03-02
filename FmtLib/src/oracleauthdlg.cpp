@@ -52,7 +52,12 @@ bool operator ==(RecentList &list, const RecentList &other)
             list.user == other.user);
 }
 //BEQ  TCP
+
+#ifndef FMT_RSD_DRIVER
 const QString sOracleDatabaseString ="(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=@host@)(PORT=@port@)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=@service@)))";
+#else
+const QString sOracleDatabaseString ="(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=@host@)(PORT=@port@)))(CONNECT_DATA=(SERVICE_NAME=@service@)))";
+#endif
 
 OracleAuthDlg::OracleAuthDlg(QWidget *parent)
     : QDialog(parent),
@@ -133,7 +138,12 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
     QString _connectionname = QString("%1@%2#%3").arg(username, service, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     QSqlDatabase db =
 #ifndef HELPER_SQLITE
-            QSqlDatabase::addDatabase("QOCI", _connectionname);
+    #ifndef FMT_RSD_DRIVER
+        QSqlDatabase::addDatabase("QOCI", _connectionname);
+    #else
+            //QSqlDatabase::addDatabase("QODBC", _connectionname);
+       QSqlDatabase::addDatabase("qrsd", _connectionname);
+    #endif
 #else
             QSqlDatabase::addDatabase("QSQLITE", _connectionname);
 #endif
@@ -147,7 +157,40 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
     db.setUserName(username);
     db.setPassword(passw);
 
+#ifndef FMT_RSD_DRIVER
     db.setDatabaseName(sOracleDBString);
+#else
+    /*db.setDatabaseName(QString("Driver={Oracle in OraClient11g_home2_32bit};SERVER=%4;Dbq=%1;Uid=%2;Pwd=%3;Trusted_Connection=Yes;CHARSET=CP866;")
+                       .arg(dsn)
+                       .arg(username)
+                       .arg(passw)
+                       .arg(sOracleDatabaseString));*/
+    /*db.setDatabaseName(QString("Driver={Oracle in OraClient11g_home2_32bit};Dbq=%1;Uid=%2;Pwd=%3;")
+                       .arg(dsn)
+                       .arg(username)
+                       .arg(passw));*/
+    /*db.setDatabaseName(QString("Driver={Oracle in OraClient11g_home2_32bit};Server={%1};dba=W;apa=T;exc=F;fen=T;qto=T;frc=10;fdl=10;lob=T;rst=T;btd=F;bnf=F;bam=IfAllSuccessful;num=NLS;dpm=F;mts=T;mdi=F;csr=F;fwc=F;fbs=64000;tlo=O;mld=0;oda=F;tsz=8192;Uid=:2; Pwd=:3;")
+                       .arg(sOracleDBString)
+                       .arg(username)
+                       .arg(passw));*/
+    /*db.setDatabaseName(QString("Driver={Oracle in OraClient11g_home2_32bit};Server=%1;Charset=RU8PC866;")
+                       .arg(sOracleDBString));*/
+    //db.setDatabaseName(dsn);Unicode=True;
+    //db.setDatabaseName(QString("%1; Charset=RU8PC866").arg(dsn));; Uid=:2; Pwd=:3;;Unicode=True
+    /*db.setDatabaseName(QString("Driver={Microsoft ODBC for Oracle};CONNECTSTRING=%1;Uid=:2;Pwd=:3;Database=%2")
+                       .arg(sOracleDBString)
+                       .arg(username)
+                       .arg(passw));*/
+    /*db.setDatabaseName(QString("Driver={Microsoft ODBC for Oracle};Dsn=%1")
+                       .arg(dsn)
+                       .arg(username));*/
+    /*db.setDatabaseName(QString("Provider=OraOLEDB.Oracle;Data Source=%1;User Id=urUsername;Password=urPassword;")
+                           .arg(dsn)
+                           .arg(username)
+                           .arg(passw));*/
+#endif
+
+
 #else
     db.setDatabaseName("./fmt_emulator.sqlite");
 #endif
@@ -156,7 +199,10 @@ QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
         qCInfo(logCore()) << "Connected to " << sOracleDBString << "";
     }
     else
-        qCInfo(logCore()) << "" << sOracleDBString << ": " << db.lastError().text();
+    {
+        qCInfo(logCore()) << "" << sOracleDBString << ": " << db.lastError().text().toLocal8Bit();
+        qCInfo(logCore()) << db.driver()->lastError().text().toLocal8Bit();
+    }
 
     if (info)
     {

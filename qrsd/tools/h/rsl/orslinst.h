@@ -1,0 +1,27 @@
+///////////////////////////////////////////////////////////////////////////////
+// Tokmashev (08/05/2001)
+// Copyright R-Style SoftWare Lab. 2001
+//
+// Поставщик объектов RslInstance
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#ifndef __ORSLINST_H
+#define __0RSLINST_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+   
+   void RegisterTRslInstanceObj(void);
+   void MakeRslInstance(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // __ORSLINST_H
+
+/* <-- EOF --> */

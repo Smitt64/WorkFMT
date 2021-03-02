@@ -69,6 +69,7 @@
     </widget>
     <addaction name="actionCreate"/>
     <addaction name="actionCreateFromText"/>
+    <addaction name="actionCreateXml"/>
     <addaction name="separator"/>
     <addaction name="actionCopyTable"/>
     <addaction name="actionCopyTableAs"/>
@@ -418,6 +419,11 @@
   <action name="actionCopyTableTmp">
    <property name="text">
     <string>Копировать таблицу как временную</string>
+   </property>
+  </action>
+  <action name="actionCreateXml">
+   <property name="text">
+    <string>Cоздать из xml</string>
    </property>
   </action>
  </widget>

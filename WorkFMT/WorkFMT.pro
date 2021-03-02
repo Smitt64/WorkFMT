@@ -32,5 +32,5 @@ else:unix:!macx: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
 INCLUDEPATH += $$PWD/../FmtLib/h
 DEPENDPATH += $$PWD/../FmtLib/h
 
-target.path = ../bin
+target.path = $$PWD/../bin
 INSTALLS += target

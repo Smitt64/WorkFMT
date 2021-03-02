@@ -24,7 +24,8 @@ QtFoldersToCopy  = [
     'platforms',
     'imageformats',
     'iconengines',
-    'sqldrivers'
+    'sqldrivers',
+    'styles'
 ]
 
 WorkFmtToCopy = [

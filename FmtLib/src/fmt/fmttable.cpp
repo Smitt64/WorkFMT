@@ -477,7 +477,7 @@ bool FmtTable::load(const FmtRecId &id)
     bool hr = true;
     QSqlQuery q(db);
     q.prepare("select * from FMT_NAMES WHERE T_ID = ?");
-    q.bindValue(0, id);
+    q.addBindValue(id);
 
     qInfo(logFmt()) << "Loading table" << this << "by id:" << id;
     if (!ExecuteQuery(&q) && q.next())
@@ -511,6 +511,110 @@ bool FmtTable::load(const FmtRecId &id)
     else
     {
         qInfo(logFmt()) << "Failed load table" << this;
+    }
+
+    return hr;
+}
+
+bool FmtTable::loadFromXml(const QString &filename, const QString &tableName)
+{
+    bool hr = true;
+
+    QDomDocument doc;
+    QFile file(filename);
+    hr = file.open(QIODevice::ReadOnly);
+
+    if (hr)
+    {
+        if (!(hr = doc.setContent(&file)))
+            file.close();
+    }
+
+    auto attributeToBool = [=](const QDomElement &e, const QString &attr) -> bool
+    {
+        QString value = e.attribute(attr);
+        return !value.compare("true", Qt::CaseInsensitive);
+    };
+
+    auto addTableField = [this,attributeToBool](const QDomElement &e) -> void
+    {
+        QString name = e.attribute("T_NAME");
+        QString typeName = e.attribute("T_TYPE");
+        FmtFldType type = fmtTypeFromXmlType(typeName);
+
+        FmtField *fld = addFieldPrivate(name, type);
+        fld->setDataPrivate(FmtField::fld_Size, e.attribute("T_SIZE"));
+        fld->setDataPrivate(FmtField::fld_Outlen, e.attribute("T_OUTLEN"));
+        fld->setDataPrivate(FmtField::fld_DecPoint, e.attribute("T_DECPOINT"));
+        fld->setDataPrivate(FmtField::fld_Comment, e.attribute("T_COMMENT"));
+
+        bool Hidden = attributeToBool(e, "T_HIDDEN");
+        fld->setDataPrivate(FmtField::fld_Hidden, Hidden);
+    };
+
+    auto addIndex = [this,attributeToBool](const QDomElement &e) -> void
+    {
+
+    };
+
+    auto FillTableFromElement = [attributeToBool,addTableField,this](const QDomElement &e) -> void
+    {
+        m_Id = 0;
+        m_Name = e.attribute("T_NAME");
+        m_Comment = e.attribute("T_COMMENT");
+
+        if (attributeToBool(e, "TF_TEMPORARY"))
+            m_Flags |= fmtnf_Temp;
+
+        if (attributeToBool(e, "TF_STRUCT"))
+            m_Flags |= fmtnf_Rec;
+
+        m_BlobLen = e.attribute("T_BLOBLEN").toInt();
+        m_PkIDx = static_cast<FmtNumber5>(e.attribute("T_PKIDX").toInt());
+
+        QDomNode n = e.firstChild();
+        while(!n.isNull())
+        {
+            QDomElement element = n.toElement();
+            if(!element.isNull())
+            {
+                if (!element.tagName().compare("Field", Qt::CaseInsensitive))
+                    addTableField(element);
+            }
+
+            n = n.nextSibling();
+        }
+        // BT_BLOB_VAR
+        // m_BlobType
+        /*
+        m_BlobType = static_cast<FmtNumber5>(q.value(fnc_BlobType).toInt());
+        m_Record = q.record();*/
+    };
+
+    if (hr)
+    {
+        QDomElement tableList = doc.documentElement();
+        QDomNode n = tableList.firstChild();
+
+        if (!tableName.isEmpty())
+        {
+            while(!n.isNull())
+            {
+                QDomElement e = n.toElement();
+                if(!e.isNull() && !e.attribute("T_NAME").compare(tableName, Qt::CaseInsensitive))
+                {
+                    FillTableFromElement(e);
+                    break;
+                }
+                n = n.nextSibling();
+            }
+        }
+        else
+        {
+            QDomElement e = n.toElement();
+            FillTableFromElement(e);
+        }
+        file.close();
     }
 
     return hr;

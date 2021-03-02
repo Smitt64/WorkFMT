@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QtSql>
 #include "fmtlib_global.h"
+#include "LockVar.hpp"
 
 class FmtTable;
 class QUndoStack;
@@ -121,7 +122,7 @@ private:
     QString m_Name, m_Comment;
     bool m_isHidden;
 
-    bool m_IgnoreUndoStack;
+    LockedVar<bool> m_IgnoreUndoStack;
     QUndoStack *pUndoStack;
     QUndoCommand *pLastCommand;
 
