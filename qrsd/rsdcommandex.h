@@ -19,10 +19,20 @@ public:
         int typeSize(const QVariant::Type &type);
 
         void *value;
-        int valueSize;
+        RSDLONG valueSize;
         RSDValType_t valType;
         RSDBindParamIO_t dir;
-        char *name;
+        QString name;
+
+    private:
+        template<class T> void setBuffer(const QVariant &value)
+        {
+            const T &tmpValue = value.value<T>();
+            this->valueSize = sizeof(T);
+            this->value = malloc(static_cast<size_t>(valueSize));
+
+            memcpy(this->value, &tmpValue, this->valueSize);
+        }
     };
 
     RsdCommandEx(CRsdConnection *con);
@@ -30,6 +40,7 @@ public:
 
     void bindValue(const QString &placeholder, const QVariant &val, QSql::ParamType paramType);
     void bindValue(int index, const QVariant &val, QSql::ParamType paramType);
+
 private:
     QVector<BindParam*> m_Params;
 };

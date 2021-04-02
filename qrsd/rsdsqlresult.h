@@ -27,6 +27,7 @@ public:
     void bindValue(int index, const QVariant &val, QSql::ParamType paramType) Q_DECL_OVERRIDE;*/
 
     bool exec() Q_DECL_OVERRIDE;
+    bool prepare(const QString &query) Q_DECL_OVERRIDE;
 
     bool fetch(int index) Q_DECL_OVERRIDE;
     bool fetchFirst() Q_DECL_OVERRIDE;
@@ -36,12 +37,29 @@ public:
 
     QSqlRecord record() const Q_DECL_OVERRIDE;
 
+    void setQuery(const QString &query) Q_DECL_OVERRIDE;
+
+    static QDate rsDateToQDate(const bdate &_rsDate);
+    static QTime rsTimeToQTime(const btime &_rsTime);
+    static QVariant rsDateToVariantQDate(CRsdField &fld);
+    static QVariant rsTimeToVariantQTime(CRsdField &fld);
+    static QVariant rsTimeStampToVariantQDateTime(CRsdField &fld);
+    static QVariant rsBinaryToVariantQByteArray(CRsdField &fld);
+    static QVariant rsCharToVariantQChar(CRsdField &fld);
+    static QVariant rsNumericToVariant(CRsdField &fld);
+
 private:
+    bool setCmdText(const QString &sql);
+
     QVariant GetValueFromField(const CRsdField &cfld);
-    QSqlField MakeField(const CRsdField &fld);
+    QSqlField MakeField(const CRsdField &fld, const bool &isnull);
+
     RsdDriver *m_Driver;
     QScopedPointer<RsdCommandEx> m_Cmd;
     QScopedPointer<CRsdRecordset> m_RecSet;
+    QString m_QueryString;
 };
+
+Q_DECLARE_METATYPE(long double);
 
 #endif // RSDSQLRESULT_H

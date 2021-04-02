@@ -8,8 +8,8 @@ RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
     BaseErrorSetter<RsdSqlResult>(this)
 {
     QSqlDriver *cdriver = const_cast<QSqlDriver*>(db);
-    RsdDriver *drv = dynamic_cast<RsdDriver*>(cdriver);
-    m_Cmd.reset(new RsdCommandEx(drv->connection()));
+    m_Driver = dynamic_cast<RsdDriver*>(cdriver);
+    m_Cmd.reset(new RsdCommandEx(m_Driver->connection()));
 }
 
 RsdSqlResult::~RsdSqlResult()
@@ -36,34 +36,80 @@ int	RsdSqlResult::numRowsAffected()
 
 int	RsdSqlResult::size()
 {
-    return -1;
+    return m_RecSet->getRecCount();
+}
+
+bool RsdSqlResult::setCmdText(const QString &sql)
+{
+    if (!m_Cmd)
+        return false;
+
+    m_QueryString = m_Driver->toOem866(sql);
+    return m_Cmd->setCmdText(m_QueryString.toLocal8Bit().data());
 }
 
 bool RsdSqlResult::reset(const QString &query)
 {
+    bool result = true;
     m_RecSet.reset();
     m_Cmd->clearParams();
-    return m_Cmd->setCmdText(query.toLocal8Bit().data());
+    result = setCmdText(query);
+
+    if (result)
+        result = exec();
+
+    return result;
 }
 
 bool RsdSqlResult::fetch(int index)
 {
-    if (!m_RecSet)
+    if (!m_RecSet || !isActive() || index < 0 || at() == index)
         return false;
 
-    qDebug() << m_RecSet->getRecCount();
-    if (m_RecSet->getRecCount() < index)
-        return false;
+    //qDebug() << m_RecSet->getRecCount();
+    /*if (m_RecSet->getRecCount() < index)
+        return false;*/
 
-    return m_RecSet->move(index, RSDO_ABSOLUTE);
+    //bool result = m_RecSet->move(index, RSDO_ABSOLUTE);
+
+    /*if (result)
+        setAt(index);
+
+    return result;*/
+    if (isForwardOnly())
+    {
+        if (index < at())
+            return false;
+
+        bool ok = true;
+        while (ok && index > at())
+            ok = fetchNext();
+
+        return ok;
+    }
+
+    setAt(index);
+    return true;
 }
 
 bool RsdSqlResult::fetchFirst()
 {
-    if (!m_RecSet)
+    if (!m_RecSet || !isActive() || at() == 0)
         return false;
 
-    return m_RecSet->moveFirst();
+    /*if (isForwardOnly())
+    {
+        if(at() == QSql::BeforeFirstRow)
+            setAt(0);
+    }*/
+
+    //return /*m_RecSet->moveFirst()*/fetch(0);
+    bool result = m_RecSet->moveFirst();
+
+    if (result)
+        setAt(0);
+
+    return result;
 }
 
 bool RsdSqlResult::fetchLast()
@@ -76,10 +122,26 @@ bool RsdSqlResult::fetchLast()
 
 bool RsdSqlResult::fetchNext()
 {
-    if (!m_RecSet)
+    if (!m_RecSet || !isActive())
         return false;
 
-    return m_RecSet->moveNext();
+    const int currentRow = at();
+    if (currentRow == QSql::BeforeFirstRow)
+        return fetchFirst();
+    if (currentRow == QSql::AfterLastRow)
+        return false;
+
+    /*if (isForwardOnly())
+    {
+
+    }*/
+    bool result = m_RecSet->moveNext();
+
+    if (result)
+        setAt(currentRow + 1);
+
+    return result;
+    //return m_RecSet->moveNext();
 }
 
 bool RsdSqlResult::fetchPrevious()
@@ -106,18 +168,19 @@ bool RsdSqlResult::exec()
 
     try
     {
-        m_RecSet.reset();
-        m_Cmd->setCmdText(lastQuery().toLocal8Bit().data());
-
         int size = boundValueCount();
+        QSqlResult::BindingSyntax syntax = bindingSyntax();
+        qDebug() << syntax;
         for (int i = 0; i < size; i++)
         {
             QVariant value = boundValue(i);
             QSql::ParamType type = bindValueType(i);
-            m_Cmd->bindValue(boundValueName(i), value, type);
-        }
 
-        m_Cmd->setNullConversion(true);
+            if (syntax == QSqlResult::NamedBinding)
+                m_Cmd->bindValue(boundValueName(i), value, type);
+            else
+                m_Cmd->bindValue(i, value, type);
+        }
         //qDebug() << "QRSD: " << lastQuery();
         m_Cmd->execute();
         setSelect(true);
@@ -126,6 +189,8 @@ bool RsdSqlResult::exec()
         //if (isSelect())
             m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, RSDVAL_STATIC));
             m_RecSet->open();
+            if (m_RecSet->getCursorType() == RSDVAL_FORWARD_ONLY)
+                setForwardOnly(true);
     }
     catch(XRsdError& e)
     {
@@ -141,6 +206,97 @@ bool RsdSqlResult::exec()
     return result;
 }
 
+bool RsdSqlResult::prepare(const QString &query)
+{
+    bool result = true;
+    try
+    {
+        m_RecSet.reset();
+        m_QueryString = query;
+        m_Cmd->setCmdText(m_QueryString.toLocal8Bit().data());
+
+        m_Cmd->setNullConversion(true);
+    }
+    catch(XRsdError& e)
+    {
+        result = false;
+        setLastRsdError(e, QSqlError::StatementError);
+    }
+    catch(...)
+    {
+        result = false;
+        setLastUnforeseenError(QSqlError::StatementError);
+    }
+
+    return result;
+}
+
+QDate RsdSqlResult::rsDateToQDate(const bdate &_rsDate)
+{
+    if (_rsDate.day == 0 && _rsDate.mon == 0 && _rsDate.year == 0)
+        return QDate();
+
+    return QDate(_rsDate.year, _rsDate.mon, _rsDate.day);
+}
+
+QTime RsdSqlResult::rsTimeToQTime(const btime &_rsTime)
+{
+    return QTime(_rsTime.hour, _rsTime.min, _rsTime.sec, _rsTime.hundr);
+}
+
+QVariant RsdSqlResult::rsDateToVariantQDate(CRsdField &fld)
+{
+    Q_ASSERT(fld.getType() == RSDPT_DATE);
+    const bdate &_rsDate = fld.AsRSDDATE();
+
+    return rsDateToQDate(_rsDate);
+}
+
+QVariant RsdSqlResult::rsTimeToVariantQTime(CRsdField &fld)
+{
+    Q_ASSERT(fld.getType() == RSDPT_TIME);
+    btime _rsTime = fld.AsRSDTIME();
+    return QVariant(QTime(_rsTime.hour, _rsTime.min, _rsTime.sec, _rsTime.hundr));
+}
+
+QVariant RsdSqlResult::rsBinaryToVariantQByteArray(CRsdField &fld)
+{
+    Q_ASSERT(fld.getType() == RSDPT_BINARY);
+    return QVariant(QByteArray(reinterpret_cast<const char*>(fld.AsRSDBINARY()), fld.getBufferLen()));
+}
+
+QVariant RsdSqlResult::rsCharToVariantQChar(CRsdField &fld)
+{
+    Q_ASSERT(fld.getType() == RSDPT_CHAR);
+
+    char ch = fld.AsRSDCHAR();
+    QTextCodec *codec866 = QTextCodec::codecForName("IBM 866");
+    return QVariant(codec866->toUnicode(QByteArray(1, ch)).front());
+}
+
+QVariant RsdSqlResult::rsTimeStampToVariantQDateTime(CRsdField &fld)
+{
+    Q_ASSERT(fld.getType() == RSDPT_TIMESTAMP);
+    btimestamp _rsTimeStamp = fld.AsRSDTIMESTAMP();
+
+    QVariant retVal;
+    QDate _rsDate = rsDateToQDate(_rsTimeStamp.date);
+    QTime _rsTime = rsTimeToQTime(_rsTimeStamp.time);
+
+    return QDateTime(_rsDate, _rsTime);
+}
+
+QVariant RsdSqlResult::rsNumericToVariant(CRsdField &fld)
+{
+    Q_ASSERT(fld.getType() == RSDPT_NUMERIC);
+    Numeric _rsNumeric = fld.AsRSDNUMERIC();
+
+    QVariant retVal;
+    retVal.setValue(Numeric96::convertToDouble(_rsNumeric));
+
+    return retVal;
+}
+
 QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld)
 {
     QVariant retVal;
@@ -151,7 +307,7 @@ QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld)
         try
         {
             RSDValType_t fldType = fld.getType();
-            bool isUnicodeField = fld.isUnicodeField();
+            //bool isUnicodeField = fld.isUnicodeField();
 
             switch(fldType)
             {
@@ -161,8 +317,20 @@ QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld)
             case RSDPT_SHORT:
                 retVal = fld.AsRSDSHORT();
                 break;
+            case RSDPT_USHORT:
+                retVal.setValue(fld.AsRSDUSHORT());
+                break;
             case RSDPT_LONG:
                 retVal = static_cast<qint32>(fld.AsRSDLONG());
+                break;
+            case RSDPT_ULONG:
+                retVal.setValue(fld.AsRSDULONG());
+                break;
+            case RSDPT_BIGINT:
+                retVal.setValue(fld.AsRSDBIGINT());
+                break;
+            case RSDPT_UBIGINT:
+                retVal.setValue(fld.AsRSDUBIGINT());
                 break;
             case RSDPT_FLOAT:
                 retVal = fld.AsRSDFLOAT();
@@ -170,8 +338,26 @@ QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld)
             case RSDPT_DOUBLE:
                 retVal = fld.AsRSDDOUBLE();
                 break;
+            case RSDPT_NUMERIC:
+                retVal = rsNumericToVariant(fld);
+                break;
             case RSDPT_LPSTR:
-                retVal = fld.AsRSDLPSTR();
+                retVal = m_Driver->fromOem866(QLatin1String(fld.AsRSDLPSTR()));
+                break;
+            case RSDPT_DATE:
+                retVal = rsDateToVariantQDate(fld);
+                break;
+            case RSDPT_TIME:
+                retVal = rsTimeToVariantQTime(fld);
+                break;
+            case RSDPT_TIMESTAMP:
+                retVal = rsTimeStampToVariantQDateTime(fld);
+                break;
+            case RSDPT_BINARY:
+                retVal = rsBinaryToVariantQByteArray(fld);
+                break;
+            case RSDPT_CHAR:
+                retVal = rsCharToVariantQChar(fld);
                 break;
             }
         }
@@ -188,13 +374,16 @@ QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld)
     return retVal;
 }
 
-QSqlField RsdSqlResult::MakeField(const CRsdField &fld)
+QSqlField RsdSqlResult::MakeField(const CRsdField &fld, const bool &isnull)
 {
     QSqlField qfld;
-    QVariant value = GetValueFromField(fld);
     qfld.setName(fld.getName());
-    qfld.setValue(value);
 
+    if (!isnull)
+    {
+        QVariant value = GetValueFromField(fld);
+        qfld.setValue(value);
+    }
     return qfld;
 }
 
@@ -205,15 +394,23 @@ QSqlRecord RsdSqlResult::record() const
     if (isSelect())
     {
         RsdSqlResult *pThis = const_cast<RsdSqlResult*>(this);
-        quint32 fldcount = m_RecSet->getFldCount();
+        long fldcount = m_RecSet->getFldCount();
 
-        for (int i = 0; i < fldcount; i++)
+        for (long i = 0; i < fldcount; i++)
         {
             const CRsdField &fld = m_RecSet->getFld(i);
-            rec.append(pThis->MakeField(fld));
-            rec.setNull(i);
+            rec.append(pThis->MakeField(fld, fld.isNull()));
+
+            if (fld.isNull())
+                rec.setNull(i);
         }
     }
 
     return rec;
+}
+
+void RsdSqlResult::setQuery(const QString &query)
+{
+    //m_QueryString = query;
+    setCmdText(query);
 }

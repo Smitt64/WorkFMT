@@ -15,26 +15,26 @@ RsdCommandEx::BindParam::BindParam(const QVariant &value, QSql::ParamType paramT
         break;
     }
 
-    int namesize = pname.length() + 1;
-    name = (char*)malloc(namesize);
-    memset(name, 0, namesize);
-    strcpy(name, pname.toLocal8Bit().data());
+    name = pname;
 
     if (value.type() == QVariant::Int)
     {
-        valueSize = typeSize(value.type());
-        this->value = malloc(valueSize);
+        setBuffer<RSDLONG>(value);
         valType = RSDPT_LONG;
+    }
+    else if (value.type() == QVariant::UInt)
+    {
+        setBuffer<RSDULONG>(value);
+        valType = RSDPT_ULONG;
     }
     else if (value.type() == QVariant::LongLong)
     {
-        valueSize = typeSize(value.type());
-        this->value = malloc(valueSize);
+        setBuffer<RSDBIGINT>(value);
         valType = RSDPT_BIGINT;
     }
     else if (value.type() == QVariant::Double)
     {
-        this->value = new qreal();
+        //this->value = new qreal();
         valueSize = typeSize(value.type());
         valType = RSDPT_DOUBLE;
     }
@@ -54,7 +54,8 @@ RsdCommandEx::BindParam::BindParam(const QVariant &value, QSql::ParamType paramT
 
 RsdCommandEx::BindParam::~BindParam()
 {
-
+    if (value)
+        free(value);
 }
 
 int RsdCommandEx::BindParam::typeSize(const QVariant::Type &type)
@@ -64,7 +65,7 @@ int RsdCommandEx::BindParam::typeSize(const QVariant::Type &type)
     switch(type)
     {
     case QVariant::Int:
-        size = sizeof(qint32);
+        size = sizeof(RSDLONG);
         break;
     case QVariant::LongLong:
         size = sizeof(qint64);
@@ -91,7 +92,7 @@ RsdCommandEx::~RsdCommandEx()
 void RsdCommandEx::bindValue(const QString &placeholder, const QVariant &val, QSql::ParamType paramType)
 {
     RsdCommandEx::BindParam *prm = new RsdCommandEx::BindParam(val, paramType, placeholder);
-    addParam(prm->name, prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
+    addParam(prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
 
     m_Params.append(prm);
 }
@@ -99,7 +100,7 @@ void RsdCommandEx::bindValue(const QString &placeholder, const QVariant &val, QS
 void RsdCommandEx::bindValue(int index, const QVariant &val, QSql::ParamType paramType)
 {
     RsdCommandEx::BindParam *prm = new RsdCommandEx::BindParam(val, paramType, "");
-    insertParam(index, prm->name, prm->valType, prm->value, (long*)&prm->valueSize);
+    insertParam(index, prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
 
     m_Params.append(prm);
 }

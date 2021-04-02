@@ -150,3 +150,15 @@ WorkFMT\.pro\.user\.4\.9-pre1
 *.bin
 
 pytools/destrib/
+
+HotfixCreator/debug/
+
+HotfixCreator/release/
+
+qrsd/debug/
+
+qrsd/release/
+
+qrsdtest/debug/
+
+qrsdtest/release/

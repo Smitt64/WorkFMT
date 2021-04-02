@@ -1,4 +1,5 @@
-QT += sql sql-private
+QT += sql
+#sql-private
 
 TEMPLATE = lib
 CONFIG += plugin
@@ -17,7 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    rsdcachedresult.cpp \
+#    rsdcachedresult.cpp \
     rsdcommandex.cpp \
     rsddriver.cpp \
     rsdsqlresult.cpp \
@@ -25,7 +26,7 @@ SOURCES += \
 
 HEADERS += \
     BaseErrorSetter.hpp \
-    rsdcachedresult.h \
+#    rsdcachedresult.h \
     rsdcommandex.h \
     rsddriver.h \
     rsdsqlresult.h \
@@ -33,9 +34,12 @@ HEADERS += \
 
 DISTFILES += qrsd.json
 
-#
+#_MBCS
 INCLUDEPATH += $$PWD/rsd/include $$PWD/tools/h
+LIBS += -L$$PWD/tools/lib -lrsrtlwm
+
 DEFINES +=  SQLBUILD NUMERIC_AS_MONEY USE_NUMERIC USE_FDECIMAL
+DEFINES += _MBCS
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/rsd/lib/release -lrsdc
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/rsd/lib/debug -lrsdc

@@ -29,7 +29,10 @@ public:
             stream << codec1251->toUnicode(error.getDescr()) << endl;
         }
 
-        m_Ptr->setLastError(QSqlError(err, QString(), errorType));
+        if (!err.isEmpty())
+            m_Ptr->setLastError(QSqlError(err, QString(), errorType));
+        else
+            m_Ptr->setLastError(QSqlError(e.what(), QString(), errorType));
     }
 
     void setLastUnforeseenError(const QSqlError::ErrorType &errorType = QSqlError::UnknownError)

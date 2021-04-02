@@ -13,7 +13,8 @@ SUBDIRS += \
     FmtDbgHelp \
     FmtScript \
     FmtScriptTest \
-    qrsd
+    qrsd \
+    qrsdtest
 
 WorkFMT.depends = FmtLib
 FmtScript.depends = FmtLib
