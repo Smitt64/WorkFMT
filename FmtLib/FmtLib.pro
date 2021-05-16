@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += widgets sql xml script scripttools core
+QT       += widgets sql xml core script scripttools
 CONFIG   += force_debug_info
 TARGET = FmtLib
 TEMPLATE = lib

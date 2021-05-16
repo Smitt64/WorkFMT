@@ -150,3 +150,11 @@ WorkFMT\.pro\.user\.4\.9-pre1
 *.bin
 
 pytools/destrib/
+
+FmtLib/FmtLib.pro.EVulrX
+
+HotfixCreator/debug/
+
+HotfixCreator/release/
+
+qrsd/release/

@@ -10,14 +10,13 @@ SUBDIRS += \
     HotfixCreator \
     WorkFMT \
     DBFileTool \
-    FmtDbgHelp \
-    FmtScript \
-    FmtScriptTest \
-    qrsd
+    FmtDbgHelp #\
+    #FmtScript \
+    #FmtScriptTest
 
 WorkFMT.depends = FmtLib
-FmtScript.depends = FmtLib
-FmtScriptTest.depends = FmtLib FmtScript
+#FmtScript.depends = FmtLib
+#FmtScriptTest.depends = FmtLib FmtScript
 DBFileTool.depends = FmtLib
 HotfixCreator.depends = FmtLib
 
