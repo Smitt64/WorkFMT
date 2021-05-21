@@ -162,3 +162,7 @@ qrsd/release/
 qrsdtest/debug/
 
 qrsdtest/release/
+
+*.EVulrX
+
+msvc_make.bat

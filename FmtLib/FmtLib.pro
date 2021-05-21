@@ -32,6 +32,7 @@ LIBS += -lversion
 SOURCES += \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
+    src/core/maintenancetool.cpp \
     src/datfile.cpp \
     src/dbinitdlg.cpp \
     src/documentwindow.cpp \
@@ -276,6 +277,7 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    h/maintenancetool.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
     src/widgets/editcontent/fmteditcontentdialog.h \

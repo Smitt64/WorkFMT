@@ -30,6 +30,7 @@
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QDesktopServices>
+#include <QWhatsThis>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -64,11 +65,18 @@ MainWindow::MainWindow(QWidget *parent) :
     pLogButton->setFlat(true);
     ui->statusBar->addPermanentWidget(pLogButton);
 
+    pUpdateButton = new QPushButton(this);
+    pUpdateButton->setToolTip(tr("Обновления"));
+    pUpdateButton->setIcon(QIcon(":/img/base_globe_32.png"));
+    pUpdateButton->setFlat(true);
+    ui->statusBar->addPermanentWidget(pUpdateButton);
+
     CreateWindowsCombo();
     CreateMainToolBar();
     CreateWindowFunctional();
     CreateSearchToolBar();
     CreateViewMenu();
+    CreateCheckUpdateRunnable();
 
     ui->tabToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
@@ -486,6 +494,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     s->setValue("Geometry", saveGeometry());
     s->setValue("State", saveState());
     event->accept();
+    pMaintenanceTool->requestInterruption();
 }
 
 void MainWindow::conActionTriggered(QAction *action)
@@ -1280,6 +1289,55 @@ void MainWindow::CreateFromXml()
             wnd->show();
         }
     }
+}
+
+void MainWindow::CreateCheckUpdateRunnable()
+{
+    qRegisterMetaType<CheckUpdateData>();
+    qRegisterMetaType<CheckDataList>();
+
+    pMaintenanceTool = new MaintenanceTool();
+    connect(pMaintenanceTool, &MaintenanceTool::checkStarted, this, &MainWindow::UpdateCheckStarted);
+    connect(pMaintenanceTool, &MaintenanceTool::checkFinished, this, &MainWindow::UpdateCheckFinished);
+    QThreadPool::globalInstance()->start(pMaintenanceTool);
+}
+
+void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata)
+{
+    if (!hasUpdates)
+        pUpdateButton->setIcon(QIcon(":/img/base_globe_32.png"));
+    else
+    {
+        QPoint globalPoint = pUpdateButton->mapToGlobal(pUpdateButton->pos());
+        pUpdateButton->setIcon(QIcon(":/img/base_globe_has_update.png"));
+        pUpdateButton->setToolTip(tr("Доступны обновления"));
+
+        const QString hasUpdatesString = tr("Доступны обновления");
+        if (updatedata.empty())
+            QWhatsThis::showText(globalPoint, hasUpdatesString + "...", this);
+        else
+        {
+            QString text;
+            QTextStream stream(&text);
+            stream << hasUpdatesString << ":" << Qt::endl;
+
+            for(const CheckUpdateData &item : updatedata)
+            {
+                stream << tr("Компонент \"%1\" (%2), новая версия %3, размером %4")
+                          .arg(item.name)
+                          .arg(item.id)
+                          .arg(item.version)
+                          .arg(item.sizeString) << Qt::endl;
+            }
+
+            QWhatsThis::showText(globalPoint, text, this);
+        }
+    }
+}
+
+void MainWindow::UpdateCheckStarted()
+{
+    pUpdateButton->setIcon(QIcon(":/img/base_globe_updates.png"));
 }
 
 /*void MainWindow::OnCreateQuery()

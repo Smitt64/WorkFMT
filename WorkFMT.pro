@@ -12,9 +12,9 @@ SUBDIRS += \
     DBFileTool \
     FmtDbgHelp \
     FmtScript \
-    FmtScriptTest \
-    qrsd \
-    qrsdtest
+    FmtScriptTest #\
+#    qrsd \
+#    qrsdtest
 
 WorkFMT.depends = FmtLib
 FmtScript.depends = FmtLib
