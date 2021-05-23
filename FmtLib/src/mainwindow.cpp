@@ -1296,6 +1296,7 @@ void MainWindow::CreateCheckUpdateRunnable()
     qRegisterMetaType<CheckUpdateData>();
     qRegisterMetaType<CheckDataList>();
 
+    m_UpdatesChecked = false;
     pMaintenanceTool = new MaintenanceTool();
     connect(pMaintenanceTool, &MaintenanceTool::checkStarted, this, &MainWindow::UpdateCheckStarted);
     connect(pMaintenanceTool, &MaintenanceTool::checkFinished, this, &MainWindow::UpdateCheckFinished);
@@ -1305,7 +1306,10 @@ void MainWindow::CreateCheckUpdateRunnable()
 void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata)
 {
     if (!hasUpdates)
+    {
         pUpdateButton->setIcon(QIcon(":/img/base_globe_32.png"));
+        m_UpdatesChecked = false;
+    }
     else
     {
         QPoint globalPoint = pUpdateButton->mapToGlobal(pUpdateButton->pos());
@@ -1314,7 +1318,13 @@ void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updat
 
         const QString hasUpdatesString = tr("Доступны обновления");
         if (updatedata.empty())
-            QWhatsThis::showText(globalPoint, hasUpdatesString + "...", this);
+        {
+            if (!m_UpdatesChecked)
+            {
+                QWhatsThis::showText(globalPoint, hasUpdatesString + "...", this);
+                m_UpdatesChecked = true;
+            }
+        }
         else
         {
             QString text;
@@ -1330,7 +1340,11 @@ void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updat
                           .arg(item.sizeString) << Qt::endl;
             }
 
-            QWhatsThis::showText(globalPoint, text, this);
+            if (!m_UpdatesChecked)
+            {
+                QWhatsThis::showText(globalPoint, text, this);
+                m_UpdatesChecked = true;
+            }
         }
     }
 }

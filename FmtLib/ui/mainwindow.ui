@@ -305,6 +305,10 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/information.png</normaloff>:/img/information.png</iconset>
+   </property>
    <property name="text">
     <string>О программе...</string>
    </property>

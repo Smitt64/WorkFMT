@@ -92,5 +92,7 @@
         <file>img/base_globe_32.png</file>
         <file>img/base_globe_updates.png</file>
         <file>img/base_globe_has_update.png</file>
+        <file>img/dbftool.png</file>
+        <file>img/information.png</file>
     </qresource>
 </RCC>

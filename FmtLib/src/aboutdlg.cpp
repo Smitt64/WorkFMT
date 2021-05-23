@@ -18,13 +18,15 @@ AboutDlg::AboutDlg(QWidget *parent) :
                                                 << tr("Компонент")
                                                 << tr("ID")
                                                 << tr("Версия")
-                                                << tr("Размер"));
-    //ui->label->setPixmap(QPixmap(":/icon"));
+                                                << tr("Размер")
+                                                << tr("Установлен/Обновлен"));
 
     ui->labelBased->setText(tr("Основан на Qt %1").arg(QT_VERSION_STR));
     ui->textBrowser->setSource(QUrl("qrc:/about.html"));
     ui->tabWidget->setCurrentIndex(0);
     ui->componentsView->setModel(pComponentsModel);
+    ui->componentsView->header()->resizeSection(0, 150);
+    ui->componentsView->header()->resizeSection(1, 150);
     PutVersion();
     ReadComponents();
 }
@@ -55,7 +57,6 @@ void AboutDlg::ReadComponentPackage(QDomElement *Elem)
 
     QStandardItem *TitleItem = new QStandardItem();
     TitleItem->setText(Package["Title"]);
-    //TitleItem->setToolTip(Package["Description"]);
 
     QStandardItem *NameItem = new QStandardItem();
     NameItem->setText(Package["Name"]);
@@ -66,11 +67,26 @@ void AboutDlg::ReadComponentPackage(QDomElement *Elem)
     qint64 Size = Package["Size"].toLongLong();
     QStandardItem *SizeItem = new QStandardItem();
     SizeItem->setText(currentLocale.formattedDataSize(Size, 2, QLocale::DataSizeTraditionalFormat));
+
+    QDate InstallDate = QDate::fromString(Package["InstallDate"], Qt::ISODate);
+    QString datesString = InstallDate.toString(Qt::SystemLocaleShortDate);
+
+    if (!Package["LastUpdateDate"].isEmpty())
+    {
+        QDate LastUpdateDate = QDate::fromString(Package["LastUpdateDate"], Qt::ISODate);
+        datesString += QString("/%1")
+                .arg(LastUpdateDate.toString(Qt::SystemLocaleShortDate));
+    }
+
+    QStandardItem *DatesItem = new QStandardItem();
+    DatesItem->setText(datesString);
+
     pComponentsModel->appendRow(QList<QStandardItem*>()
                                 << TitleItem
                                 << NameItem
                                 << VersionItem
-                                << SizeItem);
+                                << SizeItem
+                                << DatesItem);
 }
 
 void AboutDlg::ReadComponents()

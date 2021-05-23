@@ -119,6 +119,7 @@ private:
 
     SubWindowsModel *pWindowsModel;
     MaintenanceTool *pMaintenanceTool;
+    bool m_UpdatesChecked;
 };
 
 #endif // MAINWINDOW_H
