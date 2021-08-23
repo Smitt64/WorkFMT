@@ -162,3 +162,7 @@ qrsd/release/
 qrsdtest/debug/
 
 qrsdtest/release/
+
+fmtopt.ini
+
+tables.dat

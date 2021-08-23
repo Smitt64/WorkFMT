@@ -4,18 +4,18 @@
 #define _TOOLVER_H_
 
 #define  RSL_COMPLECT_VER_HI    19
-#define  RSL_COMPLECT_VER_LO     8
-#define  RSL_COMPLECT_VER_STR   "19.08."
+#define  RSL_COMPLECT_VER_LO    12
+#define  RSL_COMPLECT_VER_STR   "19.12."
 
 
 #define  RSL_TOOLS_VER_HI        6
 #define  RSL_TOOLS_VER_LO       57
-#define  RSL_TOOLS_VER_BUILD   708
-#define  RSL_TOOLS_VER_PATCH     1
+#define  RSL_TOOLS_VER_BUILD   712
+#define  RSL_TOOLS_VER_PATCH     2
 
 
 #define  RSL_TOOLS_VERSION    (RSL_TOOLS_VER_HI*100000000 + RSL_TOOLS_VER_LO*100000 + RSL_TOOLS_VER_BUILD*100 + RSL_TOOLS_VER_PATCH)
-#define  RSL_TOOLS_VER_STR    "6.57.708.1\0"
+#define  RSL_TOOLS_VER_STR    "6.57.712.2\0"
 
 
 // Используется в rsrtlwm.rc для уникальности версии.

@@ -457,7 +457,7 @@ struct TOpLogFiltr
             {
              return setDprt || setDate || setTime || setTable || setCode ||
                     setUser || setUserType || setProg || setSAddr || setNetAddr || setTransComRecID || setRobot ||
-                    setSysCompName || setSysUserName || setRecID;
+                    setSysCompName || setSysUserName || setRecID || setObjectType;
             }
 
             size_t calcSize() const { return sizeof *this; }
@@ -476,7 +476,7 @@ struct TOpLogFiltr
 
             // Фильтр по идентификатору записи
             char     setRecID;
-            int32    recID;
+            int64_t  recID;
 
             // Фильтр по дате
             char     setDate;
@@ -537,6 +537,11 @@ struct TOpLogFiltr
             // Фильтр по PID
             char     setPID;
             int32    processID;
+
+            // Фильтр по типу объекта
+            char     setObjectType;
+            int16    objectType;
+
            };
    #include "packpop.h"
 
@@ -771,11 +776,23 @@ class _NALGEXP TOpLogViewer : public TKeyProc<TOpLogViewer>
           else         _transComRecID = 0;
        }
 
+       // Разрешить автоматическую установку фильтра по objectID и objectType 
+       void enableAutoObjectFiltr(bool enable, const char* objectID, int objectType)
+       {
+        if(enable) 
+         {
+          strncpy(_objectID, objectID, sizeof(_objectID) - 1)[sizeof(_objectID) - 1] = '\0';
+          _objectType = objectType;
+         }
+        else
+         {
+          _objectID[0] = '\0';
+          _objectType = 0;
+         }
+       }
 
        void setXmlOpen() { _xmlopen = true; }
-
        void unsetXmlOpen() { _xmlopen = false; }
-
        bool getXmlOpen() { return _xmlopen; }
 
        void set_no_xml()  { _no_xml = true; }
@@ -784,6 +801,10 @@ class _NALGEXP TOpLogViewer : public TKeyProc<TOpLogViewer>
 
        void setXmlFormat( int format ) {  if( _recv ) _recv->setXmlFormat( format ); }
        int getXmlFormat() {  return _recv ? _recv->getXmlFormat() : -1;  }
+
+       void setViewFiltr() { _viewFiltr = true; }
+       void unsetViewFiltr() { _viewFiltr = false; }
+       bool getViewFiltr() { return _viewFiltr; }
 
     //Overloaded
        virtual bool view();
@@ -871,7 +892,7 @@ class _NALGEXP TOpLogViewer : public TKeyProc<TOpLogViewer>
 
        // Поиск по полям постоянной части
        virtual int  findDprt         (int           numDprt);
-       virtual int  findRecID        (int           recID);
+       virtual int  findRecID        (int64_t       recID);
        virtual int  findDate         (bdate         date);
        virtual int  findTime         (btime         time);
        virtual int  findTable        (const char   *tableName);
@@ -889,6 +910,7 @@ class _NALGEXP TOpLogViewer : public TKeyProc<TOpLogViewer>
        virtual int  findSysCompName  (const char   *CompName);
        virtual int  findSysUserName  (const char   *UserName);
        virtual int  findPID          (int           pid);
+       virtual int  findObjectType   (int           objectType);
 
        // Выбор значения из списка
        virtual bool listDprt      (int          *numDprt);
@@ -906,13 +928,13 @@ class _NALGEXP TOpLogViewer : public TKeyProc<TOpLogViewer>
        virtual BSCROL *createScroll();
 
        // Настроить поля скроллинга
-       virtual bool setFlds       (BSCROL *bs);
+       virtual bool setFlds (BSCROL *bs);
 
        // Настроить фильтр для скроллинга
-               bool setFiltr      (BSCROL *bs);
+       bool setFiltr (BSCROL *bs);
 
        // Удалить скроллинг
-       virtual void deleteScroll  (BSCROL *bs);
+       virtual void deleteScroll (BSCROL *bs);
 
 
        // Просмотр входа
@@ -987,6 +1009,9 @@ class _NALGEXP TOpLogViewer : public TKeyProc<TOpLogViewer>
 
        bool           _no_xml;//AV 05.04.2011 признак работы журнала без xml-строк, в любых режимах XMLLOG
 
+       bool           _viewFiltr;     // показать панель фильтра до запуска скролинга
+       int            _objectType;    // для фильтра по типу и по идентификатору объекта
+       char           _objectID[41];  
 
        // Структура параметров для скроллинга по TBFileLogEntry
        struct _NALGEXP BFileParm
@@ -1047,7 +1072,11 @@ class _NALGEXP TOpLogViewer : public TKeyProc<TOpLogViewer>
 
        virtual void setAutoDateFiltr();
 
-       virtual void setAutoTransComFiltr(); //автоматически установить фильтр по TransComRecID (Id Входящей записи транспортной компоненты ТК)
+       // Автоматически установить фильтр по TransComRecID (Id Входящей записи транспортной компоненты ТК)
+       virtual void setAutoTransComFiltr(); 
+  
+       // Автоматически установить фильтр по objectType и objectID 
+       virtual void setAutoObjectFiltr();
 
        // Сохранить данные фильтра в динамически выделенном буфере
        void *saveFiltrData(size_t *size_ptr = NULL);

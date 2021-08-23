@@ -44,46 +44,53 @@
 #include "rw/decport.h"
 
 
-class RWDCMLExport RWDecimalParser {
-public:
-  RWDecimalParser();
-  RWDecimalPortable operator()(RW_SL_IO_STD(istream&));    // parse a number from a stream
-private:
-  RWDecimalPortable number_;
+class RWDCMLExport RWDecimalParser
+{
+ public:
+   RWDecimalParser();
+   RWDecimalPortable operator()(RW_SL_IO_STD(istream&));    // parse a number from a stream
 
-  /*
-   * Lexical analysis.
-   * Interface is via the reset(), token(), consume(), and digit() functions.
-   * The RWCStrings allow adjustments of precicely what matches a token.
-   */
-  RW_SL_IO_STD(istream) *input_;
-  RWCString leadingString_, trailingString_, digitSepString_, decString_;
-public:
-  // this enum must be public for Borland 3.2 to compile definition of token()
-  enum Token { DIGIT, DIGITSEP, DEC, LEADING, TRAILING, PERCENT,
-               PLUS, MINUS, LPAREN, RPAREN, NULLSTATE, MISSING, NAN, ERR, NONE };
-private:
-  Token     token_;       // current token: access via token() only!
-  char      digit_;       // access via digit() only!
-  int       unmatchedLparens_;  // RPAREN only found if this is > 0
-  void      reset(RW_SL_IO_STD(istream&));    // prepare to start lexical analysis
-  Token     token();      // returns the current token
-  RWBoolean consume(Token);//consumes the indicated token, or returns FALSE if wrong token
-  char      digit();      // if token() is DIGIT, this is the digit read in
-  void      nextToken();  // called by token() when necessary
-  RWBoolean stripFromInput(const char *);
+ private:
+   RWDecimalPortable  number_;
 
-  /*
-   * Parsing.  Each parse functions reads in the associated non-terminal.
-   * If a syntax error is encountered, FALSE is returned, otherwise TRUE
-   * is returned.  The number is filled in as it is parsed.
-   */
-  RWBoolean start();
-  RWBoolean anonum();
-  RWBoolean led();
-  RWBoolean sined();      // Can't use signed, it's a keyword
-  RWBoolean frac();
-  RWBoolean digits(RWCString *num);
+   /*
+    * Lexical analysis.
+    * Interface is via the reset(), token(), consume(), and digit() functions.
+    * The RWCStrings allow adjustments of precicely what matches a token.
+    */
+   RW_SL_IO_STD(istream)  *input_;
+   RWCString  leadingString_, trailingString_, digitSepString_, decString_;
+
+ public:
+   // this enum must be public for Borland 3.2 to compile definition of token()
+   enum Token
+      {
+       eRW_DIGIT, eRW_DIGITSEP, eRW_DEC, eRW_LEADING, eRW_TRAILING, eRW_PERCENT,
+       eRW_PLUS, eRW_MINUS, eRW_LPAREN, eRW_RPAREN, eRW_NULLSTATE, eRW_MISSING, eRW_NAN, eRW_ERR, eRW_NONE
+      };
+
+ private:
+   Token      token_;       // current token: access via token() only!
+   char       digit_;       // access via digit() only!
+   int        unmatchedLparens_;  // RPAREN only found if this is > 0
+   void       reset(RW_SL_IO_STD(istream&));    // prepare to start lexical analysis
+   Token      token();      // returns the current token
+   RWBoolean  consume(Token);//consumes the indicated token, or returns FALSE if wrong token
+   char       digit();      // if token() is DIGIT, this is the digit read in
+   void       nextToken();  // called by token() when necessary
+   RWBoolean  stripFromInput(const char *);
+
+   /*
+    * Parsing.  Each parse functions reads in the associated non-terminal.
+    * If a syntax error is encountered, FALSE is returned, otherwise TRUE
+    * is returned.  The number is filled in as it is parsed.
+    */
+   RWBoolean  start();
+   RWBoolean  anonum();
+   RWBoolean  led();
+   RWBoolean  sined();      // Can't use signed, it's a keyword
+   RWBoolean  frac();
+   RWBoolean  digits(RWCString *num);
 };
 
 #endif

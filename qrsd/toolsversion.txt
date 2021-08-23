@@ -1,0 +1,5 @@
+[Version]
+BuilDate=00.00.00
+Tools=0.0.0.0
+Rsd=0.0.0.0
+QRsdAddVersion=0

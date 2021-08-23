@@ -394,6 +394,8 @@ char          *DLMAPI  GetStdDataPath(void);
            VALUE                   *(*ptr_RunResult)(void);
 
            bool              (DLMAPI *ptr_LocRslTArrayCnvCheckBounds)(TGenObject *obj, bool checkBounds);
+
+           bool                     (*ptr_RunMacro2)(SYMPROC *sym, int nPar, VALUE *par);
           } RSLCALLTBL;
 
     // -----------------------------------------------------------------------------
@@ -522,6 +524,7 @@ char          *DLMAPI  GetStdDataPath(void);
         #define  AddObjectProviderModEx         ((RSLCALLTBL *)ExeExports)->ptr_AddObjectProviderModEx
         #define  UserNumber                     ((RSLCALLTBL *)ExeExports)->ptr_UserNumber
         #define  RunMacro                       ((RSLCALLTBL *)ExeExports)->ptr_RunMacro
+        #define  RunMacro2                      ((RSLCALLTBL *)ExeExports)->ptr_RunMacro2
         #define  BtClearRecordBuff              ((RSLCALLTBL *)ExeExports)->ptr_BtClearRecordBuff
         #define  fs_screenSize                  ((RSLCALLTBL *)ExeExports)->ptr_fs_screenSize
         #define  fs_saveStat                    ((RSLCALLTBL *)ExeExports)->ptr_fs_saveStat

@@ -157,6 +157,7 @@ extern const char RSL_FAR _SYNCFILE_STR_TOSERV[];
 extern const char RSL_FAR _SYNCFILE_STR_BATCH[];
 
 extern const char RSL_FAR _EDIT_STR_MSTATUS[];
+extern const char RSL_FAR _EDIT_STR_MSTATUS_GV[];
 
 extern const char RSL_FAR _EDIT_STR_MENU1[];
 extern const char RSL_FAR _EDIT_STR_MENU2[];
@@ -223,6 +224,10 @@ extern const char RSL_FAR _EDIT_STR_ERRSHOW[];
 extern const char RSL_FAR _EDIT_ALTPRINT[];
 extern const char RSL_FAR _EDIT_STR_MENU34[];
 extern const char RSL_FAR _EDIT_STR_MENU35[];
+extern const char RSL_FAR _EDIT_STR_MENU36[];
+extern const char RSL_FAR _EDIT_STR_MENU37[];
+extern const char RSL_FAR _EDIT_STR_MENU38[];
+extern const char RSL_FAR _EDIT_STR_MENU39[];
 
 extern const char RSL_FAR _E_SIGN_MAKE[];
 extern const char RSL_FAR _E_SIGN_CHECK[];
@@ -269,6 +274,12 @@ extern const char RSL_FAR _EDIT_SS_ALTPRINT[];
 
 extern const char RSL_FAR _EDIT_SS_MENU22[];
 extern const char RSL_FAR _EDIT_SS_RSLHLP[];
+
+extern const char RSL_FAR _EDIT_SS_MENU37[];
+extern const char RSL_FAR _EDIT_SS_MENU38[];
+extern const char RSL_FAR _EDIT_SS_MENU39[];
+
+extern const char RSL_FAR _IMAGEVIEWER_TITLE[];
                            
 extern const char RSL_FAR _EDIT_SS_MACRO_RUN[];
 extern const char RSL_FAR _EDIT_SS_MACRO_DEBUG[];

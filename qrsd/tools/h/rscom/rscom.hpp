@@ -184,7 +184,15 @@ class IRsObjControling
 #define  NullRsObj  ((IRsObj *)0)
 
 // -----------------------------------------------------------------------------
-typedef RslHandle32  HSTUB;
+// Проблема всплыла при сборке под MSVS 2017 x64, но, скорее всего, также
+// актуальна и для MSVS 2010 x64.
+// Пока исправляем только для MSVS 2017 x64
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) && defined(RSL_PL_WIN64)
+    typedef RslHandle64  HSTUB;
+#else
+    typedef RslHandle32  HSTUB;
+#endif
 
 // -----------------------------------------------------------------------------
 class IModuleObj : public IRsObj

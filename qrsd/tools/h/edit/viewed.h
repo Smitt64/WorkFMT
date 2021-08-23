@@ -36,6 +36,8 @@
 
 #define  EFL_CANCREATE  0x10
 
+#define  EFL_IMAGEVIEW  0x20
+
 // -----------------------------------------------------------------------------
 enum
    {
@@ -45,7 +47,9 @@ enum
     V_DUMPER = EFL_HEXVIEW,
 
     V_RDONLY_TXT = EFL_TEXTVIEW,
-    V_EDITOR_TXT = EFL_CANMODIFY | EFL_TEXTVIEW
+    V_EDITOR_TXT = EFL_CANMODIFY | EFL_TEXTVIEW,
+
+    V_RDONLY_IMAGE = EFL_IMAGEVIEW
    };
 
 

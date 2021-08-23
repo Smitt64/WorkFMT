@@ -1,5 +1,33 @@
 // -------------------------------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// Класс-обёртка для обхода конструкции (RsComSpecVal)p1).isOpt()
+// при сборке под MSVS 2017
+class CCastValRefToSpecVal
+{
+ private:
+   RsComSpecVal  m_SpecVal;
+   bool          m_isVal;
+
+ public:
+   // --------------------------------------------
+   CCastValRefToSpecVal(TValRef &rValRef) : m_SpecVal(0)
+   {
+    m_isVal = false;
+
+    if(rValRef.getType() == RSCOM_SPECVAL)
+      if(rValRef.getDataVal(RSCOM_SPECVAL, &m_SpecVal) == RSL_STAT_OK)
+        m_isVal = true;
+   }
+
+   // --------------------------------------------
+   bool IsOpt(void)
+   {
+    return m_isVal ? m_SpecVal.isOpt() : false;
+   }
+};
+
 // -----------------------------------------------------------------------------
 template <class T, class P1, class P2 >
 class Cracker2Def
@@ -19,7 +47,7 @@ class Cracker2Def
     TValRef  p1(ptr, 1);
 
     TRsStat  stat = (obj->*proc)(TValRef(ptr, 0), 
-                     count < 1 || (p1.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p1).isOpt()) ? def1 : (P2)p1);
+                     count < 1 || (p1.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p1).IsOpt()) ? def1 : (P2)p1);
 
     return stat;
    }
@@ -54,8 +82,8 @@ class Cracker3Def
     TValRef  p1(ptr, 1);
     TValRef  p2(ptr, 2);
     TRsStat  stat = (obj->*proc)(TValRef(ptr, 0),
-                     count < 1 || (p1.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p1).isOpt()) ? def1 : (P2)p1,
-                     count < 2 || (p2.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p2).isOpt()) ? def2 : (P3)p2);
+                     count < 1 || (p1.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p1).IsOpt()) ? def1 : (P2)p1,
+                     count < 2 || (p2.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p2).IsOpt()) ? def2 : (P3)p2);
 
     return stat;
    }
@@ -94,8 +122,9 @@ class Cracker3Def1
     int  count = ptr->getCount() - 1;
     TValRef  p1(ptr, 1);
     TValRef  p2(ptr, 2);
+
     TRsStat  stat = (obj->*proc)(TValRef(ptr, 0), (P2)p1,
-                     count < 2 || (p2.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p2).isOpt()) ? def1 : (P3)p2);
+                                         count < 2 || ((p2.getType() == RSCOM_SPECVAL) && (CCastValRefToSpecVal(p2).IsOpt())) ? def1 : (P3)p2);
 
     return stat;
    }
@@ -130,14 +159,15 @@ class Cracker4Def
    TRsStat operator () (IParmInfo *ptr)
    {
     int  count = ptr->getCount () - 1;
+
     TValRef  p1(ptr, 1);
     TValRef  p2(ptr, 2);
     TValRef  p3(ptr, 3);
 
     TRsStat  stat = (obj->*proc)(TValRef(ptr, 0),
-                     count < 1 || (p1.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p1).isOpt()) ? def1 : (P2)p1,
-                     count < 2 || (p2.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p2).isOpt()) ? def2 : (P3)p2,
-                     count < 3 || (p3.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p3).isOpt()) ? def3 : (P4)p3);
+                     count < 1 || (p1.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p1).IsOpt()) ? def1 : (P2)p1,
+                     count < 2 || (p2.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p2).IsOpt()) ? def2 : (P3)p2,
+                     count < 3 || (p3.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p3).IsOpt()) ? def3 : (P4)p3);
 
     return stat;
    }
@@ -180,10 +210,10 @@ class Cracker5Def
     TValRef  p4(ptr, 4);
 
     TRsStat  stat = (obj->*proc)(TValRef(ptr, 0),
-                     count < 1 || (p1.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p1).isOpt()) ? def1 : (P2)p1,
-                     count < 2 || (p2.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p2).isOpt()) ? def2 : (P3)p2,
-                     count < 3 || (p3.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p3).isOpt()) ? def3 : (P4)p3,
-                     count < 4 || (p4.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p4).isOpt()) ? def4 : (P5)p4);
+                     count < 1 || (p1.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p1).IsOpt()) ? def1 : (P2)p1,
+                     count < 2 || (p2.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p2).IsOpt()) ? def2 : (P3)p2,
+                     count < 3 || (p3.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p3).IsOpt()) ? def3 : (P4)p3,
+                     count < 4 || (p4.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p4).IsOpt()) ? def4 : (P5)p4);
 
     return stat;
    }
@@ -227,11 +257,11 @@ class Cracker6Def
     TValRef  p4(ptr, 4);
     TValRef  p5(ptr, 5);
     TRsStat  stat = (obj->*proc)(TValRef(ptr, 0),
-                     count < 1 || (p1.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p1).isOpt()) ? def1 : (P2)p1,
-                     count < 2 || (p2.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p2).isOpt()) ? def2 : (P3)p2,
-                     count < 3 || (p3.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p3).isOpt()) ? def3 : (P4)p3,
-                     count < 4 || (p4.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p4).isOpt()) ? def4 : (P5)p4,
-                     count < 5 || (p5.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p5).isOpt()) ? def5 : (P6)p5);
+                     count < 1 || (p1.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p1).IsOpt()) ? def1 : (P2)p1,
+                     count < 2 || (p2.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p2).IsOpt()) ? def2 : (P3)p2,
+                     count < 3 || (p3.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p3).IsOpt()) ? def3 : (P4)p3,
+                     count < 4 || (p4.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p4).IsOpt()) ? def4 : (P5)p4,
+                     count < 5 || (p5.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p5).IsOpt()) ? def5 : (P6)p5);
 
     return stat;
    }
@@ -278,12 +308,12 @@ class Cracker7Def
     TValRef  p6(ptr, 6);
 
     TRsStat  stat = (obj->*proc)(TValRef(ptr, 0),
-                     count < 1 || (p1.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p1).isOpt()) ? def1 : (P2)p1,
-                     count < 2 || (p2.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p2).isOpt()) ? def2 : (P3)p2,
-                     count < 3 || (p3.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p3).isOpt()) ? def3 : (P4)p3,
-                     count < 4 || (p4.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p4).isOpt()) ? def4 : (P5)p4,
-                     count < 5 || (p5.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p5).isOpt()) ? def5 : (P6)p5,
-                     count < 6 || (p6.getType() == RSCOM_SPECVAL && ((RsComSpecVal)p6).isOpt()) ? def6 : (P7)p6);
+                     count < 1 || (p1.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p1).IsOpt()) ? def1 : (P2)p1,
+                     count < 2 || (p2.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p2).IsOpt()) ? def2 : (P3)p2,
+                     count < 3 || (p3.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p3).IsOpt()) ? def3 : (P4)p3,
+                     count < 4 || (p4.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p4).IsOpt()) ? def4 : (P5)p4,
+                     count < 5 || (p5.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p5).IsOpt()) ? def5 : (P6)p5,
+                     count < 6 || (p6.getType() == RSCOM_SPECVAL && CCastValRefToSpecVal(p6).IsOpt()) ? def6 : (P7)p6);
 
     return stat;
    }

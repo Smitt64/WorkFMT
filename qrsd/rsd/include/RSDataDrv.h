@@ -182,8 +182,10 @@ extern "C"
       RSDRES_WAITTIMEOUT     =  0x200
    };
 
-#define RSD_SUCCEEDED(code) ( (code) & RSDRES_OK)
-#define RSD_INFO(code) (! ( (code) & RSDRES_NOERRORINFO))
+#define  RSD_SUCCEEDED(code)       ((code) & RSDRES_OK)
+#define  RSD_INFO(code)            (!((code) & RSDRES_NOERRORINFO))
+
+#define  RSD_SUCCEEDED_TRACE(res)  (int)(RSD_SUCCEEDED((res)) ? 0 : (res))
 
    enum RSDEDIT_MODE {  RSDNONE, RSDEDIT, RSDINSERT };
 
@@ -432,7 +434,13 @@ extern "C"
       RSDULONG     obOrdinal;   // the number of parameters/columns
       RSDVALTYPE   obType;      // Value type  
       RSDLONG      obLength;    // if obType == RSDPT_LPSTR 
+
+#ifdef RSL_PL_WIN64
+      RSDBIGINT    obValueOff;  // Value offset
+#else
       RSDLONG      obValueOff;  // Value offset
+#endif
+
       RSDLONG      obStatusOff; // Status field offset
    } RSDRSETBINDING;
 
@@ -440,7 +448,13 @@ extern "C"
       RSDULONG     obOrdinal;   // the number of parameters/columns
       RSDVALTYPE   obType;      // Value type  
       RSDLONG      obLength;    // if obType == RSDPT_LPSTR 
+
+#ifdef RSL_PL_WIN64
+      RSDBIGINT    obValueOff;  // Value offset
+#else
       RSDLONG      obValueOff;  // Value offset
+#endif
+
       RSDLONG      obKeyKind;   // Key Kind
       //      RSDULONG*    obSearchCond;   // Search condition
       RSDLONG      obSortOrder; // Sort order

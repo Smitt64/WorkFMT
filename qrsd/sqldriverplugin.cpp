@@ -10,7 +10,7 @@ SqlDriverPlugin::SqlDriverPlugin(QObject *parent)
 QSqlDriver *SqlDriverPlugin::create(const QString &key)
 {
     //static_assert(false, "You need to implement this function");
-    if (key == "qrsd")
+    if (key.toUpper() == "QRSD")
         return new RsdDriver();
 
     return nullptr;

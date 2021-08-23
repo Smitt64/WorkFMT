@@ -301,7 +301,12 @@ bool CXmlParserImpl::Parse(const std::wstring &xmlPath)
 // -----------------------------------------------------------------------------
 void CXmlParserImpl::CreateSaxReader()
 {
+ // А на MSVS 2017 наоборот, не поддерживается ниже SAXXMLReader60
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+ HRESULT  hr = -1;
+#else
  HRESULT  hr = CoCreateInstance(__uuidof(SAXXMLReader40), NULL, CLSCTX_ALL, __uuidof(ISAXXMLReader), (void **)&m_reader);
+#endif
 
 
  // #2912
@@ -362,7 +367,13 @@ void CXmlParserImpl::CreateSchemaCache()
  if(m_reader == NULL)
    return;
 
+
+ // А на MSVS 2017 наоборот, не поддерживается ниже SAXXMLReader60
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+ HRESULT  hr = -1;
+#else
  HRESULT  hr = CoCreateInstance(__uuidof(XMLSchemaCache40), NULL, CLSCTX_ALL, __uuidof(IXMLDOMSchemaCollection2), (void **)&m_schemaCache);
+#endif
 
 
  // #2912

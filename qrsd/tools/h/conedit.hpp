@@ -106,6 +106,34 @@ class _APPTLEXP TRSLConEditor : public TRSLEditor
     };
 
 ///////////////////////////////////////////////////////////////////////////////
+// TRSLImageEditor class
+class _APPTLEXP TRSLImageViewer : public TRSLEditor
+    {
+     TRSLImageViewer(const TRSLImageViewer &) {} // нельзя
+     TRSLImageViewer&operator = (const TRSLImageViewer &); // нельзя
+
+     private:
+       char   buff[_MAX_PATH];
+       void  *m_pv_Image;       // Указатель на объект класса CRSImage
+       bool   m_pv_HasImage;    // Флаг наличия картинки (непустой)
+
+     protected:
+       virtual int  run();
+       virtual void processKey(int &event);
+       virtual const char *CurrentFileName();
+
+       void HandleTag();
+       void PrepareMenu(PANEL *pMenu);
+
+     public:
+       TRSLImageViewer();
+
+       void SetImageObject(void *data);
+
+       ViewData  vdata;
+    };
+
+///////////////////////////////////////////////////////////////////////////////
 // TRSLWinEditor class
 class TRSLWinEditor : public TRSLEditor
     {

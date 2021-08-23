@@ -256,4 +256,6 @@
 {GetReturnVal},  // -c -d
 {LocRslTArrayCnvBinType},
 {RunResult},   // -c -d
-{LocRslTArrayCnvCheckBounds}
+{LocRslTArrayCnvCheckBounds},
+
+{RunMacro2}

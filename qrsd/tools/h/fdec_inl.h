@@ -124,6 +124,12 @@ FDECIMAL_INLINE FDecimal::FDecimal(const FDecimal_Value &Operand) : m_Value(Oper
 {
 }
 
+FDECIMAL_INLINE FDecimal::FDecimal(const FDecimal &other) 
+{
+ if(this != &other)
+   *this = other;
+}
+
 /*******************************************************************************
    FDecimal
    Conversions
@@ -997,6 +1003,12 @@ FDECIMAL_INLINE FMoney::FMoney(const char *pRawStr) : m_Value((const FMoney_Valu
 
 FDECIMAL_INLINE FMoney::FMoney(const FMoney_Value &Value) : m_Value(Value)
 {
+}
+
+FDECIMAL_INLINE FMoney::FMoney(const FMoney &other) 
+{
+ if(this != &other)
+   *this = other;  
 }
 
 /*******************************************************************************

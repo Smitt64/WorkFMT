@@ -53,6 +53,8 @@ extern "C" {
 #define  dGSI_CompName                  12
 #define  dGSI_UserName                  13
 #define  dGSI_CompName2                 14
+#define  dGSI_PID                       15
+#define  dGSI_TID                       16
 
 // -----------------------------------------------------------------------------
 // Сообщения RSL

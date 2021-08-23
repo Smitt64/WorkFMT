@@ -35,15 +35,20 @@
 //------------------ Для проверки правильности запуска методов.
 
 #ifndef __RSDC_PRECOMPILE
-#include "rsdcpre.h"
+    #include "rsdcpre.h"
 #endif
 
 #include "RsdErrMsg.h"
 #include "RSDRGlobParms.h"
 
 #ifndef __RSLOCALE_H
-#  include "rslocale.h"
+    #include "rslocale.h"
 #endif
+
+#include "strmoney.h"
+#include "RSDDefs.h"
+
+#include "traceinit.h"
 
 #pragma warning ( push )
 
@@ -57,6 +62,9 @@
 #ifdef _MSC_VER
 #define stricmp(s1,s2)     _stricmp((s1),(s2))
 #endif
+
+// Максимальный размер буфера
+#define  dMAXSIZE_VALTEXT   256
 
 class XRsdError;
 
@@ -799,6 +807,208 @@ public:
          }
       setStatus (RSDBS_OK);
       }
+
+   // --------------------------------------------
+   // Конвертируем значение в строку для вывода в трассу
+   char *toTraceString(void)
+   {
+    static char  valTxt[dMAXSIZE_VALTEXT] = "";
+
+
+    if(m_data)
+     {
+      char   buff[dMAXSIZE_VALTEXT];
+      void  *from = getDataPtr();
+
+
+      if(from)
+        switch(m_Type)
+             {
+              case RSDPT_BIT:
+                   sprintf(valTxt, "%d", (int)*(bool *)from);
+                   break;
+
+              case RSDPT_BYTE:
+                   sprintf(valTxt, "%d", (int)*(unsigned char *)from);
+                   break;
+
+              case RSDPT_SHORT:
+                   sprintf(valTxt, "%d", (int)*(short *)from);
+                   break;
+
+              case RSDPT_USHORT:
+                   sprintf(valTxt, "%u", (int)*(unsigned short *)from);
+                   break;
+
+              case RSDPT_LONG:
+                   sprintf(valTxt, "%ld", *(long *)from);
+                   break;
+
+              case RSDPT_ULONG:
+                   sprintf(valTxt, "%lu", *(unsigned long *)from);
+                   break;
+
+              case RSDPT_UBIGINT:
+                   {
+                    RSDUBIGINT  src = *(RSDUBIGINT *)from;
+
+                    sprintf(valTxt, "%I64u", src);
+                   }
+                   break;
+
+              case RSDPT_BIGINT:
+                   {
+                    RSDBIGINT  src = *(RSDBIGINT *)from;
+
+                    sprintf(valTxt, "%I64d", src);
+                   }
+                   break;
+
+              case RSDPT_FLOAT:
+                   sprintf(valTxt, "%f", (double)*(float *)from);
+                   break;
+
+              case RSDPT_DOUBLE:
+                   sprintf(valTxt, "%lf", *(double *)from);
+                   break;
+
+              case RSDPT_CHAR:
+                   sprintf(valTxt, "%d", (int)*(unsigned char *)from);
+                   break;
+
+              case RSDPT_LPSTR:
+                   {
+                    // Обрезаем выводимый текст по размеру буфера. Если тест превышает размер,
+                    // выводим его в таком виде:
+                    // 'ЧастьПоместившегосяТекста...', N
+                    // где N - полный размер текста
+                    int  buffSize = dMAXSIZE_VALTEXT,
+                         textSize = from ? (int)strlen((const char *)from) : 0;
+
+
+                    *valTxt = 0;
+
+                    if(textSize > 0)
+                     {
+                      if(textSize <= (buffSize - 3))
+                        sprintf(valTxt, "'%s'", (const char *)from);
+                      else
+                       {
+                        // В принципе, размер можно уменьшить на 17 символов, но для простоты уменьшаем на 20.
+                        char  tmpBuff[dMAXSIZE_VALTEXT - 20];
+
+
+                        strncpy(tmpBuff, (const char *)from, dMAXSIZE_VALTEXT - 20);
+                        tmpBuff[dMAXSIZE_VALTEXT - 21] = 0;
+
+                        sprintf(valTxt, "'%s...', %d", tmpBuff, textSize);
+                       }
+                     }
+                   }
+                   break;
+
+              case RSDPT_LPWSTR:
+                   {
+                    size_t           toLen    = dMAXSIZE_VALTEXT;
+                    size_t           fromLen  = wcslen((RSDWCHAR *)from) + 1;
+                    RslCodePageType  codePage = RSL_CP_RSOEM;
+
+
+                    LCW2RSCH(buff, (int)toLen, (RSDWCHAR *)from, (int)min(toLen, fromLen), codePage);
+                    buff[toLen - 1] = '\0';
+
+                    sprintf(valTxt, "'%s'", buff);
+                   }
+                   break;
+
+
+              case RSDPT_DECIMAL:
+                   {
+                    RSDDECIMAL  *src = (RSDDECIMAL *)from;
+                    FDecimal     dec(*src);
+                    long         valLen = getValueLen();
+
+
+                    //RSDDECIMAL         
+                    if(valLen != getRsdTypeSize(RSDPT_BIGINT) /*|| bRec.bufSize != RSDBIGINT_STRLEN*/)
+                     {
+                      decimal_to_str(dec, buff, 0, RSDDECIMAL_SCALE, 0);
+
+                      sprintf(valTxt, "%s", buff);
+                     }         
+                    else  //RSDBIGINT  
+                     {           
+                      // так как SQL_C_SBIGINT и SQL_C_UBIGINT из спецификации ODBC 3.0,  в Oracle ODBC вплоть до 12-ой версии не поддерживаются
+                      // RSDPT_BIGINT и RSDPT_UBIGINT биндятся в ODBC через SQL_C_NUMERIC c преобразованием в RSDDECIMAL внутри BigIntToOdbcCvt и BigIntFromOdbcCvt. 
+                      decimal_to_str(dec, buff, 0, RSDBIGINT_SCALE, 0);
+
+                      sprintf(valTxt, "%s", buff);
+                     }
+                   }
+                   break;
+
+       #ifdef USE_NUMERIC
+              case RSDPT_NUMERIC:
+                   numeric_to_str(*((Numeric *)from), buff, 0, RSDNUMERIC_SCALE, 0);
+
+                   sprintf(valTxt, "%s", buff);
+              break;
+       #endif
+
+              case RSDPT_DATE:
+                   {
+                    RSDDATE  &bnd = *(RSDDATE *)from;
+
+                    sprintf(valTxt, "%d.%d.%d", (int)bnd.day, (int)bnd.mon, (int)bnd.year);
+                   }
+                   break;
+
+              case RSDPT_TIME:
+                   {
+                    RSDTIME  &bnd = *(RSDTIME *)from;
+
+                    sprintf(valTxt, "%d.%d.%d", (int)bnd.hour, (int)bnd.min, (int)bnd.sec);
+                   }
+                   break;
+
+              case RSDPT_TIMESTAMP:
+                   {
+                    RSDTIMESTAMP  &bnd = *(RSDTIMESTAMP *)from;
+
+                    sprintf(valTxt, "%d.%d.%d %d:%d:%d", (int)bnd.date.day, (int)bnd.date.mon, (int)bnd.date.year, (int)bnd.time.hour, (int)bnd.time.min, (int)bnd.time.sec);
+                   }
+                   break;
+
+              case RSDPT_BINARY:
+                   {
+                    size_t  len = min(10, getValueLen());
+
+
+                    buff[0] = '\0';
+
+                    for(size_t  i = 0; i < len; ++i)
+                      {
+                       strcat(buff, " ");
+
+                       sprintf(buff + strlen(buff), "%0X", ((char *)from)[i]);
+                      }
+
+                    sprintf(valTxt, "%s", buff);
+                   }
+                   break;
+
+              case RSDPT_BFILE:
+                   sprintf(valTxt, "<blob>");
+                   break;
+
+              case RSDPT_CFILE:
+                   sprintf(valTxt, "<clob>");
+                   break;
+             }
+     }
+
+    return valTxt;
+   }
 
    RSDLPSTR AsRSDLPSTR ()
       {
@@ -1997,7 +2207,7 @@ public:
       RSDRSNAMEBINDING*    sort = NULL
       );
 
-   ~CRsdRecordset () { close (); }
+   ~CRsdRecordset();
 
 
    void open ()
@@ -2067,8 +2277,8 @@ public:
    long getFldCount () const { return (long)m_fields.size(); }
    long getFldIndex ( const char* name );
 
-   CRsdField& getFld ( long n );
-   CRsdField& getFld ( const char* name );
+   CRsdField &getFld(long n);
+   CRsdField &getFld(const char *name);
 
    void check ( RSDRESULT res, XRsdError::Source source );
 
@@ -2213,6 +2423,17 @@ public:
    void setAutoRefresh (bool bAuto);
    bool getAutoRefresh ();
    void refreshRecord ();
+
+   bool IsEnableTrace(void);
+   HTRACE GetODBCTraceHandle(void);
+   HTRACE GetMODBCTraceHandle(void);
+
+public:
+   // Статика для нужд трассировки
+   static HTRACE  st_hOdbcTrace;
+   static HTRACE  st_hMOdbcTrace;
+   static int     st_TraceCnt;
+   static int     st_MTraceCnt;
 
 protected:
 
@@ -2580,9 +2801,15 @@ public: \
    0   \
    },
 
-#define END_RSD_BINDING() {0,0,0, (RSDLONG)this,0} };\
-   return rgRSBindings;    \
-   }
+#ifdef RSL_PL_WIN64
+    #define END_RSD_BINDING() {0,0,0, (RSDBIGINT)this,0} };\
+       return rgRSBindings;    \
+       }
+#else
+    #define END_RSD_BINDING() {0,0,0, (RSDLONG)this,0} };\
+       return rgRSBindings;    \
+       }
+#endif
 
    friend class CRsdRecordset;
 

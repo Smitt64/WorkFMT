@@ -43,6 +43,14 @@ private:
     QScopedPointer<CRsdConnection> m_Connection;
 };
 
+bdate qDateToRsDate(const QDate &qdate);
+btime qTimeToRsTime(const QTime &qtime);
+btimestamp qDateTimeToRsTimeStamp(const QDateTime &qdatetime);
+
+QDate rsDateToQDate(const bdate &_rsdate);
+QTime rsTimeToQTime(const btime &_rstime);
+QDateTime rsTimeStampToQDateTime(const btimestamp &_rstimestamp);
+
 Q_DECLARE_METATYPE(const RsdDriver*)
 
 #endif // RSDDRIVER_H

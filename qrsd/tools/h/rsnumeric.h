@@ -113,6 +113,12 @@ class _TOOLEXP Numeric96 : public Numeric96_t
     *this = Numeric96::from(d);
    }
 
+   inline Numeric96(const Numeric96 &other)
+   {
+    if (this != &other)
+      *this = other;
+   }
+
 #ifdef FDECIMAL_T
    // Convert to FDecimal_t
    operator FDecimal_t() const
@@ -140,6 +146,7 @@ class _TOOLEXP Numeric96 : public Numeric96_t
 
     Numeric96::fromDigits(*this, 4, digits, 2U);
    }
+
 #endif
 
 // Error handlers ----------------------------------------------------------------------------

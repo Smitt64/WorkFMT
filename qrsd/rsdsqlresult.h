@@ -39,11 +39,11 @@ public:
 
     void setQuery(const QString &query) Q_DECL_OVERRIDE;
 
-    static QDate rsDateToQDate(const bdate &_rsDate);
+    /*static QDate rsDateToQDate(const bdate &_rsDate);
     static QTime rsTimeToQTime(const btime &_rsTime);
     static QVariant rsDateToVariantQDate(CRsdField &fld);
     static QVariant rsTimeToVariantQTime(CRsdField &fld);
-    static QVariant rsTimeStampToVariantQDateTime(CRsdField &fld);
+    static QVariant rsTimeStampToVariantQDateTime(CRsdField &fld);*/
     static QVariant rsBinaryToVariantQByteArray(CRsdField &fld);
     static QVariant rsCharToVariantQChar(CRsdField &fld);
     static QVariant rsNumericToVariant(CRsdField &fld);

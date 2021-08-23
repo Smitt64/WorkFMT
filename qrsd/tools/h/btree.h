@@ -48,6 +48,9 @@
 // Проход по иерархии снизу-вверх
 #define  MAKE_BRANCH_UPWARD       0x02
 
+#define  MAKE_BRANCH_FIRST_LEVEL  0x01
+#define  MAKE_BRANCH_CHILD_LEVEL  0x02
+
 #include "packpshn.h"
 
 // Элемент списка
@@ -60,6 +63,7 @@ typedef struct TREEITEM
        char        BranchOpened;                   // Признак распахнутости
        char        IsParent;                       // Является ли родителем
        char        BitMask1;                       // тут будут доп. признаки..
+       bool        ChildRecordsAdded;
       } TREEITEM;
 
 // Общая информация
@@ -68,6 +72,7 @@ typedef struct TREEINFO
        int32       TreeNumRec;                     // Общее число записей в дереве
        int32       TreeNumRecVirt;                 // -"- с учетом распахнутости
        TREEITEM   *TreeItemBuf;                    // Указатель на массив TREEITEM
+
        BTRVFILE   *bfile;                          // Файл, с которым работаем
        SCROL      *scroll;                         // Скроллинг
        int         FieldForTree;                   // Номер поля, в котором рисуем дерево
@@ -160,6 +165,12 @@ _APPTLFUNC int  TreeUpdateRec(TREEINFO *ti);
 _APPTLFUNC int  TreeHasSelection(TREEINFO *ti);
 _APPTLFUNC int  TreeFirstSelected(TREEINFO *ti);
 _APPTLFUNC int  TreeNextSelected(TREEINFO *ti, int item);
+
+_APPTLFUNC int  TreeHasSelection2(SCROL *S);
+_APPTLFUNC int  TreeFirstSelected2(SCROL *S);
+_APPTLFUNC int  TreeNextSelected2(SCROL *S, int item);
+_APPTLFUNC int  TreeGetCurrfl(SCROL *S, int RecPos);
+_APPTLFUNC int  TreeScrGoToLine(SCROL *S, int currfl);
 
 _APPTLFUNC void SetQuickSearchMode(TREEINFO *ti, int on);
 _APPTLFUNC void ScrollTree(SCROL *pSCROL, int iLine);

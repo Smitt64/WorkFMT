@@ -461,6 +461,128 @@ typedef union
 
 #include <packpop.h>
 
+/******************************************************************************
+   Буфер записи и буфер ключа журнала операций
+
+   OPERLOG_6, OPERLOG_6_BUFKEY
+******************************************************************************/
+
+#include <packpsh1.h>
+
+typedef struct
+      {
+       db_bdate    date;             // дата-время операции
+       db_btime    time;
+
+       db_int16    numDprt;          // филиал
+       char        progID;           // идентификатор программы
+       db_int16    userID;           // идентификатор пользователя
+       char        userType;         // тип пользователя
+       db_int16    opCode;           // код операции
+
+       db_uint32   netaddr;          // networkNumber
+       char        saddr[6];         // physicalNodeAddress
+
+       db_uint32   crc32;            // контрольная сумма
+       db_int64    recID;            // идентификатор записи
+       
+       char        tableName[21];    // имя таблицы в БД
+       db_int16    objectType;       // тип объекта
+       char        objectID[41];     // идентификатор объекта
+
+       char        reserv[46];       // резерв
+
+       db_int32    transComRecID;    // Id входящего сообщения транспортной компоненты (ТК) (49-52 байты поля
+                                     // t_Reserve в старых таблицах журнала (dfisclog_dbt, doperlog_dbt)) 
+
+       db_int16    robot;            // Номер технологического пользователя-робота, от имени которого запущен
+                                     // пользовательский процесс сервера приложений, обеспечивающий коммуникацию
+                                     // с внешней системой
+
+       db_uint32   varLenXML;        // длина переменной части в xml-записях журнала (53-56 байты поля t_Reserve
+                                     // в старых таблицах журнала (dfisclog_dbt, doperlog_dbt))
+       db_uint32   varLenBig;        // длина переменной части если > 64K (57-60 байты поля t_Reserve в старых
+                                     // таблицах журнала (dfisclog_dbt, doperlog_dbt))
+       db_uint16   varLen;           // длина переменной части < 64K. Если равно 1, то размер > 64K в varLenBig
+
+       char        sysCompName[dNAME_LEN_COMP];  // Имя компьютера
+       char        sysUserName[dNAME_LEN_USER];  // Имя пользователя
+
+       db_int32    processID;        // идентификатор процесса (или сессии - кто как хочет)
+      } OPERLOG_6;
+
+
+typedef union
+      {
+       struct
+            {
+             db_bdate  date;
+             db_btime  time;
+            } stamp;
+
+       struct
+            {
+             db_baseint16  numDprt;
+             db_baseint64  recID;
+            } id;
+
+       struct
+            {
+             db_baseint16  numDprt;
+             db_bdate      date;
+             db_btime      time;
+            } dprt;
+
+       struct
+            {
+             char      progID;
+             db_bdate  date;
+             db_btime  time;
+            } prog;
+
+       struct
+            {
+             db_baseint16  userID;
+             db_bdate      date;
+             db_btime      time;
+            } user;
+
+       struct
+            {
+             char      tableName[21];
+             db_bdate  date;
+             db_btime  time;
+            } table;
+
+       struct
+            {
+             db_baseint16  objectType;
+             db_bdate      date;
+             db_btime      time;
+            } type;
+
+       struct
+            {
+             char      objectID[41];
+             db_bdate  date;
+             db_btime  time;
+            } obj;
+
+       struct
+            {
+             db_baseint32  transComRecID;               
+            } transcom;
+
+       struct
+            {
+             db_baseint64  recID;
+            } recid;
+
+      } OPERLOG_6_BUFKEY;
+
+#include <packpop.h>
+
+
 // -----------------------------------------------------------------------------
 enum                             // Номера ключей
    {
@@ -507,6 +629,38 @@ typedef union
              db_baseint16  numDprt;
             } dprt;
       } OPLOGSUP_BUFKEY;
+
+#include <packpop.h>
+
+/******************************************************************************
+   Буфер записи и буфер ключа вспомогательного файла журнала операций
+
+   OPLOGSUP_6, OPLOGSUP_BUFKEY_6
+******************************************************************************/
+
+#include <packpsh1.h>
+
+typedef struct
+      {
+       char       fileName[26];     // файл журнала
+       db_int16   numDprt;          // филиал
+
+       db_uint32  crc32;            // контрольная сумма
+       db_int64   recID;            // идентификатор записи
+
+       db_uint32  xml_crc32;        // контрольная сумма для xml-записей
+
+       char       reserv[56];       // резерв
+      } OPLOGSUP_6;
+
+typedef union
+      {
+       struct
+            {
+             char          fileName[26];
+             db_baseint16  numDprt;
+            } dprt;
+      } OPLOGSUP_BUFKEY_6;
 
 #include <packpop.h>
 

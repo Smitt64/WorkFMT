@@ -196,3 +196,65 @@ QTextCodec *RsdDriver::getCodec866()
 {
     return codec866;
 }
+
+bdate qDateToRsDate(const QDate &qdate)
+{
+    bdate _rsDate;
+    memset(&_rsDate, 0, sizeof(bdate));
+
+    if (!qdate.isNull())
+    {
+        _rsDate.day  = static_cast<unsigned char>(qdate.day());
+        _rsDate.mon  = static_cast<unsigned char>(qdate.month());
+        _rsDate.year = static_cast<unsigned short>(qdate.year());
+    }
+
+    return _rsDate;
+}
+
+QDate rsDateToQDate(const bdate &_rsdate)
+{
+    QDate qdate;
+
+    if (_rsdate.day != 0 && _rsdate.mon != 0 && _rsdate.year != 0)
+        qdate = QDate(_rsdate.year, _rsdate.mon, _rsdate.day);
+
+    return qdate;
+}
+
+btime qTimeToRsTime(const QTime &qtime)
+{
+    btime _rsTime;
+    memset(&_rsTime, 0, sizeof(btime));
+
+    _rsTime.hour = static_cast<unsigned char>(qtime.hour());
+    _rsTime.min = static_cast<unsigned char>(qtime.minute());
+    _rsTime.sec = static_cast<unsigned char>(qtime.second());
+
+    return _rsTime;
+}
+
+QTime rsTimeToQTime(const btime &_rstime)
+{
+    return QTime(_rstime.hour, _rstime.min, _rstime.sec);
+}
+
+btimestamp qDateTimeToRsTimeStamp(const QDateTime &qdatetime)
+{
+    btimestamp _rsDateTime;
+    memset(&_rsDateTime, 0, sizeof(btimestamp));
+
+    _rsDateTime.date = qDateToRsDate(qdatetime.date());
+    _rsDateTime.time = qTimeToRsTime(qdatetime.time());
+
+    return _rsDateTime;
+}
+
+QDateTime rsTimeStampToQDateTime(const btimestamp &_rstimestamp)
+{
+    QDateTime qdatetime;
+    qdatetime.setDate(rsDateToQDate(_rstimestamp.date));
+    qdatetime.setTime(rsTimeToQTime(_rstimestamp.time));
+
+    return qdatetime;
+}

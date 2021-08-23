@@ -175,6 +175,8 @@ typedef struct
               char  resFileDir[_MAX_PATH];
               char  helpFileDir[_MAX_PATH];
 
+              int   useDelayedTree;
+
               // ----- Поле PICTURE
               int   maxPictureSize,             // Максимальный размер (в килобайтах) файла с картинкой для поля PICTURE
                     maxPictureCount;            // Максимальное количество картинок в списке для поля PICTURE

@@ -9,7 +9,7 @@ RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
 {
     QSqlDriver *cdriver = const_cast<QSqlDriver*>(db);
     m_Driver = dynamic_cast<RsdDriver*>(cdriver);
-    m_Cmd.reset(new RsdCommandEx(m_Driver->connection()));
+    m_Cmd.reset(new RsdCommandEx(m_Driver->connection(), m_Driver));
 }
 
 RsdSqlResult::~RsdSqlResult()
@@ -231,7 +231,7 @@ bool RsdSqlResult::prepare(const QString &query)
     return result;
 }
 
-QDate RsdSqlResult::rsDateToQDate(const bdate &_rsDate)
+/*QDate RsdSqlResult::rsDateToQDate(const bdate &_rsDate)
 {
     if (_rsDate.day == 0 && _rsDate.mon == 0 && _rsDate.year == 0)
         return QDate();
@@ -257,7 +257,7 @@ QVariant RsdSqlResult::rsTimeToVariantQTime(CRsdField &fld)
     Q_ASSERT(fld.getType() == RSDPT_TIME);
     btime _rsTime = fld.AsRSDTIME();
     return QVariant(QTime(_rsTime.hour, _rsTime.min, _rsTime.sec, _rsTime.hundr));
-}
+}*/
 
 QVariant RsdSqlResult::rsBinaryToVariantQByteArray(CRsdField &fld)
 {
@@ -274,7 +274,7 @@ QVariant RsdSqlResult::rsCharToVariantQChar(CRsdField &fld)
     return QVariant(codec866->toUnicode(QByteArray(1, ch)).front());
 }
 
-QVariant RsdSqlResult::rsTimeStampToVariantQDateTime(CRsdField &fld)
+/*QVariant RsdSqlResult::rsTimeStampToVariantQDateTime(CRsdField &fld)
 {
     Q_ASSERT(fld.getType() == RSDPT_TIMESTAMP);
     btimestamp _rsTimeStamp = fld.AsRSDTIMESTAMP();
@@ -284,7 +284,7 @@ QVariant RsdSqlResult::rsTimeStampToVariantQDateTime(CRsdField &fld)
     QTime _rsTime = rsTimeToQTime(_rsTimeStamp.time);
 
     return QDateTime(_rsDate, _rsTime);
-}
+}*/
 
 QVariant RsdSqlResult::rsNumericToVariant(CRsdField &fld)
 {
@@ -345,13 +345,13 @@ QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld)
                 retVal = m_Driver->fromOem866(QLatin1String(fld.AsRSDLPSTR()));
                 break;
             case RSDPT_DATE:
-                retVal = rsDateToVariantQDate(fld);
+                retVal = rsDateToQDate(fld.AsRSDDATE());
                 break;
             case RSDPT_TIME:
-                retVal = rsTimeToVariantQTime(fld);
+                retVal = rsTimeToQTime(fld.AsRSDTIME());
                 break;
             case RSDPT_TIMESTAMP:
-                retVal = rsTimeStampToVariantQDateTime(fld);
+                retVal = rsTimeStampToQDateTime(fld.AsRSDTIMESTAMP());
                 break;
             case RSDPT_BINARY:
                 retVal = rsBinaryToVariantQByteArray(fld);

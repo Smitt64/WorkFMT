@@ -1,10 +1,10 @@
 // -------------------------------------------------------------------------------------------------
 
-#define  RSL_VER_STRING  "8.17.1305.1\0"
+#define  RSL_VER_STRING  "8.17.1307.0\0"
 #define  RSL_VER_HI                    8
 #define  RSL_VER_LO                   17
-#define  RSL_VERSION                1305
-#define  RSL_VER_PATCH                 1
+#define  RSL_VERSION                1307
+#define  RSL_VER_PATCH                 0
 
 /*
 25.01.2011 Ver. 6.15.1134.0

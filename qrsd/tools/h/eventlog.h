@@ -135,7 +135,7 @@ class _APPTLEXP TEventReceiver
              char        objectID[objectID_size];
 
              // Kubrin's
-             int32       recID;
+             int64_t     recID;
 
              //AV 24.08.2011
              int32       transComRecID;   //Id входящей записи ТК (транспортной компоненты)

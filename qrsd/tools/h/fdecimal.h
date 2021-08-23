@@ -311,6 +311,7 @@ class FDECIMAL_DECLSPEC FDecimal
        FDECIMAL_INLINE FDecimal(float);
        FDECIMAL_INLINE FDecimal(double);
        FDECIMAL_INLINE FDecimal(long double);
+       FDECIMAL_INLINE FDecimal(const FDecimal &);
 
        explicit FDECIMAL_INLINE FDecimal(const char *);
 
@@ -556,6 +557,7 @@ class FDECIMAL_DECLSPEC FMoney
        FDECIMAL_INLINE FMoney(float);
        FDECIMAL_INLINE FMoney(double);
        FDECIMAL_INLINE FMoney(long double);
+       FDECIMAL_INLINE FMoney(const FMoney &);
 
        explicit FDECIMAL_INLINE FMoney(const char *);
 

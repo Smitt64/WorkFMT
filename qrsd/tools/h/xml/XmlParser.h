@@ -20,7 +20,11 @@
 
 
 #ifdef _DEBUG
-    #pragma comment(lib, "atlsd.lib")
+    // Точно версию MSVS искать лень, но в 2017 этой библиотеки точно нет
+    // (а также atlsn.lib и atlsnd.lib).
+    #if defined(_MSC_VER) && (_MSC_VER < 1900)
+        #pragma comment(lib, "atlsd.lib")
+    #endif
 #endif
 
 // Forward class declarations.

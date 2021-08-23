@@ -36,13 +36,15 @@ DISTFILES += qrsd.json
 
 #_MBCS
 INCLUDEPATH += $$PWD/rsd/include $$PWD/tools/h
-LIBS += -L$$PWD/tools/lib -lrsrtlwm
 
 DEFINES +=  SQLBUILD NUMERIC_AS_MONEY USE_NUMERIC USE_FDECIMAL
 DEFINES += _MBCS
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/rsd/lib/release -lrsdc
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/rsd/lib/debug -lrsdc
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/tools/lib/release -lrsrtlwm
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/tools/lib/debug -lrsrtlwm
 
 target.path = ../bin/sqldrivers
 INSTALLS += target

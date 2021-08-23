@@ -29,6 +29,11 @@
 
 #include <limits.h>
 
+// Поддержка сборки под MSVS 2017
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+    #include <stdint.h>
+#endif
+
 #include <systypes.h>
 #include <platform.h>
 #include <rsdbhd.hpp>
