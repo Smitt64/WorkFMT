@@ -316,7 +316,7 @@ void MainWindow::OpenConnection(const QString &connectionString)
 
     if (ParseConnectionString(connectionString, user, pswd, dsn))
     {
-        ConnectionInfo *info = Q_NULLPTR;
+        /*ConnectionInfo *info = Q_NULLPTR;
         OracleAuthDlg::OraCreateConnection(user, pswd, dsn, &info);
 
         if (info->isOpen())
@@ -325,7 +325,7 @@ void MainWindow::OpenConnection(const QString &connectionString)
             info->updateFmtList();
         }
         else
-            delete info;
+            delete info;*/
     }
 }
 
@@ -335,16 +335,16 @@ void MainWindow::actionConnectTriggered()
 
     if (dlg.exec() == QDialog::Accepted)
     {
-        ConnectionInfo *info = dlg.createConnectionInfo();
-        CreateConnectionActio(dlg.getConnectionSheme(), info);
+        ConnectionInfo *info = dlg.getConnectionInfo();
+        CreateConnectionActio(info);
         info->updateFmtList();
     }
 }
 
-QAction *MainWindow::CreateConnectionActio(const QString &ShemeName, ConnectionInfo *info)
+QAction *MainWindow::CreateConnectionActio(ConnectionInfo *info)
 {
     QAction *a = new QAction(this);
-    a->setText(ShemeName);
+    a->setText(info->schemeName());
     a->setCheckable(true);
     ui->tabToolBar->addAction(a);
     m_ConnectionsGroup->addAction(a);
@@ -838,7 +838,7 @@ void MainWindow::OpenRecentConnection()
 
     if (action)
     {
-        RecentList item = qvariant_cast<RecentList>(action->data());
+        /*RecentList item = qvariant_cast<RecentList>(action->data());
 
         ConnectionInfo *info = Q_NULLPTR;
         QSqlDatabase db = OracleAuthDlg::OraCreateConnection(item.user,
@@ -850,7 +850,7 @@ void MainWindow::OpenRecentConnection()
                                            item.port,
                                            &info);
         if (db.isOpen() && info)
-            CreateConnectionActio(item.database, info);
+            CreateConnectionActio(item.database, info);*/
     }
 }
 
@@ -1014,7 +1014,7 @@ void MainWindow::OpenConnection()
                 delete info;
             else
             {
-                CreateConnectionActio(info->schemeName(), info);
+                CreateConnectionActio(info);
                 info->updateFmtList();
                 s->setValue("LastOpenConnectionDir", finfo.absolutePath());
                 s->sync();

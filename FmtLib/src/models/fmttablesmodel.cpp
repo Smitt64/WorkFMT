@@ -22,6 +22,8 @@ void FmtTablesModel::updateFmtList()
     if (pQuery == Q_NULLPTR)
         pQuery = new QSqlQuery(pInfo->_db);
 
+    /*pQuery->prepare("select * from FMT_NAMES WHERE lower(T_NAME) LIKE 'dad%' ORDER BY T_NAME ASC");
+    ExecuteQuery(pQuery);*/
     if (!m_FilterString.contains(","))
     {
         QString str = "%" + m_FilterString + "%";
@@ -37,7 +39,7 @@ void FmtTablesModel::updateFmtList()
         bool NeedOr = false;
         int pos = 0;
         foreach (const QString table, list) {
-            Q_UNUSED(table);
+            Q_UNUSED(table)
             if (NeedOr)
                 query += " OR ";
             else
@@ -78,37 +80,49 @@ QString FmtTablesModel::filterString()
     return m_FilterString;
 }
 
+QVariant FmtTablesModel::fieldValue(const QModelIndex &item, const int &id) const
+{
+    QModelIndex idx = index(item.row(), id);
+    return QSqlQueryModel::data(idx, Qt::EditRole);
+}
+
 QVariant FmtTablesModel::data(const QModelIndex &item, int role) const
 {
     if (role == Qt::DisplayRole)
     {
+        QVariant name = fieldValue(item, fnc_Name);
+        QVariant comment = fieldValue(item, fnc_Comment);
+
         return QString("%1 (%2)")
-                .arg(record(item.row()).value(fnc_Name).toString())
-                .arg(record(item.row()).value(fnc_Comment).toString());
+                .arg(name.toString())
+                .arg(comment.toString());
     }
 
     if (role == Qt::UserRole)
     {
-        return record(item.row()).value(fnc_Name).toString();
+        QSqlRecord rec = record(item.row());
+        QVariant name = rec.value(fnc_Name);
+
+        return name.toString();
     }
 
     if (role == Qt::StatusTipRole || role == Qt::WhatsThisRole || role == Qt::ToolTipRole)
     {
-        return record(item.row()).value(fnc_Comment).toString();
+        QSqlRecord rec = record(item.row());
+        QVariant comment = rec.value(fnc_Comment);
+
+        return comment.toString();
     }
 
     if (role == Qt::DecorationRole)
     {
-        quint16 Flags = record(item.row()).value(fnc_Flags).toInt();
+        QSqlRecord rec = record(item.row());
+        quint16 Flags = rec.value(fnc_Flags).value<quint16>();
 
         if (hasTemporaryFlag(Flags))
-        {
-            return (QVariant)tmpTableIcon;
-        }
+            return QVariant::fromValue(tmpTableIcon);
         else
-        {
-            return (QVariant)tableIcon;
-        }
+            return QVariant::fromValue(tableIcon);
     }
 
     return QSqlQueryModel::data(item, role);

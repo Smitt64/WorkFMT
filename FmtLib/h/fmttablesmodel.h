@@ -11,7 +11,7 @@ class FMTLIBSHARED_EXPORT FmtTablesModel : public QSqlQueryModel
 {
     Q_OBJECT
 public:
-    FmtTablesModel(ConnectionInfo *ConInfo, QObject *parent = 0);
+    FmtTablesModel(ConnectionInfo *ConInfo, QObject *parent = nullptr);
     virtual ~FmtTablesModel();
 
     void updateFmtList();
@@ -23,6 +23,7 @@ public:
     virtual QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
 
 private:
+    QVariant fieldValue(const QModelIndex &item, const int &id) const;
     ConnectionInfo *pInfo;
     QString m_FilterString;
     QIcon tableIcon, tmpTableIcon;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>637</width>
-    <height>424</height>
+    <width>581</width>
+    <height>346</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,25 +17,19 @@
    <iconset resource="../res/fmt.qrc">
     <normaloff>:/db</normaloff>:/db</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_7">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
      <item>
-      <widget class="QTableWidget" name="tableWidget">
-       <property name="minimumSize">
-        <size>
-         <width>240</width>
-         <height>0</height>
-        </size>
-       </property>
+      <widget class="QTreeWidget" name="treeWidget">
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
+       <property name="showDropIndicator" stdset="0">
+        <bool>false</bool>
        </property>
-       <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectRows</enum>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
        </property>
        <column>
         <property name="text">
@@ -44,34 +38,19 @@
        </column>
        <column>
         <property name="text">
-         <string>Сервис</string>
+         <string>DSN</string>
         </property>
        </column>
       </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Аутентификация</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <property name="leftMargin">
-           <number>3</number>
-          </property>
-          <property name="topMargin">
-           <number>3</number>
-          </property>
-          <property name="rightMargin">
-           <number>3</number>
-          </property>
-          <property name="bottomMargin">
-           <number>3</number>
-          </property>
-          <property name="spacing">
-           <number>3</number>
-          </property>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Аутентификация</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
+        <item>
+         <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
@@ -80,7 +59,11 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="lineEdit_username"/>
+           <widget class="QLineEdit" name="lineEdit_username">
+            <property name="text">
+             <string>SERP_3174</string>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_7">
@@ -91,12 +74,32 @@
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="lineEdit_passw">
+            <property name="text">
+             <string>SERP_3174</string>
+            </property>
             <property name="echoMode">
              <enum>QLineEdit::Password</enum>
             </property>
            </widget>
           </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>База данных:</string>
+            </property>
+           </widget>
+          </item>
           <item row="2" column="1">
+           <widget class="QComboBox" name="comboBox_Dsn">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="currentText">
+             <string>THOR_DB12DEV1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
            <widget class="QCheckBox" name="checkBox_savePass">
             <property name="text">
              <string>Запомнить пароль</string>
@@ -104,151 +107,27 @@
            </widget>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTabWidget" name="tabWidget">
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="tab">
-          <attribute name="title">
-           <string>TNS</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>База данных:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="comboBox">
-             <property name="editable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>323</width>
-               <height>38</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_2">
-          <attribute name="title">
-           <string>Direct</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_2">
-               <item>
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>Адрес:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="lineEdit_host"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_3">
-               <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="text">
-                  <string>Порт:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSpinBox" name="spinBox">
-                 <property name="maximum">
-                  <number>9999</number>
-                 </property>
-                 <property name="value">
-                  <number>1521</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_4">
-             <item>
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Сервис:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_service"/>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tab_3">
-          <attribute name="title">
-           <string>TnsNamesOra</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <item>
-            <widget class="QTableView" name="tnsNamesTable"/>
-           </item>
-          </layout>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>108</width>
+            <height>71</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QPushButton" name="delRecentButton">
        <property name="text">
@@ -289,8 +168,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>lineEdit_host</tabstop>
-  <tabstop>spinBox</tabstop>
   <tabstop>lineEdit_username</tabstop>
   <tabstop>lineEdit_passw</tabstop>
   <tabstop>pushButton_accept</tabstop>

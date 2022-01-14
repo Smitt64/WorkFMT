@@ -1,7 +1,10 @@
 #include "connectioninfo.h"
 #include "fmttablesmodel.h"
 #include "fmtcore.h"
+#include "loggingcategories.h"
 #include <QPainter>
+#include <QSqlDriver>
+#include <QSqlError>
 
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     QObject(Q_NULLPTR),
@@ -86,6 +89,28 @@ int ConnectionInfo::type() const
     return m_Type;
 }
 
+bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn)
+{
+    bool hr = false;
+    m_Alias = QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    m_SchemeName = QString("%1@%2").arg(user, dsn);
+
+    _db = QSqlDatabase::addDatabase(drv, m_Alias);
+    _db.setUserName(user);
+    _db.setPassword(password);
+    _db.setDatabaseName(dsn);
+    hr = _db.open();
+
+    if (hr)
+        qCInfo(logCore()) << QString("Connected to %1@%2").arg(user, dsn);
+    else
+    {
+        qCInfo(logCore()) << QString("Can't connect to %1@%2").arg(user, dsn);
+        qCInfo(logCore()) << _db.driver()->lastError().text().toLocal8Bit();
+    }
+    return hr;
+}
+
 bool ConnectionInfo::openSqlite(const QString &filename)
 {
     QFileInfo fi(filename);
@@ -94,6 +119,15 @@ bool ConnectionInfo::openSqlite(const QString &filename)
     _db.setDatabaseName(filename);
     m_SchemeName = fi.fileName();
     bool hr = _db.open();
+
+    if (hr)
+        qCInfo(logCore()) << QString("Connected to %1").arg(fi.baseName());
+    else
+    {
+        qCInfo(logCore()) << QString("Can't connect to %1").arg(fi.baseName());
+        qCInfo(logCore()) << _db.driver()->lastError().text().toLocal8Bit();
+    }
+
     return hr;
 }
 

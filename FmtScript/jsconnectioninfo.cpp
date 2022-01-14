@@ -29,7 +29,7 @@ QScriptValue JsCreateConnection(QScriptContext *context, QScriptEngine *eng)
         passw = context->argument(1).toString();
         DSN = context->argument(2).toString();
 
-        OracleAuthDlg::OraCreateConnection(username, passw, DSN, &pInfo, pTnsListModel);
+        //OracleAuthDlg::OraCreateConnection(username, passw, DSN, &pInfo, pTnsListModel);
     }
 
     if (pInfo == Q_NULLPTR)

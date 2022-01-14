@@ -8,6 +8,8 @@
 #include <QIcon>
 #include "fmtlib_global.h"
 
+#define QRSD_DRIVER "qrsd"
+
 class FmtTablesModel;
 class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
 {
@@ -62,6 +64,7 @@ public:
     bool isOpen() const;
     int type() const;
 
+    bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn);
     bool openSqlite(const QString &filename);
     bool openSqlteMemory();
 

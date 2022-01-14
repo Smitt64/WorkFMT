@@ -277,7 +277,7 @@ void DbMainWindow::openConnection()
 
     if (dlg.exec() == QDialog::Accepted)
     {
-        ConnectionInfo *info = dlg.createConnectionInfo();
+        ConnectionInfo *info = dlg.getConnectionInfo();
         ui->userEdit->setText(info->user());
         ui->passEdit->setText(info->password());
         ui->serviceBox->setCurrentText(info->dsn());

@@ -20,7 +20,8 @@ RsdSqlResult::~RsdSqlResult()
 QVariant RsdSqlResult::data(int index)
 {
     CRsdField &fld = m_RecSet->getFld(index);
-    return GetValueFromField(fld);
+    QVariant value = GetValueFromField(fld);
+    return value;
 }
 
 bool RsdSqlResult::isNull(int index)
@@ -36,7 +37,7 @@ int	RsdSqlResult::numRowsAffected()
 
 int	RsdSqlResult::size()
 {
-    return m_RecSet->getRecCount();
+    return -1;
 }
 
 bool RsdSqlResult::setCmdText(const QString &sql)
@@ -63,32 +64,71 @@ bool RsdSqlResult::reset(const QString &query)
 
 bool RsdSqlResult::fetch(int index)
 {
-    if (!m_RecSet || !isActive() || index < 0 || at() == index)
+    if (!m_RecSet || !isActive() || index < 0)
         return false;
 
-    //qDebug() << m_RecSet->getRecCount();
-    /*if (m_RecSet->getRecCount() < index)
-        return false;*/
-
-    //bool result = m_RecSet->move(index, RSDO_ABSOLUTE);
-
-    /*if (result)
-        setAt(index);
-
-    return result;*/
+    bool ok = true;
     if (isForwardOnly())
     {
         if (index < at())
             return false;
 
-        bool ok = true;
         while (ok && index > at())
             ok = fetchNext();
 
         return ok;
     }
+    else
+    {
+        int count = m_RecSet->getRecCount();
+        if (index < count)
+        {
+            ok = m_RecSet->moveFirst();
 
-    setAt(index);
+            if (ok)
+            {
+                ok = m_RecSet->move(index, RSDO_RELATIVE);
+                setAt(index);
+            }
+
+            return ok;
+        }
+
+        int atindex = at();
+        if (atindex == QSql::BeforeFirstRow || atindex == QSql::AfterLastRow)
+            ok = fetchFirst();
+
+        if (index > atindex)
+        {
+            while (ok && index > at())
+                ok = fetchNext();
+
+            int pos = m_RecSet->getCurPos();
+
+            if (!ok)
+            {
+                ok = m_RecSet->moveLast();
+                setAt(pos - 1);
+            }
+            else
+                setAt(pos);
+
+            if (pos != index)
+                return false;
+        }
+        else
+        {
+            ok = m_RecSet->moveFirst();
+
+            if (ok)
+            {
+                ok = m_RecSet->move(index, RSDO_RELATIVE);
+                setAt(index);
+            }
+
+            return ok;
+        }
+    }
     return true;
 }
 
@@ -97,13 +137,6 @@ bool RsdSqlResult::fetchFirst()
     if (!m_RecSet || !isActive() || at() == 0)
         return false;
 
-    /*if (isForwardOnly())
-    {
-        if(at() == QSql::BeforeFirstRow)
-            setAt(0);
-    }*/
-
-    //return /*m_RecSet->moveFirst()*/fetch(0);
     bool result = m_RecSet->moveFirst();
 
     if (result)
@@ -117,7 +150,11 @@ bool RsdSqlResult::fetchLast()
     if (!m_RecSet)
         return false;
 
-    return m_RecSet->moveLast();
+    bool result = m_RecSet->moveFirst();
+    while(result)
+        result = fetchNext();
+
+    return result;
 }
 
 bool RsdSqlResult::fetchNext()
@@ -125,23 +162,20 @@ bool RsdSqlResult::fetchNext()
     if (!m_RecSet || !isActive())
         return false;
 
-    const int currentRow = at();
+    const int currentRow = m_RecSet->getCurPos();
     if (currentRow == QSql::BeforeFirstRow)
         return fetchFirst();
     if (currentRow == QSql::AfterLastRow)
         return false;
 
-    /*if (isForwardOnly())
-    {
-
-    }*/
     bool result = m_RecSet->moveNext();
 
     if (result)
         setAt(currentRow + 1);
+    else
+        setAt(QSql::AfterLastRow);
 
     return result;
-    //return m_RecSet->moveNext();
 }
 
 bool RsdSqlResult::fetchPrevious()
@@ -149,28 +183,86 @@ bool RsdSqlResult::fetchPrevious()
     if (!m_RecSet)
         return false;
 
-    return m_RecSet->movePrev();
+    const int currentRow = at();
+    bool result = m_RecSet->movePrev();
+
+    if (result)
+        setAt(currentRow - 1);
+    else
+        setAt(QSql::BeforeFirstRow);
+
+    return result;
 }
 
-/*void RsdSqlResult::bindValue(const QString &placeholder, const QVariant &val, QSql::ParamType paramType)
+bool RsdSqlResult::checkInsert(const QString &sql) const
 {
-    m_Cmd->bindValue(placeholder, val, paramType);
+    if (sql.contains("insert", Qt::CaseInsensitive) && sql.contains("into", Qt::CaseInsensitive))
+        return true;
+    return false;
 }
 
-void RsdSqlResult::bindValue(int index, const QVariant &val, QSql::ParamType paramType)
+bool RsdSqlResult::checkUpdate(const QString &sql) const
 {
-    m_Cmd->bindValue(index, val, paramType);
-}*/
+    if (sql.contains("update", Qt::CaseInsensitive) && sql.contains("set", Qt::CaseInsensitive))
+        return true;
+    return false;
+}
+
+bool RsdSqlResult::checkDelete(const QString &sql) const
+{
+    if (sql.contains("delete", Qt::CaseInsensitive) && sql.contains("from", Qt::CaseInsensitive))
+        return true;
+    return false;
+}
+
+bool RsdSqlResult::checkMerge(const QString &sql) const
+{
+    if (sql.contains("merge", Qt::CaseInsensitive) && sql.contains("into", Qt::CaseInsensitive))
+        return true;
+    return false;
+}
+
+bool RsdSqlResult::checkSelect(const QString &sql) const
+{
+    bool hr = true;
+
+    hr = checkInsert(sql);
+    if (!hr) hr = checkUpdate(sql);
+    if (!hr) hr = checkDelete(sql);
+    if (!hr) hr = checkMerge(sql);
+
+    return !hr;
+}
+
+void RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
+{
+    try
+    {
+        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, RSDVAL_STATIC));
+        m_RecSet->open();
+        setSelect(true);
+        if (m_RecSet->getCursorType() == RSDVAL_FORWARD_ONLY)
+            setForwardOnly(true);
+    }
+    catch (...)
+    {
+        m_RecSet.reset();
+        setSelect(false);
+    }
+}
 
 bool RsdSqlResult::exec()
 {
     bool result = true;
 
+    setSelect(false);
+    setActive(false);
+
     try
     {
         int size = boundValueCount();
         QSqlResult::BindingSyntax syntax = bindingSyntax();
-        qDebug() << syntax;
+
         for (int i = 0; i < size; i++)
         {
             QVariant value = boundValue(i);
@@ -181,16 +273,13 @@ bool RsdSqlResult::exec()
             else
                 m_Cmd->bindValue(i, value, type);
         }
-        //qDebug() << "QRSD: " << lastQuery();
-        m_Cmd->execute();
-        setSelect(true);
-        setActive(true);
 
-        //if (isSelect())
-            m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, RSDVAL_STATIC));
-            m_RecSet->open();
-            if (m_RecSet->getCursorType() == RSDVAL_FORWARD_ONLY)
-                setForwardOnly(true);
+        m_Cmd->execute();
+        setActive(true);
+        setAt(QSql::BeforeFirstRow);
+
+        if (checkSelect(m_QueryString))
+            makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)
     {
@@ -231,34 +320,6 @@ bool RsdSqlResult::prepare(const QString &query)
     return result;
 }
 
-/*QDate RsdSqlResult::rsDateToQDate(const bdate &_rsDate)
-{
-    if (_rsDate.day == 0 && _rsDate.mon == 0 && _rsDate.year == 0)
-        return QDate();
-
-    return QDate(_rsDate.year, _rsDate.mon, _rsDate.day);
-}
-
-QTime RsdSqlResult::rsTimeToQTime(const btime &_rsTime)
-{
-    return QTime(_rsTime.hour, _rsTime.min, _rsTime.sec, _rsTime.hundr);
-}
-
-QVariant RsdSqlResult::rsDateToVariantQDate(CRsdField &fld)
-{
-    Q_ASSERT(fld.getType() == RSDPT_DATE);
-    const bdate &_rsDate = fld.AsRSDDATE();
-
-    return rsDateToQDate(_rsDate);
-}
-
-QVariant RsdSqlResult::rsTimeToVariantQTime(CRsdField &fld)
-{
-    Q_ASSERT(fld.getType() == RSDPT_TIME);
-    btime _rsTime = fld.AsRSDTIME();
-    return QVariant(QTime(_rsTime.hour, _rsTime.min, _rsTime.sec, _rsTime.hundr));
-}*/
-
 QVariant RsdSqlResult::rsBinaryToVariantQByteArray(CRsdField &fld)
 {
     Q_ASSERT(fld.getType() == RSDPT_BINARY);
@@ -273,18 +334,6 @@ QVariant RsdSqlResult::rsCharToVariantQChar(CRsdField &fld)
     QTextCodec *codec866 = QTextCodec::codecForName("IBM 866");
     return QVariant(codec866->toUnicode(QByteArray(1, ch)).front());
 }
-
-/*QVariant RsdSqlResult::rsTimeStampToVariantQDateTime(CRsdField &fld)
-{
-    Q_ASSERT(fld.getType() == RSDPT_TIMESTAMP);
-    btimestamp _rsTimeStamp = fld.AsRSDTIMESTAMP();
-
-    QVariant retVal;
-    QDate _rsDate = rsDateToQDate(_rsTimeStamp.date);
-    QTime _rsTime = rsTimeToQTime(_rsTimeStamp.time);
-
-    return QDateTime(_rsDate, _rsTime);
-}*/
 
 QVariant RsdSqlResult::rsNumericToVariant(CRsdField &fld)
 {
@@ -391,7 +440,7 @@ QSqlRecord RsdSqlResult::record() const
 {
     QSqlRecord rec;
 
-    if (isSelect())
+    if (isSelect() && isActive())
     {
         RsdSqlResult *pThis = const_cast<RsdSqlResult*>(this);
         long fldcount = m_RecSet->getFldCount();
@@ -400,6 +449,7 @@ QSqlRecord RsdSqlResult::record() const
         {
             const CRsdField &fld = m_RecSet->getFld(i);
             rec.append(pThis->MakeField(fld, fld.isNull()));
+            rec.setGenerated(i, true);
 
             if (fld.isNull())
                 rec.setNull(i);
@@ -411,6 +461,5 @@ QSqlRecord RsdSqlResult::record() const
 
 void RsdSqlResult::setQuery(const QString &query)
 {
-    //m_QueryString = query;
     setCmdText(query);
 }

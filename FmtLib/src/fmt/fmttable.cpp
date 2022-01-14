@@ -552,10 +552,10 @@ bool FmtTable::loadFromXml(const QString &filename, const QString &tableName)
         fld->setDataPrivate(FmtField::fld_Hidden, Hidden);
     };
 
-    auto addIndex = [this,attributeToBool](const QDomElement &e) -> void
+    /*auto addIndex = [this,attributeToBool](const QDomElement &e) -> void
     {
 
-    };
+    };*/
 
     auto FillTableFromElement = [attributeToBool,addTableField,this](const QDomElement &e) -> void
     {
@@ -775,13 +775,13 @@ void FmtTable::FillIndex()
 
 int FmtTable::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     return 9;
 }
 
 QVariant FmtTable::data(const QModelIndex &index, int role) const
 {
-    Q_UNUSED(role);
+    Q_UNUSED(role)
     QVariant value;
     switch(index.column())
     {
