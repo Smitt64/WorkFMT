@@ -46,7 +46,8 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     addLibraryPath(QFileInfo(QCoreApplication::applicationFilePath()).path());
     addLibraryPath(current.absolutePath());
     addLibraryPath(current.absoluteFilePath("platforms"));
-    qRegisterMetaType<RecentList>("RecentList");
+
+    //qRegisterMetaType<RecentList>("RecentList");
 
     //qDebug() << QStyleFactory::keys();
     m_fLogging = false;

@@ -18,6 +18,7 @@ class SubWindowsModel;
 class WindowsComboAction;
 class FmtTableListDelegate;
 class MdiSubInterface;
+class SearchActionWidget;
 class FMTLIBSHARED_EXPORT MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -97,7 +98,10 @@ private:
     QMdiArea *pMdi;
 
     QLineEdit *pSearchLine;
-    QToolBar *pSearch;
+    //QToolBar *pSearch;
+    QMenu *pSearch;
+    SearchActionWidget *pSearchWidget;
+
     FmtTableListDelegate *pTableListDelegate;
     QShortcut *pFindShortcut;
 

@@ -89,7 +89,7 @@ int ConnectionInfo::type() const
     return m_Type;
 }
 
-bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn)
+bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn, QString *error)
 {
     bool hr = false;
     m_Alias = QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
@@ -105,8 +105,12 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
         qCInfo(logCore()) << QString("Connected to %1@%2").arg(user, dsn);
     else
     {
+        QString err = _db.lastError().text();
         qCInfo(logCore()) << QString("Can't connect to %1@%2").arg(user, dsn);
-        qCInfo(logCore()) << _db.driver()->lastError().text().toLocal8Bit();
+        qCInfo(logCore()) << err;
+
+        if (error)
+            *error = err;
     }
     return hr;
 }

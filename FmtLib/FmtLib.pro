@@ -32,6 +32,7 @@ LIBS += -lversion
 SOURCES += \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
+    src/core/recentconnectionlist.cpp \
     src/datfile.cpp \
     src/dbinitdlg.cpp \
     src/documentwindow.cpp \
@@ -276,6 +277,7 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    src/core/recentconnectionlist.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
@@ -316,7 +318,8 @@ HEADERS += \
     src/widgets/filteredtablewidget.h \
     h/fmtsegmentflagsdlg.h \
     h/selectfolderdlg.h \
-    h/datfile.h
+    h/datfile.h \
+    h/recentconnectionlist.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin

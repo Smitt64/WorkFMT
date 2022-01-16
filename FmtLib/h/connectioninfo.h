@@ -64,7 +64,7 @@ public:
     bool isOpen() const;
     int type() const;
 
-    bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn);
+    bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn, QString *error = nullptr);
     bool openSqlite(const QString &filename);
     bool openSqlteMemory();
 

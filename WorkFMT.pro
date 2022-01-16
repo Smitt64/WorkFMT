@@ -12,9 +12,13 @@ SUBDIRS += \
     DBFileTool \
     FmtDbgHelp \
     FmtScript \
-    FmtScriptTest \
+    FmtScriptTest
+
+win32-msvc* {
+SUBDIRS += \
     qrsd \
     qrsdtest
+}
 
 WorkFMT.depends = FmtLib
 FmtScript.depends = FmtLib

@@ -25,11 +25,55 @@
 #include "logsettingsdlg.h"
 #include "queryeditor/queryeditor.h"
 #include "selectfolderdlg.h"
+#include "recentconnectionlist.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QDesktopServices>
+#include <QWidgetAction>
+
+class SearchActionWidget : public QWidgetAction
+{
+    FmtTableListDelegate *m_pDelegate;
+    TablesDock *m_pTablesDock;
+    QLineEdit *pSearchLine;
+public:
+    SearchActionWidget(FmtTableListDelegate *delegate, TablesDock *tablesDock, QWidget *parent = nullptr) :
+        QWidgetAction(parent),
+        m_pDelegate(delegate),
+        m_pTablesDock(tablesDock),
+        pSearchLine(nullptr)
+    {
+    }
+
+    virtual ~SearchActionWidget() {}
+
+    QLineEdit *edit()
+    {
+        return pSearchLine;
+    }
+
+    virtual QWidget *createWidget(QWidget *parent)
+    {
+        pSearchLine = new QLineEdit(parent);
+        pSearchLine->setPlaceholderText(tr("Введите текст для поиска..."));
+        pSearchLine->setFrame(false);
+        pSearchLine->setMinimumWidth(350);
+        pSearchLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+        pSearchLine->setClearButtonEnabled(true);
+
+        connect(pSearchLine, SIGNAL(textChanged(QString)), m_pDelegate, SLOT(setHighlightText(QString)));
+        connect(pSearchLine, SIGNAL(textChanged(QString)), m_pTablesDock, SLOT(forceRepaint()));
+
+        return pSearchLine;
+    }
+
+    virtual void deleteWidget(QWidget *widget)
+    {
+        delete widget;
+    }
+};
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -142,23 +186,25 @@ void MainWindow::CreateMainToolBar()
     toolConnect->setDefaultAction(ui->actionConnect);
     toolConnect->setMenu(toolConnectMenu);
 
-    QStringList lst;
-    QList<RecentList> recent;
-    OracleAuthDlg::loadRecentList(lst, recent);
-
-    if (recent.size())
+    RecentConnectionList list;
+    if (list.load())
     {
-        toolConnectMenu->addAction(ui->actionConnect);
-        toolConnect->setDefaultAction(ui->actionConnect);
-        toolConnectMenu->setDefaultAction(ui->actionConnect);
-        toolConnectMenu->addSeparator();
-
-        foreach (const RecentList &item, recent)
+        if (!list.isEmpty())
         {
-            QAction *action = toolConnectMenu->addAction(OracleAuthDlg::OraMakeConnectionName(item));
-            action->setData(QVariant::fromValue(item));
-            action->setToolTip(OracleAuthDlg::OraRecentConnectionToolTip(item));
-            connect(action, SIGNAL(triggered(bool)), SLOT(OpenRecentConnection()));
+            toolConnectMenu->addAction(ui->actionConnect);
+            toolConnect->setDefaultAction(ui->actionConnect);
+            toolConnectMenu->setDefaultAction(ui->actionConnect);
+            toolConnectMenu->addSeparator();
+
+            int count = list.rowCount();
+            for (int i = 0; i < count; i++)
+            {
+                RecentList item = list.record(i);
+                QAction *action = toolConnectMenu->addAction(RecentConnectionList::connectionName(item));
+                action->setData(QVariant::fromValue(item));
+                action->setToolTip(RecentConnectionList::connectionToolTip(item));
+                connect(action, SIGNAL(triggered(bool)), SLOT(OpenRecentConnection()));
+            }
         }
     }
 
@@ -316,16 +362,15 @@ void MainWindow::OpenConnection(const QString &connectionString)
 
     if (ParseConnectionString(connectionString, user, pswd, dsn))
     {
-        /*ConnectionInfo *info = Q_NULLPTR;
-        OracleAuthDlg::OraCreateConnection(user, pswd, dsn, &info);
+        ConnectionInfo *info = new ConnectionInfo();
 
-        if (info->isOpen())
+        if (OracleAuthDlg::tryConnect(info, user, pswd, dsn, this))
         {
-            CreateConnectionActio(user, info);
+            CreateConnectionActio(info);
             info->updateFmtList();
         }
         else
-            delete info;*/
+            delete info;
     }
 }
 
@@ -492,7 +537,6 @@ void MainWindow::conActionTriggered(QAction *action)
 {
     ConnectionInfo *info = reinterpret_cast<ConnectionInfo*>(action->data().toInt());
     pTablesDock->setConnection(info);
-            //->setModel(info->tablesModel());
 }
 
 void MainWindow::actionCreate()
@@ -781,26 +825,20 @@ void MainWindow::CreateViewMenu()
     ui->menuView->addAction(ui->mainToolBar->toggleViewAction());
     ui->menuView->addAction(ui->tabToolBar->toggleViewAction());
     ui->menuView->addAction(ui->windowToolBar->toggleViewAction());
-    ui->menuView->addAction(pSearch->toggleViewAction());
     ui->menuView->addSeparator();
     ui->menuView->addAction(pTablesDock->toggleViewAction());
 }
 
 void MainWindow::CreateSearchToolBar()
 {
-    pSearch = addToolBar(tr("Поиск"));
-    pSearch->setObjectName("SearchToolBar");
-    pSearchLine = new QLineEdit(pSearch);
-    pSearchLine->setPlaceholderText(tr("Введите текст для поиска..."));
-    pSearchLine->setMaximumWidth(350);
-    pSearchLine->setClearButtonEnabled(true);
+    pSearch = new QMenu();
+    pSearchWidget = new SearchActionWidget(pTableListDelegate, pTablesDock, menuBar());
 
-    pSearch->addWidget(pSearchLine);
+    pSearch->addAction(pSearchWidget);
+    ui->menuBar->setCornerWidget(pSearch);
 
+    pSearchLine = pSearchWidget->edit();
     pFindShortcut = new QShortcut(QKeySequence::Find, this);
-
-    connect(pSearchLine, SIGNAL(textChanged(QString)), pTableListDelegate, SLOT(setHighlightText(QString)));
-    connect(pSearchLine, SIGNAL(textChanged(QString)), pTablesDock, SLOT(forceRepaint()));
     connect(pFindShortcut, SIGNAL(activated()), pSearchLine, SLOT(setFocus()));
 }
 
@@ -812,11 +850,6 @@ void MainWindow::showWindowList()
 
 void MainWindow::about()
 {
-//#ifdef FMTLIB_ABOUT_EXCEPTION
-    /*int* p = NULL;
-    p[0] = 10;*/
-//#endif
-
     AboutDlg dlg(this);
     dlg.exec();
 }
@@ -838,19 +871,16 @@ void MainWindow::OpenRecentConnection()
 
     if (action)
     {
-        /*RecentList item = qvariant_cast<RecentList>(action->data());
+        RecentList item = qvariant_cast<RecentList>(action->data());
 
-        ConnectionInfo *info = Q_NULLPTR;
-        QSqlDatabase db = OracleAuthDlg::OraCreateConnection(item.user,
-                                           item.pass,
-                                           item.host,
-                                           item.service,
-                                           item.database,
-                                           item.dsn,
-                                           item.port,
-                                           &info);
-        if (db.isOpen() && info)
-            CreateConnectionActio(item.database, info);*/
+        ConnectionInfo *info = new ConnectionInfo();
+        if (OracleAuthDlg::tryConnect(info, item.user, item.pass, item.dsn, this))
+        {
+            CreateConnectionActio(info);
+            info->updateFmtList();
+        }
+        else
+            delete info;
     }
 }
 

@@ -281,7 +281,8 @@ void DbMainWindow::openConnection()
         ui->userEdit->setText(info->user());
         ui->passEdit->setText(info->password());
         ui->serviceBox->setCurrentText(info->dsn());
-        CreateConnectionAction(dlg.getConnectionSheme(), info);
+
+        CreateConnectionAction(info->schemeName(), info);
 
         pCompleter->setModel(info->tablesModel());
         pCompleter->setCompletionColumn(fnc_Name);

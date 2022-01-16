@@ -15,21 +15,20 @@
 #include "fmtcore.h"
 #include "fmtapplication.h"
 #include "loggingcategories.h"
+#include "recentconnectionlist.h"
+#include <QTreeView>
+#include <QCheckBox>
 
 OracleAuthDlg::OracleAuthDlg(QWidget *parent)
     : QDialog(parent),
       ui(new Ui::OracleAuthDlg()),
+      m_pRecentList(new RecentConnectionList()),
       pTmpInfo(nullptr)
 {
     ui->setupUi(this);
 
     QByteArray oradir = qgetenv("");
-    sConfigOraFilePath = ConfigOraFilePath();
-
-    /*model = ((FmtApplication*)qApp)->getOracleTnsModel();
-
-    ui->comboBox->setModel(model);
-    ui->comboBox->setCurrentIndex(-1);*/
+    ui->connectionsTree->setModel(m_pRecentList.data());
 
     LoadPrefs();
 }
@@ -39,11 +38,7 @@ OracleAuthDlg::OracleAuthDlg(OracleTnsListModel *tnsmodel, QWidget *parent)
       ui(new Ui::OracleAuthDlg())
 {
     ui->setupUi(this);
-    /*sConfigOraFilePath = ConfigOraFilePath();
-    model = tnsmodel;
-
-    ui->comboBox->setModel(model);
-    ui->comboBox->setCurrentIndex(-1);*/
+    ui->connectionsTree->setModel(m_pRecentList.data());
 
     LoadPrefs();
 }
@@ -53,296 +48,119 @@ OracleAuthDlg::~OracleAuthDlg()
     delete ui;
 }
 
-/*QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
-                                                const QString &passw,
-                                                const QString &DSN,
-                                                ConnectionInfo **info,
-                                                OracleTnsListModel *tnsmodel)
-{
-    OracleTnsListModel *pModel = Q_NULLPTR;
-    if (tnsmodel != Q_NULLPTR)
-        pModel = tnsmodel;
-    else
-        pModel = ((FmtApplication*)qApp)->getOracleTnsModel();
-
-    quint32 index = pModel->getIndexByDsn(DSN);
-    QString host = pModel->index(index, OracleTnsListModel::mtns_Host).data().toString();
-    QString service = pModel->index(index, OracleTnsListModel::mtns_ServiceName).data().toString();
-    QString dsn = DSN;
-    int port = pModel->index(index, OracleTnsListModel::mtns_Port).data().toInt();
-
-    if (DSN.isEmpty())
-        dsn = pModel->index(index, OracleTnsListModel::mtns_Name).data().toString();
-
-    return OraCreateConnection(username, passw, host, service, username, dsn, port, info);
-}
-
-QSqlDatabase OracleAuthDlg::OraCreateConnection(const QString &username,
-                                                const QString &passw,
-                                                const QString &host,
-                                                const QString &service,
-                                                const QString &sheme,
-                                                const QString &DSN,
-                                                const int &port,
-                                                ConnectionInfo **info)
-{
-    QString dsn = DSN;
-    if (DSN.isEmpty())
-        dsn = DatasourceFromService(service);
-
-    if (dsn.isEmpty())
-        qCWarning(logCore()) << "DSN not found for service" << service;
-    //OracleTnsListModel *pModel = ((FmtApplication*)qApp)->getOracleTnsModel();
-    QString _connectionname = QString("%1@%2#%3").arg(username, service, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
-    if (db.open())
-    {
-        qCInfo(logCore()) << "Connected to " << sOracleDBString << "";
-    }
-    else
-    {
-        qCInfo(logCore()) << "" << sOracleDBString << ": " << db.lastError().text().toLocal8Bit();
-        qCInfo(logCore()) << db.driver()->lastError().text().toLocal8Bit();
-    }
-
-    if (info)
-    {
-        *info = new ConnectionInfo(_connectionname);
-        (*info)->m_Host = host;
-        (*info)->m_Service = service;
-        (*info)->m_SchemeName = sheme;
-        (*info)->m_User = username;
-        (*info)->m_Password = passw;
-        (*info)->m_DSN = dsn;
-        (*info)->m_Port = port;
-        (*info)->m_Type = ConnectionInfo::CON_ORA;
-
-        (*info)->_db = db;
-        //qDebug() << "OraCreateConnection" << (*info)->_db.databaseName() << (*info)->_db.isOpen();
-    }
-
-    return db;
-}*/
-
 bool OracleAuthDlg::authirizate()
 {
+    bool hr = true;
     if (pTmpInfo)
         delete pTmpInfo;
 
     pTmpInfo = new ConnectionInfo();
 
-    bool hr = pTmpInfo->open(QRSD_DRIVER,
-                   ui->lineEdit_username->text(),
-                   ui->lineEdit_passw->text(),
-                   ui->comboBox_Dsn->currentText()
-                   );
+    QString user = ui->lineEdit_username->text();
+    QString pass = ui->lineEdit_passw->text();
+    QString dsn = ui->comboBox_Dsn->currentText();
 
-    if (!hr)
+    hr = tryConnect(pTmpInfo, user, pass, dsn, this);
+
+    if (hr)
+        m_pRecentList->append(user, pass, dsn);
+    else
     {
         delete pTmpInfo;
         pTmpInfo = nullptr;
     }
-    /*QSqlDatabase db = OraCreateConnection(ui->lineEdit_username->text(),
-                                          ui->lineEdit_passw->text(),
-                                          ui->lineEdit_host->text(),
-                                          ui->lineEdit_service->text(),
-                                          ui->lineEdit_username->text(),
-                                          ui->comboBox->currentText(),
-                                          ui->spinBox->value(),
-                                          NULL);
-    connectionname = db.connectionName();
 
-    if(db.lastError().isValid())
-    {
-        QMessageBox::critical(this, tr("Не удалось подключиться"), db.lastError().text());
-    }
-    else
-    {
-        sheme = ui->lineEdit_username->text();
-    }
-    return db.isOpen();*/
     return hr;
 }
 
-bool OracleAuthDlg::loadRecentList(QStringList &last, QList<RecentList> &recent)
+bool OracleAuthDlg::tryConnect(ConnectionInfo *pTmpInfo,
+                           const QString &user,
+                           const QString &pass,
+                           const QString &dsn,
+                           QWidget *parent)
 {
-    bool result = false;
-    /*QFile file(ConfigOraFilePath());
-    if((result = file.open(QIODevice::ReadOnly)))
-    {
-        QDataStream stream(&file);
-        stream >> last;
-        stream >> recent;
-        file.close();
-    }*/
+    bool hr = true;
+    QString error;
 
-    return result;
+    if (user.isEmpty())
+    {
+        hr = false;
+        error = tr("Не указано имя пользователя");
+    }
+
+    if (hr && pass.isEmpty())
+    {
+        hr = false;
+        error = tr("Не указан пароль");
+    }
+
+    if (hr && dsn.isEmpty())
+    {
+        hr = false;
+        error = tr("Не указана база данных");
+    }
+
+    if (hr)
+    {
+        hr = pTmpInfo->open(QRSD_DRIVER, user, pass, dsn);
+
+        if (!hr)
+        {
+            error = pTmpInfo->db().lastError().text();
+
+            if (error.contains("Driver not loaded"))
+                error = tr("Не удалось загрузить драйвер rsd");
+        }
+    }
+
+    if (!hr)
+    {
+        QMessageBox msgBox(parent);
+        msgBox.setText(tr("Не удалось соедениться с базой данных:"));
+        msgBox.setWindowTitle(tr("Ошибка"));
+        msgBox.setInformativeText(error);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
+    }
+
+    return hr;
 }
 
 void OracleAuthDlg::LoadPrefs()
 {
-    /*QStringList lst;
-    if(loadRecentList(lst, recentList))
-    {
-        if(lst.count() >= 6)
-        {
-			QString sDatabase = lst.at(2);
-			QString sHostname = lst.at(0);
-			QString sPort = lst.at(1);
-			QString sUsername = lst.at(3);
-			QString sService = lst.at(4);
-			
-            //ui->lineEdit_base->setText(sDatabase);
-            ui->lineEdit_host->setText(sHostname);
-            ui->lineEdit_username->setText(sUsername);
-            ui->lineEdit_service->setText(sService);
-            ui->spinBox->setValue(sPort.toInt());
-            ui->comboBox->setCurrentText(lst.at(5));
-
-            if(lst.count() == 7)
-            {
-                ui->lineEdit_passw->setText( lst.at(6) );
-                ui->checkBox_savePass->setChecked(true);
-			}
-		}
-
-        foreach (RecentList recent, recentList)
-        {
-            int row = ui->tableWidget->rowCount();
-            ui->tableWidget->setRowCount(row + 1);
-
-            QString toolTop = OraRecentConnectionToolTip(recent);
-
-            QTableWidgetItem *userItem = new QTableWidgetItem(recent.user);
-            QTableWidgetItem *serviceItem = new QTableWidgetItem(recent.service);
-            userItem->setToolTip(toolTop);
-            serviceItem->setToolTip(toolTop);
-
-            ui->tableWidget->setItem(row, 0, userItem);
-            ui->tableWidget->setItem(row, 1, serviceItem);
-        }
-	}
-
-#ifndef _DEBUG
-    ui->tabWidget->removeTab(2);
-#else
-    ui->tnsNamesTable->setModel(model);
-#endif*/
+    m_pRecentList->load();
 }
-
-QString OracleAuthDlg::OraRecentConnectionToolTip(const RecentList &item)
-{
-    QString toolTop = QString("<b>DSN: </b>%6<br><b>Пользователь: </b>%2")
-            .arg(item.dsn)
-            .arg(item.user);
-    return toolTop;
-}
-
-QString OracleAuthDlg::OraMakeConnectionName(const RecentList &item)
-{
-    return QString("%1@%2")
-            .arg(item.user, item.dsn);
-}
-
-/*void OracleAuthDlg::PumpPrefs(const int &id)
-{
-    RecentList list = recentList[id];
-    QString sDatabase = list.database;
-    QString sHostname = list.host;
-    qint16 sPort = list.port;
-    QString sUsername = list.user;
-    QString sService = list.service;
-
-    //ui->lineEdit_base->setText(sDatabase);
-    ui->lineEdit_host->setText(sHostname);
-    ui->lineEdit_username->setText(sUsername);
-    ui->lineEdit_service->setText(sService);
-    ui->spinBox->setValue(sPort);
-    ui->comboBox->setCurrentText(list.dsn);
-
-    if(!list.pass.isEmpty())
-    {
-        ui->lineEdit_passw->setText(list.pass);
-    }
-}*/
 
 void OracleAuthDlg::SavePrefs(bool Append)
 {
-    /*Q_UNUSED(Append);
-	QFile f(sConfigOraFilePath);
-    if(f.open(QIODevice::WriteOnly))
-    {
-        QDataStream stream(&f);
-		QStringList lstValues;
-        lstValues << ui->lineEdit_host->text()
-            << QString::number(ui->spinBox->value())
-            << ui->lineEdit_username->text()
-            << ui->lineEdit_username->text()
-            << ui->lineEdit_service->text()
-            << ui->comboBox->currentText();
-
-        if(ui->checkBox_savePass->isChecked())
-            lstValues << ui->lineEdit_passw->text();
-
-        RecentList list;
-        list.database = ui->lineEdit_username->text();
-        list.host = ui->lineEdit_host->text();
-        list.pass = ui->lineEdit_passw->text();
-        list.port = ui->spinBox->value();
-        list.service = ui->lineEdit_service->text();
-        list.user = ui->lineEdit_username->text();
-        list.dsn = ui->comboBox->currentText();
-
-        if (!recentList.contains(list))
-        {
-            recentList.append(list);
-        }
-
-        stream << lstValues;
-        stream << recentList;
-		f.close();
-    }
-    else
-    {
-		QMessageBox::information(this, "", tr("Failed to open config file!") );
-    }*/
+    Q_UNUSED(Append)
+    m_pRecentList->save();
 }
 
-void OracleAuthDlg::on_pushButton_accept_clicked()
+void OracleAuthDlg::acceptClicked()
 {
-    if(authirizate())
+    bool result = authirizate();
+
+    if(result)
     {
-		SavePrefs();
+        SavePrefs();
 		accept();
 	}
 }
 
-void OracleAuthDlg::on_tableWidget_doubleClicked(const QModelIndex &index)
+void OracleAuthDlg::on_connectionsTree_clicked(const QModelIndex &index)
 {
-    //ui->lineEdit_base->setText(recentList[index.row()].database);
-    /*ui->lineEdit_host->setText(recentList[index.row()].host);
-    ui->lineEdit_username->setText(recentList[index.row()].user);
-    ui->lineEdit_service->setText(recentList[index.row()].service);
-    ui->spinBox->setValue(recentList[index.row()].port);
-    ui->comboBox->setCurrentText(recentList[index.row()].dsn);*/
+    RecentList rec = m_pRecentList->record(index);
 
-    if(ui->checkBox_savePass->isChecked())
-    {
-        ui->lineEdit_passw->setText(recentList[index.row()].pass);
-    }
-
-    on_pushButton_accept_clicked();
+    ui->lineEdit_username->setText(rec.user);
+    ui->lineEdit_passw->setText(rec.pass);
+    ui->comboBox_Dsn->setCurrentText(rec.dsn);
 }
 
-/*void OracleAuthDlg::on_comboBox_currentIndexChanged(int index)
+void OracleAuthDlg::on_connectionsTree_doubleClicked(const QModelIndex &index)
 {
-    ui->lineEdit_host->setText(model->index(index, OracleTnsListModel::mtns_Host).data().toString());
-    ui->lineEdit_service->setText(model->index(index, OracleTnsListModel::mtns_ServiceName).data().toString());
-    ui->spinBox->setValue(model->index(index, OracleTnsListModel::mtns_Port).data().toInt());
-}*/
-
-QString OracleAuthDlg::getConnectionSheme()
-{
-    return sheme;
+    acceptClicked();
 }
 
 void OracleAuthDlg::on_delRecentButton_clicked()
@@ -352,60 +170,48 @@ void OracleAuthDlg::on_delRecentButton_clicked()
     s->beginGroup("MessageBox");
     bool ShowDelMsg = s->value("ShowDeleteRecentConnection", true).toBool();
     bool DeleteFlag = true;
-    /*if (ShowDelMsg)
+
+    QModelIndex index = ui->connectionsTree->currentIndex();
+    if (!index.isValid())
+        DeleteFlag = false;
+
+    if (ShowDelMsg && DeleteFlag)
     {
-        if (ui->tableWidget->currentRow() < 0)
+        QCheckBox *check = new QCheckBox(tr("Больше не показывать"));
+        RecentList recent = m_pRecentList->record(index);
+
+        QMessageBox msg(this);
+        msg.setWindowTitle(tr("Подтверждение удаления."));
+        msg.setText(tr("Удалить соеденение <b>%1@%2</b> из закладок?").arg(recent.user, recent.dsn));
+        msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msg.setCheckBox(check);
+
+        if (msg.exec() == QMessageBox::No)
             DeleteFlag = false;
 
-        if (DeleteFlag)
-        {
-            QCheckBox *check = new QCheckBox(tr("Больше не показывать"));
-            RecentList recent = recentList.at(ui->tableWidget->currentRow());
-            QMessageBox msg(this);
-            msg.setWindowTitle(tr("Подтверждение удаления."));
-            msg.setText(tr("Удалить соеденение <b>%1@%2</b> из закладок?").arg(recent.user, recent.dsn));
-            msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            msg.setCheckBox(check);
-            if (msg.exec() == QMessageBox::No)
-            {
-                DeleteFlag = false;
-            }
-            s->setValue("ShowDeleteRecentConnection", !check->isChecked());
-        }
-    }*/
+        s->setValue("ShowDeleteRecentConnection", !check->isChecked());
+    }
     s->endGroup();
 
     if (DeleteFlag)
     {
-        /*recentList.removeAt(ui->tableWidget->currentRow());
-        ui->tableWidget->removeRow(ui->tableWidget->currentRow());*/
+        m_pRecentList->removeRow(index.row());
 
-        /*if(ui->tableWidget->rowCount())
-            PumpPrefs(ui->tableWidget->rowCount() - 1);*/
+#ifndef _DEBUG
         SavePrefs();
+#endif
     }
 }
 
 ConnectionInfo *OracleAuthDlg::getConnectionInfo()
 {
-    /*info->m_Host = ui->lineEdit_host->text();
-    info->m_Service = ui->lineEdit_service->text();
-    info->m_SchemeName = sheme;
-    info->m_User = ui->lineEdit_username->text();
-    info->m_Password = ui->lineEdit_passw->text();
-    info->m_DSN = ui->comboBox->currentText();
-    info->m_Port = ui->spinBox->value();
-    info->m_Type = ConnectionInfo::CON_ORA;
-
-    qCInfo(logCore()) << "ConnectionInfo:";
-    qCInfo(logCore()) << "Host:" << info->m_Host;
-    qCInfo(logCore()) << "Service:" << info->m_Service;
-    qCInfo(logCore()) << "SchemeName:" << info->m_SchemeName;
-    qCInfo(logCore()) << "User:" << info->m_User;
-    qCInfo(logCore()) << "DSN:" << info->m_DSN;
-    qCInfo(logCore()) << "Port:" << info->m_Port;*/
-
     ConnectionInfo *info = pTmpInfo;
     pTmpInfo = nullptr;
     return info;
 }
+
+void OracleAuthDlg::on_pushButton_accept_clicked()
+{
+    acceptClicked();
+}
+

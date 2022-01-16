@@ -89,5 +89,7 @@
         <file>img/PrimaryKeyHS.png</file>
         <file>img/confluence.png</file>
         <file>img/LayoutSelectColumn.png</file>
+        <file>dblogo/Oracle.png</file>
+        <file>dblogo/PostgreSQL.png</file>
     </qresource>
 </RCC>
