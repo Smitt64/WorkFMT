@@ -109,7 +109,7 @@ bool OracleAuthDlg::tryConnect(ConnectionInfo *pTmpInfo,
             error = pTmpInfo->db().lastError().text();
 
             if (error.contains("Driver not loaded"))
-                error = tr("Не удалось загрузить драйвер rsd");
+                error = tr("Не удалось загрузить драйвер RSD");
         }
     }
 

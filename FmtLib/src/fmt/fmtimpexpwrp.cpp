@@ -75,7 +75,8 @@ QString FmtImpExpWrp::connectionString() const
     QString dsn = m_dsn;
 
     if (dsn.isEmpty())
-        dsn = DatasourceFromService(pConnection->service());
+        dsn = pConnection->dsn();
+        //dsn = DatasourceFromService(pConnection->service());
 
     return QString("dsn=%1;user id=%2;password=%3")
             .arg(dsn)

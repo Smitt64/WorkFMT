@@ -107,6 +107,10 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
     {
         QString err = _db.lastError().text();
         qCInfo(logCore()) << QString("Can't connect to %1@%2").arg(user, dsn);
+
+        if (err.contains("Driver not loaded"))
+            err = tr("Driver not loaded");
+
         qCInfo(logCore()) << err;
 
         if (error)
