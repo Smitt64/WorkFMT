@@ -295,7 +295,7 @@ QVariant RecentConnectionList::headerData(int section, Qt::Orientation orientati
 
 bool RecentConnectionList::removeRows(int row, int count, const QModelIndex &parent)
 {
-    beginRemoveRows(parent, row, count);
+    beginRemoveRows(parent, row, row + count - 1);
     for (int i = row; i < row + count; i++)
         m_List.removeAt(i);
     endRemoveRows();

@@ -828,8 +828,10 @@ void FmtWorkWindow::SegmentButtonClicked(const QModelIndex &index)
 
 QString FmtWorkWindow::makeWindowTitle()
 {
-    QString schemeName = connection()->schemeName();
-    return QString("%1@%2")
-            .arg(schemeName.trimmed())
-            .arg(pTable->name());
+    QString schemeName = connection()->dsn();
+    QString tableName = pTable->name();
+    QString name = QString("%1@%2")
+            .arg(tableName)
+            .arg(schemeName.trimmed());
+    return name;
 }

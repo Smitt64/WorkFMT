@@ -94,6 +94,7 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
     bool hr = false;
     m_Alias = QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     m_SchemeName = QString("%1@%2").arg(user, dsn);
+    m_DSN = dsn;
 
     _db = QSqlDatabase::addDatabase(drv, m_Alias);
     _db.setUserName(user);

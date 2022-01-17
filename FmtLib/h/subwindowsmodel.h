@@ -11,7 +11,7 @@ class SubWindowsTreeItem
 {
     friend class SubWindowsModel;
 public:
-    explicit SubWindowsTreeItem(const QList<QVariant> &data, SubWindowsTreeItem *parentItem = 0);
+    explicit SubWindowsTreeItem(const QList<QVariant> &data, SubWindowsTreeItem *parentItem = nullptr);
     ~SubWindowsTreeItem();
 
     void appendChild(SubWindowsTreeItem *child);
@@ -36,16 +36,16 @@ class FMTLIBSHARED_EXPORT SubWindowsModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    explicit SubWindowsModel(QObject *parent = 0);
-    ~SubWindowsModel();
+    explicit SubWindowsModel(QObject *parent = nullptr);
+    virtual ~SubWindowsModel();
 
-    QVariant data(const QModelIndex &index, int role) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex &index) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 
     void addConnection(ConnectionInfo *info);
     QModelIndex addWindow(ConnectionInfo *info, QMdiSubWindow *wnd);

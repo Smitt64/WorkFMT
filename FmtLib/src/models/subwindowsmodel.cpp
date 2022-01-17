@@ -6,8 +6,8 @@ SubWindowsTreeItem::SubWindowsTreeItem(const QList<QVariant> &data, SubWindowsTr
 {
     m_parentItem = parent;
     m_itemData = data;
-    wnd = NULL;
-    info = NULL;
+    wnd = nullptr;
+    info = nullptr;
 }
 
 SubWindowsTreeItem::~SubWindowsTreeItem()
@@ -50,7 +50,7 @@ QVariant SubWindowsTreeItem::data(int column, int role) const
         if (role == Qt::DisplayRole)
         {
             QString str = wnd->windowTitle();
-            str = str.mid(str.indexOf("@") + 1);
+            str = str.mid(0, str.indexOf("@"));
             return str;
         }
 
@@ -92,7 +92,7 @@ SubWindowsModel::~SubWindowsModel()
 
 int SubWindowsModel::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     return 1;
 }
 
@@ -118,7 +118,7 @@ QVariant SubWindowsModel::data(const QModelIndex &index, int role) const
 Qt::ItemFlags SubWindowsModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return 0;
+        return Qt::ItemFlags();
 
     if (!index.parent().isValid())
         return Qt::ItemIsEnabled;
@@ -187,7 +187,7 @@ void SubWindowsModel::addConnection(ConnectionInfo *info)
 {
     SubWindowsTreeItem *con = new SubWindowsTreeItem(QList<QVariant>(), rootItem);
     con->info = info;
-    con->wnd = NULL;
+    con->wnd = nullptr;
     rootItem->appendChild(con);
 }
 
@@ -278,13 +278,11 @@ QModelIndex SubWindowsModel::findWindow(ConnectionInfo *info, QMdiSubWindow *wnd
 
 QMdiSubWindow *SubWindowsModel::window(const QModelIndex &index)
 {
-    QMdiSubWindow *wnd = NULL;
+    QMdiSubWindow *wnd = nullptr;
 
     SubWindowsTreeItem *item = static_cast<SubWindowsTreeItem*>(index.internalPointer());
     if (index.isValid() && item)
-    {
         wnd = item->wnd;
-    }
 
     return wnd;
 }
