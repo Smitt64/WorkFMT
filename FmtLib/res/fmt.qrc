@@ -89,6 +89,11 @@
         <file>img/PrimaryKeyHS.png</file>
         <file>img/confluence.png</file>
         <file>img/LayoutSelectColumn.png</file>
+        <file>img/base_globe_32.png</file>
+        <file>img/base_globe_updates.png</file>
+        <file>img/base_globe_has_update.png</file>
+        <file>img/dbftool.png</file>
+        <file>img/information.png</file>
         <file>dblogo/Oracle.png</file>
         <file>dblogo/PostgreSQL.png</file>
     </qresource>

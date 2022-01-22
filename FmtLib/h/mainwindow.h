@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include "errordlg.h"
 #include "fmtlib_global.h"
+#include "maintenancetool.h"
 
 namespace Ui {
 class MainWindow;
@@ -74,6 +75,8 @@ private slots:
     void OnMassOpAction();
     void OnConfluence();
     void CreateFromXml();
+    void UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata);
+    void UpdateCheckStarted();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
@@ -87,6 +90,7 @@ private:
     void CreateViewMenu();
     void CreateSearchToolBar();
     void SetActiveFmtWindow(QMdiSubWindow *wnd);
+    void CreateCheckUpdateRunnable();
     QMdiSubWindow *hasTableWindow(const QString &tableName);
     QMdiSubWindow *hasTableWindow(const FmtRecId &tableID);
     QAction *CreateConnectionActio(ConnectionInfo *info);
@@ -115,9 +119,11 @@ private:
     QMenu *toolConnectMenu;
     QActionGroup *m_ConnectionsGroup;
 
-    QPushButton *pLogButton;
+    QPushButton *pLogButton, *pUpdateButton;
 
     SubWindowsModel *pWindowsModel;
+    MaintenanceTool *pMaintenanceTool;
+    bool m_UpdatesChecked;
 };
 
 #endif // MAINWINDOW_H

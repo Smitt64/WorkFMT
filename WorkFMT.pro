@@ -13,8 +13,8 @@ SUBDIRS += \
     FmtDbgHelp \
     FmtScript \
     FmtScriptTest
-
 win32-msvc* {
+
 SUBDIRS += \
     qrsd \
     qrsdtest
