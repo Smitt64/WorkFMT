@@ -165,3 +165,12 @@ qrsdtest/release/
 
 fmtopt.ini
 *.EVulrX
+workfmtpytools/.vscode/
+
+workfmtpytools/__pycache__/
+
+workfmtpytools/config/__pycache__/
+
+workfmtpytools/installer/__pycache__/
+
+workfmtpytools/tools/__pycache__/
