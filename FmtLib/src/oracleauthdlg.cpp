@@ -16,6 +16,8 @@
 #include "fmtapplication.h"
 #include "loggingcategories.h"
 #include "recentconnectionlist.h"
+#include "odbctablemodel.h"
+#include "odbctablemodeldelegate.h"
 #include <QTreeView>
 #include <QCheckBox>
 
@@ -23,22 +25,29 @@ OracleAuthDlg::OracleAuthDlg(QWidget *parent)
     : QDialog(parent),
       ui(new Ui::OracleAuthDlg()),
       m_pRecentList(new RecentConnectionList()),
+      m_DataSources(new OdbcTableModel()),
+      m_m_DataSourceDelegate(new OdbcTableModelDelegate()),
       pTmpInfo(nullptr)
 {
     ui->setupUi(this);
 
     QByteArray oradir = qgetenv("");
     ui->connectionsTree->setModel(m_pRecentList.data());
+    ui->comboBox_Dsn->setModel(m_DataSources.data());
+    ui->comboBox_Dsn->setItemDelegate(m_m_DataSourceDelegate.data());
 
     LoadPrefs();
 }
 
 OracleAuthDlg::OracleAuthDlg(OracleTnsListModel *tnsmodel, QWidget *parent)
     : QDialog(parent),
-      ui(new Ui::OracleAuthDlg())
+      ui(new Ui::OracleAuthDlg()),
+      m_m_DataSourceDelegate(new OdbcTableModelDelegate()),
+      pTmpInfo(nullptr)
 {
     ui->setupUi(this);
     ui->connectionsTree->setModel(m_pRecentList.data());
+    ui->comboBox_Dsn->setModel(m_DataSources.data());
 
     LoadPrefs();
 }

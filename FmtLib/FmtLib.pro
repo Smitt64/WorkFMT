@@ -44,6 +44,8 @@ SOURCES += \
     src/impexpparams.cpp \
     src/mainwindow.cpp \
     src/massop/destribcreate/massdestribprogress.cpp \
+    src/models/odbctablemodel.cpp \
+    src/models/odbctablemodeldelegate.cpp \
     src/oracleauthdlg.cpp \
     src/queryeditor/queryeditor.cpp \
     src/tablesgroupsdlg.cpp \
@@ -279,7 +281,6 @@ HEADERS += \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
     h/maintenancetool.h \
-    src/core/recentconnectionlist.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
@@ -321,6 +322,8 @@ HEADERS += \
     h/fmtsegmentflagsdlg.h \
     h/selectfolderdlg.h \
     h/datfile.h \
+    h/odbctablemodel.h \
+    h/odbctablemodeldelegate.h \
     h/recentconnectionlist.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp

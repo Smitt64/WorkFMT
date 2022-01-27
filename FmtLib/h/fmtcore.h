@@ -129,6 +129,12 @@ enum FmtBlobType
     BT_CLOB
 };
 
+enum DataBaseType
+{
+    Oracle = 0,
+    PostgreSQL
+};
+
 class FmtTable;
 class FmtField;
 class ConnectionInfo;

@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QDateTime>
 #include <QIcon>
+#include "fmtcore.h"
 
 typedef struct tagRecentListOld
 {
@@ -26,8 +27,8 @@ class RecentConnectionList : public QAbstractTableModel
 public:
     enum ConnectionType
     {
-        Oracle = 0,
-        PostgreSQL
+        Oracle = DataBaseType::Oracle,
+        PostgreSQL = DataBaseType::PostgreSQL
     };
     Q_ENUM(ConnectionType)
     RecentConnectionList(QObject *parent = nullptr);

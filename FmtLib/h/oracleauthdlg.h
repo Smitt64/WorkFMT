@@ -12,6 +12,8 @@ class OracleAuthDlg;
 class OracleTnsListModel;
 class ConnectionInfo;
 class RecentConnectionList;
+class OdbcTableModel;
+class OdbcTableModelDelegate;
 class FMTLIBSHARED_EXPORT OracleAuthDlg : public QDialog
 {
 	Q_OBJECT
@@ -42,6 +44,8 @@ private slots:
 
 private:
     QScopedPointer<RecentConnectionList> m_pRecentList;
+    QScopedPointer<OdbcTableModel> m_DataSources;
+    QScopedPointer<OdbcTableModelDelegate> m_m_DataSourceDelegate;
     ConnectionInfo *pTmpInfo;
 };
 
