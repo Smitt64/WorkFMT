@@ -60,7 +60,7 @@ protected:
     virtual QByteArray makeContent(FmtSharedTablePtr pTable);
 
 private:
-    void WrapSkfAssignValue(QTextStream &stream, const QString &keyName, const QString &fldName, const QString &minval, const QString &maxval, const QString &zeroval);
+    void WrapSkfAssignValue(QTextStream &stream, const QString &keyName, const QString &fldName, const QString &minval, const QString &maxval, const QString &zeroval, const bool &descOrder);
 
     qint16 calcMaxCppLenght(qint16 *maxfieldname, const FmtSharedTablePtr &pTable);
     QString normalizeFieldName(const QString &m_Name);

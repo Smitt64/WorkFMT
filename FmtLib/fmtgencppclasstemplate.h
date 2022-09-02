@@ -30,7 +30,7 @@ private:
     void createRslClassDeclaration(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createRslClassDefenition(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createRslFldPropertyDefenition(const FmtSharedTablePtr &pTable, FmtField *pfld, QTextStream &stream);
-    void createRslClassMoveFuncDefenition(const FmtSharedTablePtr &pTable, const QString &func, QTextStream &stream);
+    void createRslClassMoveFuncDefenition(const FmtSharedTablePtr &pTable, const QString &func, QTextStream &stream, const bool &intstat = false);
     void createRslClassGetDefenition(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createRslAddDefenition(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createRslClassDefines(const FmtSharedTablePtr &pTable, QTextStream &stream);
