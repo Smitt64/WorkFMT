@@ -555,16 +555,27 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
 
             if (fld->isStringType() || (fld->type() == fmtt_UCHR && fld->size() > 1))
             {
+                bool descOrder = seg->descOrder();
+                auto _getTV = [descOrder]() -> QString
+                {
+                    return descOrder ? "DB_UINT8_MAX" : "DB_UINT8_ZERO";
+                };
+
+                auto _getBV = [descOrder]() -> QString
+                {
+                    return descOrder ? "DB_UINT8_ZERO" : "DB_UINT8_MAX";
+                };
+
                 stream << tab << "if (" << fldName << ")" << Qt::endl << "\t{" << Qt::endl;
                 stream << tab << tab << QString("strcpy(TV->%1.%2, %2);")
                        .arg(keyName, fldName)<< Qt::endl;
                 stream << tab << tab << QString("strcpy(BV->%1.%2, %2);")
                        .arg(keyName, fldName)<< Qt::endl;
                 stream << tab << "}" << Qt::endl << "\telse" << Qt::endl << "\t{" << Qt::endl;
-                stream << tab << tab << QString("memset(TV->%1.%2, DB_UINT8_ZERO, sizeof(TV->%1.%2));")
-                       .arg(keyName, fldName)<< Qt::endl;
-                stream << tab << tab << QString("memset(BV->%1.%2, DB_UINT8_MAX, sizeof(BV->%1.%2));")
-                       .arg(keyName, fldName)<< Qt::endl;
+                stream << tab << tab << QString("memset(TV->%1.%2, %3, sizeof(TV->%1.%2));")
+                       .arg(keyName, fldName, _getTV())<< Qt::endl;
+                stream << tab << tab << QString("memset(BV->%1.%2, %3, sizeof(BV->%1.%2));")
+                       .arg(keyName, fldName, _getBV())<< Qt::endl;
 
                 stream << tab << tab << QString("TV->%1.%2[sizeof(TV->%1.%2) - 1] = '\\0';")
                        .arg(keyName, fldName)<< Qt::endl;
