@@ -2,6 +2,7 @@ import sys, installer
 
 from config.WorkFmtConfig import *
 from tools.qtdestrib import *
+from tools.buildprojects import *
 #from installtools.workfmtinstaller import WorkFmtInstaller
 
 dstrlist = QtDestribList()
@@ -42,5 +43,8 @@ except ValueError:
     print('Wrong installer framework version selected')
     sys.exit()
 
-#installerCreator = installer.workfmtinstaller.WorkFmtInstaller()
-#installerCreator.make(WorkFmtConfig.inst().getInstallerPath())
+builder = ProjectBulder(WorkFmtConfig.inst())
+builder.compile()
+
+installerCreator = installer.workfmtinstaller.WorkFmtInstaller()
+installerCreator.make(WorkFmtConfig.inst().getInstallerPath())

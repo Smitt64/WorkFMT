@@ -8,6 +8,7 @@ class WorkFmtConfig:
         self.__qtInstallerFramework = None
         self.__installerPath = 'D:\\Work\\installersource'
         self.__workfmtsourcedir = 'D:\\Work\\WorkFMT'
+        self.__msvcvars = 'D:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build\\vcvars32.bat'
         #os.path.dirname(__file__)
 
     @staticmethod
@@ -16,6 +17,9 @@ class WorkFmtConfig:
             WorkFmtConfig.__instance = WorkFmtConfig()
 
         return WorkFmtConfig.__instance
+
+    def getMsvcBat(self):
+        return self.__msvcvars
 
     def setQtComplect(self, complect):
         self.__qtComplect = complect
