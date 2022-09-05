@@ -44,7 +44,8 @@ except ValueError:
     sys.exit()
 
 builder = ProjectBulder(WorkFmtConfig.inst())
-builder.compile()
+#builder.compile()
 
 installerCreator = installer.workfmtinstaller.WorkFmtInstaller()
 installerCreator.make(WorkFmtConfig.inst().getInstallerPath())
+print(WorkFmtConfig.inst().getInstallerPath())

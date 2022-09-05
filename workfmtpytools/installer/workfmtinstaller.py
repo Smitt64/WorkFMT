@@ -195,6 +195,33 @@ class DBFileTool(InstallerPackageInfoBase):
         dstexefile = os.path.join(self.DataPath, os.path.basename(basedbfiletoolname))
         copyfile(srcexefile, dstexefile)
 
+class RsdDriver(InstallerPackageInfoBase):
+    def __init__(self):
+        self.__fmtdir = WorkFmtConfig.inst().getWorkFmtSourceDir()
+        self.__releasfile = os.path.join(self.__fmtdir, 'DBFileTool/{}/DBFileTool.exe'.format(WorkFmtConfig.inst().getBinaryType()))
+        super(RsdDriver, self).__init__()
+
+        today = date.today()
+        self.DisplayName = 'RsdDriver'
+        self.Description = 'Утилита для работы с *.dat файлами'
+        self.Name = 'com.rs.fmt.workfmt.rsddriver'
+        self.ReleaseDate = today.strftime("%Y-%m-%d")
+        self.ForcedInstallation = True
+
+    def getVersion(self):
+        try:
+            ver = getExeVersion(self.__releasfile)
+            print(ver)
+            return ver
+        except:
+            return "1.0.0.0"
+
+    def makeData(self, datadir):
+        srcexefile = self.__releasfile
+        basedbfiletoolname = os.path.basename(self.__releasfile)
+        dstexefile = os.path.join(self.DataPath, os.path.basename(basedbfiletoolname))
+        copyfile(srcexefile, dstexefile)
+
 class WorkFmtInstaller(InstallCreator):
     def __init__(self):
         super(WorkFmtInstaller, self).__init__(name = 'WorkFmt', 

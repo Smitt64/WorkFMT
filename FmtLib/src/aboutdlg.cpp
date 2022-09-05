@@ -99,13 +99,21 @@ void AboutDlg::ReadComponents()
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
             ui->tabWidget->setTabVisible(1, false);
+#else
+            ui->tabWidget->removeTab(1);
+#endif
             return;
         }
 
         if (!doc.setContent(&file))
         {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
             ui->tabWidget->setTabVisible(1, false);
+#else
+            ui->tabWidget->removeTab(1);
+#endif
             file.close();
             return;
         }
@@ -125,5 +133,11 @@ void AboutDlg::ReadComponents()
         }
     }
     else
-        ui->tabWidget->setTabVisible(1, false);
+    {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+            ui->tabWidget->setTabVisible(1, false);
+#else
+            ui->tabWidget->removeTab(1);
+#endif
+    }
 }
