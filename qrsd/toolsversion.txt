@@ -1,5 +1,5 @@
 [Version]
-BuilDate=00.00.00
-Tools=0.0.0.0
-Rsd=0.0.0.0
-QRsdAddVersion=0
+BuilDate=29.07.2022
+Tools=6.57.714.3
+Rsd=3.02.039.0
+QRsdAddVersion=8

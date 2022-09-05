@@ -18,6 +18,11 @@
 #ifndef __WINCLIP_H
 #define __WINCLIP_H
 
+#ifndef   __EDIT_FBUFF_H
+    #include "edit/fbuff.h"
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

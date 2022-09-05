@@ -497,6 +497,7 @@ class _APPTLEXP TBtrvReceiver : public TEventReceiver
 
      public:
        TBtrvReceiver(bool no_xml = false);
+       TBtrvReceiver(bool no_xml, int vernum);
       ~TBtrvReceiver();
 
        // Интерфейс для контроля логической целостности данных

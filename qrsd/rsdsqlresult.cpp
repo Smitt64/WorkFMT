@@ -80,7 +80,7 @@ bool RsdSqlResult::fetch(int index)
     }
     else
     {
-        int count = m_RecSet->getRecCount();
+        quint32 count = m_RecSet->getRecCount();
         if (index < count)
         {
             ok = m_RecSet->moveFirst();

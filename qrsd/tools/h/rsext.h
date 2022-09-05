@@ -348,6 +348,7 @@ typedef int (*TFileCopyProgress)(int code, size_t fileSize, size_t curSz, void *
 #define  PGM_WAIT          2
 #define  PGM_ACTIVATE      3
 #define  PGM_OPENRESOURCE  4
+#define  PGM_SHELLEXECUTE  5
 
 // -----------------------------------------------
 typedef struct

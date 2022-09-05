@@ -1,4 +1,4 @@
-import os, sys, configparser
+import os, sys, configparser, re
 import shutil
 
 def versiontuple(v):
@@ -25,8 +25,9 @@ class Config:
     def __init__(self):
         self.ToolsComplectRepo = '\\\\ATOM\\ToolsComplect'
         self.WorkFmtDir = 'D:\\Work\\WorkFMT'
-        self.QRsdToolsDir = os.path.join(self.WorkFmtDir, 'qrsd\\tools')
-        self.QRsdRsdDir = os.path.join(self.WorkFmtDir, 'qrsd\\rsd')
+        self.QRsdDir = os.path.join(self.WorkFmtDir, 'qrsd')
+        self.QRsdToolsDir = os.path.join(self.QRsdDir, 'tools')
+        self.QRsdRsdDir = os.path.join(self.QRsdDir, 'rsd')
 
         self.Version = None
         self.ComplectDir = ''
@@ -117,7 +118,12 @@ class WorkFmtUpdate:
 
     def copyRsd(self) :
         print(self.__RsdHeaderDir)
-        shutil.rmtree(self.__RsdHeaderDir)
+
+        try:
+            shutil.rmtree(self.__RsdHeaderDir)
+        except:
+            pass
+
         recursive_overwrite(self.__config.RsdHeadersPath, self.__RsdHeaderDir)
 
         debugdir = os.path.join(self.__RsdLibDir, 'debug')
@@ -133,9 +139,16 @@ class WorkFmtUpdate:
         except BaseException:
             pass
 
-        os.mkdir(debugdir)
-        os.mkdir(releasedir)
+        try:
+            os.mkdir(debugdir)
+        except OSError:
+            pass
 
+        try:
+            os.mkdir(releasedir)
+        except OSError:
+            pass
+        
         self.__copyFileList(self.__config.RsdLibPath, releasedir, self.__RsdLibToCopy)
         self.__copyFileList(self.__config.RsdLibPathDebug, debugdir, self.__RsdLibToCopy)
 
@@ -144,7 +157,12 @@ class WorkFmtUpdate:
 
     def copyTools(self):
         print(self.__ToolsHeaderDir)
-        shutil.rmtree(self.__ToolsHeaderDir)
+
+        try:
+            shutil.rmtree(self.__ToolsHeaderDir)
+        except:
+            pass
+        
         recursive_overwrite(self.__config.ToolsHeadersPath, self.__ToolsHeaderDir)
 
         debugdir = os.path.join(self.__ToolsLibDir, 'debug')
@@ -169,6 +187,36 @@ class WorkFmtUpdate:
         self.__copyFileList(self.__config.ToolBinPath, releasedir, self.__ToolsdDllToCopy)
         self.__copyFileList(self.__config.ToolBinPathDebug, debugdir, self.__ToolsdDllToCopy)
 
+    def __readAddVersion(self, version_file_name):
+        content = ''
+        with open(version_file_name, 'r') as f:
+            content = f.read()
+
+        addversion = 1
+        m = re.search('QRsdAddVersion=([0-9]+)', content)
+
+        try:
+            addversion = int(m.group(1)) + 1
+        except:
+            pass
+
+        return addversion
+
+    def updateVersionTxt(self):
+        version_file_name = os.path.join(self.__config.QRsdDir, 'toolsversion.txt')
+        build_date = self.__config.VersionConfig['TC']['BuilDate']
+        tools = self.__config.VersionConfig['TOOLS']['Version']
+        rsd = self.__config.VersionConfig['RSD']['Version']
+
+        add_version = str(self.__readAddVersion(version_file_name))
+
+        with open(version_file_name, 'wt') as f:
+            print('[Version]', end='\n', file=f)
+            print('BuilDate=' + build_date, end='\n', file=f)
+            print('Tools=' + tools, end='\n', file=f)
+            print('Rsd=' + rsd, end='\n', file=f)
+            print('QRsdAddVersion=' + add_version, end='\n', file=f)
+
 def selectSubDir(parent, msg, errmsg):
     subdirs = os.listdir(parent)
     selecteddir = None
@@ -186,7 +234,6 @@ def selectSubDir(parent, msg, errmsg):
             raise ValueError()
 
         selecteddir = subdirs[selected - 1]
-
     except ValueError:
         print(errmsg)
         sys.exit()
@@ -209,7 +256,7 @@ config.init()
 config.printPaths()
 config.printVersions()
 
-
 fmtupd = WorkFmtUpdate(config)
 fmtupd.copyRsd()
 fmtupd.copyTools()
+fmtupd.updateVersionTxt()

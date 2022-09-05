@@ -122,7 +122,9 @@ extern const char RSL_FAR _CHKOPLOG_STR_BERR[];
 extern const char RSL_FAR _CHKOPLOG_STR_FAILED[];
 extern const char RSL_FAR _CHKOPLOG_STR_STATUS[];
 
-extern const char RSL_FAR _FLTROPLOG_CHR_ADMIN;
+extern const char RSL_FAR _FLTROPLOG_CHR_ADMIN_ABS;
+extern const char RSL_FAR _FLTROPLOG_CHR_ADMIN_SS;
+extern const char RSL_FAR _FLTROPLOG_CHR_ADMIN_SEC;
 extern const char RSL_FAR _FLTROPLOG_CHR_RADIO;
 extern const char RSL_FAR _FLTROPLOG_STR_FILTR_NOTSUPPORT[];
 extern const char RSL_FAR _FLTROPLOG_STR_ENTRY_NOTFOUND[];

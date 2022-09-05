@@ -42,5 +42,5 @@ except ValueError:
     print('Wrong installer framework version selected')
     sys.exit()
 
-installerCreator = installer.workfmtinstaller.WorkFmtInstaller()
-installerCreator.make(WorkFmtConfig.inst().getInstallerPath())
+#installerCreator = installer.workfmtinstaller.WorkFmtInstaller()
+#installerCreator.make(WorkFmtConfig.inst().getInstallerPath())

@@ -193,6 +193,9 @@ TSToolsConfigData *RsToolsGetConfig(void);
 
 void RsToolsReadConfigData(const char *iniFile, TSToolsConfigData *data);
 
+// -----------------------------------------------------------------------------
+extern _APPTLDATA int Bank55OperLogVerNum;
+
 #ifdef __cplusplus
 }
 #endif

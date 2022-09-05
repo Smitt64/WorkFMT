@@ -176,3 +176,5 @@ workfmtpytools/installer/__pycache__/
 workfmtpytools/tools/__pycache__/
 
 DBFileTool/tables.dat
+
+tables.dat

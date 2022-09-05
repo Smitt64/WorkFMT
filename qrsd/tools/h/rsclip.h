@@ -40,7 +40,7 @@ _TOOLEXP int  RSSetClipboardData(int fmt, void *data, int size);
 //             -1 - общая ошибка (например, не реализована функциональсть)
 //             -2 - размер данных превышает размер коммуникационного пакета
 //              остальные значения представляют собой возвращаемые значения GetLastError.
-_TOOLEXP int  RSGetClipboardData(int fmt, void *data, int size);
+_TOOLEXP int  RSGetClipboardData(int fmt, void **data, int size);
 
 // -----------------------------------------------------------------------------
 // Очистить буфер обмена
@@ -48,6 +48,8 @@ _TOOLEXP int  RSGetClipboardData(int fmt, void *data, int size);
 //              0 - успех
 //              остальные значения представляют собой возвращаемые значения GetLastError.
 _TOOLEXP int  RSEmptyClipboard(void);
+
+void AddClipboardProc(void);
 
 #ifdef __cplusplus
 }

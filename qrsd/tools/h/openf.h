@@ -31,98 +31,114 @@
 extern "C" {
 #endif
 
-_RSPNLEXP int  Openf_Constr // Выделить память, подготовить данные
-                           (
-                            char *SaveLDir   // Путь для сохранения файла с деревом каталогов
-                                             // NULL - в корневом каталоге
-                                             // Пример "c:\\user\\curdir"
-                           );
-
-_RSPNLEXP int  Openf_Loop   // Выбор файла
-                         (
-                          const char *title,     // заголовок
-                          const char *ext,       // расширения
-                          char       *filename   // имя выбранного файла
-                         );
-
-_RSPNLEXP int OpenFileWin_LoopSort  // return 0 - O'K  -1 Cansel  > 0 Numb MarkFiles
-                                  (
-                                   const char *title,     // ?????????
-                                   const char *mask,      // а?биЁа??Ёп
-                                   char       *filename,        // Ё?п ?л?а?????? д????
-                                   int         sortBy
-                                  );
-
-_RSPNLEXP void Openf_Destr(void);  // Освободить память
-
-_RSPNLEXP int OpenFileWin_Constr(void);  // Выделить память - подготовить данные
-_RSPNLEXP int OpenFileWin_Loop  // return 0 - O'K  -1 Cansel  > 0 Numb MarkFiles
-                              (
-                               const char *title,     // заголовок
-                               const char *mask,      // расширения
-                               char       *filename   // имя выбранного файла
-                              );
-
-_RSPNLEXP void OpenFileWin_Destr(void);     // освободить память
-
-
 // -----------------------------------------------------------------------------
-// Выбор файла или каталога (локально)
-// [in]  title    - Заголовок диалога
-// [in]  mask     - Маска выбора файлов
-// [out] filename - Выбранный файл
-// [ret]            0    - Выбран одиночный файл/каталог
-//                  HOME - Выбрано несколько файлов/каталогов (отметка по INS)
-//                  Остальные значения интерпретируются как отказ от выбора.
-_RSPNLEXP int OpenFileWin(const char *title, const char *mask, char *filename);
+// Выделить память, подготовить данные
+// [in]  SaveLDir - Путь для сохранения файла с деревом каталогов
+//                  NULL - в корневом каталоге
+//                  Пример "c:\\user\\curdir"
+_RSPNLEXP int  Openf_Constr(char *SaveLDir);
 
-// -----------------------------------------------------------------------------
 // Выбор файла
-// [in]  title    - Заголовок диалога
-// [in]  mask     - Маска выбора файлов
-// [out] filename - Выбранный файл
-// [in]  opts     - Опции (вида OPEN_FILE_*)
-// [ret]            0    - Выбран одиночный файл
-//                  HOME - Выбрано несколько файлов (отметка по INS)
-//                  Остальные значения интерпретируются как отказ от выбора.
-_RSPNLEXP int SelectFile(const char *title, const char *mask, char *filename, int opts);
+// [in]  title      - Заголовок диалога
+// [in]  ext        - Расширения
+// [out] filename   - Выбранный файл
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+_RSPNLEXP int  Openf_Loop(const char *title, const char *ext, char *filename, const char *filefilter = NULL);
 
 // -----------------------------------------------------------------------------
 // Выбор файла с заданием сортировки списка
-// [in]  title    - Заголовок диалога
-// [in]  mask     - Маска выбора файлов
-// [out] filename - Выбранный файл
-// [in]  opts     - Опции (вида OPEN_FILE_*)
-// [in]  sortBy   - Режим сортировки (вида SORT_FILE_BY_*)
-// [ret]            0    - Выбран одиночный файл
-//                  HOME - Выбрано несколько файлов (отметка по INS)
-//                  Остальные значения интерпретируются как отказ от выбора.
-_RSPNLEXP int SelectFileSort(const char *title, const char *mask, char *filename, int opts, int sortBy);
+// [in]  title      - Заголовок диалога
+// [in]  mask       - Маска выбора файлов
+// [out] filename   - Выбранный файл
+// [in]  sortBy     - Режим сортировки (вида SORT_FILE_BY_*)
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+// [ret]              0    - Выбран одиночный файл
+//                    HOME - Выбрано несколько файлов (отметка по INS)
+//                    Остальные значения интерпретируются как отказ от выбора.
+_RSPNLEXP int OpenFileWin_LoopSort(const char *title, const char *mask, char *filename, int sortBy, const char *filefilter = NULL);
+
+// -----------------------------------------------------------------------------
+// Освободить память
+_RSPNLEXP void Openf_Destr(void);  
+
+// -----------------------------------------------------------------------------
+// Выделить память - подготовить данные
+_RSPNLEXP int OpenFileWin_Constr(void); 
+
+// -----------------------------------------------------------------------------
+// Выбор файла
+// [in]  title      - Заголовок диалога
+// [in]  ext        - Расширения
+// [out] filename   - Выбранный файл
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+ _RSPNLEXP int OpenFileWin_Loop(const char *title, const char *mask, char *filename, const char *filefilter = NULL);
+
+// -----------------------------------------------------------------------------
+// Освободить память
+_RSPNLEXP void OpenFileWin_Destr(void);     
+
+// -----------------------------------------------------------------------------
+// Выбор файла или каталога (локально)
+// [in]  title      - Заголовок диалога
+// [in]  mask       - Маска выбора файлов
+// [out] filename   - Выбранный файл
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+// [ret]              0    - Выбран одиночный файл/каталог
+//                    HOME - Выбрано несколько файлов/каталогов (отметка по INS)
+//                    Остальные значения интерпретируются как отказ от выбора.
+_RSPNLEXP int OpenFileWin(const char *title, const char *mask, char *filename, const char *filefilter = NULL);
+
+// -----------------------------------------------------------------------------
+// Выбор файла
+// [in]  title      - Заголовок диалога
+// [in]  mask       - Маска выбора файлов
+// [out] filename   - Выбранный файл
+// [in]  opts       - Опции (вида OPEN_FILE_*)
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+// [ret]              0    - Выбран одиночный файл
+//                    HOME - Выбрано несколько файлов (отметка по INS)
+//                    Остальные значения интерпретируются как отказ от выбора.
+_RSPNLEXP int SelectFile(const char *title, const char *mask, char *filename, int opts, const char *filefilter = NULL);
+
+// -----------------------------------------------------------------------------
+// Выбор файла с заданием сортировки списка
+// [in]  title      - Заголовок диалога
+// [in]  mask       - Маска выбора файлов
+// [out] filename   - Выбранный файл
+// [in]  opts       - Опции (вида OPEN_FILE_*)
+// [in]  sortBy     - Режим сортировки (вида SORT_FILE_BY_*)
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+// [ret]              0    - Выбран одиночный файл
+//                    HOME - Выбрано несколько файлов (отметка по INS)
+//                    Остальные значения интерпретируются как отказ от выбора.
+_RSPNLEXP int SelectFileSort(const char *title, const char *mask, char *filename, int opts, int sortBy, const char *filefilter = NULL);
 
 // -----------------------------------------------------------------------------
 // Выбор файла с заданием сортировки списка и возможностью выбора кодировки
-// [in]  title    - Заголовок диалога
-// [in]  mask     - Маска выбора файлов
-// [out] filename - Выбранный файл
-// [in]  opts     - Опции (вида OPEN_FILE_*)
-// [in]  sortBy   - Режим сортировки (вида SORT_FILE_BY_*)
-// [out] encPtr   - Кодировка (enum UFEncodeType)
-// [ret]            0    - Выбран одиночный файл
-//                  HOME - Выбрано несколько файлов (отметка по INS)
-//                  Остальные значения интерпретируются как отказ от выбора.
+// [in]  title      - Заголовок диалога
+// [in]  mask       - Маска выбора файлов
+// [out] filename   - Выбранный файл
+// [in]  opts       - Опции (вида OPEN_FILE_*)
+// [in]  sortBy     - Режим сортировки (вида SORT_FILE_BY_*)
+// [out] encPtr     - Кодировка (enum UFEncodeType)
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+// [ret]              0    - Выбран одиночный файл
+//                    HOME - Выбрано несколько файлов (отметка по INS)
+//                    Остальные значения интерпретируются как отказ от выбора.
 _RSPNLEXP int SelectFileEncode(const char *title, const char *mask, char *filename, int opts,
-                               int sortBy, int *encPtr);
+                               int sortBy, int *encPtr, const char *filefilter = NULL);
 
 // -----------------------------------------------------------------------------
 // Выбор каталога
-// [in]  title    - Заголовок диалога
-// [in]  path     - Каталог по-умолчанию
-// [out] dirname  - Выбранный каталог
-// [in]  opts     - Опции (вида OPEN_FILE_*)
-// [ret]            0    - Выбран одиночный каталог
-//                  HOME - Выбрано несколько каталогов (отметка по INS)
-//                  Остальные значения интерпретируются как отказ от выбора.
-_RSPNLEXP int SelectFolder(const char *title, const char *path, char *dirname, int opts);
+// [in]  title      - Заголовок диалога
+// [in]  path       - Каталог по-умолчанию
+// [out] dirname    - Выбранный каталог
+// [in]  opts       - Опции (вида OPEN_FILE_*)
+// [in]  fileFilter - Фильтр файлов в формате "Файлы Word (*.doc, *.docx)|Файлы PDF (*.pdf)"
+// [ret]              0    - Выбран одиночный каталог
+//                    HOME - Выбрано несколько каталогов (отметка по INS)
+//                    Остальные значения интерпретируются как отказ от выбора.
+_RSPNLEXP int SelectFolder(const char *title, const char *path, char *dirname, int opts, const char *filefilter = NULL);
 
 // -----------------------------------------------------------------------------
 // Проверка маски на соответствие ограничениям
