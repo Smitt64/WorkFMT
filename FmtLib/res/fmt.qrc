@@ -96,5 +96,8 @@
         <file>img/information.png</file>
         <file>dblogo/Oracle.png</file>
         <file>dblogo/PostgreSQL.png</file>
+        <file>img/dblogomask/sqlite.svg</file>
+        <file>img/dblogomask/oracle.svg</file>
+        <file>img/dblogomask/postgresql.svg</file>
     </qresource>
 </RCC>

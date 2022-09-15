@@ -178,3 +178,5 @@ workfmtpytools/tools/__pycache__/
 DBFileTool/tables.dat
 
 tables.dat
+
+.qtc_clangd/

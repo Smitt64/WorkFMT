@@ -57,7 +57,7 @@ public:
     QString password() const { return m_Password; }
     QString dsn() const { return m_DSN; }
 
-    QIcon colorIcon();
+    QIcon colorIcon(const QSize &size = QSize(32, 32));
     QColor color();
 
     void updateFmtList();

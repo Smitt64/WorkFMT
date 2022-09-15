@@ -123,6 +123,7 @@ MainWindow::MainWindow(QWidget *parent) :
     CreateCheckUpdateRunnable();
 
     ui->tabToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    ui->tabToolBar->setIconSize(QSize(20, 20));
 
     QSettings *s = settings();
     restoreGeometry(s->value("Geometry").toByteArray());
@@ -403,7 +404,8 @@ QAction *MainWindow::CreateConnectionActio(ConnectionInfo *info)
     m_ConnectionsGroup->addAction(a);
     a->setChecked(true);
 
-    a->setIcon(info->colorIcon());
+    QSize toolBarIconSize = ui->tabToolBar->iconSize();
+    a->setIcon(info->colorIcon(toolBarIconSize));
     a->setData(reinterpret_cast<qintptr>(info));
     pWindowsModel->addConnection(info);
 

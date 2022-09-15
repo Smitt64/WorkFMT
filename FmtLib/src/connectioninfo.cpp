@@ -5,6 +5,9 @@
 #include <QPainter>
 #include <QSqlDriver>
 #include <QSqlError>
+#include <QImage>
+#include <QRegion>
+#include <QBitmap>
 
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     QObject(Q_NULLPTR),
@@ -59,28 +62,52 @@ QColor ConnectionInfo::color()
     return m_Color;
 }
 
-QIcon ConnectionInfo::colorIcon()
+QIcon ConnectionInfo::colorIcon(const QSize &size)
 {
+    const int ratio = 2;
     if (m_Icon.isNull())
     {
-        QPixmap pix(32, 32);
+        QPixmap pix(size.width() * ratio, size.height() * ratio);
         QPainter p(&pix);
+        p.setRenderHint(QPainter::Antialiasing);
         p.setBrush(m_Color);
         p.setPen(m_Color);
         p.fillRect(pix.rect(), m_Color);
 
+        int borderWidth = (1.0 / 4.0) * ratio * 2;
         QPen pen(m_Color.darker());
-        pen.setWidth(2);
+        pen.setWidth(borderWidth);
         p.setPen(pen);
 
         QRect rc = pix.rect();
-        rc.setX(rc.x() + 2);
-        rc.setY(rc.y() + 2);
-        rc.setWidth(rc.width() - 2);
-        rc.setHeight(rc.height() - 2);
+        rc.setX(rc.x() + borderWidth);
+        rc.setY(rc.y() + borderWidth);
+        rc.setWidth(rc.width() - borderWidth);
+        rc.setHeight(rc.height() - borderWidth);
         p.drawRect(rc);
+
+        QImage mskimg;
+        if (m_Type == CON_SQLITE)
+            mskimg = QImage(":/img/dblogomask/sqlite.svg");
+        else if (m_Type == CON_ORA)
+            mskimg = QImage(":/img/dblogomask/oracle.svg");
+        else if (m_Type == CON_POSTGRESQL)
+            mskimg = QImage(":/img/dblogomask/postgresql.svg");
+
+        if (!mskimg.isNull())
+        {
+            QPixmap mask(mskimg.size());
+            mask.fill(pen.color());
+            mask.setMask(QPixmap::fromImage(mskimg.createAlphaMask()));
+            p.save();
+            p.setPen(pen);
+            p.drawPixmap(rc, mask);
+            p.restore();
+        }
+
         m_Icon = QIcon(pix);
     }
+
     return m_Icon;
 }
 
@@ -163,7 +190,10 @@ bool ConnectionInfo::openSqlite(const QString &filename)
     bool hr = _db.open();
 
     if (hr)
+    {
+        m_Type = CON_SQLITE;
         qCInfo(logCore()) << QString("Connected to %1").arg(fi.baseName());
+    }
     else
     {
         qCInfo(logCore()) << QString("Can't connect to %1").arg(fi.baseName());
