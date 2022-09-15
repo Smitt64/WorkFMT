@@ -1,4 +1,8 @@
-import os, glob, ntpath, shutil
+import os
+import glob
+import ntpath
+import shutil
+import configparser
 from installer.installer import InstallCreator
 from installer.instpackageinfo import *
 from config.WorkFmtConfig import WorkFmtConfig
@@ -115,15 +119,7 @@ class QtPackage(InstallerPackageInfoBase):
                 self.__copy_file_destrib(file, dst_dll)
 
     def __copy_file_destrib(self, fromf, tof):
-        base = ntpath.basename(fromf)
-        print('Copy file \'', base, '\': ', sep='', end=' ')
-        try:
-            shutil.copyfile(fromf, tof)
-            print('Ok')
-        except IOError:
-            print('Fail. Target directory must be writable.')
-        except:
-            print('Fail')
+        self.copyFileToDestrib(fromf, tof)
 
     def __check_dir(self, path):
         result = True
@@ -175,7 +171,7 @@ class DBFileTool(InstallerPackageInfoBase):
         super(DBFileTool, self).__init__()
 
         today = date.today()
-        self.DisplayName = 'DBFileTool'
+        self.DisplayName = 'DB file tool'
         self.Description = 'Утилита для работы с *.dat файлами'
         self.Name = 'com.rs.fmt.workfmt.dbfiletool'
         self.ReleaseDate = today.strftime("%Y-%m-%d")
@@ -195,23 +191,68 @@ class DBFileTool(InstallerPackageInfoBase):
         dstexefile = os.path.join(self.DataPath, os.path.basename(basedbfiletoolname))
         copyfile(srcexefile, dstexefile)
 
-class RsdDriver(InstallerPackageInfoBase):
+class RsComponentBase(InstallerPackageInfoBase):
     def __init__(self):
-        self.__fmtdir = WorkFmtConfig.inst().getWorkFmtSourceDir()
-        self.__releasfile = os.path.join(self.__fmtdir, 'DBFileTool/{}/DBFileTool.exe'.format(WorkFmtConfig.inst().getBinaryType()))
-        super(RsdDriver, self).__init__()
+        self.FmtDir = WorkFmtConfig.inst().getWorkFmtSourceDir()
+        self.__VersionFile = os.path.join(self.FmtDir, 'qrsd\\toolsversion.txt')
+        self.VersionConfig = configparser.ConfigParser()
+        self.__readVersionFile()
+
+        super(RsComponentBase, self).__init__()
 
         today = date.today()
-        self.DisplayName = 'RsdDriver'
-        self.Description = 'Утилита для работы с *.dat файлами'
-        self.Name = 'com.rs.fmt.workfmt.rsddriver'
         self.ReleaseDate = today.strftime("%Y-%m-%d")
         self.ForcedInstallation = True
 
+    def __readVersionFile(self):
+        self.VersionConfig.read(self.__VersionFile)
+
     def getVersion(self):
         try:
-            ver = getExeVersion(self.__releasfile)
-            print(ver)
+            ver = self.VersionConfig['Version']['Rsd'] + \
+                '.' + self.VersionConfig['Version']['QRsdAddVersion']
+            return ver
+        except:
+            return "1.0.0.0"
+
+    def copyArray(self, rsdDllDir, srcDir):
+        for dll in rsdDllDir:
+            dllpath = os.path.join(srcDir, dll)
+            dlldstpath = os.path.join(self.DataPath, dll)
+            self.copyFileToDestrib(dllpath, dlldstpath)
+
+class RsdDriver(RsComponentBase):
+    def __init__(self):
+        super(RsdDriver, self).__init__()
+        self.__RsdDllDir = os.path.join(
+            self.FmtDir, 'qrsd/rsd/lib/{}'.format(WorkFmtConfig.inst().getBinaryType()))
+        self.__releasfile = os.path.join(
+            self.FmtDir, 'qrsd/{}/qrsd.dll'.format(WorkFmtConfig.inst().getBinaryType()))
+        
+        '''self.__ToolsToCopy = [
+            'rsrtlwm.dll',
+            'RSScript.dll'
+        ]'''
+
+        self.__RsdToCopy = [
+            'rddrvo.dll',
+            'rddrvou.dll',
+            'rdrset.dll',
+            'RsBtr.dll',
+            'rsdc.dll',
+            'dbinit.exe', 
+            'fmtxml.exe',
+            'fmtxml.xsd'
+        ]
+
+        self.DisplayName = 'Rsd Connector For Qt'
+        self.Description = 'Драйвер подключения к БД через rsd'
+        self.Name = 'com.rs.fmt.workfmt.rsddriver'
+
+    def getVersion(self):
+        try:
+            ver = self.VersionConfig['Version']['Rsd'] + \
+                '.' + self.VersionConfig['Version']['QRsdAddVersion']
             return ver
         except:
             return "1.0.0.0"
@@ -219,14 +260,50 @@ class RsdDriver(InstallerPackageInfoBase):
     def makeData(self, datadir):
         srcexefile = self.__releasfile
         basedbfiletoolname = os.path.basename(self.__releasfile)
-        dstexefile = os.path.join(self.DataPath, os.path.basename(basedbfiletoolname))
-        copyfile(srcexefile, dstexefile)
+        dstexefile = os.path.join(self.DataPath, 'sqldrivers/' + os.path.basename(basedbfiletoolname))
+        
+        try:
+            driverdir = os.path.join(self.DataPath, 'sqldrivers')
+            os.mkdir(driverdir)
+            copyfile(srcexefile, dstexefile)
+        except FileExistsError:
+            copyfile(srcexefile, dstexefile)
+        except Exception as e:
+            print('Fail: ' + str(e))
+
+        self.copyArray(self.__RsdToCopy, self.__RsdDllDir)
+
+class RsTools(RsComponentBase):
+    def __init__(self):
+        super(RsTools, self).__init__()
+        self.__RsDllDir = os.path.join(
+            self.FmtDir, 'qrsd/tools/lib/{}'.format(WorkFmtConfig.inst().getBinaryType()))
+
+        self.__ToolsToCopy = [
+            'rsrtlwm.dll',
+            'RSScript.dll'
+        ]
+
+        self.DisplayName = 'Rs Tools Binaries'
+        self.Description = 'Динамический инструментальный Runtime'
+        self.Name = 'com.rs.fmt.workfmt.rsruntime'
+
+    def getVersion(self):
+        try:
+            ver = self.VersionConfig['Version']['Tools'] + \
+                '.' + self.VersionConfig['Version']['QRsdAddVersion']
+            return ver
+        except:
+            return "1.0.0.0"
+
+    def makeData(self, datadir):
+        self.copyArray(self.__ToolsToCopy, self.__RsDllDir)
 
 class WorkFmtInstaller(InstallCreator):
     def __init__(self):
         super(WorkFmtInstaller, self).__init__(name = 'WorkFmt', 
             version = '1.0.0', 
-            title = 'WorkFmt Installer', 
+            title = 'WorkFmt', 
             publisher = 'Serpkov Nikita')
         
         self.MaintenanceToolName = 'WorkFmtMaintenanceTool'
@@ -238,7 +315,11 @@ class WorkFmtInstaller(InstallCreator):
         self.__WorkFmtMainPackage = WorkFmtMainPackage()
         self.__QtPackage = QtPackage()
         self.__DBFileTool = DBFileTool()
+        self.__RsdDriver = RsdDriver()
+        self.__RsdTools = RsTools()
 
         self.addPage(self.__WorkFmtMainPackage)
         self.addPage(self.__DBFileTool)
         self.addPage(self.__QtPackage)
+        self.addPage(self.__RsdDriver)
+        self.addPage(self.__RsdTools)

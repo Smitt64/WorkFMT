@@ -114,19 +114,20 @@ bool FmtImpExpWrp::isExists(const QString &table)
 
 QString FmtImpExpWrp::programName() const
 {
-    QString exe;
-    FmtApplication *app = (FmtApplication*)qApp;
+    QString exe = getFullFileNameFromDir("fmtxml.exe");
 
-    QSettings *m_pPrm = app->settings();
-    m_pPrm->beginGroup("FmtXml");
-    exe = m_pPrm->value("ExePath", "fmtxml/fmtxml.exe").toString();
-    m_pPrm->endGroup();
-
-    QDir d(exe);
-    if (!d.isAbsolute())
+    if (exe.isEmpty())
     {
-        QDir appdir = QDir::current();
-        exe = appdir.absoluteFilePath(exe);
+        FmtApplication *app = (FmtApplication*)qApp;
+
+        QSettings *m_pPrm = app->settings();
+        m_pPrm->beginGroup("FmtXml");
+        exe = m_pPrm->value("ExePath", "fmtxml/fmtxml.exe").toString();
+        m_pPrm->endGroup();
+
+        QDir d(exe);
+        if (!d.isAbsolute())
+            exe = getFullFileNameFromDir(exe);
     }
 
     return exe;
@@ -237,6 +238,13 @@ int FmtImpExpWrp::importDir(const QString &impdir)
 
     arg << impdir;
 
+    QString exeName = programName();
+    if (exeName.isEmpty())
+    {
+        qCritical(logCore()) << "FmtXml not found";
+        return stat;
+    }
+
     if (m_TempDir.isValid())
     {
         m_pPrm->beginGroup("FmtXml");
@@ -245,8 +253,8 @@ int FmtImpExpWrp::importDir(const QString &impdir)
 
         m_Protocol = impdir + "/protocol.out";
         pFmtXml->setWorkingDirectory(m_TempDir.path());
-        qCInfo(logCore()) << "FmtXml import dir started: " << programName() << arg;
-        pFmtXml->start(programName(), arg);
+        qCInfo(logCore()) << "FmtXml import dir started: " << exeName << arg;
+        pFmtXml->start(exeName, arg);
         stat = 0;
     }
 

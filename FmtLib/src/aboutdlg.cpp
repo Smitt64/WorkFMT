@@ -5,6 +5,7 @@
 #include <QDomDocument>
 #include <QStandardItemModel>
 #include <QFile>
+#include <QScrollBar>
 
 AboutDlg::AboutDlg(QWidget *parent) :
     QDialog(parent),
@@ -27,6 +28,10 @@ AboutDlg::AboutDlg(QWidget *parent) :
     ui->componentsView->setModel(pComponentsModel);
     ui->componentsView->header()->resizeSection(0, 150);
     ui->componentsView->header()->resizeSection(1, 150);
+
+    QScrollBar *sb = ui->textBrowser->verticalScrollBar();
+    sb->setValue(sb->maximum());
+
     PutVersion();
     ReadComponents();
 }
@@ -91,8 +96,7 @@ void AboutDlg::ReadComponentPackage(QDomElement *Elem)
 
 void AboutDlg::ReadComponents()
 {
-    QDir dir = qApp->applicationDirPath();
-    QString filename = dir.absoluteFilePath("components.xml");
+    QString filename = getFullFileNameFromDir("components.xml");
     if (QFile::exists(filename))
     {
         QDomDocument doc("components");

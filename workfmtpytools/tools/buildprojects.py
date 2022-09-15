@@ -6,7 +6,7 @@ class ProjectBulder:
         self.__config = config
         self.__cmd_file_name = ''
 
-    def __makeCommandFile(self, tmpdirname):
+    def __makeCommandFile(self, tmpdirname, fClean):
         self.__cmd_file_name = os.path.join(tmpdirname, 'build.cmd')
         qt_vars_bat = os.path.join(self.__config.getQtComplect().getPath(), 'bin\\qtenv2.bat')
         qt_complect = self.__config.getQtComplect().getComplect()
@@ -24,7 +24,7 @@ class ProjectBulder:
             if (qt_complect.startswith('msvc')):
                 compiler_spec = ' -spec win32-msvc'
                 compiler = 'nmake'
-                compiler_make = 'nmake ' + self.__config.getBinaryType()
+                compiler_make = 'nmake Makefile ' + self.__config.getBinaryType()
                 compiler_install = 'nmake install'
                 print('call "' + self.__config.getMsvcBat() + '"', end='\n', file=f)
 
@@ -32,13 +32,17 @@ class ProjectBulder:
 
             build_cmd = qt_qmake + ' ' + project_file + compiler_spec + config_param
             print(build_cmd, end='\n', file=f)
-            print(compiler + ' clean' , end='\n', file=f)
+
+            if fClean == True:
+                print(compiler + ' clean' , end='\n', file=f)
+
             print(compiler_make, end='\n', file=f)
             print(compiler_install, end='\n', file=f)
 
-    def compile(self):
+    def compile(self, fClean = True):
         with tempfile.TemporaryDirectory() as tmpdirname:
-            self.__makeCommandFile(tmpdirname)
-            print(self.__cmd_file_name)
+            self.__makeCommandFile(tmpdirname, fClean)
+            print('Command file: ' + self.__cmd_file_name)
+            print('Working dir: ' + self.__config.getWorkFmtSourceDir())
             subprocess.call([self.__cmd_file_name],
                             cwd=self.__config.getWorkFmtSourceDir())

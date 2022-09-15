@@ -89,6 +89,29 @@ int ConnectionInfo::type() const
     return m_Type;
 }
 
+bool ConnectionInfo::isOracle()
+{
+    QSqlQuery query(_db);
+    query.prepare("SELECT * FROM v$version");
+
+    if (ExecuteQuery(&query) || !query.next())
+        return false;
+
+    QString oracleVersion = query.value(0).toString();
+    return oracleVersion.startsWith("Oracle Database", Qt::CaseInsensitive);
+}
+
+bool ConnectionInfo::isSqlite()
+{
+    QSqlQuery query(_db);
+    query.prepare("SELECT sqlite_version()");
+
+    if (ExecuteQuery(&query) || !query.next())
+        return false;
+
+    return false;
+}
+
 bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn, QString *error)
 {
     bool hr = false;
@@ -103,7 +126,17 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
     hr = _db.open();
 
     if (hr)
+    {
+        m_User = user;
+        m_Password = password;
+
+        if (isOracle())
+            m_Type = CON_ORA;
+        else if (isSqlite())
+            m_Type = CON_SQLITE;
+
         qCInfo(logCore()) << QString("Connected to %1@%2").arg(user, dsn);
+    }
     else
     {
         QString err = _db.lastError().text();

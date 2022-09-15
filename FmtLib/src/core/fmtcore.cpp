@@ -1135,8 +1135,11 @@ void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *pare
     ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
     dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
     dlg.setWindowModality(Qt::WindowModal);
+
     FmtDbfToolWrp wrp(current, parent);
     dlg.setErrors(wrp.fmterrors());
+    wrp.setDsn(current->dsn());
+
     QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
     QObject::connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
     QObject::connect(&wrp, SIGNAL(startError()), &dlg, SLOT(exec()));
@@ -1151,8 +1154,11 @@ void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent
     ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
     dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
     dlg.setWindowModality(Qt::WindowModal);
+
     FmtDbfToolWrp wrp(current, parent);
     dlg.setErrors(wrp.fmterrors());
+    wrp.setDsn(current->dsn());
+
     QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
     QObject::connect(&wrp, SIGNAL(started()), &dlg, SLOT(exec()));
     QObject::connect(&wrp, SIGNAL(startError()), &dlg, SLOT(exec()));
@@ -1262,4 +1268,21 @@ void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote
             break;
         }
     }
+}
+
+QString getFullFileNameFromDir(const QString &file)
+{
+    QDir dir = QDir::current();
+    QString fullfilename = dir.absoluteFilePath(file);
+
+    if (QFile::exists(fullfilename))
+        return fullfilename;
+
+    dir = QDir(QApplication::applicationDirPath());
+    fullfilename = dir.absoluteFilePath(file);
+
+    if (QFile::exists(fullfilename))
+        return fullfilename;
+
+    return QString();
 }

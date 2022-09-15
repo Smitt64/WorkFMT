@@ -96,7 +96,7 @@ void FmtDbfToolWrp::load(const QString &dbt)
 
     QStringList args;
     args << "--cs" << QString("dsn=%1;user id=%2;password=%3")
-            .arg(DatasourceFromService(pInfo->service()),
+            .arg(pInfo->dsn(),
                  pInfo->user(),
                  pInfo->password());
     args << "--i" << "--dbt" << dbt;

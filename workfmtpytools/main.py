@@ -43,8 +43,21 @@ except ValueError:
     print('Wrong installer framework version selected')
     sys.exit()
 
-builder = ProjectBulder(WorkFmtConfig.inst())
-#builder.compile()
+print('')
+print('Rebuild release version: \n1: buld\n2: rebuild \n3: skip\n > ', end='')
+
+try:
+    result = int(input())
+    if result == 1 or result == 2:
+        builder = ProjectBulder(WorkFmtConfig.inst())
+
+        if result == 1:
+            builder.compile(False)
+        else:
+            builder.compile(True)
+except ValueError:
+    print('Wrong answer')
+    sys.exit()
 
 installerCreator = installer.workfmtinstaller.WorkFmtInstaller()
 installerCreator.make(WorkFmtConfig.inst().getInstallerPath())

@@ -1,5 +1,8 @@
 from xml.dom import minidom
 import os
+import ntpath
+import shutil
+from shutil import copyfile
 
 class LicenseElement:
     def __init__(self, _name : str, _file : str):
@@ -38,6 +41,17 @@ class InstallerPackageInfoBase:
         self.VendorPath = None
         self.DataPath = None
         self.MetaPath = None
+
+    def copyFileToDestrib(self, fromf, tof):
+        base = ntpath.basename(fromf)
+        print('Copy file \'', base, '\': ', sep='', end=' ')
+        try:
+            shutil.copyfile(fromf, tof)
+            print('Ok')
+        except IOError:
+            print('Fail. Target directory must be writable.')
+        except Exception as e:
+            print('Fail: ' + str(e))
 
     def getVersion(self):
         return ''

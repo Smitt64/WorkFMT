@@ -105,7 +105,8 @@ class WorkFmtUpdate:
 
         self.__RsdLibToCopy = ['rsdc.lib']
         self.__RsdDLLToCopy = ['rddrvo.dll', 'rddrvou.dll',
-                               'rdrset.dll', 'RsBtr.dll', 'rsdc.dll']
+                               'rdrset.dll', 'RsBtr.dll', 'rsdc.dll',
+                               'dbinit.exe', 'fmtxml.exe', 'fmtxml.xsd']
 
         self.__ToolsLibToCopy = ['rsrtlwm.lib']
         self.__ToolsdDllToCopy = ['rsrtlwm.dll', 'RSScript.dll']
@@ -162,7 +163,7 @@ class WorkFmtUpdate:
             shutil.rmtree(self.__ToolsHeaderDir)
         except:
             pass
-        
+
         recursive_overwrite(self.__config.ToolsHeadersPath, self.__ToolsHeaderDir)
 
         debugdir = os.path.join(self.__ToolsLibDir, 'debug')

@@ -23,6 +23,7 @@ public:
     {
         CON_NON = 0,
         CON_ORA,
+        CON_POSTGRESQL,
         CON_SQLITE
     };
     /**
@@ -78,6 +79,8 @@ public:
     explicit operator int() const;
 
 protected:
+    bool isOracle();
+    bool isSqlite();
     QString m_Alias, m_SchemeName, m_Host, m_Service, m_User, m_Password, m_DSN;
     qint32 m_Port;
     QSqlDatabase _db;

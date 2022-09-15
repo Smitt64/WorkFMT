@@ -231,4 +231,6 @@ FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, co
 
 FMTLIBSHARED_EXPORT void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote = '"');
 
+FMTLIBSHARED_EXPORT QString getFullFileNameFromDir(const QString &file);
+
 #endif // FMTCORE_H
