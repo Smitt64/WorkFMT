@@ -68,23 +68,26 @@ QIcon ConnectionInfo::colorIcon(const QSize &size)
     if (m_Icon.isNull())
     {
         QPixmap pix(size.width() * ratio, size.height() * ratio);
+        pix.fill(Qt::transparent);
+
         QPainter p(&pix);
         p.setRenderHint(QPainter::Antialiasing);
-        p.setBrush(m_Color);
-        p.setPen(m_Color);
-        p.fillRect(pix.rect(), m_Color);
 
-        int borderWidth = (1.0 / 4.0) * ratio * 2;
+        int borderWidth = (32.0 / size.width()) * ratio;
+        int radius = size.width() / 4;
         QPen pen(m_Color.darker());
         pen.setWidth(borderWidth);
         p.setPen(pen);
+        p.setBrush(m_Color);
 
         QRect rc = pix.rect();
         rc.setX(rc.x() + borderWidth);
         rc.setY(rc.y() + borderWidth);
         rc.setWidth(rc.width() - borderWidth);
         rc.setHeight(rc.height() - borderWidth);
-        p.drawRect(rc);
+
+        p.drawRoundedRect(rc, radius, radius);
+        //p.drawRect(rc);
 
         QImage mskimg;
         if (m_Type == CON_SQLITE)

@@ -12,28 +12,17 @@ ImpExpParams::ImpExpParams(QWidget *parent) :
     m_pPrm = app->settings();
 
     m_pPrm->beginGroup("FmtXml");
-    ui->lineEdit->setText(m_pPrm->value("ExePath", "fmtxml/fmtxml.exe").toString());
+    ui->lineEdit->setText("fmtxml.exe");
     ui->comboBox->setCurrentText(m_pPrm->value("CodePage", "utf8").toString());
     ui->checkBox->setChecked(m_pPrm->value("NoXsd", false).toBool());
     m_pPrm->endGroup();
 
-    connect(ui->toolPath, SIGNAL(clicked(bool)), SLOT(OpenFmtXml()));
     connect(this, SIGNAL(accepted()), SLOT(OnAccept()));
 }
 
 ImpExpParams::~ImpExpParams()
 {
     delete ui;
-}
-
-void ImpExpParams::OpenFmtXml()
-{
-    QString path = QFileDialog::getOpenFileName(this, tr("Открыть fmtxml.exe"), "fmtxml/", "FmtXml (fmtxml.exe)");
-
-    if (path.isEmpty())
-        return;
-
-    ui->lineEdit->setText(path);
 }
 
 void ImpExpParams::OnAccept()

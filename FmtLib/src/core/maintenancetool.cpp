@@ -1,4 +1,5 @@
 #include "maintenancetool.h"
+#include "fmtcore.h"
 #include <QThread>
 #include <QProcess>
 #include <QDir>
@@ -8,14 +9,18 @@
 #include <QLocale>
 #include <QTime>
 
+#ifdef FMT_DEBUG
+#define CHECK_UPDATES_INTERRVAL_SEC (1L * 60L)
+#else
 #define CHECK_UPDATES_INTERRVAL_SEC (10L * 60L)
+#endif
 
 MaintenanceTool::MaintenanceTool(QObject *parent) :
     QObject(parent),
     QRunnable()
 {
     setAutoDelete(true);
-    m_Program = QString("%1/WorkFmtMaintenanceTool.exe").arg(qApp->applicationDirPath());
+    m_Program = getFullFileNameFromDir("WorkFmtMaintenanceTool.exe");
 
     m_Interrupt = 0;
     m_CheckUpdate = 1;
@@ -41,6 +46,7 @@ void MaintenanceTool::setCheckUpdateFlag(bool value)
 
 void MaintenanceTool::run()
 {
+    const int check_interval = CHECK_UPDATES_INTERRVAL_SEC;
     QLocale currentLocale = QLocale::system();
 
     QScopedPointer<QProcess> pProc(new QProcess());
@@ -52,7 +58,8 @@ void MaintenanceTool::run()
     {
         QThread::sleep(5);
         QTime curTime = QTime::currentTime();
-        if (lastStartTime.secsTo(curTime) >= CHECK_UPDATES_INTERRVAL_SEC && m_CheckUpdate == 1)
+        int secsTo = lastStartTime.secsTo(curTime);
+        if (secsTo >= check_interval && m_CheckUpdate == 1)
         {
             lastStartTime = QTime::currentTime();
             emit checkStarted();
@@ -61,7 +68,33 @@ void MaintenanceTool::run()
             pProc->waitForFinished();
             QString output = QString::fromLocal8Bit(pProc->readAllStandardOutput());
 
-            if (output.contains("There are currently no updates available"))
+            if (output.contains("Critical"))
+            {
+                CheckDataList updatedata;
+                QStringList lst = output.split("Critical");
+                for (const QString &str : qAsConst(lst))
+                {
+                    if (str.front() == ':')
+                    {
+                        CheckUpdateData data;
+                        data.size = -1;
+
+                        int pos = str.indexOf(':');
+                        data.name = str.mid(pos + 1).trimmed();
+                        data.name = data.name.remove(QRegExp("\\[\\d+\\]")).simplified();
+
+                        if (str.contains("Preparing meta"))
+                        {
+                            pos = data.name.indexOf("Preparing meta");
+                            data.name = data.name.mid(0, pos);
+                        }
+                        updatedata.push_back(data);
+                    }
+                }
+
+                emit checkFinished(false, updatedata);
+            }
+            else if (output.contains("There are currently no updates available"))
                 emit checkFinished(false);
             else
             {
