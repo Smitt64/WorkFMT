@@ -100,3 +100,15 @@ DBFileTool/tables.dat
 
 WorkFMT/tables.dat
 >>>>>>> master
+
+pytools/destrib/
+
+qrsd/debug/
+
+qrsd/release/
+
+qrsdtest/debug/
+
+tables.dat
+
+fmtopt.ini
