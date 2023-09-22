@@ -29,6 +29,8 @@ INCLUDEPATH += ./h
 INCLUDEPATH += .
 LIBS += -lversion
 
+CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
+
 SOURCES += \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \

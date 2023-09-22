@@ -11,7 +11,7 @@ typedef struct
     QString name;
     QString version;
     QString sizeString;
-    quint64 size;
+    qint64 size;
 }CheckUpdateData;
 
 typedef QList<CheckUpdateData> CheckDataList;

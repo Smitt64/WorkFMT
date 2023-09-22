@@ -1,103 +1,13 @@
 
-*.stash
-
-*.zip
-
-bin/DBFileTool\.exe
-
-bin/DBFileTool\.pdb
-
-bin/DLL_ms/DbInit\.exe
-
-bin/DLL_ms/is_dlg\.dll
-
-bin/DLL_ms/MacroExecuter_lib\.dll
-
-bin/DLL_ms/msvcp71\.dll
-
-bin/DLL_ms/msvcp80\.dll
-
-bin/DLL_ms/msvcr71\.dll
-
-bin/DLL_ms/msvcr80\.dll
-
-bin/DLL_ms/RDDrvO\.dll
-
-bin/DLL_ms/RDRSet\.dll
-
-bin/DLL_ms/rsbtr\.dll
-
-bin/DLL_ms/RSDC\.dll
-
-bin/DLL_ms/rslocale/rslocale_kg/rsb_locale\.sql
-
-bin/DLL_ms/rslocale/rslocale_kg/RSLocale\.dll
-
-bin/DLL_ms/rslocale/rslocale_tj/rsb_locale\.sql
-
-bin/DLL_ms/rslocale/rslocale_tj/RSLocale\.dll
-
-bin/DLL_ms/tablelist
-
-bin/DLL_ms/upgrader\.dll
-
-bin/DLL_ms/upreg\.dll
-
-bin/FmtDbgHelp\.dll
-
-bin/FmtDbgHelp\.lib
-
-bin/FmtDbgHelp\.pdb
-
-bin/FmtLib\.dll
-
-bin/FmtLib\.lib
-
-bin/FmtLib\.pdb
-
-bin/FmtScriptTest\.exe
-
-bin/FmtScriptTest\.pdb
-
-bin/fmtxml/fmtxml\.exe
-
-bin/fmtxml/fmtxml\.xsd
-
-bin/fmtxml/protocol\.out
-
-bin/fmtxml/RDDrvO\.dll
-
-bin/fmtxml/RDRSet\.dll
-
-bin/fmtxml/readme\.txt
-
-bin/fmtxml/RSDC\.dll
-
-bin/fmtxml/rsreq\.ini
-
-bin/
-
-*.obj
-
-DBFileTool/build/
-
-DBFileTool/debug/
-
-DBFileTool/Makefile
-
-*.Debug
-
-DBFileTool/Makefile\.Release
-
-DBFileTool/release/
+.qtc_clangd/.cache/clangd/index/
 
 FmtDbgHelp/build/
 
-FmtDbgHelp/debug/
-
 FmtDbgHelp/Makefile
 
-*.Release
+FmtDbgHelp/Makefile.Debug
+
+FmtDbgHelp/Makefile.Release
 
 FmtDbgHelp/release/
 
@@ -105,66 +15,64 @@ FmtLib/build/
 
 FmtLib/debug/
 
-*.TMP
+FmtDbgHelp/debug/
 
 FmtLib/Makefile
+
+FmtLib/Makefile.Debug
+
+FmtLib/Makefile.Release
+
+*.Debug
+
+*.Release
+
+*.autosave
 
 FmtLib/release/
 
 FmtScript/build/
 
-FmtScript/debug/
-
-FmtScript/release/
-
 FmtScriptTest/build/
-
-FmtScriptTest/debug/
-
-FmtScriptTest/Makefile
-
-FmtScriptTest/release/
-
-Makefile
-
-*.user
-
-*.8-pre1
-
-WorkFMT/debug/logs/
-
-WorkFMT/debug/
-
-WorkFMT/release/
-
-WorkFMT/build/
-
-WorkFMT/tables\.dat
-
-WorkFMT/fmtopt\.ini
-
-*.autosave
-
-WorkFMT\.pro\.user\.4\.9-pre1
-
-*.bin
-
-pytools/destrib/
 
 HotfixCreator/debug/
 
 HotfixCreator/release/
 
-qrsd/debug/
+HotfixCreator/Makefile
 
-qrsd/release/
+FmtScriptTest/Makefile
 
-qrsdtest/debug/
+Makefile
 
 qrsdtest/release/
 
-fmtopt.ini
-*.EVulrX
+bin/1.png
+
+bin/
+
+DBFileTool/build/
+
+.qtc_clangd/
+
+.qmake.stash
+
+FmtScript/debug/
+
+FmtScriptTest/debug/
+
+FmtScriptTest/release/
+
+*.user
+
+WorkFMT/build/
+
+*.zip
+
+WorkFMT/debug/
+
+WorkFMT/release/
+
 workfmtpytools/.vscode/
 
 workfmtpytools/__pycache__/
@@ -175,10 +83,20 @@ workfmtpytools/installer/__pycache__/
 
 workfmtpytools/tools/__pycache__/
 
-DBFileTool/tables.dat
+FmtScript/release/
 
-tables.dat
+DBFileTool/release/
 
+DBFileTool/debug/
+
+<<<<<<< HEAD
 .qtc_clangd/
 
 WorkFMT.pro.user.b2456cf
+=======
+WorkFMT/fmtopt.ini
+
+DBFileTool/tables.dat
+
+WorkFMT/tables.dat
+>>>>>>> master

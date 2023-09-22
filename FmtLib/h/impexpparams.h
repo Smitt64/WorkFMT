@@ -18,7 +18,6 @@ public:
     ~ImpExpParams();
 
 private slots:
-    void OpenFmtXml();
     void OnAccept();
 
 private:

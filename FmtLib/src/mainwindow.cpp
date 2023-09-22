@@ -1347,6 +1347,24 @@ void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updat
     {
         pUpdateButton->setIcon(QIcon(":/img/base_globe_32.png"));
         m_UpdatesChecked = false;
+
+        if (updatedata.size())
+        {
+            QString text;
+            QTextStream stream(&text);
+
+            for(const CheckUpdateData &item : updatedata)
+            {
+                if (item.size <= -1)
+                    stream << item.name << Qt::endl;
+            }
+
+            if (!text.isEmpty())
+            {
+                QPoint globalPoint = pUpdateButton->mapToGlobal(pUpdateButton->pos());
+                QWhatsThis::showText(globalPoint, text, this);
+            }
+        }
     }
     else
     {
@@ -1371,11 +1389,18 @@ void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updat
 
             for(const CheckUpdateData &item : updatedata)
             {
-                stream << tr("Компонент \"%1\" (%2), новая версия %3, размером %4")
-                          .arg(item.name)
-                          .arg(item.id)
-                          .arg(item.version)
-                          .arg(item.sizeString) << Qt::endl;
+                if (item.size >= 0)
+                {
+                    stream << tr("Компонент \"%1\" (%2), новая версия %3, размером %4")
+                              .arg(item.name)
+                              .arg(item.id)
+                              .arg(item.version)
+                              .arg(item.sizeString) << Qt::endl;
+                }
+                else
+                {
+                    stream << item.name << Qt::endl;
+                }
             }
 
             if (!m_UpdatesChecked)
