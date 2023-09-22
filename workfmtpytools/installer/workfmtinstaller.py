@@ -47,8 +47,7 @@ class WorkFmtMainPackage(InstallerPackageInfoBase):
             releasedir = os.path.join(WorkFmtConfig.inst().getWorkFmtSourceDir(), self.__filesToCopy[0].format(WorkFmtConfig.inst().getBinaryType()))
             ver = getExeVersion(releasedir)
             print(ver)
-            #return ver
-            return '1.0.3.7'
+            return ver
         except:
             return "Unknown version"
 
@@ -66,6 +65,7 @@ class QtPackage(InstallerPackageInfoBase):
             'Qt{}Sql.dll', 
             'Qt{}Widgets.dll', 
             'Qt{}Xml.dll',
+            'Qt{}Svg.dll',
             'libEGL.dll'
         ]
         self.__VersionedDlls = [
@@ -310,7 +310,8 @@ class WorkFmtInstaller(InstallCreator):
         self.MaintenanceToolIniFile = 'WorkFmtMaintenanceTool.ini'
         self.WizardDefaultWidth = 1000
 
-        self.addRepository('file:///D:/Work/workfmtrepo', 'Test Repo')
+        self.addRepository('file://Serpkovn/workfmtrepo/', 'Network Repo')
+        self.addRepository('file:///d:/Work/workfmtrepo/', 'Local Repo')
 
         self.__WorkFmtMainPackage = WorkFmtMainPackage()
         self.__QtPackage = QtPackage()

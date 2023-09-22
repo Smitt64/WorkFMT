@@ -519,7 +519,7 @@ bool FmtEditContentModel::select()
         setQuery(m_Query);
         endResetModel();
         queryChange();
-        hr = QSqlTableModel::select();
+        //hr = QSqlTableModel::select();
     }
     else
         throw sqlerr;

@@ -424,7 +424,7 @@ int trn(QSqlDatabase &db, std::function<int(void)> func)
 
     if (!db.transaction())
     {
-        qCWarning(logSql()) << db.lastError().text();
+        qCWarning(logSql()) << QString("Begin transaction error: %1").arg(db.lastError().text());
         stat = 1;
     }
 

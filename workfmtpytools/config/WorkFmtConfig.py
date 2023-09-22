@@ -6,9 +6,9 @@ class WorkFmtConfig:
     def __init__(self):
         self.__qtComplect = None
         self.__qtInstallerFramework = None
-        self.__installerPath = 'D:\\Work\\installersource'
+        self.__installerPath = 'd:\\Work\\WorkFMTInstaller'
         self.__workfmtsourcedir = 'D:\\Work\\WorkFMT'
-        self.__msvcvars = 'D:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build\\vcvars32.bat'
+        self.__msvcvars = 'c:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat'
         #os.path.dirname(__file__)
 
     @staticmethod

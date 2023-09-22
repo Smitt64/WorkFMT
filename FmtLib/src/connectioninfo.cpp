@@ -62,11 +62,35 @@ QColor ConnectionInfo::color()
     return m_Color;
 }
 
+QString ConnectionInfo::typeName() const
+{
+    QString name = "Unknown";
+
+    switch(m_Type)
+    {
+    case CON_ORA:
+        name = "Oracle";
+        break;
+    case CON_POSTGRESQL:
+        name = "PostgreSql";
+        break;
+    case CON_SQLITE:
+        name = "Sqlite";
+        break;
+    }
+
+    return name;
+}
+
 QIcon ConnectionInfo::colorIcon(const QSize &size)
 {
     const int ratio = 2;
     if (m_Icon.isNull())
     {
+        qCInfo(logCore()) << QString("Begin create icon for connection %1. Db type: %2")
+                             .arg(m_SchemeName)
+                             .arg(typeName());
+
         QPixmap pix(size.width() * ratio, size.height() * ratio);
         QPainter p(&pix);
         p.setRenderHint(QPainter::Antialiasing);
@@ -86,13 +110,27 @@ QIcon ConnectionInfo::colorIcon(const QSize &size)
         rc.setHeight(rc.height() - borderWidth);
         p.drawRect(rc);
 
+        auto LoadImage = [=](const QString &filename) -> QImage
+        {
+            QImage img;
+            qCInfo(logCore()) << QString("Try load image mask: [%1]")
+                                 .arg(filename);
+
+            if (!img.load(filename))
+                qCInfo(logCore()) << QString("Load failed");
+            else
+                qCInfo(logCore()) << QString("Load successed");
+
+            return img;
+        };
+
         QImage mskimg;
         if (m_Type == CON_SQLITE)
-            mskimg = QImage(":/img/dblogomask/sqlite.svg");
+            mskimg = LoadImage(":/img/dblogomask/sqlite.svg");
         else if (m_Type == CON_ORA)
-            mskimg = QImage(":/img/dblogomask/oracle.svg");
+            mskimg = LoadImage(":/img/dblogomask/oracle.svg");
         else if (m_Type == CON_POSTGRESQL)
-            mskimg = QImage(":/img/dblogomask/postgresql.svg");
+            mskimg = LoadImage(":/img/dblogomask/postgresql.svg");
 
         if (!mskimg.isNull())
         {
@@ -106,6 +144,9 @@ QIcon ConnectionInfo::colorIcon(const QSize &size)
         }
 
         m_Icon = QIcon(pix);
+
+        qCInfo(logCore()) << QString("End create icon for connection %1")
+                             .arg(m_SchemeName);
     }
 
     return m_Icon;
@@ -157,11 +198,15 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
         m_User = user;
         m_Password = password;
 
+        qCInfo(logCore()) << QString("Try determine Db type...");
+
         if (isOracle())
             m_Type = CON_ORA;
         else if (isSqlite())
             m_Type = CON_SQLITE;
 
+        QString DbType = typeName();
+        qCInfo(logCore()) << QString("Db type: ") << DbType;
         qCInfo(logCore()) << QString("Connected to %1@%2").arg(user, dsn);
     }
     else

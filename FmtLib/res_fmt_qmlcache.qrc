@@ -89,5 +89,15 @@
         <file alias="img/PrimaryKeyHS.png">res/img/PrimaryKeyHS.png</file>
         <file alias="img/confluence.png">res/img/confluence.png</file>
         <file alias="img/LayoutSelectColumn.png">res/img/LayoutSelectColumn.png</file>
+        <file alias="img/base_globe_32.png">res/img/base_globe_32.png</file>
+        <file alias="img/base_globe_updates.png">res/img/base_globe_updates.png</file>
+        <file alias="img/base_globe_has_update.png">res/img/base_globe_has_update.png</file>
+        <file alias="img/dbftool.png">res/img/dbftool.png</file>
+        <file alias="img/information.png">res/img/information.png</file>
+        <file alias="dblogo/Oracle.png">res/dblogo/Oracle.png</file>
+        <file alias="dblogo/PostgreSQL.png">res/dblogo/PostgreSQL.png</file>
+        <file alias="img/dblogomask/sqlite.svg">res/img/dblogomask/sqlite.svg</file>
+        <file alias="img/dblogomask/oracle.svg">res/img/dblogomask/oracle.svg</file>
+        <file alias="img/dblogomask/postgresql.svg">res/img/dblogomask/postgresql.svg</file>
     </qresource>
 </RCC>

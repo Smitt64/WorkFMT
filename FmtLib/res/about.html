@@ -18,15 +18,17 @@ ul
     margin-left: 0px; 
     margin-right: 0px; 
     -qt-list-indent: 1;
+
     text-align: justify;
 }
 
-ul.add
+/*ul
 {
-    list-style-image: url("qrc:/img/plus-icon.png");
-}
+    list-style-image: "qrc:/img/plus-icon.png";
 
-li 
+}*/
+
+ul li::before
 {
     font-size:8pt;
     font-size:8pt;
@@ -36,7 +38,9 @@ li
     margin-right:0px; 
     text-align: justify;
     -qt-block-indent:0; 
+    content: attr('+');
     text-indent:0px;
+    color: red
 }
 
 .version
@@ -47,6 +51,15 @@ li
 </style>
 </head>
 <body>
+<p><span class="version">1.0.4.3</span></p>
+<ul>
+<li class="add">Исправлена ошибка работы с транзакциями в rsd драйвере;</li>
+<li class="add">Исправлена ошибка некорректного вимвола в выгружаемом xml;</li>
+</ul>
+<p><span class="version">1.0.4.2</span></p>
+<ul>
+<li class="add">Теперь при выборе команды "Редактирование содержимого" из списка таблиц, если открыта панель редактирования записи FMT, то будет открываться редактор содержимого;</li>
+</ul>
 <p><span class="version">1.0.4.1</span></p>
 <ul>
 <li class="add">Подключение к БД теперь происходит средствами RSD;</li>

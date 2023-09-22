@@ -117,15 +117,21 @@ void DBFileObject::unload(const QString &userName, const QString &password, cons
     QEventLoop loop;
     connect(&proc, SIGNAL(finished(int)), &loop, SLOT(quit()));
     QTemporaryDir tmpdir;
-    QString programmPath;
+    QString programmPath, ociPath, oraociPath;
     QDir tmpDir(tmpdir.path());
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     proc.setEnvironment(env.toStringList());
     proc.setWorkingDirectory(ExportDir);
+
     programmPath = tmpDir.absoluteFilePath("RSexp.exe");
+    ociPath = tmpDir.absoluteFilePath("oci.dll");
+    oraociPath = tmpDir.absoluteFilePath("oraocci11.dll");
+
     qDebug() << "Temp directory:" << tmpdir.path();
     qDebug() << "Copy RSexp:" << QFile::copy(":/RSexp" , programmPath);
+    qDebug() << "Copy oci:" << QFile::copy(":/oci" , ociPath);
+    qDebug() << "Copy oraocci11:" << QFile::copy(":/oraocci11" , oraociPath);
     qDebug() << "RSexp path:" << programmPath;
 
     foreach (const QString &table, dbt) {

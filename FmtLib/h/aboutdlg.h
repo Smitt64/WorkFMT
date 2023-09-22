@@ -9,6 +9,7 @@ class AboutDlg;
 }
 
 class QDomElement;
+class AboutTextBrowser;
 class QStandardItemModel;
 class AboutDlg : public QDialog
 {
@@ -25,6 +26,8 @@ private:
     Ui::AboutDlg *ui;
     QStandardItemModel *pComponentsModel;
     QLocale currentLocale;
+
+    AboutTextBrowser *m_pTextBrowser;
 };
 
 #endif // ABOUTDLG_H

@@ -1195,7 +1195,13 @@ void MainWindow::EditContent()
             }
         }
         else
+        {
+            FmtWorkWindow *window = qobject_cast<FmtWorkWindow*>(wnd->widget());
             SetActiveFmtWindow(wnd);
+
+            if (window)
+                window->EditContent();
+        }
     }
 }
 

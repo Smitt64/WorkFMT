@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file alias="RSexp">res/RSexp.exe</file>
         <file alias="FillTable">res/FillTable.sql</file>
+        <file alias="oci">res/oci.dll</file>
+        <file alias="oraocci11">res/oraocci11.dll</file>
     </qresource>
 </RCC>

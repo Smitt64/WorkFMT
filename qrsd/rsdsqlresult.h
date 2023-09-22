@@ -50,11 +50,18 @@ public:
 
 private:
     bool setCmdText(const QString &sql);
+
+    bool checkWord(const QString &sql, const QString &word) const;
     bool checkInsert(const QString &sql) const;
     bool checkUpdate(const QString &sql) const;
     bool checkDelete(const QString &sql) const;
     bool checkMerge(const QString &sql) const;
+    bool checkCOMMENT(const QString &sql) const;
+    bool checkAlter(const QString &sql) const;
     bool checkSelect(const QString &sql) const;
+    bool checkCall(const QString &sql) const;
+    bool checkCreate(const QString &sql) const;
+    bool checkDrop(const QString &sql) const;
     void makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd);
 
     QVariant GetValueFromField(const CRsdField &cfld);

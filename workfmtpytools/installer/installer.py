@@ -128,6 +128,7 @@ class InstallCreator:
 
         binarycreatorpath = os.path.join(self.__getInstallerBinaryPath(), 'binarycreator.exe')
         repogen = os.path.join(self.__getInstallerBinaryPath(), 'repogen.exe')
+        print('repogen: ' + repogen)
 
         args = '{} -c config\config.xml --online-only -p packages FmtInstaller.exe'.format(binarycreatorpath)
         proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -181,8 +182,12 @@ class InstallCreator:
         #clear old repositoryes
         for repo in self.RemoteRepositories:
             url = repo.Url.replace('file:///', '')
-            subdirs = os.listdir(url)
-            self.__removeSubdirs(url, subdirs)
+
+            try:
+                subdirs = os.listdir(url)
+                self.__removeSubdirs(url, subdirs)
+            except Exception:
+                pass
 
         try:
             os.mkdir(confifdir)

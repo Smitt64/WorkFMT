@@ -46,6 +46,11 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     addLibraryPath(QFileInfo(QCoreApplication::applicationFilePath()).path());
     addLibraryPath(current.absolutePath());
     addLibraryPath(current.absoluteFilePath("platforms"));
+    addLibraryPath(current.absoluteFilePath("iconengines"));
+    addLibraryPath(current.absoluteFilePath("imageformats"));
+    addLibraryPath(current.absoluteFilePath("platforms"));
+    addLibraryPath(current.absoluteFilePath("sqldrivers"));
+    addLibraryPath(current.absoluteFilePath("styles"));
 
     //qRegisterMetaType<RecentList>("RecentList");
 
