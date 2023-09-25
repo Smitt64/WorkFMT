@@ -44,9 +44,13 @@ AboutDlg::AboutDlg(QWidget *parent) :
                                                 << tr("Размер")
                                                 << tr("Установлен/Обновлен"));
 
+    QHBoxLayout *pLayout = new QHBoxLayout(ui->tab);
     m_pTextBrowser = new AboutTextBrowser(this);
     m_pTextBrowser->setSource(QUrl("qrc:/about.html"));
-    ui->tabWidget->insertTab(0, m_pTextBrowser, tr("История изменений"));
+    //ui->tabWidget->insertTab(0, m_pTextBrowser, tr("История изменений"));
+
+    ui->tab->setLayout(pLayout);
+    ui->tab->layout()->addWidget(m_pTextBrowser);
 
     ui->labelBased->setText(tr("Основан на Qt %1").arg(QT_VERSION_STR));
     //ui->textBrowser->setSource(QUrl("qrc:/about.html"));

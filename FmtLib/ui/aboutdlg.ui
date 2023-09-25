@@ -93,8 +93,13 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>История изменений</string>
+      </attribute>
+     </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
        <string>Компоненты</string>

@@ -299,10 +299,42 @@ class RsTools(RsComponentBase):
     def makeData(self, datadir):
         self.copyArray(self.__ToolsToCopy, self.__RsDllDir)
 
+class ChangeLogComponent(RsComponentBase):
+    def __init__(self):
+        super(ChangeLogComponent, self).__init__()
+
+        self.DisplayName = 'ChangeLog'
+        self.Description = 'История изменений'
+        self.Name = 'com.rs.fmt.workfmt.changelog'
+        self.ForcedUpdate = True
+        self.ForcedInstallation = True
+        self.Default = None
+        self.Virtual = True
+
+    def getVersion(self):
+        return "1"
+
+    def makeData(self, datadir):
+        fmtdir = WorkFmtConfig.inst().getWorkFmtSourceDir()
+        mask = os.path.join(fmtdir, '**/com.rs.fmt*.xml')
+        
+        for filename in glob.glob(mask, recursive=True):
+            basedbfiletoolname = os.path.basename(filename)
+            dstexefile = os.path.join(self.DataPath, 'changelog/' + os.path.basename(basedbfiletoolname))
+
+            try:
+                driverdir = os.path.join(self.DataPath, 'changelog')
+                os.mkdir(driverdir)
+                copyfile(filename, dstexefile)
+            except FileExistsError:
+                copyfile(filename, dstexefile)
+            except Exception as e:
+                print('Fail: ' + str(e))
+            
 class WorkFmtInstaller(InstallCreator):
     def __init__(self):
         super(WorkFmtInstaller, self).__init__(name = 'WorkFmt', 
-            version = '1.0.0', 
+            version = '1.0.2', 
             title = 'WorkFmt', 
             publisher = 'Serpkov Nikita')
         
@@ -318,9 +350,11 @@ class WorkFmtInstaller(InstallCreator):
         self.__DBFileTool = DBFileTool()
         self.__RsdDriver = RsdDriver()
         self.__RsdTools = RsTools()
+        self.__ChangeLog = ChangeLogComponent()
 
         self.addPage(self.__WorkFmtMainPackage)
         self.addPage(self.__DBFileTool)
         self.addPage(self.__QtPackage)
         self.addPage(self.__RsdDriver)
         self.addPage(self.__RsdTools)
+        self.addPage(self.__ChangeLog)

@@ -98,8 +98,15 @@ void MassDestribProgressRun::run()
     MassDestribParamModel *pModel = pInterface->model();
     try {
         QScopedPointer<FmtErrors> tmp(new FmtErrors());
-        connect(tmp.data(), &FmtErrors::newError, this, &MassDestribProgressRun::error);
-        connect(tmp.data(), &FmtErrors::newMessage, this, &MassDestribProgressRun::message);
+        connect(tmp.data(), &FmtErrors::newError, [=](const QString &msg)
+        {
+            emit error(msg);
+        });
+
+        connect(tmp.data(), &FmtErrors::newMessage, [=](const QString &msg)
+        {
+            emit message(msg);
+        });
 
         int size = pModel->rowCount(QModelIndex());
         for (int i = 0; i < size; i++)
@@ -241,8 +248,17 @@ void MassDestribProgress::initializePage()
 
     pErrors->clear();
     connect(run, &MassDestribProgressRun::progress, ui->progressBar, &QProgressBar::setValue);
-    connect(run, SIGNAL(message(QString)), pErrors, SLOT(appendMessage(QString)));
-    connect(run, SIGNAL(error(QString)), pErrors, SLOT(appendError(QString)));
+
+    connect(run, &MassDestribProgressRun::error, [=](QString msg)
+    {
+       pErrors->appendError(msg);
+    });
+
+    connect(run, &MassDestribProgressRun::message, [=](QString msg)
+    {
+       pErrors->appendMessage(msg);
+    });
+
     connect(run, &MassDestribProgressRun::finished, [=]()
     {
         fIsComplete = true;
@@ -254,7 +270,7 @@ void MassDestribProgress::initializePage()
     {
         QString dsn;
         const MassDestribParamModelElement *element = pModel->getTableParam(0);
-        dsn = DatasourceFromService(element->table->connection()->service());
+        dsn = element->table->connection()->dsn();
         run->setDsn(dsn);
     }
     QThreadPool::globalInstance()->start(run);

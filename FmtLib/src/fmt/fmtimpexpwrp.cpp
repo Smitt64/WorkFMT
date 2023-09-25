@@ -152,21 +152,24 @@ void FmtImpExpWrp::setDsn(const QString &dsn)
 
 void FmtImpExpWrp::parseProtocol(FmtErrors *ptr)
 {
-    QFile f(m_Protocol);
+    QFile f866(m_Protocol);
+    QFile fUtf(m_Protocol);
 
-    if (f.open(QIODevice::ReadOnly))
+    if (f866.open(QIODevice::ReadOnly) && fUtf.open(QIODevice::ReadOnly))
     {
         QRegExp v("\\b[0-9]{2}:[0-9]{2}:[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{4}\\b");
-        QTextStream stream(&f);
-        stream.setCodec("IBM 866");
+        QTextStream stream866(&f866);
+        QTextStream streamUtf(&fUtf);
+        stream866.setCodec("IBM 866");
 
         bool IsError = false;
         QString message;
-        while(!stream.atEnd())
+        while(!stream866.atEnd() && !streamUtf.atEnd())
         {
-            QString line = stream.readLine();
+            QString line866 = stream866.readLine();
+            QString lineunicode = streamUtf.readLine();
 
-            if (line.contains(v))
+            if (line866.contains(v))
             {
                 if (IsError)
                 {
@@ -174,19 +177,23 @@ void FmtImpExpWrp::parseProtocol(FmtErrors *ptr)
                     message = "";
                     IsError = false;
                 }
-                QString tmp = line.mid(20);
-                QDateTime dt = QDateTime::fromString(line, "HH:MM:ss dd-mm-yyyy");
+                QString tmp = line866.mid(20);
+                QDateTime dt = QDateTime::fromString(line866, "HH:MM:ss dd-mm-yyyy");
 
                 if (tmp.contains("*** ERROR"))
                 {
                     IsError = true;
+
+                    if (tmp.contains("ODBC error"))
+                        tmp = lineunicode.mid(20);
+
                     message += tmp.remove("*** ERROR").trimmed();
                 }
                 else
                     ptr->appendMessage(tmp, dt);
             }
             else
-              message += line;
+              message += line866;
         }
 
         if (!message.isEmpty())
@@ -197,7 +204,8 @@ void FmtImpExpWrp::parseProtocol(FmtErrors *ptr)
                 ptr->appendMessage(message);
         }
 
-        f.close();
+        f866.close();
+        fUtf.close();
     }
 }
 

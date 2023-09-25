@@ -25,7 +25,7 @@ public:
 
     void run() Q_DECL_OVERRIDE;
 
-signals:
+Q_SIGNALS:
     void finished();
     void progress(int);
     void error(QString);

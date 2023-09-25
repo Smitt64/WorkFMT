@@ -46,14 +46,16 @@ signals:
     void errorsCountChanged(quint32);
     void warningsCountChanged(quint32);
     void infoCountChanged(quint32);
-    void newError(const QString &text);
-    void newMessage(const QString &text);
+    void newError(QString);
+    void newMessage(QString);
 
 public slots:
     bool hasErrors();
     bool hasWarnings();
     bool isEmpty();
 
+    void addError(const QString &text);
+    void addMessage(const QString &text);
     void appendError(const QString &text, const qint16 &type = fmtet_Error, const QDateTime &dateTime = QDateTime());
     void appendMessage(const QString &text, const QDateTime &dateTime = QDateTime());
 

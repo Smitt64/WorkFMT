@@ -1,6 +1,7 @@
 #include "fmterrors.h"
 #include <QApplication>
 #include <QStyle>
+#include <QDebug>
 
 FmtErrors::FmtErrors(QObject *parent)
     : QAbstractItemModel(parent)
@@ -46,6 +47,7 @@ QVariant FmtErrors::data(const QModelIndex &index, int role) const
             {
             case fmtet_Error:
                 value = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
+                //qDebug() << m_errors.at(index.row()).text;
                 break;
             case fmtet_Warning:
                 value = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
@@ -134,6 +136,16 @@ int FmtErrors::infoCount()
 bool FmtErrors::isEmpty()
 {
     return m_errors.isEmpty();
+}
+
+void FmtErrors::addError(const QString &text)
+{
+    appendError(text);
+}
+
+void FmtErrors::addMessage(const QString &text)
+{
+    appendMessage(text);
 }
 
 void FmtErrors::appendError(const QString &text, const qint16 &type, const QDateTime &dateTime)
