@@ -52,9 +52,9 @@ bool RsdSqlResult::setCmdText(const QString &sql)
     if (!m_Cmd)
         return false;
 
-    m_QueryString = m_Driver->toOem866(sql);
-    QSqlResult::setQuery(m_QueryString);
-    return m_Cmd->setCmdText(m_QueryString.toLocal8Bit().data());
+    m_QueryString = QLatin1String(m_Driver->toOem866(sql));
+    QSqlResult::setQuery(sql);
+    return m_Cmd->setCmdText(m_QueryString.toLatin1().data());
 }
 
 bool RsdSqlResult::reset(const QString &query)
@@ -255,7 +255,7 @@ bool RsdSqlResult::checkAlter(const QString &sql) const
 
     if (checkWord(sql, "ALTER"))
     {
-        for (const QString &str : patterns)
+        for (const QString &str : qAsConst(patterns))
         {
             if (checkWord(sql, str))
                 return true;
@@ -282,7 +282,7 @@ bool RsdSqlResult::checkCreate(const QString &sql) const
 
     if (checkWord(sql, "CREATE"))
     {
-        for (const QString &str : patterns)
+        for (const QString &str : qAsConst(patterns))
         {
             if (checkWord(sql, str))
                 return true;
@@ -304,7 +304,7 @@ bool RsdSqlResult::checkDrop(const QString &sql) const
 
     if (checkWord(sql, "DROP"))
     {
-        for (const QString &str : patterns)
+        for (const QString &str : qAsConst(patterns))
         {
             if (checkWord(sql, str))
                 return true;
@@ -399,8 +399,11 @@ bool RsdSqlResult::prepare(const QString &query)
     try
     {
         m_RecSet.reset();
+        //m_QueryString = QLatin1String(m_Driver->toOem866(query));
         m_QueryString = query;
-        m_Cmd->setCmdText(m_QueryString.toLocal8Bit().data());
+
+        QString str = QLatin1String(m_Driver->toOem866(query));
+        m_Cmd->setCmdText(str.toLatin1());
 
         //m_Cmd->setNullConversion(true);
     }
