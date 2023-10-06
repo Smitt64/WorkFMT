@@ -149,6 +149,10 @@ void FmtField::setName(const QString &v)
     {
         bool hasParentCommand = pLastCommand ? true : false;
         FmtUndoFieldProperty *cmd = new FmtUndoFieldProperty(pTable, pTable->fieldNum(this), pLastCommand);
+
+        if (value.toLower() == value)
+            value = FmtCapitalizeField(value);
+
         cmd->setValueToUndo(m_Name);
         cmd->setValueToRedo(value);
         cmd->setProperty(fld_Name);
@@ -632,6 +636,16 @@ QString FmtField::getCommentSql() const
             .arg(driver->formatValue(fld, true));
 
     return sql;
+}
+
+QString FmtField::getRsdType() const
+{
+    return fmtRsdType(m_Type);
+}
+
+QString FmtField::getRsdConstant() const
+{
+    return fmtRsdConstant(m_Type);
 }
 
 qint32 FmtField::typeIndex() const

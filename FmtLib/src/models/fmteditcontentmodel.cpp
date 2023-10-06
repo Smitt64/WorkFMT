@@ -26,7 +26,7 @@ FmtEditContentModel::FmtEditContentModel(FmtSharedTablePtr table, QObject *paren
 
 QString FmtEditContentModel::MakeTableSqlQuery() const
 {
-    QString query = "select ";
+    QString query = "select /*+ FIRST_ROWS */ ";
 
     for (int i = 0; i < pTable->fieldsCount(); i++)
     {

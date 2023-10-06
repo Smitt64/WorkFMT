@@ -72,6 +72,7 @@ public slots:
     void GenAddFiledsScript();
     void GenModifyTableFields();
     void GenCreateTableScript();
+    void GenInsertTemplateSql();
 
 private slots:
     void indexModelReseted();
@@ -108,6 +109,8 @@ private slots:
     void CopyFields();
     void PasteFields();
     void OnImport();
+    void AutoCamelCase(bool checked);
+    void CamelCaseAction();
 
 protected:
     void paintEvent(QPaintEvent *paintEvent);
@@ -119,7 +122,8 @@ private:
     void setupFind();
     void SetUnclosableSystemTabs();
     int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList);
-    void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true);
+    void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
+    void AddCppCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
     void SetupActionsMenu();
     Ui::FmtWorkWindow *ui;
     QSharedPointer<FmtTable> pTable;
@@ -142,6 +146,7 @@ private:
     QAction *m_unloadDbf, *m_loadDbf, *m_ImportData;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
+    QAction *m_GenInsertTemplate, *m_CamelCaseAction;
     FmtWorkWndGen *pCodeGenWidget;
 
     QFrame *pUndoRedoBtnContainer;

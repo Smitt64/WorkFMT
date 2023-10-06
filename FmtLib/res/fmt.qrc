@@ -99,5 +99,14 @@
         <file>img/dblogomask/sqlite.svg</file>
         <file>img/dblogomask/oracle.svg</file>
         <file>img/dblogomask/postgresql.svg</file>
+        <file>img/InsertClause_10553_32.png</file>
+        <file>img/NewTable_5619_32.png</file>
+        <file>FmtTypesMap.json</file>
+        <file>cpp_rstypes.txt</file>
+        <file>cpp_rsenums.txt</file>
+        <file>cpp_rsdefines.txt</file>
+        <file>img/codewin.png</file>
+        <file>img/FontHS.png</file>
+        <file>img/PushBackClause_10553_32.png</file>
     </qresource>
 </RCC>

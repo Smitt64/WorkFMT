@@ -26,9 +26,13 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QPushButton>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonParseError>
 #include "DataStructure.hpp"
 
-static QStringList FmtTypesList = QStringList()
+static QStringList FmtTypesList/* = QStringList()
         << "INT"
         << "LONG"
         << "BIGINT"
@@ -41,7 +45,7 @@ static QStringList FmtTypesList = QStringList()
         << "TIME"
         << "CHR"
         << "UCHR"
-        << "NUMERIC";
+        << "NUMERIC"*/;
 
 /*typedef struct tagFmtTypeInfoT : public
         DataStructure
@@ -72,6 +76,8 @@ typedef struct tagFmtTypeInfo
     QString _rslType;
     QString _rslValueName;
     QString _xmlTypeName;
+    QString _rsdType;
+    QString _rsdConst;
 
     tagFmtTypeInfo
     (
@@ -106,29 +112,49 @@ typedef struct tagFmtTtypesItem
     int id;
 }FmtIndexTypesItem;
 typedef QMap<QString, FmtTypeInfo> FmtTypesMapType;
+typedef QMap<QString, int> fmtTypesMap;
 
 //Q_GLOBAL_STATIC(FmtTypesMapType, FmtTypesMap);
 static FmtTypesMapType FmtTypesMap;
+static fmtTypesMap fmtTypesStrMap, indexTypesStrMap;
+
+#define AddFmtTypesMap(constant) fmtTypesStrMap.insert(#constant, constant)
+#define AddIndexTypesMap(constant) indexTypesStrMap.insert(#constant, constant)
 
 void FmtInit()
 {
-    //tagFmtTypeInfoT::
-    //                                       type     size  oraType          indexType      cppType      cppDbType     cppDbBaseType     rslType
-    /*FmtTypesMap["INT"]     = tagFmtTypeInfo(fmtt_INT,    2, "NUMBER(5)",     fmtk_Einteger, "int16",     "db_int16",   "db_baseint16",   "V_INTEGER",    "intval");
-    FmtTypesMap["LONG"]    = tagFmtTypeInfo(fmtt_LONG,   4, "NUMBER(10)",    fmtk_Einteger, "int32",     "db_int32",   "db_baseint32",   "V_INTEGER",    "intval");
-    FmtTypesMap["BIGINT"]  = tagFmtTypeInfo(fmtt_BIGINT, 8, "NUMBER(19)",    fmtk_Einteger, "int64_t",   "db_int64",   "db_baseint64",   "V_BIGINT",     "bigint");
-    FmtTypesMap["FLOAT"]   = tagFmtTypeInfo(fmtt_FLOAT,  4, "FLOAT(24)",     fmtk_Efloat,   "float",     "db_float",   "db_basefloat",   "V_DOUBLE",     "doubvalL");
-    FmtTypesMap["DOUBLE"]  = tagFmtTypeInfo(fmtt_DOUBLE, 8, "FLOAT(53)",     fmtk_Ebfloat,  "double",    "db_double",  "db_basedouble",  "V_DOUBLE",     "doubvalL");
-    FmtTypesMap["MONEY"]   = tagFmtTypeInfo(fmtt_MONEY,  8, "NUMBER(19,4)",  fmtk_Emoney,   "lmoney",    "db_lmoney",  "db_lbasemoney",  "V_MONEY_FDEC", "numVal");
-    FmtTypesMap["STRING"]  = tagFmtTypeInfo(fmtt_STRING, 0, "VARCHAR2",      fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string");
-    FmtTypesMap["SNR"]     = tagFmtTypeInfo(fmtt_SNR,    0, "VARCHAR2",      fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string");
-    FmtTypesMap["DATE"]    = tagFmtTypeInfo(fmtt_DATE,   4, "DATE",          fmtk_Edate,    "bdate",     "bdate",      "bdate",          "V_DATE",       "date");
-    FmtTypesMap["TIME"]    = tagFmtTypeInfo(fmtt_TIME,   4, "DATE",          fmtk_Etime,    "btime",     "btime",      "btime",          "V_TIME",       "time");
-    FmtTypesMap["CHR"]     = tagFmtTypeInfo(fmtt_CHR,    1, "CHAR",          fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval");
-    FmtTypesMap["UCHR"]    = tagFmtTypeInfo(fmtt_UCHR,   1, "RAW",           fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string");
-    FmtTypesMap["NUMERIC"] = tagFmtTypeInfo(fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_lmoney",  "db_lbasemoney",  "V_NUMERIC",    "decimal");*/
+    AddFmtTypesMap(fmtt_DATETIME);
+    AddFmtTypesMap(fmtt_INT);
+    AddFmtTypesMap(fmtt_LONG);
+    AddFmtTypesMap(fmtt_BIGINT);
+    AddFmtTypesMap(fmtt_FLOAT);
+    AddFmtTypesMap(fmtt_DOUBLE);
+    AddFmtTypesMap(fmtt_MONEY);
+    AddFmtTypesMap(fmtt_STRING);
+    AddFmtTypesMap(fmtt_SNR);
+    AddFmtTypesMap(fmtt_DATE);
+    AddFmtTypesMap(fmtt_TIME);
+    AddFmtTypesMap(fmtt_CHR);
+    AddFmtTypesMap(fmtt_UCHR);
+    AddFmtTypesMap(fmtt_NUMERIC);
 
-    FmtTypesMap =
+    AddIndexTypesMap(fmtk_Estring);
+    AddIndexTypesMap(fmtk_Einteger);
+    AddIndexTypesMap(fmtk_Efloat);
+    AddIndexTypesMap(fmtk_Edate);
+    AddIndexTypesMap(fmtk_Etime);
+    AddIndexTypesMap(fmtk_Edecimal);
+    AddIndexTypesMap(fmtk_Emoney);
+    AddIndexTypesMap(fmtk_Elogical);
+    AddIndexTypesMap(fmtk_Enumeric);
+    AddIndexTypesMap(fmtk_Ebfloat);
+    AddIndexTypesMap(fmtk_Elstring);
+    AddIndexTypesMap(fmtk_Ezstring);
+    AddIndexTypesMap(fmtk_Eunbin);
+    AddIndexTypesMap(fmtk_Eautoinc);
+    AddIndexTypesMap(fmtk_Ecurrency);
+
+    /*FmtTypesMap =
     {
         //           type      size  oraType          indexType      cppType      cppDbType     cppDbBaseType     rslType     rslValueName
         {"INT"    , {fmtt_INT,    2, "NUMBER(5)",     fmtk_Einteger, "int16",     "db_int16",   "db_baseint16",   "V_INTEGER",    "intval"  , "FT_INT16"} },
@@ -144,7 +170,51 @@ void FmtInit()
         {"CHR"    , {fmtt_CHR,    1, "CHAR",          fmtk_Estring,  "char",      "char",       "char",           "V_BOOL",       "boolval" , "FT_CHR"} },
         {"UCHR"   , {fmtt_UCHR,   1, "RAW",           fmtk_Estring,  "char",      "char",       "char",           "V_STRING",     "string"  , "FT_UCHR"} },
         {"NUMERIC", {fmtt_NUMERIC,16,"NUMBER(32,12)", fmtk_Enumeric, "DBNumeric", "db_lmoney",  "db_lbasemoney",  "V_NUMERIC",    "decimal" , "FT_NUMERIC"} }
-    };
+    };*/
+    QFile jsonFile(":/FmtTypesMap.json");
+    if (!jsonFile.open(QIODevice::ReadOnly))
+        qCCritical(logCore()) << QString("Can't open fmt params file [%1]").arg(jsonFile.fileName());
+    else
+    {
+        QJsonParseError err;
+        QJsonDocument doc = QJsonDocument::fromJson(jsonFile.readAll(), &err);
+
+        if (err.error != QJsonParseError::NoError)
+        {
+            qCCritical(logCore()) << QString("Error parse fmt params file [%1]: %2")
+                                     .arg(jsonFile.fileName())
+                                     .arg(err.errorString());
+        }
+        else
+        {
+            QJsonObject obj = doc.object();
+            QJsonArray arr = obj["types"].toArray();
+
+            for (auto item : arr)
+            {
+                QJsonObject element = item.toObject();
+                QString display = element["display"].toString();
+
+                FmtTypesList.append(display);
+
+                FmtTypeInfo itemInfo;
+                itemInfo._type = fmtTypesStrMap[element["type"].toString()];
+                itemInfo._size = element["size"].toInt();
+                itemInfo._oraType = element["oraType"].toString();
+                itemInfo._indexType = indexTypesStrMap[element["indexType"].toString()];
+                itemInfo._cppType = element["cppType"].toString();
+                itemInfo._cppDbType = element["cppDbType"].toString();
+                itemInfo._cppDbBaseType = element["cppDbBaseType"].toString();
+                itemInfo._rslType = element["rslType"].toString();
+                itemInfo._rslValueName = element["rslValueName"].toString();
+                itemInfo._xmlTypeName = element["xmlTypeName"].toString();
+                itemInfo._rsdType = element["rsdType"].toString();
+                itemInfo._rsdConst = element["rsdConst"].toString();
+
+                FmtTypesMap.insert(display, itemInfo);
+            }
+        }
+    }
 }
 
 bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)
@@ -314,7 +384,25 @@ quint16 fmtTypeIndexSize(const FmtFldType &id)
     int index = fmtIndexForType(id);
     if (index < 0 || index >= FmtTypesList.size())
         return -1;
-    return FmtTypesMap[FmtTypesList[id]]._size;
+    return FmtTypesMap[FmtTypesList[index]]._size;
+}
+
+QString fmtRsdType(const FmtFldType &Type)
+{
+    int index = fmtIndexForType(Type);
+    if (index < 0 || index >= FmtTypesList.size())
+        return QString();
+
+    return FmtTypesMap[FmtTypesList[index]]._rsdType;
+}
+
+QString fmtRsdConstant(const FmtFldType &Type)
+{
+    int index = fmtIndexForType(Type);
+    if (index < 0 || index >= FmtTypesList.size())
+        return QString();
+
+    return FmtTypesMap[FmtTypesList[index]]._rsdConst;
 }
 
 FmtFldType fmtIndexFromFmtType(const FmtFldType &id)
@@ -867,7 +955,7 @@ int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& a
     qCInfo(logCore()) << "Process: " << exe;
     qCInfo(logCore()) << "Executable path:" << program;
     qCInfo(logCore()) << "Working directory:" << exe->workingDirectory();
-    qCInfo(logCore()) << "Аrguments" << arguments;
+    qCInfo(logCore()) << "Arguments" << arguments;
 
     QObject::connect(exe, &QProcess::stateChanged, [&exe](QProcess::ProcessState newState)
     {
@@ -1128,6 +1216,50 @@ bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg, Q
             QMessageBox::information(parent, QObject::tr("Информация"), QObject::tr("Это действие не доступно для данного вида подключения"));
     }
     return hr;
+}
+
+QString FmtCapitalizeField(const QString &undecoratedfield, bool force)
+{
+    if (!settings()->value("AutoCamelCase", true).toBool() && !force)
+        return undecoratedfield;
+
+    QDir d = QDir::current();
+    QString result = undecoratedfield;
+    QScopedPointer<QProcess> proc(new QProcess());
+    proc->setProgram(d.absoluteFilePath("CapitalizeField.exe"));
+
+    QStringList args;
+    args << "--field" << undecoratedfield;
+    proc->setArguments(args);
+
+    CoreStartProcess(proc.data(), proc->program(), proc->arguments());
+    proc->waitForFinished();
+    result = proc->readAllStandardOutput().simplified();
+
+    return result;
+}
+
+QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force)
+{
+    QStringList result = undecoratedfield;
+    if (!settings()->value("AutoCamelCase", true).toBool() && !force)
+        return result;
+
+    QDir d = QDir::current();
+    QScopedPointer<QProcess> proc(new QProcess());
+    proc->setProgram(d.absoluteFilePath("CapitalizeField.exe"));
+
+    QStringList args;
+    args << "--fieldlist" << result.join(";");
+    proc->setArguments(args);
+
+    CoreStartProcess(proc.data(), proc->program(), proc->arguments());
+    proc->waitForFinished();
+
+    QString str = proc->readAllStandardOutput().simplified();
+    result = str.split(";");
+
+    return result;
 }
 
 void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)

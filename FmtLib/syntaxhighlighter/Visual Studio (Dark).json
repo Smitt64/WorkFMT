@@ -1,0 +1,107 @@
+{
+    "editor.background": "#1E1E1E",
+    "editor.selection.line": "#113D6F",
+    "editor.selection.word": "#113D6F",
+
+    "formats": [
+        {
+            "alias": "Example (Default values)",
+
+            "fontFamily" : "",
+            "fontFixedPitch" : false,
+            "fontItalic" : false,
+            "fontKerning": false,
+            "fontLetterSpacing" : 0,
+            "fontOverline" : false,
+            "fontPointSize" : 0,
+            "fontStretch" : 0,
+            "fontStrikeOut" : false,
+            "fontUnderline" : false,
+            "fontWeight" : "Normal",
+            "// _fontWeight" : "Thin/ExtraLight/Light/Normal/Medium/DemiBold/Bold/ExtraBold/Black",
+            "fontWordSpacing" : 0,
+
+            "foreground": "#000000",
+            "background": "#000000",
+
+            "underlineStyle": "NoUnderline",
+            "underlineColor": "#000000",
+            "// _underlineStyle": "NoUnderline/SingleUnderline1A/DashUnderline2Dashes/DotLine3Dots/DashDotLine4Dashs/DashDotDotLine5Underlines/WaveUnderline6The",
+            "textOutline": "#000000"
+        },
+        {
+            "alias": "keyword",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontWeight" : "Bold",
+            "fontFixedPitch" : true,
+            "foreground": "#569CD6"
+        },
+        {
+            "alias": "keyword2",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontWeight" : "Bold",
+            "fontFixedPitch" : true,
+            "foreground": "#D8A0DF"
+        },
+        {
+            "alias": "comment",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#41A439"
+        },
+        {
+            "alias": "plain",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#9CDCFE"
+        },
+        {
+            "alias": "function",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#DCDCAA"
+        },
+        {
+            "alias": "type",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "fontWeight" : "Bold",
+            "foreground": "#3CC77E"
+        },
+        {
+            "alias": "number",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "fontWeight" : "Bold",
+            "foreground": "#B5CEA8"
+        },
+        {
+            "alias": "string",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#D69D85"
+        },
+        {
+            "alias": "enum",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#B8D7A3"
+        },
+        {
+            "alias": "define",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#BEB7FF"
+        }
+    ]
+}

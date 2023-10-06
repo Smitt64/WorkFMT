@@ -4,12 +4,14 @@
 #include <QLinearGradient>
 #include <QRegExp>
 #include <QFontMetrics>
+#include "highlighter.h"
 
 #define COMPLETER_START_LEN 2
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent),
     lastLine(0)
 {
+    m_CurrentLineColor = QColor(Qt::yellow).lighter(160);
     lineNumberArea = new LineNumberArea(this);
     setWordWrapMode(QTextOption::NoWrap);
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
@@ -17,23 +19,48 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent),
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
     connect(this, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
 
-    QFont f("Courier");
+    /*QFont f("Courier");
     f.setPointSize(10);
     f.setStyleHint(QFont::Monospace);
     f.setFixedPitch(true);
-    document()->setDefaultFont(f);
+    document()->setDefaultFont(f);*/
 
-    QFontMetrics metrics(f);
-    int tabWidth = TABSTOP * metrics.width(' ');
-    setTabStopWidth(tabWidth);
-
+    resetStyle();
     updateLineNumberAreaWidth(0);
-    highlightCurrentLine();
 }
 
 CodeEditor::~CodeEditor()
 {
     delete lineNumberArea;
+}
+
+void CodeEditor::resetStyle()
+{
+    StyleItemPtr style = HighlighterStyle::inst()->style();
+
+    QColor background = style->editorBackground();
+    m_CurrentLineColor = style->editorCurrentLine();
+    m_CurrentWordColor = style->editorCurrentWord();
+
+    QTextCharFormat def =  style->format(FormatDefault);
+    QFont defaultFont = def.font();
+    defaultFont.setStyleHint(QFont::Courier);
+    document()->setDefaultFont(defaultFont);
+
+    QFontMetrics metrics(defaultFont);
+    int tabWidth = TABSTOP * metrics.width(' ');
+    setTabStopWidth(tabWidth);
+
+    setStyleSheet(QString("QPlainTextEdit { background-color: rgb(%1, %2, %3); color: rgb(%4, %5, %6) }")
+                  .arg(background.red())
+                  .arg(background.green())
+                  .arg(background.blue())
+                  .arg(def.foreground().color().red())
+                  .arg(def.foreground().color().green())
+                  .arg(def.foreground().color().blue()));
+
+    setAutoFillBackground(true);
+    highlightCurrentLine();
 }
 
 void CodeEditor::setTabStop(int w)
@@ -61,7 +88,7 @@ void CodeEditor::onSelectionChanged()
     Selections.clear();
     if (!searchString.isEmpty())
     {
-        QBrush backBrush("#9BFF9B");
+        QBrush backBrush(m_CurrentWordColor);//"#9BFF9B"
 
         QTextCursor highlightCursor(document());
         while (!highlightCursor.isNull() && !highlightCursor.atEnd()) {
@@ -128,9 +155,7 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::highlightCurrentLine()
 {
-    QColor lineColor = QColor(Qt::yellow).lighter(160);
-
-    selectionCurrentLine.format.setBackground(lineColor);
+    selectionCurrentLine.format.setBackground(m_CurrentLineColor);
     selectionCurrentLine.format.setProperty(QTextFormat::FullWidthSelection, true);
     selectionCurrentLine.cursor = textCursor();
     selectionCurrentLine.cursor.clearSelection();

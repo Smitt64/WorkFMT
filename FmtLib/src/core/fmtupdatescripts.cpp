@@ -242,3 +242,31 @@ QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable)
     WrapSqlBlockObjectExists(stream, pTable->generateCreateTableSql(), flds, pTable);
     return str;
 }
+
+QString FmtGenInsertTemplateSqlScript(QList<FmtField*> flds)
+{
+    if (flds.isEmpty())
+        return QString();
+
+    QString str, tableName = flds[0]->table()->name().toUpper();
+    QTextStream stream(&str, QIODevice::WriteOnly);
+    stream << "INSERT INTO " << tableName << "(";
+
+    foreach (const FmtField *fld, flds) {
+        stream << QString("%1").arg(fld->name().toUpper());
+        if (fld != flds.last())
+            stream << ",";
+    }
+
+    stream << ") values(";
+
+    foreach (const FmtField *fld, flds) {
+        stream << "?";
+        if (fld != flds.last())
+            stream << ", ";
+    }
+
+    stream << ");";
+
+    return str;
+}

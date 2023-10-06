@@ -26,6 +26,7 @@
 #include "queryeditor/queryeditor.h"
 #include "selectfolderdlg.h"
 #include "recentconnectionlist.h"
+#include "highlighter.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -33,6 +34,7 @@
 #include <QDesktopServices>
 #include <QWhatsThis>
 #include <QWidgetAction>
+#include <QInputDialog>
 
 class SearchActionWidget : public QWidgetAction
 {
@@ -170,6 +172,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionMassOp, SIGNAL(triggered(bool)), SLOT(OnMassOpAction()));
     connect(ui->actionConfluence, SIGNAL(triggered(bool)), SLOT(OnConfluence()));
     connect(ui->actionCreateXml, SIGNAL(triggered(bool)), SLOT(CreateFromXml()));
+    connect(ui->actionHighlighterTheme, SIGNAL(triggered(bool)), SLOT(HighlighterTheme()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
@@ -1390,6 +1393,37 @@ void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updat
 void MainWindow::UpdateCheckStarted()
 {
     pUpdateButton->setIcon(QIcon(":/img/base_globe_updates.png"));
+}
+
+void MainWindow::HighlighterTheme()
+{
+    QStringList lst = HighlighterStyle::inst()->themes();
+
+    int defaultItem = lst.indexOf(HighlighterStyle::inst()->defaultTheme());
+    QString theme = QInputDialog::getItem(this, tr("Выбор темы"),
+                                          tr("Выберите тему подсветки синтаксиса"),
+                                          lst,
+                                          defaultItem,
+                                          false);
+
+    if (!theme.isEmpty())
+        HighlighterStyle::inst()->setDefaultTheme(theme);
+
+    /*QDir cur = QDir::current();
+    QFile f(cur.absoluteFilePath("1fmt_fields.txt"));
+    f.open(QIODevice::WriteOnly);
+    QTextStream s(&f);
+    qDebug() << cur.absoluteFilePath("1fmt_fields.txt");
+
+    ConnectionInfo *current = currentConnection();
+    QSqlQuery q(current->db());
+    q.prepare("select distinct replace(t_name, 't_') from fmt_fields ");
+    q.exec();
+    while (q.next())
+    {
+        s << q.value(0).toString() << endl;
+    }
+    f.close();*/
 }
 
 /*void MainWindow::OnCreateQuery()

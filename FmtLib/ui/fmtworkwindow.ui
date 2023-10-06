@@ -237,6 +237,16 @@
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QCheckBox" name="autoCamelCase">
+         <property name="text">
+          <string>Автоматически преобразовывать поля в CamelCase</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>

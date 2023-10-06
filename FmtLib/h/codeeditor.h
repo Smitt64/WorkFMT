@@ -27,6 +27,7 @@ public:
     int lineNumberAreaWidth();
 
     void setTabStop(int w);
+    void resetStyle();
 
 signals:
     void currentLineChanged(const int &last, const int &cur);
@@ -50,6 +51,8 @@ private:
 
     void ApplyExtraSelections();
     int tabStop, lastLine;
+
+    QColor m_CurrentLineColor, m_CurrentWordColor;
 };
 
 

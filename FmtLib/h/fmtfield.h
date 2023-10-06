@@ -101,6 +101,8 @@ public slots:
     QString getCppDecl(bool funcPrm = false) const;
     QString getOraDefaultVal() const;
     QString getCommentSql() const;
+    QString getRsdType() const;
+    QString getRsdConstant() const;
 
     bool isNumber() const;
     bool isRealNumber() const;

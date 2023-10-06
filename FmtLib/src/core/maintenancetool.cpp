@@ -46,6 +46,9 @@ void MaintenanceTool::setCheckUpdateFlag(bool value)
 
 void MaintenanceTool::run()
 {
+    if (!QFile::exists(m_Program))
+        return;
+
     const int check_interval = CHECK_UPDATES_INTERRVAL_SEC;
     QLocale currentLocale = QLocale::system();
 

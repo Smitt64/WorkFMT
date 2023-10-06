@@ -1,0 +1,81 @@
+{
+    "editor.background": "#FFFFFF",
+    "editor.selection.line": "#E2E6D6",
+    "editor.selection.word": "#E2E6D6",
+
+    "formats": [
+        {
+            "alias": "keyword",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontWeight" : "Bold",
+            "fontFixedPitch" : true,
+            "foreground": "#0000FF"
+        },
+        {
+            "alias": "keyword2",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontWeight" : "Bold",
+            "fontFixedPitch" : true,
+            "foreground": "#8E0AC8"
+        },
+        {
+            "alias": "comment",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#008000"
+        },
+        {
+            "alias": "plain",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#1F377F"
+        },
+        {
+            "alias": "function",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#74531F"
+        },
+        {
+            "alias": "type",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "fontWeight" : "Bold",
+            "foreground": "#2B91AF"
+        },
+        {
+            "alias": "number",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#000000"
+        },
+        {
+            "alias": "string",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#A31515"
+        },
+        {
+            "alias": "enum",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#315050"
+        },
+        {
+            "alias": "define",
+            "fontFamily" : "Consolas",
+            "fontPointSize" : 10,
+            "fontFixedPitch" : true,
+            "foreground": "#891DFD"
+        }
+    ]
+}

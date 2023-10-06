@@ -56,6 +56,7 @@ public:
     void createDeclExtern(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void WriteTableComment(const FmtSharedTablePtr &pTable, QTextStream &stream, bool inlineComment = false);
 
+    virtual FmtGenHighlightingRuleList highlightingRuleList() const;
 protected:
     virtual QByteArray makeContent(FmtSharedTablePtr pTable);
 
@@ -77,6 +78,8 @@ private:
 
     QMap<FmtTable*,GenCppTemplateBlock*> m_Blocks;
     QList<GenCppTemplateBlock*> m_BlocksStore;
+
+    FmtGenHighlightingRuleList m_HighlightingRuleList;
 };
 
 #endif // FMTGENCPPTEMPLATE_H

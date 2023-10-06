@@ -62,15 +62,33 @@ void FmtWorkWndGen::onFinish(const QByteArray &data)
         delete pCurrentHighlighter;
 
     FmtGenInterface *pInterface = m_Interfaces[getInterfaceId()];
+    Highlighter::HighlighterCode CodeType;
+
     switch(pInterface->getContentType())
+    {
+    case FmtGenInterface::GenSql:
+        CodeType = Highlighter::HC_SQL;
+        break;
+    case FmtGenInterface::GenCpp:
+        CodeType = Highlighter::HC_CPP;
+        break;
+    }
+    pCurrentHighlighter = new Highlighter(CodeType, pEditor->document());
+    pCurrentHighlighter->addRsType(pTable->name());
+    pCurrentHighlighter->addHighlightingRules(pInterface->highlightingRuleList());
+    pEditor->resetStyle();
+
+    /*switch(pInterface->getContentType())
     {
     case FmtGenInterface::GenSql:
         pCurrentHighlighter = new SqlHighlighter(pEditor->document());
         break;
     case FmtGenInterface::GenCpp:
         pCurrentHighlighter = new Highlighter(pEditor->document());
+
+        ((Highlighter*)pCurrentHighlighter)->addHighlightingRules(pInterface->highlightingRuleList());
         break;
-    }
+    }*/
 
     pEditor->setPlainText(QString::fromLocal8Bit(data));
     pActionRun->setEnabled(true);

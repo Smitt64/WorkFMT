@@ -28,6 +28,7 @@
 #include "widgets/filteredtablewidget.h"
 #include "widgets/editcontent/import/importwizard.h"
 #include "selectfolderdlg.h"
+#include "gensqltemplatedlg.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -113,6 +114,8 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
         }
     }
 
+    ui->autoCamelCase->setChecked(settings()->value("AutoCamelCase", true).toBool());
+
     pCopyMenu = new QMenu(this);
     ui->copyTool->setMenu(pCopyMenu);
 
@@ -136,6 +139,8 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     connect(ui->checkButton, SIGNAL(clicked(bool)), SLOT(CheckTable()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(TabCloseRequested(int)));
     connect(ui->scriptButton, SIGNAL(clicked(bool)), SLOT(OpenScriptEditorWindow()));
+
+    connect(ui->autoCamelCase, SIGNAL(toggled(bool)), this, SLOT(AutoCamelCase(bool)));
 }
 
 FmtWorkWindow::~FmtWorkWindow()
@@ -149,8 +154,10 @@ FmtWorkWindow::~FmtWorkWindow()
 void FmtWorkWindow::SetupActionsMenu()
 {
     pActionsMenu = new QMenu(this);
-    m_AddFieldsToEnd = pActionsMenu->addAction(tr("Добавить поля в конец"));
-    m_InsertFields = pActionsMenu->addAction(tr("Добавить поля перед..."));
+    m_AddFieldsToEnd = pActionsMenu->addAction(QIcon(":/img/PushBackClause_10553_32.png"), tr("Добавить поля в конец"));
+    m_InsertFields = pActionsMenu->addAction(QIcon(":/img/InsertClause_10553_32.png"), tr("Добавить поля перед..."));
+    pActionsMenu->addSeparator();
+    m_CamelCaseAction = pActionsMenu->addAction(QIcon(":/img/FontHS.png"), tr("Преобразовать поля в CamelCase"));
     pActionsMenu->addSeparator();
     m_CopyFields = pActionsMenu->addAction(QIcon(":/img/CopyHS.png"), tr("Копировать поля в буффер обмена..."));
     m_PasteFields = pActionsMenu->addAction(QIcon(":/img/PasteHS.png"), tr("Вставить поля из буффера обмена..."));
@@ -168,11 +175,13 @@ void FmtWorkWindow::SetupActionsMenu()
     m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
     m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
     pActionsMenu->addSeparator();
-    pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты обновления"));
+    pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты SQL"));
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
     m_GenAddScript = pCodeGenMenu->addAction(tr("Добавление полей"));
     m_GenModifyScript = pCodeGenMenu->addAction(tr("Изменение полей"));
     m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
+    pCodeGenMenu->addSeparator();
+    m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
     ui->pushActions->setMenu(pActionsMenu);
 
     connect(m_saveToXml, SIGNAL(triggered(bool)), SLOT(ExportXml()));
@@ -181,6 +190,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_loadDbf, SIGNAL(triggered(bool)), SLOT(LoadFromDbf()));
     connect(m_GenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
     connect(m_GenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
+    connect(m_GenInsertTemplate, SIGNAL(triggered(bool)), SLOT(GenInsertTemplateSql()));
     connect(m_GenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
     connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
     connect(m_MassRemoveFields, SIGNAL(triggered(bool)), SLOT(RemoveTableFields()));
@@ -189,6 +199,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_EditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
     connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
     connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
+    connect(m_CamelCaseAction, SIGNAL(triggered(bool)), SLOT(CamelCaseAction()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
@@ -631,13 +642,33 @@ int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*
     return SelectTableFieldsDlg(pTable, title, pFldList, this);
 }
 
-void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab)
+void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
 {
-    QSyntaxHighlighter *pCurrentHighlighter = Q_NULLPTR;
+    Highlighter *pCurrentHighlighter = Q_NULLPTR;
     CodeEditor *editor = new CodeEditor();
-    pCurrentHighlighter = new SqlHighlighter(editor->document());
+    pCurrentHighlighter = new Highlighter(Highlighter::HC_SQL, editor->document());
+    pCurrentHighlighter->addRsType(pTable->name());
     editor->setReadOnly(true);
     editor->setPlainText(code);
+
+    if (WordWrap)
+        editor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+
+    int tab = ui->tabWidget->addTab(editor, title);
+    if (OpenTab) ui->tabWidget->setCurrentIndex(tab);
+}
+
+void FmtWorkWindow::AddCppCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
+{
+    Highlighter *pCurrentHighlighter = Q_NULLPTR;
+    CodeEditor *editor = new CodeEditor();
+    pCurrentHighlighter = new Highlighter(Highlighter::HC_CPP,editor->document());
+    pCurrentHighlighter->addRsType(FmtTableStructName(pTable->name()));
+    editor->setReadOnly(true);
+    editor->setPlainText(code);
+
+    if (WordWrap)
+        editor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
 
     int tab = ui->tabWidget->addTab(editor, title);
     if (OpenTab) ui->tabWidget->setCurrentIndex(tab);
@@ -834,4 +865,58 @@ QString FmtWorkWindow::makeWindowTitle()
             .arg(tableName)
             .arg(schemeName.trimmed());
     return name;
+}
+
+void FmtWorkWindow::GenInsertTemplateSql()
+{
+    GenSqlTemplateDlg dlg(pTable, this);
+
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        int templ = dlg.templateID();
+        QString code = dlg.sqlTemplate();
+
+        switch(templ)
+        {
+        case GenSqlTemplateDlg::sqlInsertWithDefaults:
+        case GenSqlTemplateDlg::sqlInsertWithPlaceholders:
+            AddSqlCodeTab(dlg.templateName(), code, true, true);
+            break;
+        default:
+            AddCppCodeTab(dlg.templateName(), code, true, true);
+        }
+    }
+
+    /*QList<FmtField*> FldList;
+    if (SelectTableFieldsDailog(tr("Выбор полей для шаблона INSERT инструкции"), &FldList) == QDialog::Accepted)
+    {
+        QString code = FmtGenInsertTemplateSqlScript(FldList);
+        AddSqlCodeTab(tr("Шаблон INSERT инструкции"), code, true, true);
+    }*/
+}
+
+void FmtWorkWindow::AutoCamelCase(bool checked)
+{
+    settings()->setValue("AutoCamelCase", checked);
+    settings()->sync();
+}
+
+void FmtWorkWindow::CamelCaseAction()
+{
+    QList<FmtField*> FldList;
+    if (SelectTableFieldsDailog(tr("Выбор полей для преобразования в CamelCase"), &FldList) == QDialog::Accepted)
+    {
+        QStringList lst;
+        for (auto fld : FldList)
+            lst.append(fld->name());
+
+        lst = FmtCapitalizeField(lst, true);
+
+        tableUndoStack()->beginMacro(tr("Преобразование в CamelCase"));
+
+        for (int i = 0; i < lst.size(); i++)
+            FldList[i]->setName(lst[i]);
+
+        tableUndoStack()->endMacro();
+    }
 }

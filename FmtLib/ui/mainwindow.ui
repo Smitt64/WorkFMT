@@ -48,6 +48,7 @@
     <addaction name="actionExport"/>
     <addaction name="actionImpExpPrm"/>
     <addaction name="separator"/>
+    <addaction name="actionHighlighterTheme"/>
     <addaction name="actionRsexpDir"/>
     <addaction name="action_FMT_sqlite"/>
     <addaction name="separator"/>
@@ -60,7 +61,7 @@
     </property>
     <widget class="QMenu" name="menuUpdateScripts">
      <property name="title">
-      <string>Скрипты обновления</string>
+      <string>Скрипты SQL</string>
      </property>
      <addaction name="actionGenCreateTbSql"/>
      <addaction name="actionGenAddScript"/>
@@ -173,7 +174,7 @@
   <action name="actionCreate">
    <property name="icon">
     <iconset resource="../res/fmt.qrc">
-     <normaloff>:/table</normaloff>:/table</iconset>
+     <normaloff>:/img/NewTable_5619_32.png</normaloff>:/img/NewTable_5619_32.png</iconset>
    </property>
    <property name="text">
     <string>Создать запись</string>
@@ -319,7 +320,7 @@
      <normaloff>:/img/savesql.png</normaloff>:/img/savesql.png</iconset>
    </property>
    <property name="text">
-    <string>Создать sql скрипт таблицы</string>
+    <string>Сохранить CreateTablesSql скрипт</string>
    </property>
   </action>
   <action name="actionHotFix">
@@ -372,6 +373,10 @@
    </property>
   </action>
   <action name="actionEditContent">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/EditTableHS.png</normaloff>:/img/EditTableHS.png</iconset>
+   </property>
    <property name="text">
     <string>Редактировать содержимое</string>
    </property>
@@ -428,6 +433,15 @@
   <action name="actionCreateXml">
    <property name="text">
     <string>Cоздать из xml</string>
+   </property>
+  </action>
+  <action name="actionHighlighterTheme">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/codewin.png</normaloff>:/img/codewin.png</iconset>
+   </property>
+   <property name="text">
+    <string>Тема подсветки синтаксиса</string>
    </property>
   </action>
  </widget>

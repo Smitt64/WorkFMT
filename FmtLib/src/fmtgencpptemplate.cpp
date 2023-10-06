@@ -652,6 +652,10 @@ void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
     block->m_SkfDefaultFunc = QString("SKF_%1")
             .arg(block->m_StructName);
 
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(block->m_StructName)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(block->m_UnionName)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(block->m_EnumName)), FormatType});
+
     QList<FmtField*> fields;
     for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
     {
@@ -672,6 +676,7 @@ void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
         }
 
         block->m_IndexEnumValue[index] = EnumName.toUpper();
+        m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(EnumName)), FormatEnum});
 
         if (prm.GenUnion.iSegmentNameType == GenCppSettings::usn_Short)
         {
@@ -769,4 +774,9 @@ void FmtGenCppTemplate::createDeclExtern(const FmtSharedTablePtr &pTable, QTextS
     foreach (const QString &decl, block->m_Decl) {
         stream << decl << Qt::endl;
     }
+}
+
+FmtGenHighlightingRuleList FmtGenCppTemplate::highlightingRuleList() const
+{
+    return m_HighlightingRuleList;
 }

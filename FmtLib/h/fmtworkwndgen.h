@@ -10,6 +10,7 @@ class FmtWorkWndGen;
 
 class GenInterfaceFactoryModel;
 class CodeEditor;
+class Highlighter;
 class FmtWorkWndGen : public QMainWindow
 {
     Q_OBJECT
@@ -40,7 +41,7 @@ private:
     QMap<QString, FmtGenInterface*> m_Interfaces;
     QSharedPointer<FmtTable> pTable;
 
-    QSyntaxHighlighter *pCurrentHighlighter;
+    Highlighter *pCurrentHighlighter;
 };
 
 #endif // FMTWORKWNDGEN_H

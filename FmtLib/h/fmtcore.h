@@ -8,6 +8,7 @@
 #include <QSharedPointer>
 #include <functional>
 #include "fmtlib_global.h"
+#include <sstream>
 
 #define AutoIncType 15
 #define BTNS_OFFSET 25
@@ -17,6 +18,8 @@
 #define RsExpUnlDirContext "RsExpUnlDir"
 #define RsFmtUnlDirContext "RsFmtUnlDir"
 #define RsCreateSqlContext "RsCreateSqlDir"
+
+#define HEX_COLOR_REGEX QString("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
 
 enum FmtNamesColumn
 {
@@ -177,6 +180,8 @@ FMTLIBSHARED_EXPORT FmtFldType fmtTypeFromXmlType(const QString &type);
 
 FMTLIBSHARED_EXPORT quint16 fmtTypeSize(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT quint16 fmtTypeIndexSize(const FmtFldType &id);
+FMTLIBSHARED_EXPORT QString fmtRsdType(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtRsdConstant(const FmtFldType &Type);
 
 FMTLIBSHARED_EXPORT int trn(QSqlDatabase &db, std::function<int(void)> func);
 
@@ -216,6 +221,7 @@ QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
 QString FmtGenModifyColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable);
+QString FmtGenInsertTemplateSqlScript(QList<FmtField*> flds);
 void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField *> flds = QList<FmtField*>(), const QSharedPointer<FmtTable> &pTable = QSharedPointer<FmtTable>());
 
 FMTLIBSHARED_EXPORT QString ConstrType1RegExp();
@@ -232,5 +238,21 @@ FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, co
 FMTLIBSHARED_EXPORT void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote = '"');
 
 FMTLIBSHARED_EXPORT QString getFullFileNameFromDir(const QString &file);
+
+FMTLIBSHARED_EXPORT QString FmtCapitalizeField(const QString &undecoratedfield, bool force = false);
+FMTLIBSHARED_EXPORT QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force = false);
+
+template<class T> std::string ContainerToString(const T &container)
+{
+    std::ostringstream oss;
+
+    if (!container.empty())
+    {
+        std::copy(container.cbegin(), container.cend() - 1, std::ostream_iterator<typename T::value_type>(oss, ","));
+        oss << container.back();
+    }
+
+    return oss.str();
+}
 
 #endif // FMTCORE_H

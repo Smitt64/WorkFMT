@@ -23,6 +23,10 @@ class WorkFmtMainPackage(InstallerPackageInfoBase):
         self.__filesToCopy = ['WorkFMT/{}/WorkFMT.exe',
             'FmtLib/{}/FmtLib.dll',
             'FmtDbgHelp/{}/FmtDbgHelp.dll']
+        
+        self.__syntaxhighlighter = ['FmtLib/syntaxhighlighter/Default.json',
+            'FmtLib/syntaxhighlighter/Visual Studio (Dark).json',
+            'FmtLib/syntaxhighlighter/Visual Studio (Light).json']
 
         super(WorkFmtMainPackage, self).__init__()
         
@@ -36,11 +40,24 @@ class WorkFmtMainPackage(InstallerPackageInfoBase):
 
     def makeData(self, datadir):
         fmtdir = WorkFmtConfig.inst().getWorkFmtSourceDir()
+        syntaxhighlighterdir = os.path.join(self.DataPath, 'syntaxhighlighter')
+        
         for cpfiletemplate in self.__filesToCopy:
             filetocopy = cpfiletemplate.format(WorkFmtConfig.inst().getBinaryType())
             srcexefile = os.path.join(fmtdir, filetocopy)
             dstexefile = os.path.join(self.DataPath, os.path.basename(filetocopy))
             copyfile(srcexefile, dstexefile)
+
+        try:
+            os.mkdir('syntaxhighlighter')
+        finally:
+            pass
+
+        for syntaxhighlighter in self.__syntaxhighlighter:
+            srcfile = os.path.join(fmtdir, syntaxhighlighter)
+            dstfile = os.path.join(syntaxhighlighterdir, os.path.basename(syntaxhighlighter))
+            copyfile(srcfile, dstfile)
+
 
     def getVersion(self):
         try:

@@ -32,6 +32,7 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
     src/core/maintenancetool.cpp \
@@ -162,6 +163,7 @@ unix {
 }
 
 FORMS += \
+    ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
     src/widgets/fmtsegmentflagsdlg.ui \
     src/widgets/selectfolderdlg.ui \
@@ -199,6 +201,7 @@ RESOURCES += \
     res/fmt.qrc
 
 HEADERS += \
+    h/gensqltemplatedlg.h \
     h/DataStructure.hpp \
     h/LockVar.hpp \
     h/connectioninfo.h \
