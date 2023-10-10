@@ -11,11 +11,11 @@
 #define  RSL_TOOLS_VER_HI        6
 #define  RSL_TOOLS_VER_LO       57
 #define  RSL_TOOLS_VER_BUILD   714
-#define  RSL_TOOLS_VER_PATCH     3
+#define  RSL_TOOLS_VER_PATCH     6
 
 
 #define  RSL_TOOLS_VERSION    (RSL_TOOLS_VER_HI*100000000 + RSL_TOOLS_VER_LO*100000 + RSL_TOOLS_VER_BUILD*100 + RSL_TOOLS_VER_PATCH)
-#define  RSL_TOOLS_VER_STR    "6.57.714.3\0"
+#define  RSL_TOOLS_VER_STR    "6.57.714.6\0"
 
 
 // Используется в rsrtlwm.rc для уникальности версии.

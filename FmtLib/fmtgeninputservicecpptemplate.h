@@ -19,6 +19,8 @@ public:
     static QString getInputServiceClassName(const FmtSharedTablePtr &pTable);
     static QString getInputServicePtMemberName(const FmtSharedTablePtr &pTable);
 
+    virtual FmtGenHighlightingRuleList highlightingRuleList() const;
+
 protected:
     virtual QByteArray makeContent(FmtSharedTablePtr pTable);
 
@@ -27,6 +29,8 @@ private:
     void createCacheClassDefenition(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createInputServiceAdmOpClass(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createGetSelectIDForService(const FmtSharedTablePtr &pTable, QTextStream &stream);
+
+    FmtGenHighlightingRuleList m_HighlightingRuleList;
 };
 
 #endif // FMTGENINPUTSERVICECPPTEMPLATE_H

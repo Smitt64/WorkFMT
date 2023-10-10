@@ -182,6 +182,7 @@ FMTLIBSHARED_EXPORT quint16 fmtTypeSize(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT quint16 fmtTypeIndexSize(const FmtFldType &id);
 FMTLIBSHARED_EXPORT QString fmtRsdType(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT QString fmtRsdConstant(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtZeroConstant(const FmtFldType &Type);
 
 FMTLIBSHARED_EXPORT int trn(QSqlDatabase &db, std::function<int(void)> func);
 

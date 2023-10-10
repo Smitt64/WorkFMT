@@ -17,7 +17,7 @@
 #define RSD_VERSION_HI      3
 #define RSD_VERSION_LO      2
 #define RSD_VERSION         39
-#define RSD_VERSION_PATCH   0
+#define RSD_VERSION_PATCH   2
 
 /*
 07.11.2016 Version 2.01.021.1

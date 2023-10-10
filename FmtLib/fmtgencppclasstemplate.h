@@ -11,6 +11,7 @@ public:
     virtual ~FmtGenCppClassTemplate();
 
     virtual GenType getContentType() const { return FmtGenInterface::GenCpp; }
+    virtual FmtGenHighlightingRuleList highlightingRuleList() const;
 
 protected:
     virtual QByteArray makeContent(FmtSharedTablePtr pTable);
@@ -42,6 +43,8 @@ private:
     QString getUnionKeyName(const FmtSharedTablePtr &pTable, const FmtNumber5 &key);
     GenCppSettingsParams prm;
     QString pkUnionName;
+
+    FmtGenHighlightingRuleList m_HighlightingRuleList;
 };
 
 #endif // FMTGENCPPCLASSTEMPLATE_H

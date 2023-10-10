@@ -19,6 +19,9 @@ public:
         sqlInsertWithDefaults = 0,
         sqlInsertWithPlaceholders,
         sqlInsertForRsdCommand,
+        sqlUpdateWithDefaults,
+        sqlUpdateWithPlaceholders,
+        sqlUpdateForRsdCommand
     };
     explicit GenSqlTemplateDlg(QSharedPointer<FmtTable> &table, QWidget *parent = nullptr);
     ~GenSqlTemplateDlg();
@@ -29,11 +32,13 @@ public:
 
 private slots:
     void mainFieldsBtnClick();
+    void otherFieldsBtnClick();
+    void currentIndexChanged(const int &index);
 
 private:
     Ui::GenSqlTemplateDlg *ui;
     QSharedPointer<FmtTable> pTable;
-    QList<FmtField*> m_FldList;
+    QList<FmtField*> m_FldList, m_OtherFldList;
 };
 
 #endif // GENSQLTEMPLATEDLG_H

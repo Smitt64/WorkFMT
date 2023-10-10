@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += widgets sql xml script scripttools core svg
+QT += widgets sql xml script scripttools core svg webengine webenginewidgets
+
 CONFIG   += force_debug_info
 TARGET = FmtLib
 TEMPLATE = lib

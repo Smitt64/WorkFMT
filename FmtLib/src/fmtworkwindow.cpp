@@ -648,6 +648,7 @@ void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, boo
     CodeEditor *editor = new CodeEditor();
     pCurrentHighlighter = new Highlighter(Highlighter::HC_SQL, editor->document());
     pCurrentHighlighter->addRsType(pTable->name());
+    pCurrentHighlighter->addRsType(pTable->name().toUpper());
     editor->setReadOnly(true);
     editor->setPlainText(code);
 
@@ -880,19 +881,14 @@ void FmtWorkWindow::GenInsertTemplateSql()
         {
         case GenSqlTemplateDlg::sqlInsertWithDefaults:
         case GenSqlTemplateDlg::sqlInsertWithPlaceholders:
+        case GenSqlTemplateDlg::sqlUpdateWithDefaults:
+        case GenSqlTemplateDlg::sqlUpdateWithPlaceholders:
             AddSqlCodeTab(dlg.templateName(), code, true, true);
             break;
         default:
             AddCppCodeTab(dlg.templateName(), code, true, true);
         }
     }
-
-    /*QList<FmtField*> FldList;
-    if (SelectTableFieldsDailog(tr("Выбор полей для шаблона INSERT инструкции"), &FldList) == QDialog::Accepted)
-    {
-        QString code = FmtGenInsertTemplateSqlScript(FldList);
-        AddSqlCodeTab(tr("Шаблон INSERT инструкции"), code, true, true);
-    }*/
 }
 
 void FmtWorkWindow::AutoCamelCase(bool checked)

@@ -108,5 +108,8 @@
         <file>img/codewin.png</file>
         <file>img/FontHS.png</file>
         <file>img/PushBackClause_10553_32.png</file>
+        <file>about/index_template.html</file>
+        <file>about/add_template.html</file>
+        <file>about/fixed_template.html</file>
     </qresource>
 </RCC>

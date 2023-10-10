@@ -47,6 +47,7 @@ public:
     void createKeysUnion(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createKeysEnum(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createOpenFunc(const FmtSharedTablePtr &pTable, QTextStream &stream);
+    void createInitFunc(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createFindFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void createSkfDeclFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream, const int &Mode = SkfMode_All);
     void createSkfFunctions(const FmtSharedTablePtr &pTable, QTextStream &stream);

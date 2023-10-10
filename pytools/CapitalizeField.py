@@ -107,6 +107,10 @@ d.add_to_session('sum')
 d.add_to_session('guid')
 d.add_to_session('fiid')
 d.add_to_session('rouble')
+d.add_to_session('attr')
+d.add_to_session('ofshore')
+d.add_to_session('param')
+d.add_to_session('taxinstitution')
 
 if len(sys.argv) > 1:
     string = sys.argv[1]
@@ -136,7 +140,7 @@ if len(sys.argv) > 1:
         print(';'.join(results))
 
 else:
-    string = 'objectguid'
+    string = 'taxinstitution'
     result = split_words(string)
     print(result)
 

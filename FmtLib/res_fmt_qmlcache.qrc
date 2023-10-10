@@ -67,6 +67,7 @@
         <file alias="img/openconfile.png">res/img/openconfile.png</file>
         <file alias="img/remove.png">res/img/remove.png</file>
         <file alias="img/script.png">res/img/script.png</file>
+        <file alias="txt/samplescript.js">res/txt/samplescript.js</file>
         <file alias="img/NewDocumentHS.png">res/img/NewDocumentHS.png</file>
         <file alias="img/rundebug.png">res/img/rundebug.png</file>
         <file alias="img/DataContainer_NewRecordHS.png">res/img/DataContainer_NewRecordHS.png</file>
@@ -99,5 +100,17 @@
         <file alias="img/dblogomask/sqlite.svg">res/img/dblogomask/sqlite.svg</file>
         <file alias="img/dblogomask/oracle.svg">res/img/dblogomask/oracle.svg</file>
         <file alias="img/dblogomask/postgresql.svg">res/img/dblogomask/postgresql.svg</file>
+        <file alias="img/InsertClause_10553_32.png">res/img/InsertClause_10553_32.png</file>
+        <file alias="img/NewTable_5619_32.png">res/img/NewTable_5619_32.png</file>
+        <file alias="FmtTypesMap.json">res/FmtTypesMap.json</file>
+        <file alias="cpp_rstypes.txt">res/cpp_rstypes.txt</file>
+        <file alias="cpp_rsenums.txt">res/cpp_rsenums.txt</file>
+        <file alias="cpp_rsdefines.txt">res/cpp_rsdefines.txt</file>
+        <file alias="img/codewin.png">res/img/codewin.png</file>
+        <file alias="img/FontHS.png">res/img/FontHS.png</file>
+        <file alias="img/PushBackClause_10553_32.png">res/img/PushBackClause_10553_32.png</file>
+        <file alias="about/index_template.html">res/about/index_template.html</file>
+        <file alias="about/add_template.html">res/about/add_template.html</file>
+        <file alias="about/fixed_template.html">res/about/fixed_template.html</file>
     </qresource>
 </RCC>

@@ -9,6 +9,7 @@ from config.WorkFmtConfig import WorkFmtConfig
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
 from shutil import copyfile
 from datetime import date
+import time
 
 def getExeVersion(path):
     info = GetFileVersionInfo (path, "\\")
@@ -22,7 +23,8 @@ class WorkFmtMainPackage(InstallerPackageInfoBase):
     def __init__(self):
         self.__filesToCopy = ['WorkFMT/{}/WorkFMT.exe',
             'FmtLib/{}/FmtLib.dll',
-            'FmtDbgHelp/{}/FmtDbgHelp.dll']
+            'FmtDbgHelp/{}/FmtDbgHelp.dll',
+            'pytools/output/CapitalizeField.exe']
         
         self.__syntaxhighlighter = ['FmtLib/syntaxhighlighter/Default.json',
             'FmtLib/syntaxhighlighter/Visual Studio (Dark).json',
@@ -37,6 +39,7 @@ class WorkFmtMainPackage(InstallerPackageInfoBase):
         self.Name = 'com.rs.fmt.workfmt'
         self.ForcedInstallation = True
         self.ReleaseDate = today.strftime("%Y-%m-%d")
+        self.Dependencies = ['com.rs.fmt.workfmt.changelog']
 
     def makeData(self, datadir):
         fmtdir = WorkFmtConfig.inst().getWorkFmtSourceDir()
@@ -49,8 +52,8 @@ class WorkFmtMainPackage(InstallerPackageInfoBase):
             copyfile(srcexefile, dstexefile)
 
         try:
-            os.mkdir('syntaxhighlighter')
-        finally:
+            os.mkdir(syntaxhighlighterdir)
+        except OSError as exc:
             pass
 
         for syntaxhighlighter in self.__syntaxhighlighter:
@@ -83,7 +86,19 @@ class QtPackage(InstallerPackageInfoBase):
             'Qt{}Widgets.dll', 
             'Qt{}Xml.dll',
             'Qt{}Svg.dll',
-            'libEGL.dll'
+            'Qt{}WebEngine.dll',
+            'Qt{}WebEngineCore.dll',
+            'Qt{}WebEngineWidgets.dll',
+            'Qt{}Quick.dll',
+            'Qt{}Qml.dll',
+            'Qt{}PrintSupport.dll',
+            'Qt{}Network.dll',
+            'Qt{}QuickWidgets.dll',
+            'Qt{}QmlModels.dll',
+            'Qt{}Positioning.dll',
+            'Qt{}WebChannel.dll',
+            'libEGL.dll',
+            'QtWebEngineProcess.exe'
         ]
         self.__VersionedDlls = [
             'd3dcompiler*.dll',
@@ -92,7 +107,16 @@ class QtPackage(InstallerPackageInfoBase):
             'libstdc++*.dll',
             'libwinpthread*.dll'
         ]
+
         self.__QtFoldersToCopy  = [
+            'platforms',
+            'imageformats',
+            'iconengines',
+            'sqldrivers',
+            'styles'
+        ]
+
+        self.__QtOtherFoldersToCopy  = [
             'platforms',
             'imageformats',
             'iconengines',
@@ -179,7 +203,18 @@ class QtPackage(InstallerPackageInfoBase):
             self.__copy_qt_dir(self.__QtPluginsDir, self.DataPath, folder)
 
         print()
+        
         self.__copy_qt_dir(self.__qt_element.getPath(), self.DataPath, 'translations', '/*_ru.qm')
+
+        #qtwebengine_res = os.path.join(self.__qt_element.getPath(), 'resources')
+        try:
+            driverdir = os.path.join(self.DataPath, 'resources')
+            os.mkdir(driverdir)
+            self.__copy_qt_dir(self.__qt_element.getPath(), self.DataPath, 'resources', '/*.*')
+        except FileExistsError:
+            self.__copy_qt_dir(self.__qt_element.getPath(), self.DataPath, 'resources', '/*.*')
+        except Exception as e:
+            print('Fail: ' + str(e))
 
 class DBFileTool(InstallerPackageInfoBase):
     def __init__(self):
@@ -327,9 +362,10 @@ class ChangeLogComponent(RsComponentBase):
         self.ForcedInstallation = True
         self.Default = None
         self.Virtual = True
+        self.Essential = True
 
     def getVersion(self):
-        return "1"
+        return str(int(time.time()))
 
     def makeData(self, datadir):
         fmtdir = WorkFmtConfig.inst().getWorkFmtSourceDir()
@@ -369,9 +405,10 @@ class WorkFmtInstaller(InstallCreator):
         self.__RsdTools = RsTools()
         self.__ChangeLog = ChangeLogComponent()
 
+        self.addPage(self.__ChangeLog)
         self.addPage(self.__WorkFmtMainPackage)
         self.addPage(self.__DBFileTool)
         self.addPage(self.__QtPackage)
         self.addPage(self.__RsdDriver)
         self.addPage(self.__RsdTools)
-        self.addPage(self.__ChangeLog)
+        

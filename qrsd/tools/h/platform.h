@@ -324,6 +324,7 @@ extern "C" {
         PlatformType GetSystemForWin32(void);
         void ForceLinkBorlandUnresolvedEntryHook(void);
         void FixLocaleForWindows7RC(void);
+        int RunningWine(void);
 
     #elif defined(RSL_MD_SUN)
 

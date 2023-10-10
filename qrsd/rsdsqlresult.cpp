@@ -108,7 +108,6 @@ bool RsdSqlResult::fetch(int index)
 
         if (index > atindex)
         {
-            qDebug() << "fetch" << index << isForwardOnly();
             while (ok && index > at())
                 ok = fetchNext();
 

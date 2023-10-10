@@ -15,6 +15,8 @@ GenSqlTemplateDlg::GenSqlTemplateDlg(QSharedPointer<FmtTable> &table, QWidget *p
     m_FldList = pTable->getFieldsList();
 
     connect(ui->mainFieldsBtn, &QPushButton::clicked, this, &GenSqlTemplateDlg::mainFieldsBtnClick);
+    connect(ui->otherFieldsBtn, &QPushButton::clicked, this, &GenSqlTemplateDlg::otherFieldsBtnClick);
+    connect(ui->templateBox, qOverload<int>(&QComboBox::currentIndexChanged), this, &GenSqlTemplateDlg::currentIndexChanged);
 }
 
 GenSqlTemplateDlg::~GenSqlTemplateDlg()
@@ -32,6 +34,20 @@ GenSqlTemplateDlg::SqlTemplate GenSqlTemplateDlg::templateID() const
     return (SqlTemplate)ui->templateBox->currentIndex();
 }
 
+void GenSqlTemplateDlg::currentIndexChanged(const int &index)
+{
+    if (index < sqlUpdateWithDefaults)
+    {
+        ui->otherFields->setEnabled(false);
+        ui->otherFieldsBtn->setEnabled(false);
+    }
+    else
+    {
+        ui->otherFields->setEnabled(true);
+        ui->otherFieldsBtn->setEnabled(true);
+    }
+}
+
 QString GenSqlTemplateDlg::sqlTemplate() const
 {
     QString sql;
@@ -45,7 +61,7 @@ QString GenSqlTemplateDlg::sqlTemplate() const
         foreach (const FmtField *fld, FldList) {
             stream << QString("%1").arg(fld->name().toUpper());
             if (fld != FldList.last())
-                stream << ",";
+                stream << ", ";
         }
 
         stream << ") values(";
@@ -58,10 +74,120 @@ QString GenSqlTemplateDlg::sqlTemplate() const
         foreach (const FmtField *fld, FldList) {
             stream << QString("?");
             if (fld != FldList.last())
-                stream << ",";
+                stream << ", ";
         }
 
         stream << ")";
+    };
+
+    auto baseUpdateFunc = [&stream](QSharedPointer<FmtTable> Table, const QList<FmtField*> &FldList, const QList<FmtField*> &OtherFldList, bool UseDefaults = true) -> void
+    {
+        stream << "UPDATE " << Table->name().toUpper() << " SET ";
+
+        foreach (const FmtField *fld, FldList) {
+            if (UseDefaults)
+            {
+                QString OraDefaultVal = fld->getOraDefaultVal();
+                OraDefaultVal = OraDefaultVal.replace("''", "'");
+
+                stream << QString("%1").arg(fld->name().toUpper()) << " = " << OraDefaultVal;
+            }
+            else
+                stream << QString("%1").arg(fld->name().toUpper()) << " = ?";
+
+            if (fld != FldList.last())
+                stream << ", ";
+        }
+
+        if (!OtherFldList.isEmpty())
+        {
+            stream << " WHERE ";
+
+            foreach (const FmtField *fld, OtherFldList) {
+                if (UseDefaults)
+                {
+                    QString OraDefaultVal = fld->getOraDefaultVal();
+                    OraDefaultVal = OraDefaultVal.replace("''", "'");
+
+                    stream << QString("%1").arg(fld->name().toUpper()) << " = " << OraDefaultVal;
+                }
+                else
+                    stream << QString("%1").arg(fld->name().toUpper()) << " = ?";
+
+                if (fld != OtherFldList.last())
+                    stream << " AND ";
+            }
+        }
+    };
+
+    auto baseRsdParamsFunc = [&stream](QSharedPointer<FmtTable> Table, const QList<FmtField*> &FldList, const QString &pref = QString()) -> void
+    {
+        QString preffix;
+
+        if (!pref.isEmpty())
+            preffix = QString("%1_").arg(pref);
+
+        foreach (const FmtField *fld, FldList) {
+            if (fld->isStringType())
+            {
+                stream << QString("%1 rsd_%5%2[klen(%3,%4)];")
+                          .arg(fld->getRsdType())
+                          .arg(fld->undecorateName())
+                          .arg(FmtTableStructName(Table->name()))
+                          .arg(fld->undecorateName())
+                          .arg(preffix)
+                       << Qt::endl;
+
+                stream << QString("RSDLONG rsd_%2%1_len = sizeof(rsd_%2%1);")
+                          .arg(fld->undecorateName())
+                          .arg(preffix)<< Qt::endl;
+
+                stream << QString("strncpyz(rsd_%4%1, '\\0', klen(%2,%3));")
+                          .arg(fld->undecorateName())
+                          .arg(FmtTableStructName(Table->name()))
+                          .arg(fld->undecorateName())
+                          .arg(preffix)
+                       << Qt::endl;
+
+                stream << Qt::endl;
+            }
+            else
+            {
+                stream << QString("%2 rsd_%3%1;")
+                          .arg(fld->undecorateName())
+                          .arg(fld->getRsdType())
+                          .arg(preffix)<< Qt::endl;
+
+                stream << QString("RSDLONG rsd_%2%1_len = sizeof(rsd_%2%1);")
+                          .arg(fld->undecorateName())
+                          .arg(preffix)<< Qt::endl;
+
+                stream << Qt::endl;
+            }
+        }
+    };
+
+    auto baseRsdParamsAddFunc = [&stream](QSharedPointer<FmtTable> Table, const QList<FmtField*> &FldList, const QString &pref = QString()) -> void
+    {
+        QString preffix;
+
+        if (!pref.isEmpty())
+            preffix = QString("%1_").arg(pref);
+
+        foreach (const FmtField *fld, FldList) {
+            if (fld->isStringType())
+                stream << QString("cmd.addParam(\"\", %1, rsd_%3%2, &rsd_%3%2_len, rsd_%3%2_len);")
+                          .arg(fld->getRsdConstant())
+                          .arg(fld->undecorateName())
+                          .arg(preffix)
+                       << Qt::endl;
+            else
+                stream << QString("cmd.addParam(\"\", %1, &rsd_%3%2, &rsd_%3%2_len, rsd_%3%2_len);")
+                          .arg(fld->getRsdConstant())
+                          .arg(fld->undecorateName())
+                          .arg(preffix)
+                       << Qt::endl;
+        }
     };
 
     if (templ == sqlInsertWithDefaults)
@@ -74,7 +200,7 @@ QString GenSqlTemplateDlg::sqlTemplate() const
 
             stream << QString("%1").arg(OraDefaultVal);
             if (fld != m_FldList.last())
-                stream << ",";
+                stream << ", ";
         }
 
         stream << ")";
@@ -83,60 +209,41 @@ QString GenSqlTemplateDlg::sqlTemplate() const
         baseInsertPlaceholders(pTable, m_FldList);
     else if (templ == sqlInsertForRsdCommand)
     {
-        foreach (const FmtField *fld, m_FldList) {
-            if (fld->isStringType())
-            {
-                stream << QString("%1 rsd_%2[klen(%3,%4)];")
-                          .arg(fld->getRsdType())
-                          .arg(fld->undecorateName())
-                          .arg(FmtTableStructName(pTable->name()))
-                          .arg(fld->undecorateName())
-                       << endl;
-
-                stream << QString("RSDLONG rsd_%1_len = sizeof(rsd_%1);")
-                          .arg(fld->undecorateName()) << endl;
-
-                stream << QString("strncpyz(rsd_%1, '\\0', klen(%2,%3));")
-                          .arg(fld->undecorateName())
-                          .arg(FmtTableStructName(pTable->name()))
-                          .arg(fld->undecorateName())
-                       << endl;
-
-                stream << endl;
-            }
-            else
-            {
-                stream << QString("%2 rsd_%1;")
-                          .arg(fld->undecorateName())
-                          .arg(fld->getRsdType()) << endl;
-
-                stream << QString("RSDLONG rsd_%1_len = sizeof(rsd_%1);")
-                          .arg(fld->undecorateName()) << endl;
-
-                stream << endl;
-            }
-        }
+        baseRsdParamsFunc(pTable, m_FldList);
 
         stream << "std::string strSQL = \"";
         baseInsertPlaceholders(pTable, m_FldList);
-        stream << "\");" << endl;
+        stream << "\");" << Qt::endl;
         stream << QString("CRsdCommand cmd(*getDefConnection(), strSQL.c_str());") << endl << endl;
 
-        foreach (const FmtField *fld, m_FldList) {
-            if (fld->isStringType())
-                stream << QString("cmd.addParam(\"\", %1, rsd_%2, &rsd_%2_len, rsd_%2_len);")
-                          .arg(fld->getRsdConstant())
-                          .arg(fld->undecorateName())
-                       << endl;
-            else
-                stream << QString("cmd.addParam(\"\", %1, &rsd_%2, &rsd_%2_len, rsd_%2_len);")
-                          .arg(fld->getRsdConstant())
-                          .arg(fld->undecorateName())
-                       << endl;
-        }
+        baseRsdParamsAddFunc(pTable, m_FldList);
 
-        stream << endl;
-        stream <<  "stat = AL_SQLCmdExecute(cmd);" << endl << "if ( stat == RSDRES_NODATA ) stat = 0;";
+        stream << Qt::endl;
+        stream <<  "stat = AL_SQLCmdExecute(cmd);" << Qt::endl << "if ( stat == RSDRES_NODATA ) stat = 0;";
+    }
+    else if (templ == sqlUpdateWithDefaults)
+    {
+        baseUpdateFunc(pTable, m_FldList, m_OtherFldList);
+    }
+    else if (templ == sqlUpdateWithPlaceholders)
+    {
+        baseUpdateFunc(pTable, m_FldList, m_OtherFldList, false);
+    }
+    else if (templ == sqlUpdateForRsdCommand)
+    {
+        baseRsdParamsFunc(pTable, m_FldList);
+        baseRsdParamsFunc(pTable, m_OtherFldList, "where");
+
+        stream << "std::string strSQL = \"";
+        baseUpdateFunc(pTable, m_FldList, m_OtherFldList, false);
+        stream << "\");" << Qt::endl;
+        stream << QString("CRsdCommand cmd(*getDefConnection(), strSQL.c_str());") << endl << endl;
+
+        baseRsdParamsAddFunc(pTable, m_FldList);
+        baseRsdParamsAddFunc(pTable, m_OtherFldList, "where");
+
+        stream << Qt::endl;
+        stream <<  "stat = AL_SQLCmdExecute(cmd);" << Qt::endl << "if ( stat == RSDRES_NODATA ) stat = 0;";
     }
 
     return sql;
@@ -161,6 +268,29 @@ void GenSqlTemplateDlg::mainFieldsBtnClick()
             }
 
             ui->mainFields->setText(str);
+        }
+    }
+}
+
+void GenSqlTemplateDlg::otherFieldsBtnClick()
+{
+    if (SelectTableFieldsDlg(pTable, tr("Дополнительные поля"), &m_OtherFldList, this))
+    {
+        if (m_OtherFldList.size() == pTable->fieldsCount())
+            ui->otherFields->setText("Все");
+        else
+        {
+            QString str;
+            QTextStream stream(&str);
+            for (QList<FmtField*>::iterator iter = m_OtherFldList.begin(); iter != m_OtherFldList.end(); ++iter)
+            {
+                if (iter != m_OtherFldList.begin())
+                    stream << ",";
+
+                stream << (*iter)->name();
+            }
+
+            ui->otherFields->setText(str);
         }
     }
 }

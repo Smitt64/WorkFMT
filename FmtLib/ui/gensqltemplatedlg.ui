@@ -40,6 +40,21 @@
          <string>Insert инструкция для CRsdCommand</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Update инструкция с параметрами по умолчанию</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Update инструкция с плейсхолдерами</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Update инструкция для CRsdCommand</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -88,7 +103,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLineEdit" name="lineEdit_2">
+        <widget class="QLineEdit" name="otherFields">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -101,7 +116,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_2">
+        <widget class="QToolButton" name="otherFieldsBtn">
          <property name="enabled">
           <bool>false</bool>
          </property>

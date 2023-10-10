@@ -13,7 +13,8 @@
             "rslValueName": "intval",
             "xmlTypeName": "FT_INT16",
             "rsdType": "RSDSHORT",
-            "rsdConst": "RSDPT_SHORT"
+            "rsdConst": "RSDPT_SHORT",
+            "zeroConstant": ""
         },
         {
             "display": "LONG",
@@ -28,7 +29,8 @@
             "rslValueName": "intval",
             "xmlTypeName": "FT_INT32",
             "rsdType": "RSDLONG",
-            "rsdConst": "RSDPT_LONG"
+            "rsdConst": "RSDPT_LONG",
+            "zeroConstant": ""
         },
         {
             "display": "BIGINT",
@@ -43,7 +45,8 @@
             "rslValueName": "bigint",
             "xmlTypeName": "FT_INT64",
             "rsdType": "RSDBIGINT",
-            "rsdConst": "RSDPT_BIGINT"
+            "rsdConst": "RSDPT_BIGINT",
+            "zeroConstant": ""
         },
         {
             "display": "FLOAT",
@@ -58,7 +61,8 @@
             "rslValueName": "doubvalL",
             "xmlTypeName": "FT_FLOAT",
             "rsdType": "RSDFLOAT",
-            "rsdConst": "RSDPT_FLOAT"
+            "rsdConst": "RSDPT_FLOAT",
+            "zeroConstant": ""
         },
         {
             "display": "DOUBLE",
@@ -73,7 +77,8 @@
             "rslValueName": "doubvalL",
             "xmlTypeName": "FT_DOUBLE",
             "rsdType": "RSDDOUBLE",
-            "rsdConst": "RSDPT_DOUBLE"
+            "rsdConst": "RSDPT_DOUBLE",
+            "zeroConstant": ""
         },
         {
             "display": "MONEY",
@@ -88,7 +93,8 @@
             "rslValueName": "numVal",
             "xmlTypeName": "FT_LDMON",
             "rsdType": "RSDDECIMAL",
-            "rsdConst": "RSDPT_DECIMAL"
+            "rsdConst": "RSDPT_DECIMAL",
+            "zeroConstant": "DB_DMONEY_ZERO"
         },
         {
             "display": "STRING",
@@ -103,7 +109,8 @@
             "rslValueName": "string",
             "xmlTypeName": "FT_STRING",
             "rsdType": "RSDCHAR",
-            "rsdConst": "RSDPT_LPSTR"
+            "rsdConst": "RSDPT_LPSTR",
+            "zeroConstant": ""
         },
         {
             "display": "SNR",
@@ -118,7 +125,8 @@
             "rslValueName": "string",
             "xmlTypeName": "FT_SNR",
             "rsdType": "RSDCHAR",
-            "rsdConst": "RSDPT_LPSTR"
+            "rsdConst": "RSDPT_LPSTR",
+            "zeroConstant": ""
         },
         {
             "display": "DATE",
@@ -133,7 +141,8 @@
             "rslValueName": "date",
             "xmlTypeName": "FT_DATE",
             "rsdType": "RSDDATE",
-            "rsdConst": "RSDPT_DATE"
+            "rsdConst": "RSDPT_DATE",
+            "zeroConstant": "BDATE_ZERO"
         },
         {
             "display": "TIME",
@@ -148,7 +157,8 @@
             "rslValueName": "time",
             "xmlTypeName": "FT_TIME",
             "rsdType": "RSDTIME",
-            "rsdConst": "RSDPT_TIME"
+            "rsdConst": "RSDPT_TIME",
+            "zeroConstant": "BTIME_ZERO"
         },
         {
             "display": "CHR",
@@ -163,7 +173,8 @@
             "rslValueName": "boolval",
             "xmlTypeName": "FT_CHR",
             "rsdType": "RSDCHAR",
-            "rsdConst": "RSDPT_BYTE"
+            "rsdConst": "RSDPT_BYTE",
+            "zeroConstant": ""
         },
         {
             "display": "UCHR",
@@ -178,7 +189,8 @@
             "rslValueName": "string",
             "xmlTypeName": "FT_UCHR",
             "rsdType": "RSDBYTE",
-            "rsdConst": "RSDPT_BYTE"
+            "rsdConst": "RSDPT_BYTE",
+            "zeroConstant": ""
         },
         {
             "display": "NUMERIC",
@@ -193,7 +205,8 @@
             "rslValueName": "decimal",
             "xmlTypeName": "FT_NUMERIC",
             "rsdType": "RSDNUMERIC",
-            "rsdConst": "RSDPT_NUMERIC"
+            "rsdConst": "RSDPT_NUMERIC",
+            "zeroConstant": "DB_LMONEY_ZERO"
         }
     ]
 }

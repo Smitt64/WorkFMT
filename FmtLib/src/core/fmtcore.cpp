@@ -78,6 +78,7 @@ typedef struct tagFmtTypeInfo
     QString _xmlTypeName;
     QString _rsdType;
     QString _rsdConst;
+    QString _zeroConstant;
 
     tagFmtTypeInfo
     (
@@ -210,6 +211,7 @@ void FmtInit()
                 itemInfo._xmlTypeName = element["xmlTypeName"].toString();
                 itemInfo._rsdType = element["rsdType"].toString();
                 itemInfo._rsdConst = element["rsdConst"].toString();
+                itemInfo._zeroConstant = element["zeroConstant"].toString();
 
                 FmtTypesMap.insert(display, itemInfo);
             }
@@ -403,6 +405,15 @@ QString fmtRsdConstant(const FmtFldType &Type)
         return QString();
 
     return FmtTypesMap[FmtTypesList[index]]._rsdConst;
+}
+
+QString fmtZeroConstant(const FmtFldType &Type)
+{
+    int index = fmtIndexForType(Type);
+    if (index < 0 || index >= FmtTypesList.size())
+        return QString();
+
+    return FmtTypesMap[FmtTypesList[index]]._zeroConstant;
 }
 
 FmtFldType fmtIndexFromFmtType(const FmtFldType &id)

@@ -27,14 +27,14 @@ void FmtTablesModel::updateFmtList()
     if (!m_FilterString.contains(","))
     {
         QString str = "%" + m_FilterString + "%";
-        pQuery->prepare("select * from FMT_NAMES WHERE lower(T_NAME) LIKE ? ORDER BY T_NAME ASC");
+        pQuery->prepare("select /*+ FIRST_ROWS */ * from FMT_NAMES WHERE lower(T_NAME) LIKE ? ORDER BY T_NAME ASC");
         pQuery->bindValue(0, str.toLower());
         ExecuteQuery(pQuery);
     }
     else
     {
         QStringList list = m_FilterString.split(',');
-        QString query = "select * from FMT_NAMES WHERE ";
+        QString query = "select /*+ FIRST_ROWS */ * from FMT_NAMES WHERE ";
 
         bool NeedOr = false;
         int pos = 0;

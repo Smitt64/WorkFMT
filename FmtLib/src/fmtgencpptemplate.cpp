@@ -68,6 +68,8 @@ QByteArray FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
     stream << Qt::endl;
     createOpenFunc(pTable, stream);
     stream << Qt::endl;
+    createInitFunc(pTable, stream);
+    stream << Qt::endl;
 
     if (prm.fGenSkf)
     {
@@ -262,7 +264,9 @@ void FmtGenCppTemplate::createOpenFunc(const FmtSharedTablePtr &pTable, QTextStr
     if (pTable->indecesCount())
         szKeyStruct = QString("sizeof(%2)").arg(block->m_UnionName);
 
-    QString openName = QString("int iOpen%1 (int OpenMode)").arg(block->m_StructName);
+    QString openName = QString("int iOpen%1(int OpenMode)").arg(block->m_StructName);
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\biOpen%1\\b").arg(block->m_StructName)), FormatFunction});
+
     WriteTableComment(pTable, stream);
     stream << openName << Qt::endl;
     stream << "{" << Qt::endl;
@@ -273,6 +277,44 @@ void FmtGenCppTemplate::createOpenFunc(const FmtSharedTablePtr &pTable, QTextStr
     stream << "}";
 
     AppendFunctionDeclExtern(block, openName);
+    stream  << Qt::endl;
+}
+
+void FmtGenCppTemplate::createInitFunc(const FmtSharedTablePtr &pTable, QTextStream &stream)
+{
+    GenCppTemplateBlock *block = getTemplateBlock(pTable);
+    if (!block)
+        return;
+
+    QString initName = QString("void Init%1(%1 *RecBuf)").arg(block->m_StructName);
+
+    stream << initName << Qt::endl;
+    stream << "{" << Qt::endl;
+    stream << tab << QString("memset(RecBuf, 0, sizeof(%1));").arg(block->m_StructName) << Qt::endl;
+
+    bool isFirst = true;
+    for (int i = 0; i < pTable->fieldsCount(); i++)
+    {
+        FmtField *fld = pTable->field(i);
+        QString zeroConstant = fmtZeroConstant(fld->type());
+
+        if (!zeroConstant.isEmpty())
+        {
+            if (isFirst)
+            {
+                stream  << Qt::endl;
+                isFirst = false;
+            }
+
+            stream << tab << QString("RecBuf->%1 = %2;")
+                      .arg(fld->undecorateName())
+                      .arg(zeroConstant)
+                   << Qt::endl;
+        }
+    }
+    stream << "}";
+
+    AppendFunctionDeclExtern(block, initName);
     stream  << Qt::endl;
 }
 
@@ -461,6 +503,10 @@ void FmtGenCppTemplate::createSkfKfFunctions(FmtIndex *pIndex, QTextStream &stre
     GenCppTemplateBlock *block = getTemplateBlock(pIndex->table());
     if (!block)
         return;
+
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\bKF_%1_%2\\b")
+                                   .arg(block->m_StructName)
+                                   .arg(pIndex->indexNumber())), FormatFunction});
 
     stream << QString("static int KF_%1_%2(BTRVFILE *bf)")
               .arg(block->m_StructName).arg(pIndex->indexNumber()) << Qt::endl;

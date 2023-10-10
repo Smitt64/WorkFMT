@@ -7,27 +7,10 @@
 #include <QFile>
 #include <QScrollBar>
 #include <QTextBrowser>
-
-class AboutTextBrowser : public QTextBrowser
-{
-public:
-    AboutTextBrowser(QWidget *parent = nullptr) :
-        QTextBrowser(parent)
-    {
-
-    }
-
-    virtual QVariant loadResource(int type, const QUrl &name) Q_DECL_OVERRIDE
-    {
-        if (type == QTextDocument::ImageResource)
-        {
-            QPixmap pix(name.toString());
-            return pix;
-        }
-
-        return QTextBrowser::loadResource(type, name);
-    }
-};
+#include <QDomDocument>
+#include <QTemporaryFile>
+#include <QWebEngineView>
+#include "loggingcategories.h"
 
 AboutDlg::AboutDlg(QWidget *parent) :
     QDialog(parent),
@@ -45,22 +28,19 @@ AboutDlg::AboutDlg(QWidget *parent) :
                                                 << tr("Установлен/Обновлен"));
 
     QHBoxLayout *pLayout = new QHBoxLayout(ui->tab);
-    m_pTextBrowser = new AboutTextBrowser(this);
-    m_pTextBrowser->setSource(QUrl("qrc:/about.html"));
-    //ui->tabWidget->insertTab(0, m_pTextBrowser, tr("История изменений"));
+    pLayout->setMargin(0);
+    qInfo(logCore()) << "Creating QWebEngineView";
+    m_WebView = new QWebEngineView(ui->tab);
+    qInfo(logCore()) << "QWebEngineView creation finish";
 
     ui->tab->setLayout(pLayout);
-    ui->tab->layout()->addWidget(m_pTextBrowser);
+    ui->tab->layout()->addWidget(m_WebView);
+    ui->labelBased->setText(tr("<b>Версия Qt: </b>%1").arg(QT_VERSION_STR));
 
-    ui->labelBased->setText(tr("Основан на Qt %1").arg(QT_VERSION_STR));
-    //ui->textBrowser->setSource(QUrl("qrc:/about.html"));
     ui->tabWidget->setCurrentIndex(0);
     ui->componentsView->setModel(pComponentsModel);
-    ui->componentsView->header()->resizeSection(0, 150);
-    ui->componentsView->header()->resizeSection(1, 150);
-
-    QScrollBar *sb = m_pTextBrowser->verticalScrollBar();
-    sb->setValue(sb->maximum());
+    ui->componentsView->header()->resizeSection(0, 200);
+    ui->componentsView->header()->resizeSection(1, 250);
 
     QString appTitle = ui->applicationTitle->text();
 #ifdef _DEBUG
@@ -71,6 +51,11 @@ AboutDlg::AboutDlg(QWidget *parent) :
 
     PutVersion();
     ReadComponents();
+    ReadVersionsTitles();
+
+    RenderHtmlForProject("Work Fmt");
+
+    connect(m_WebView, SIGNAL(urlChanged(QUrl)), this, SLOT(urlChanged(QUrl)));
 }
 
 AboutDlg::~AboutDlg()
@@ -80,7 +65,7 @@ AboutDlg::~AboutDlg()
 
 void AboutDlg::PutVersion()
 {
-    ui->labelVersion->setText(tr("Версия: %1").arg(GetVersionNumberString()));
+    ui->labelVersion->setText(tr("<b>Версия: </b>%1").arg(GetVersionNumberString()));
 }
 
 void AboutDlg::ReadComponentPackage(QDomElement *Elem)
@@ -181,4 +166,106 @@ void AboutDlg::ReadComponents()
             ui->tabWidget->removeTab(1);
 #endif
     }
+}
+
+void AboutDlg::ReadVersionsTitles()
+{
+    QDir current = QDir::current();
+    current.cd("changelog");
+
+    qInfo(logCore()) << "Scan changelog folder...";
+    for (auto fi : current.entryInfoList(QStringList() << "com.rs.fmt*.xml"))
+    {
+        QDomDocument doc(fi.absoluteFilePath());
+        QString body = ReadTextFileContent(fi.absoluteFilePath());
+        doc.setContent(body);
+
+        QDomElement docElem = doc.documentElement();
+        m_Projects.insert(docElem.attribute("project"), fi);
+
+        qInfo(logCore()) << QString("Found project [%1] version information").arg(docElem.attribute("project"));
+    }
+}
+
+void AboutDlg::RenderHtmlForProject(const QString &project)
+{
+    if (project.isEmpty() || !m_Projects.contains(project))
+        return;
+
+    qInfo(logCore()) << "Begin create chanhelog html for project" << project;
+    QString projects;
+    QString body_template = ReadTextFileContent(":/about/index_template.html");
+    QString version_template = ReadTextFileContent(":/about/index_template.html");
+
+    QString add_template = ReadTextFileContent(":/about/add_template.html");
+    QString fix_template = ReadTextFileContent(":/about/fixed_template.html");
+
+    QMapIterator<QString,QFileInfo> iter(m_Projects);
+    while(iter.hasNext())
+    {
+        iter.next();
+
+        if (project == iter.key())
+            projects += QString("<li><a class=\"active\" href=\"#%1\">%1</a></li>").arg(iter.key());
+        else
+            projects += QString("<li><a href=\"#%1\">%1</a></li>").arg(iter.key());
+    }
+
+    body_template = body_template.replace("{%projects%}", projects);
+    body_template = body_template.replace("{%Project%}", project);
+
+    QDomDocument doc;
+    QString body = ReadTextFileContent(m_Projects[project].absoluteFilePath());
+    doc.setContent(body);
+
+    QString version;
+    QDomElement docElem = doc.documentElement();
+    QDomNode n = docElem.firstChild();
+    while(!n.isNull())
+    {
+        QDomElement e = n.toElement();
+        version += QString("<h2 class=\"hs-docs-heading\"><code>v%1</code></h2>").arg(e.attribute("ver"));
+
+        QDomNode fix = e.firstChild();
+        while(!fix.isNull())
+        {
+            QDomElement efix = fix.toElement();
+
+            if (efix.tagName() == "fix")
+                version += fix_template.arg(efix.text());
+            else if (efix.tagName() == "add")
+                version += add_template.arg(efix.text());
+
+            fix = fix.nextSibling();
+        }
+
+        n = n.nextSibling();
+    }
+
+    QString content_divider = QString("<div class=\"content-divider\">%1</div>").arg(version);
+    body_template = body_template.replace("{%content_divider%}", content_divider);
+
+    QDir tmp = QDir::temp();
+    QFile tempfile(tmp.absoluteFilePath(QString("%1.html").arg(project)));
+    if (tempfile.open(QIODevice::WriteOnly))
+    {
+        QTextStream stream(&tempfile);
+        stream.setCodec("Utf-8");
+        stream << body_template.toUtf8();
+        tempfile.close();
+
+        m_WebView->load(tempfile.fileName());
+    }
+}
+
+void AboutDlg::urlChanged(const QUrl &url)
+{
+    QString fragment = url.fragment();
+
+    if (fragment.isEmpty())
+        return;
+
+    m_WebView->blockSignals(true);
+    RenderHtmlForProject(fragment);
+    m_WebView->blockSignals(false);
 }
