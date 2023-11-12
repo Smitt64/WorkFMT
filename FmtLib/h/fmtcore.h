@@ -10,6 +10,8 @@
 #include "fmtlib_global.h"
 #include <sstream>
 
+#define QRSD_DRIVER "qrsd"
+
 #define AutoIncType 15
 #define BTNS_OFFSET 25
 #define COLOR_GOLDEN_RATIO 0.618033988749895
@@ -146,9 +148,9 @@ FMTLIBSHARED_EXPORT void FmtInit();
 bool hasTemporaryFlag(const FmtNumber10 &flag);
 bool hasRecordFlag(const FmtNumber10 &flag);
 
-int ExecuteQuery(QSqlQuery *query, QString *err = Q_NULLPTR);
-int ExecuteQuery(const QString &query, QSqlDatabase db = QSqlDatabase(), QString *err = Q_NULLPTR);
-int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase db = QSqlDatabase());
+FMTLIBSHARED_EXPORT int ExecuteQuery(QSqlQuery *query, QString *err = Q_NULLPTR);
+FMTLIBSHARED_EXPORT int ExecuteQuery(const QString &query, QSqlDatabase db = QSqlDatabase(), QString *err = Q_NULLPTR);
+FMTLIBSHARED_EXPORT int ExecuteQueryFile(const QString &queryFileName, QSqlDatabase db = QSqlDatabase());
 
 QString ConfigOraFilePath();
 
@@ -188,10 +190,14 @@ FMTLIBSHARED_EXPORT int trn(QSqlDatabase &db, std::function<int(void)> func);
 
 QString DatasourceFromService(const QString &service);
 
-QString DbInitTextError(const qint16 &id);
-int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& arguments, bool waitForFinished = false, bool waitForStarted = false);
-QString ProcessExitStatusText(qint16 State);
-QString ProcessStateText(qint16 State);
+QString FMTLIBSHARED_EXPORT DbInitTextError(const qint16 &id);
+int FMTLIBSHARED_EXPORT CoreStartProcess(QProcess *exe, const QString &program,
+                     const QStringList& arguments,
+                     bool waitForFinished = false,
+                     bool waitForStarted = false,
+                     int timeout = 30000);
+QString FMTLIBSHARED_EXPORT ProcessExitStatusText(qint16 State);
+QString FMTLIBSHARED_EXPORT ProcessStateText(qint16 State);
 
 QString BlobTypeToString(int type);
 QString BoolToString(bool value);

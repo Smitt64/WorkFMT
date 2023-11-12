@@ -960,7 +960,7 @@ QString ProcessExitStatusText(qint16 State)
     return result;
 }
 
-int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& arguments, bool waitForFinished, bool waitForStarted)
+int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& arguments, bool waitForFinished, bool waitForStarted, int timeout)
 {
     int stat = 0;
     qCInfo(logCore()) << "Process: " << exe;
@@ -986,7 +986,7 @@ int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& a
 
     if (waitForFinished)
     {
-        exe->waitForFinished();
+        exe->waitForFinished(timeout);
 
         if (!stat)
         {
@@ -1072,7 +1072,7 @@ bool ParseConnectionString(const QString &connString, QString &user, QString &pa
 QString ReadTextFileContent(const QString &filename)
 {
     QString content;
-    QFile f(filename, qApp);
+    QFile f(filename);
     if (f.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         content = f.readAll();

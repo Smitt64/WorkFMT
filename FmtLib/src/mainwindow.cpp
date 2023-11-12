@@ -104,6 +104,23 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionCreate->setShortcut(QKeySequence(QKeySequence::New));
     ui->actionCreateFromText->setShortcut(QKeySequence(Qt::SHIFT + Qt::CTRL + Qt::Key_N));
 
+    QDir dir = QApplication::applicationDirPath();
+    if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
+        dir = QDir::current();
+
+    if (QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
+    {
+        QAction *actionDumpTool = new QAction(this);
+        actionDumpTool->setText(tr("Импорт/экспорт файла дампа"));
+        actionDumpTool->setIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
+        ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDumpTool);
+
+        connect(actionDumpTool, &QAction::triggered, [=]()
+        {
+            QProcess::execute(dir.absoluteFilePath("DumpTool.exe"), QStringList());
+        });
+    }
+
     m_ConnectionsGroup = new QActionGroup(this);
     pLogButton = new QPushButton(this);
     pLogButton->setToolTip(tr("Параметры трассы"));

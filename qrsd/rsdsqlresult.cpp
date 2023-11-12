@@ -12,11 +12,12 @@ RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
     m_Driver = dynamic_cast<RsdDriver*>(cdriver);
     m_Cmd.reset(new RsdCommandEx(m_Driver->connection(), m_Driver));
     //m_Cmd->setNullConversion(true);
+    m_Driver->addResult(this);
 }
 
 RsdSqlResult::~RsdSqlResult()
 {
-
+    m_Driver->removeResult(this);
 }
 
 QVariant RsdSqlResult::data(int index)
@@ -330,21 +331,34 @@ bool RsdSqlResult::checkSelect(const QString &sql) const
     return !hr;
 }
 
-void RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
+bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
 {
+    bool result = true;
+
     try
     {
         m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, RSDVAL_STATIC));
         m_RecSet->open();
+
         setSelect(true);
         if (m_RecSet->getCursorType() == RSDVAL_FORWARD_ONLY)
             setForwardOnly(true);
+    }
+    catch (XRsdError& e)
+    {
+        setLastRsdError(e, QSqlError::ConnectionError);
+        m_RecSet.reset();
+        setSelect(false);
+        result = false;
     }
     catch (...)
     {
         m_RecSet.reset();
         setSelect(false);
+        result = false;
     }
+
+    return result;
 }
 
 bool RsdSqlResult::exec()
@@ -377,7 +391,7 @@ bool RsdSqlResult::exec()
         setAt(QSql::BeforeFirstRow);
 
         if (checkSelect(m_QueryString))
-            makeRecordSetFromCmd(m_Cmd);
+            result = makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)
     {
@@ -564,4 +578,10 @@ QSqlRecord RsdSqlResult::record() const
 void RsdSqlResult::setQuery(const QString &query)
 {
     setCmdText(query);
+}
+
+void RsdSqlResult::onBeforeCloseConnection()
+{
+    m_RecSet.reset();
+    m_Cmd.reset();
 }

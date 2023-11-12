@@ -3,8 +3,9 @@
 
 #include <QStyledItemDelegate>
 #include <QObject>
+#include "fmtlib_global.h"
 
-class OdbcTableModelDelegate : public QStyledItemDelegate
+class FMTLIBSHARED_EXPORT OdbcTableModelDelegate : public QStyledItemDelegate
 {
 public:
     OdbcTableModelDelegate(QObject *parent = nullptr);

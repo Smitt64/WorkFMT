@@ -355,6 +355,7 @@ class ChangeLogComponent(RsComponentBase):
     def __init__(self):
         super(ChangeLogComponent, self).__init__()
 
+        today = date.today()
         self.DisplayName = 'ChangeLog'
         self.Description = 'История изменений'
         self.Name = 'com.rs.fmt.workfmt.changelog'
@@ -363,6 +364,7 @@ class ChangeLogComponent(RsComponentBase):
         self.Default = None
         self.Virtual = True
         self.Essential = True
+        self.ReleaseDate = today.strftime("%Y-%m-%d")
 
     def getVersion(self):
         return str(int(time.time()))
@@ -383,6 +385,38 @@ class ChangeLogComponent(RsComponentBase):
                 copyfile(filename, dstexefile)
             except Exception as e:
                 print('Fail: ' + str(e))
+
+class DumpToolComponent(InstallerPackageInfoBase):
+    def __init__(self):
+        today = date.today()
+        self.__filesToCopy = ['DumpTool/{}/DumpTool.exe',
+            'fmtdatapumpwrp/{}/fmtdatapumpwrp.exe']
+        
+        super(DumpToolComponent, self).__init__()
+
+        self.DisplayName = 'Dump Tool'
+        self.Description = 'Мастер импорта/экспорта файла дампа'
+        self.Name = 'com.rs.fmt.dumptool'
+        self.Dependencies = ['com.rs.fmt.workfmt']
+        self.ReleaseDate = today.strftime("%Y-%m-%d")
+
+    def makeData(self, datadir):
+        fmtdir = WorkFmtConfig.inst().getWorkFmtSourceDir()
+
+        for cpfiletemplate in self.__filesToCopy:
+            filetocopy = cpfiletemplate.format(WorkFmtConfig.inst().getBinaryType())
+            srcexefile = os.path.join(fmtdir, filetocopy)
+            dstexefile = os.path.join(self.DataPath, os.path.basename(filetocopy))
+            copyfile(srcexefile, dstexefile)
+
+    def getVersion(self):
+        releasedir = os.path.join(WorkFmtConfig.inst().getWorkFmtSourceDir(), self.__filesToCopy[0].format(WorkFmtConfig.inst().getBinaryType()))
+        try:
+            ver = getExeVersion(releasedir)
+            print(ver)
+            return ver
+        except:
+            return "Unknown version"
             
 class WorkFmtInstaller(InstallCreator):
     def __init__(self):
@@ -404,6 +438,7 @@ class WorkFmtInstaller(InstallCreator):
         self.__RsdDriver = RsdDriver()
         self.__RsdTools = RsTools()
         self.__ChangeLog = ChangeLogComponent()
+        self.__DumpTool = DumpToolComponent()
 
         self.addPage(self.__ChangeLog)
         self.addPage(self.__WorkFmtMainPackage)
@@ -411,4 +446,5 @@ class WorkFmtInstaller(InstallCreator):
         self.addPage(self.__QtPackage)
         self.addPage(self.__RsdDriver)
         self.addPage(self.__RsdTools)
+        self.addPage(self.__DumpTool)
         

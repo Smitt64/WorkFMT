@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/RefreshDocViewHS.png</file>
+        <file>opr/10g-recreateUser.sql</file>
+        <file>opr/CrUser_V6.cmd</file>
+        <file>opr/_import_DP.cmd</file>
+    </qresource>
+</RCC>

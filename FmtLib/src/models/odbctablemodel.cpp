@@ -1,6 +1,7 @@
 #include "odbctablemodel.h"
 #include "fmtcore.h"
 #include <QSettings>
+#include <QIcon>
 
 #define DRIVER_SQORA "SQORA"
 #define DRIVER_PSQL "psqlodbc"
@@ -8,8 +9,8 @@
 OdbcTableModel::OdbcTableModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
-    m_Oracle = QIcon(":/dblogo/Oracle.png");
-    m_PostgreSQL = QIcon(":/dblogo/PostgreSQL.png");
+    /*m_Oracle = QIcon(":/dblogo/Oracle.png");
+    m_PostgreSQL = QIcon(":/dblogo/PostgreSQL.png");*/
 
 #ifdef Q_OS_WIN
     loadDataSources64Node();
@@ -47,6 +48,22 @@ void OdbcTableModel::loadDataSourcesNode()
     loadDataSources(m_DataSources, &src);
 }
 
+void OdbcTableModel::FillHomePath(OdbcElement &element, const quint16 &node)
+{
+    QSettings::Format format = QSettings::Registry32Format;
+    QString pathMask = "HKEY_LOCAL_MACHINE\\SOFTWARE\\ORACLE\\KEY_%1";
+
+    if (node == Node64)
+    {
+        format = QSettings::Registry64Format;
+        pathMask = "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\ORACLE\\KEY_%1";
+    }
+
+    QString name = element._home.remove("Oracle in ");
+    QSettings src(pathMask.arg(name), format);
+    element._homeDir = src.value("ORACLE_HOME").toString();
+}
+
 void OdbcTableModel::loadOdbcElements(ODBCDataSources &dataSources, QSettings *src, const quint16 &node)
 {
     QStringList childGroups = src->childGroups();
@@ -60,7 +77,10 @@ void OdbcTableModel::loadOdbcElements(ODBCDataSources &dataSources, QSettings *s
 
         bool hr = readElement(src, key, element, dataSources);
         if (hr)
+        {
+            FillHomePath(element, node);
             m_List.append(element);
+        }
     }
 }
 
@@ -116,8 +136,20 @@ const OdbcElement &OdbcTableModel::element(const QModelIndex &index) const
     return m_List[index.row()];
 }
 
+QModelIndex OdbcTableModel::indexOfService(const QString &key) const
+{
+    for (int i = 0; i < m_List.size(); i++)
+    {
+        if (m_List[i]._name == key)
+            return createIndex(i, 0);
+    }
+    return QModelIndex();
+}
+
 QVariant OdbcTableModel::data(const QModelIndex &index, int role) const
 {
+    OdbcTableModel *pThis = const_cast<OdbcTableModel*>(this);
+
     if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
         const OdbcElement &element = m_List[index.row()];
@@ -125,15 +157,30 @@ QVariant OdbcTableModel::data(const QModelIndex &index, int role) const
             return element._name;
         else if (index.column() == fld_Home)
             return element._home;
+        else if (index.column() == fld_OraHome)
+            return element._homeDir;
     }
     else if (role == Qt::DecorationRole)
     {
         const OdbcElement &element = m_List[index.row()];
-
+/*
+ * m_Oracle = QIcon(":/dblogo/Oracle.png");
+    m_PostgreSQL = QIcon(":/dblogo/PostgreSQL.png");
+ * */
         if (element._db == DataBaseType::Oracle)
-            return m_Oracle;
+        {
+            if (!pThis->m_Oracle)
+                pThis->m_Oracle.reset(new QIcon(":/dblogo/Oracle.png"));
+
+            return *pThis->m_Oracle.data();
+        }
         else
-            return m_PostgreSQL;
+        {
+            if (!m_PostgreSQL)
+                pThis->m_PostgreSQL.reset(new QIcon(":/dblogo/PostgreSQL.png"));
+
+            return *pThis->m_PostgreSQL.data();
+        }
     }
     return QVariant();
 }

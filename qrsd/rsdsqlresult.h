@@ -48,6 +48,9 @@ public:
     static QVariant rsCharToVariantQChar(CRsdField &fld);
     static QVariant rsNumericToVariant(CRsdField &fld);
 
+protected:
+    void onBeforeCloseConnection();
+
 private:
     bool setCmdText(const QString &sql);
 
@@ -62,7 +65,7 @@ private:
     bool checkCall(const QString &sql) const;
     bool checkCreate(const QString &sql) const;
     bool checkDrop(const QString &sql) const;
-    void makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd);
+    bool makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd);
 
     QVariant GetValueFromField(const CRsdField &cfld);
     QSqlField MakeField(const CRsdField &fld, const bool &isnull);

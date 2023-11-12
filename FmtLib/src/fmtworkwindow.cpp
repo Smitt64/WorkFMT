@@ -280,7 +280,7 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     setupFind();
 
     ConnectionInfo *info = pTable->connection();
-    dcolor = info->color().darker();
+    dcolor = QColor(info->color()).darker();
     color = info->color();
 
 #ifndef QT_DEBUG

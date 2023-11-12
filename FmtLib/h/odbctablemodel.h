@@ -1,18 +1,19 @@
 #ifndef ODBCTABLEMODEL_H
 #define ODBCTABLEMODEL_H
 
-#include <QIcon>
 #include <QAbstractTableModel>
+#include "fmtlib_global.h"
 
 typedef struct tagOdbcElement
 {
-    QString _name, _Description, _home, _Driver;
+    QString _name, _Description, _home, _Driver, _homeDir;
     quint8 _node, _db;
 }OdbcElement;
 
+class QIcon;
 class QSettings;
 typedef QVector<OdbcElement> OdbcElementVector;
-class OdbcTableModel : public QAbstractTableModel
+class FMTLIBSHARED_EXPORT OdbcTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 
@@ -31,6 +32,7 @@ public:
     {
         fld_Name,
         fld_Home,
+        fld_OraHome,
 
         fld_Max
     };
@@ -43,9 +45,11 @@ public:
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_FINAL;
 
     const OdbcElement &element(const QModelIndex &index) const;
+    QModelIndex indexOfService(const QString &key) const;
 
 private:
 #ifdef Q_OS_WIN
+    void FillHomePath(OdbcElement &element, const quint16 &node);
     void loadDataSources(ODBCDataSources &dataSources, QSettings *src);
     void loadOdbcElements(ODBCDataSources &dataSources, QSettings *src, const quint16 &node);
     bool readElement(QSettings *node, const QString &key, OdbcElement &element, const ODBCDataSources &dataSources);
@@ -59,7 +63,7 @@ private:
     ODBCDataSources m_DataSources64, m_DataSources;
 #endif
 
-    QIcon m_Oracle, m_PostgreSQL;
+    QScopedPointer<QIcon> m_Oracle, m_PostgreSQL;
     OdbcElementVector m_List;
 };
 

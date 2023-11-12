@@ -112,5 +112,8 @@
         <file alias="about/index_template.html">res/about/index_template.html</file>
         <file alias="about/add_template.html">res/about/add_template.html</file>
         <file alias="about/fixed_template.html">res/about/fixed_template.html</file>
+        <file alias="img/filecabinet.png">res/img/filecabinet.png</file>
+        <file alias="img/dpplg.dll_I0095_0409.ico">res/img/dpplg.dll_I0095_0409.ico</file>
+        <file alias="img/VCProject.dll_I000d_0409.ico">res/img/VCProject.dll_I000d_0409.ico</file>
     </qresource>
 </RCC>

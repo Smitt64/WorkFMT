@@ -1,0 +1,7 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<changelog project="DumpTool">
+    <version ver="1.0.0.0">
+        <add>Реализован импорт из  файла дампа;</add>
+        <add>Реализован экспорт в файл дампа;</add>
+    </version>
+</changelog>

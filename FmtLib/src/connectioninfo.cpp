@@ -27,6 +27,7 @@ ConnectionInfo::~ConnectionInfo()
 {
     qDeleteAll(pModels);
     pModels.clear();
+    close();
 }
 
 FmtTablesModel *ConnectionInfo::tablesModel()
@@ -57,9 +58,9 @@ QSqlDriver *ConnectionInfo::driver()
     return _db.driver();
 }
 
-QColor ConnectionInfo::color()
+QString ConnectionInfo::color()
 {
-    return m_Color;
+    return m_Color.name();
 }
 
 QString ConnectionInfo::typeName() const
@@ -183,6 +184,12 @@ bool ConnectionInfo::isSqlite()
     return false;
 }
 
+void ConnectionInfo::close()
+{
+    if (_db.isOpen())
+        _db.close();
+}
+
 bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn, QString *error)
 {
     bool hr = false;
@@ -194,6 +201,7 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
     _db.setUserName(user);
     _db.setPassword(password);
     _db.setDatabaseName(dsn);
+
     hr = _db.open();
 
     if (hr)
@@ -225,6 +233,7 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
         if (error)
             *error = err;
     }
+
     return hr;
 }
 

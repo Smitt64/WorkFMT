@@ -156,7 +156,8 @@ SOURCES += \
     src/massop/destribcreate/massdestribcreate.cpp \
     src/massop/destribcreate/massdestribparamspage.cpp \
     src/massop/destribcreate/massdestribparammodel.cpp \
-    src/massop/destribcreate/massdestribitemparamdelegate.cpp
+    src/massop/destribcreate/massdestribitemparamdelegate.cpp \
+    src/tnsnames.cpp
 
 unix {
     target.path = /usr/lib
@@ -330,7 +331,8 @@ HEADERS += \
     h/datfile.h \
     h/odbctablemodel.h \
     h/odbctablemodeldelegate.h \
-    h/recentconnectionlist.h
+    h/recentconnectionlist.h \
+    h/tnsnames.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin

@@ -8,6 +8,7 @@
 #include <RsdC.h>
 #include <BaseErrorSetter.hpp>
 
+class RsdSqlResult;
 class RsdDriver Q_DECL_FINAL: public QSqlDriver, public BaseErrorSetter<RsdDriver>
 {
     Q_OBJECT
@@ -37,10 +38,15 @@ public:
 
     QTextCodec *getCodec866();
 
+    void addResult(RsdSqlResult *result);
+    void removeResult(RsdSqlResult *result);
+
 private:
     QTextCodec *codec866, *codec1251;
     QScopedPointer<CRsdEnvironment> m_Env;
     QScopedPointer<CRsdConnection> m_Connection;
+
+    QList<RsdSqlResult*> m_ResultsList;
 };
 
 bdate qDateToRsDate(const QDate &qdate);

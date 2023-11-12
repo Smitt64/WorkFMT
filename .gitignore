@@ -114,3 +114,13 @@ tables.dat
 fmtopt.ini
 
 FmtLib/src/highlighter.cpp.CjCaXl
+
+DumpTool/build/
+
+DumpTool/debug/
+
+DumpTool/release/
+
+fmtdatapumpwrp/build/
+
+fmtdatapumpwrp/debug/

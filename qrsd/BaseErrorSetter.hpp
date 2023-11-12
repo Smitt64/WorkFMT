@@ -19,10 +19,17 @@ public:
     {
         XRsdError &cError = const_cast<XRsdError&>(e);
         CRsdEnvironment *env = const_cast<CRsdEnvironment*>(cError.getEnv());
-        int errcount = env->getErrorCount();
+
+        if (!env)
+        {
+            m_Ptr->setLastError(QSqlError(e.what(), QString(), errorType));
+
+            return;
+        }
 
         QString err;
         QTextStream stream(&err);
+        int errcount = env->getErrorCount();
         for (int i = 0; i < errcount; i++)
         {
             const CRsdError &error = env->getError(i);

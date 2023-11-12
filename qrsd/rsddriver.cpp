@@ -16,7 +16,7 @@ RsdDriver::RsdDriver(QObject *parent) :
 
 RsdDriver::~RsdDriver()
 {
-
+    m_ResultsList.clear();
 }
 
 void RsdDriver::close()
@@ -24,7 +24,12 @@ void RsdDriver::close()
     try
     {
         if (m_Connection)
+        {
+            for (auto item : m_ResultsList)
+                item->onBeforeCloseConnection();
+
             m_Connection->close();
+        }
     }
     catch (XRsdError& e)
     {
@@ -195,6 +200,16 @@ CRsdConnection *RsdDriver::connection()
 QTextCodec *RsdDriver::getCodec866()
 {
     return codec866;
+}
+
+void RsdDriver::addResult(RsdSqlResult *result)
+{
+    m_ResultsList.append(result);
+}
+
+void RsdDriver::removeResult(RsdSqlResult *result)
+{
+    m_ResultsList.removeOne(result);
 }
 
 bdate qDateToRsDate(const QDate &qdate)

@@ -8,8 +8,6 @@
 #include <QIcon>
 #include "fmtlib_global.h"
 
-#define QRSD_DRIVER "qrsd"
-
 class FmtTablesModel;
 class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
 {
@@ -58,7 +56,7 @@ public:
     QString dsn() const { return m_DSN; }
 
     QIcon colorIcon(const QSize &size = QSize(32, 32));
-    QColor color();
+    QString color();
 
     void updateFmtList();
 
@@ -69,6 +67,7 @@ public:
     bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn, QString *error = nullptr);
     bool openSqlite(const QString &filename);
     bool openSqlteMemory();
+    void close();
 
     FmtTablesModel *addModel();
     FmtTablesModel *getModel(const int &index);

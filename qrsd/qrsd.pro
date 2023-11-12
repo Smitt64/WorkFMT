@@ -1,3 +1,4 @@
+QT -= gui
 QT += sql
 #sql-private
 
@@ -36,7 +37,7 @@ DISTFILES += qrsd.json
 
 DISTFILES += \
     res/qrsd.rc
-RC_FILE = res/qrsd.rc
+#RC_FILE = res/qrsd.rc
 
 #_MBCS
 INCLUDEPATH += $$PWD/rsd/include $$PWD/tools/h
