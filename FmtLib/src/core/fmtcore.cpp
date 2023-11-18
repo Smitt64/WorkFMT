@@ -117,6 +117,7 @@ typedef QMap<QString, int> fmtTypesMap;
 
 //Q_GLOBAL_STATIC(FmtTypesMapType, FmtTypesMap);
 static FmtTypesMapType FmtTypesMap;
+static QStringList FmtTypesNames;
 static fmtTypesMap fmtTypesStrMap, indexTypesStrMap;
 
 #define AddFmtTypesMap(constant) fmtTypesStrMap.insert(#constant, constant)
@@ -213,6 +214,7 @@ void FmtInit()
                 itemInfo._rsdConst = element["rsdConst"].toString();
                 itemInfo._zeroConstant = element["zeroConstant"].toString();
 
+                FmtTypesNames.push_back(display);
                 FmtTypesMap.insert(display, itemInfo);
             }
         }
@@ -334,22 +336,22 @@ quint32 fmtTypeIndexForId(const quint32 &id)
 
 FmtFldIndex fmtIndexForType(const FmtFldType &id)
 {
-    QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
+   /*QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
 
     int indx = -1;
     while(iterator.hasNext())
     {
-        indx ++;
         iterator.next();
         FmtTypeInfo info = iterator.value();
         if (info._type == id)
         {
-            indx = FmtTypesList.indexOf(iterator.key());
+            indx = FmtTypesNames.indexOf(iterator.key());
             break;
         }
     }
 
-    return static_cast<FmtFldIndex>(indx);
+    return static_cast<FmtFldIndex>(indx);*/
+    return id;
 }
 
 QString fmtTypeNameForType(const FmtFldType &type)

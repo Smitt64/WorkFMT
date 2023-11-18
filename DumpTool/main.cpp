@@ -4,10 +4,10 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QTranslator>
+#include <QMessageBox>
 
 int main(int argc, char *argv[])
 {
-    QTranslator qt_translator;
     QApplication a(argc, argv);
 
     QDir current(QDir::current());
@@ -23,7 +23,10 @@ int main(int argc, char *argv[])
     QDir trDir(QApplication::applicationDirPath());
     if (!trDir.cd("translations"))
         trDir = QDir::current();
+    else
+        trDir = QApplication::applicationDirPath();
 
+    QTranslator qt_translator;
     if (trDir.cd("translations"))
     {
         QString translatorFile = QString("qt_%1").arg("ru");
@@ -32,11 +35,9 @@ int main(int argc, char *argv[])
             //qCInfo(logCore()) << "Translator installed: " << translatorFile;
             QApplication::installTranslator(&qt_translator);
         }
-        /*else
-            qCWarning(logCore()) << "Error loading translator " << translatorFile;*/
+        else
+            QMessageBox::critical(nullptr, "Ошибка!", QString("Не удалось загрузить перевод %1").arg(translatorFile));
     }
-    /*else
-        qCWarning(logCore()) << "Can't find translations folder";*/
 
     DumpToolWizard wizard;
     wizard.show();
