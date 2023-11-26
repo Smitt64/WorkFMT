@@ -39,8 +39,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,5,2
- PRODUCTVERSION 1,0,5,2
+ FILEVERSION 1,0,5,3
+ PRODUCTVERSION 1,0,5,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -56,13 +56,13 @@ BEGIN
         BLOCK "041904b0"
         BEGIN
             VALUE "CompanyName", "CompanyName"
-            VALUE "FileDescription", "WorkFMT 1.0.5.2"
-            VALUE "FileVersion", "1.0.5.2"
+            VALUE "FileDescription", "WorkFMT 1.0.5.3"
+            VALUE "FileVersion", "1.0.5.3"
             VALUE "InternalName", "winfmt.rc"
             VALUE "LegalCopyright", "Copyright (C) 2017"
             VALUE "OriginalFilename", "winfmt.rc"
             VALUE "ProductName", "WorkFMT"
-            VALUE "ProductVersion", "1.0.5.2"
+            VALUE "ProductVersion", "1.0.5.3"
         END
     END
     BLOCK "VarFileInfo"

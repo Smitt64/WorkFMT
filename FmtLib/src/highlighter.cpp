@@ -269,6 +269,9 @@ void HighlighterStyle::loadStyles()
 {
     QDir syntaxhighlighter = QDir::currentPath();
 
+    if (!syntaxhighlighter.cd("syntaxhighlighter"))
+        syntaxhighlighter = QDir(qApp->applicationDirPath());
+
     if (syntaxhighlighter.cd("syntaxhighlighter"))
     {
         QFileInfoList lst = syntaxhighlighter.entryInfoList(QStringList() << "*.json");

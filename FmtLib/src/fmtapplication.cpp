@@ -42,7 +42,10 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     QDir current(QDir::current());
     QApplication::setApplicationName("WorkFMT");
     QApplication::setApplicationVersion(GetVersionNumberString());
-    pSettings = new QSettings("fmtopt.ini", QSettings::IniFormat, this);
+
+    QDir settingsDir = QDir(qApp->applicationDirPath());
+    pSettings = new QSettings(settingsDir.absoluteFilePath("fmtopt.ini"), QSettings::IniFormat, this);
+
     addLibraryPath(QFileInfo(QCoreApplication::applicationFilePath()).path());
     addLibraryPath(current.absolutePath());
     addLibraryPath(current.absoluteFilePath("platforms"));
@@ -71,6 +74,9 @@ void FmtApplication::init()
 {
     pTnsModel = new OracleTnsListModel(this);
     FmtInit();
+
+    qCInfo(logCore()) << "Application path: " << qApp->applicationDirPath();
+    qCInfo(logCore()) << "Current path: " << QDir::current().path();
 
     QDir trDir(applicationDirPath());
     if (trDir.cd("translations"))

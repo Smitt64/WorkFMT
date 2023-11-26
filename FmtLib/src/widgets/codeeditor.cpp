@@ -5,6 +5,7 @@
 #include <QRegExp>
 #include <QFontMetrics>
 #include "highlighter.h"
+#include "loggingcategories.h"
 
 #define COMPLETER_START_LEN 2
 

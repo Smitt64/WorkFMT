@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     parser.addOption(rsreqOption);
     parser.addOption(logOption);
     parser.addOption(logruleOption);
-    qDebug() << a.arguments();
+
     parser.process(a.arguments());
 
     MainWindow *w = (MainWindow*)a.addMainWindow();

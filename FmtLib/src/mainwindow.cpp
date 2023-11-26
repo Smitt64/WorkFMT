@@ -117,7 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
         connect(actionDumpTool, &QAction::triggered, [=]()
         {
-            QProcess::execute(dir.absoluteFilePath("DumpTool.exe"), QStringList());
+            QProcess::startDetached(dir.absoluteFilePath("DumpTool.exe"), QStringList());
         });
     }
 
