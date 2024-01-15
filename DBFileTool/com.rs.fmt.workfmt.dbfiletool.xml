@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="DB file tool">
+    <version ver="1.0.0.13">
+        <add>Поддержка нового инструмента</add>
+    </version>
     <version ver="1.0.0.12">
         <fix>Исправлена ошибка выгрузки/загрузки .dat файлов если на компьюторе отсутствует коннектор 11й версии</fix>
     </version>
