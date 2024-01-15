@@ -33,8 +33,26 @@ QDataStream &operator >>(QDataStream &in, tagRecentList &rhs)
     return in;
 }
 
+QDataStream &operator <<(QDataStream &out, const tagRecentList2 &rhs)
+{
+    const tagRecentList &ref = static_cast<const tagRecentList&>(rhs);
+    out << ref;
+    out << rhs.Options;
+    return out;
+}
+
+QDataStream &operator >>(QDataStream &in, tagRecentList2 &rhs)
+{
+    tagRecentList &ref = static_cast<tagRecentList&>(rhs);
+    in >> ref;
+    in >> rhs.Options;
+    return in;
+}
+
 // ==============================================================================
-const char newFormatMagic[] = "FMTRL1";
+const char newFormatMagic [] = "FMTRL1";
+const char newFormatMagic2[] = "FMTRL2";
+
 RecentConnectionList::RecentConnectionList(QObject *parent)
     : QAbstractTableModel{parent}
 {
@@ -64,13 +82,13 @@ bool RecentConnectionList::save()
 
     if (hr)
     {
-        file.write(newFormatMagic, sizeof(newFormatMagic));
+        file.write(newFormatMagic2, sizeof(newFormatMagic2));
         QDataStream stream(&file);
 
         qint16 size = static_cast<qint16>(m_List.size());
         stream << size;
 
-        for (const RecentList &listitem : qAsConst(m_List))
+        for (const RecentList2 &listitem : qAsConst(m_List))
             stream << listitem;
 
         file.close();
@@ -101,6 +119,25 @@ bool RecentConnectionList::load()
             for (int i = 0; i < size; i++)
             {
                 RecentList rec;
+                RecentList2 rec2;
+
+                stream >> rec;
+                rec2.user = rec.user;
+                rec2.pass = rec.pass;
+                rec2.dsn = rec.dsn;
+                rec2.lastConnect = rec.lastConnect;
+                rec2.connectionType = rec.connectionType;
+                m_List.append(rec2);
+            }
+        }
+        else if (!memcmp(magic, newFormatMagic2, sizeof(newFormatMagic2)))
+        {
+            qint16 size = 0;
+            stream >> size;
+
+            for (int i = 0; i < size; i++)
+            {
+                RecentList2 rec;
                 stream >> rec;
                 m_List.append(rec);
             }
@@ -116,7 +153,7 @@ bool RecentConnectionList::load()
 
             for (const auto &item : qAsConst(recent))
             {
-                RecentList rec;
+                RecentList2 rec;
                 rec.dsn = item.dsn;
                 rec.user = item.user;
                 rec.pass = item.pass;
@@ -164,19 +201,20 @@ bool RecentConnectionList::contains(const QString &user, const QString &dsn) con
     return iter != m_List.end();
 }
 
-void RecentConnectionList::append(const QString &user, const QString &pass, const QString &dsn)
+void RecentConnectionList::append(const QString &user, const QString &pass, const QString &dsn, const quint16 &type, const OptionsMap &Options)
 {
     beginResetModel();
     RecentListType::iterator iter = find(user, dsn);
 
     if (iter == m_List.end())
     {
-        RecentList rec;
+        RecentList2 rec;
         rec.dsn = dsn;
         rec.user = user;
         rec.pass = pass;
-        rec.connectionType = Oracle;
+        rec.connectionType = type;
         rec.lastConnect = QDateTime::currentDateTime();
+        rec.Options = Options;
 
         m_List.append(rec);
     }
@@ -302,13 +340,13 @@ bool RecentConnectionList::removeRows(int row, int count, const QModelIndex &par
     return true;
 }
 
-RecentList RecentConnectionList::record(const int &item) const
+RecentList2 RecentConnectionList::record(const int &item) const
 {
     Q_ASSERT_X(item >= 0 && item < m_List.size(), "RecentConnectionList::record", "Invalid item index");
     return m_List[item];
 }
 
-RecentList RecentConnectionList::record(const QModelIndex &item) const
+RecentList2 RecentConnectionList::record(const QModelIndex &item) const
 {
     return record(item.row());
 }

@@ -12,6 +12,8 @@ public:
     explicit FmtFieldsTableView(QWidget *parent = NULL);
     virtual ~FmtFieldsTableView();
 
+    void setButtonsVisible(bool value);
+
 protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual bool eventFilter(QObject *obj, QEvent *ev);
@@ -29,7 +31,7 @@ private:
     FmtFildsModel *pFields;
 
     QPen penDeleteMark, penInsertMark;
-    bool m_fDrawDeleteMark, m_fDrawInsertMark;
+    bool m_fDrawDeleteMark, m_fDrawInsertMark, m_fButtonsEnabled;
     void MoveButton();
 };
 

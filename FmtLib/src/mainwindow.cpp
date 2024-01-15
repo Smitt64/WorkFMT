@@ -27,6 +27,7 @@
 #include "selectfolderdlg.h"
 #include "recentconnectionlist.h"
 #include "highlighter.h"
+#include "debugconnect.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -285,7 +286,69 @@ void MainWindow::subWindowIndexChanged(const QModelIndex &index)
 
 void MainWindow::UpdateActions()
 {
-    //ConnectionInfo *cur = currentConnection();
+    ConnectionInfo *cur = currentConnection();
+
+    if (!cur)
+        return;
+
+    if (cur->hasFeature(ConnectionInfo::CanCreateTable))
+    {
+        actionEdit->setText(tr("Редактировать"));
+        actionDeleteTable->setEnabled(true);
+        ui->actionCreate->setEnabled(true);
+        ui->actionRebuildOffset->setEnabled(true);
+        ui->actionCreateFromText->setEnabled(true);
+        ui->actionInit->setEnabled(true);
+
+        ui->actionCopyTable->setEnabled(true);
+        ui->actionCopyTableAs->setEnabled(true);
+        ui->actionCopyTableTmp->setEnabled(true);
+
+        ui->actionMassOp->setEnabled(true);
+        ui->actionCreateXml->setEnabled(true);
+    }
+    else
+    {
+        actionEdit->setText(tr("Просмотр"));
+        actionDeleteTable->setEnabled(false);
+        ui->actionCreate->setEnabled(false);
+        ui->actionRebuildOffset->setEnabled(false);
+        ui->actionCreateFromText->setEnabled(false);
+        ui->actionInit->setEnabled(false);
+
+        ui->actionCopyTable->setEnabled(false);
+        ui->actionCopyTableAs->setEnabled(false);
+        ui->actionCopyTableTmp->setEnabled(false);
+
+        ui->actionMassOp->setEnabled(false);
+        ui->actionCreateXml->setEnabled(false);
+    }
+
+    if (cur->hasFeature(ConnectionInfo::CanSaveToXml))
+    {
+        actionExport->setEnabled(true);
+        ui->actionImpExpPrm->setEnabled(true);
+        ui->actionImportDir->setEnabled(true);
+        ui->actionImport->setEnabled(true);
+    }
+    else
+    {
+        actionExport->setEnabled(false);
+        ui->actionImpExpPrm->setEnabled(false);
+        ui->actionImportDir->setEnabled(false);
+        ui->actionImport->setEnabled(false);
+    }
+
+    if (cur->hasFeature(ConnectionInfo::CanLoadUnloadDbf))
+    {
+        ui->actionUnloadDbf->setEnabled(true);
+        ui->actionLoadDbf->setEnabled(true);
+    }
+    else
+    {
+        ui->actionUnloadDbf->setEnabled(false);
+        ui->actionLoadDbf->setEnabled(false);
+    }
 }
 
 void MainWindow::ImpExpSettings()
@@ -393,7 +456,7 @@ void MainWindow::OpenConnection(const QString &connectionString)
     {
         ConnectionInfo *info = new ConnectionInfo();
 
-        if (OracleAuthDlg::tryConnect(info, user, pswd, dsn, this))
+        if (OracleAuthDlg::tryConnect(info, user, pswd, dsn, QString(), this))
         {
             CreateConnectionActio(info);
             info->updateFmtList();
@@ -433,6 +496,8 @@ QAction *MainWindow::CreateConnectionActio(ConnectionInfo *info)
     m_pConnections.append(info);
     //pTablesDock->setModel(info->tablesModel());
     pTablesDock->setConnection(info);
+
+    UpdateActions();
 
     return a;
 }
@@ -568,6 +633,8 @@ void MainWindow::conActionTriggered(QAction *action)
 {
     ConnectionInfo *info = reinterpret_cast<ConnectionInfo*>(action->data().toInt());
     pTablesDock->setConnection(info);
+
+    UpdateActions();
 }
 
 void MainWindow::actionCreate()
@@ -902,10 +969,11 @@ void MainWindow::OpenRecentConnection()
 
     if (action)
     {
-        RecentList item = qvariant_cast<RecentList>(action->data());
+        RecentList2 item = qvariant_cast<RecentList2>(action->data());
 
         ConnectionInfo *info = new ConnectionInfo();
-        if (OracleAuthDlg::tryConnect(info, item.user, item.pass, item.dsn, this))
+        QString options = OracleAuthDlg::OptionsMapToOptions(item.Options);
+        if (OracleAuthDlg::tryConnect(info, item.user, item.pass, item.dsn, options, this))
         {
             CreateConnectionActio(info);
             info->updateFmtList();
@@ -1450,3 +1518,10 @@ void MainWindow::HighlighterTheme()
 
     wnd->show();
 }*/
+
+void MainWindow::on_actionDebug_triggered()
+{
+    DebugConnect dlg(this);
+    dlg.exec();
+}
+

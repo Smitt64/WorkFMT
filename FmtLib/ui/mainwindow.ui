@@ -53,6 +53,10 @@
     <addaction name="action_FMT_sqlite"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="actionDebug"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuService">
@@ -442,6 +446,14 @@
    </property>
    <property name="text">
     <string>Тема подсветки синтаксиса</string>
+   </property>
+  </action>
+  <action name="actionDebug">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Настроить отлаку на схеме</string>
    </property>
   </action>
  </widget>

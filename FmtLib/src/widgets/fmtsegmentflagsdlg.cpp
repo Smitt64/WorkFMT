@@ -43,6 +43,21 @@ FmtSegmentFlagsDlg::~FmtSegmentFlagsDlg()
     delete ui;
 }
 
+void FmtSegmentFlagsDlg::setReadOnly(bool value)
+{
+    ui->checkDuplicates->setEnabled(!value);
+    ui->checkAlternate->setEnabled(!value);
+    ui->checkModifiable->setEnabled(!value);
+    ui->checkDescending->setEnabled(!value);
+    ui->checkBinary->setEnabled(!value);
+    ui->checkSupplement->setEnabled(!value);
+    ui->checkNullVal->setEnabled(!value);
+    ui->checkExtended->setEnabled(!value);
+    ui->checkSegment->setEnabled(!value);
+    ui->checkManual->setEnabled(!value);
+    ui->checkLocal->setEnabled(!value);
+}
+
 void FmtSegmentFlagsDlg::UpdateFlagValue()
 {
     QList<QCheckBox*> widgetList = ui->checkContainer->findChildren<QCheckBox*>();

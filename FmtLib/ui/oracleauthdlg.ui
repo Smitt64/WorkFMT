@@ -94,6 +94,13 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="checkUnicode">
+              <property name="text">
+               <string>Юникод база данных</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>

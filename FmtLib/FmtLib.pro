@@ -33,6 +33,7 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    src/debugconnect.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
@@ -165,6 +166,7 @@ unix {
 }
 
 FORMS += \
+    src/debugconnect.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
     src/widgets/fmtsegmentflagsdlg.ui \
@@ -288,6 +290,7 @@ HEADERS += \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
     h/maintenancetool.h \
+    src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
     src/widgets/editcontent/fmteditcontentdialog.h \

@@ -20,6 +20,7 @@ public:
 
     void setModel(FmtFildsModel *model);
     void setCurrentIndex(const int &index);
+    void setReadOnly(bool value);
 
 private slots:
     void currentIndexChanged(const int &index);

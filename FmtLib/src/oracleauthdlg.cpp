@@ -65,14 +65,26 @@ bool OracleAuthDlg::authirizate()
 
     pTmpInfo = new ConnectionInfo();
 
+    OptionsMap options;
     QString user = ui->lineEdit_username->text();
     QString pass = ui->lineEdit_passw->text();
     QString dsn = ui->comboBox_Dsn->currentText();
+    QString optionStr;
 
-    hr = tryConnect(pTmpInfo, user, pass, dsn, this);
+    if (ui->checkUnicode->isChecked())
+    {
+        options["RSD_UNICODE"] = true;
+        optionStr += "RSD_UNICODE";
+    }
+
+    hr = tryConnect(pTmpInfo, user, pass, dsn, optionStr, this);
 
     if (hr)
-        m_pRecentList->append(user, pass, dsn);
+    {
+        QModelIndex current = m_DataSources->indexOfService(dsn);
+        const OdbcElement &element = m_DataSources->element(current);
+        m_pRecentList->append(user, pass, dsn, element._db, options);
+    }
     else
     {
         delete pTmpInfo;
@@ -82,10 +94,28 @@ bool OracleAuthDlg::authirizate()
     return hr;
 }
 
+QString OracleAuthDlg::OptionsMapToOptions(const QMap<QString, QVariant> &map)
+{
+    QString str;
+
+    QMapIterator<QString, QVariant> iter(map);
+
+    while (iter.hasNext())
+    {
+        iter.next();
+
+        if (iter.key() == "RSD_UNICODE" && iter.value().toBool())
+            str.append("RSD_UNICODE");
+    }
+
+    return str;
+}
+
 bool OracleAuthDlg::tryConnect(ConnectionInfo *pTmpInfo,
                            const QString &user,
                            const QString &pass,
                            const QString &dsn,
+                           const QString &options,
                            QWidget *parent)
 {
     bool hr = true;
@@ -111,7 +141,7 @@ bool OracleAuthDlg::tryConnect(ConnectionInfo *pTmpInfo,
 
     if (hr)
     {
-        hr = pTmpInfo->open(QRSD_DRIVER, user, pass, dsn);
+        hr = pTmpInfo->open(QRSD_DRIVER, user, pass, dsn, options);
 
         if (!hr)
         {
@@ -160,11 +190,19 @@ void OracleAuthDlg::acceptClicked()
 
 void OracleAuthDlg::on_connectionsTree_clicked(const QModelIndex &index)
 {
-    RecentList rec = m_pRecentList->record(index);
+    RecentList2 rec = m_pRecentList->record(index);
 
     ui->lineEdit_username->setText(rec.user);
     ui->lineEdit_passw->setText(rec.pass);
     ui->comboBox_Dsn->setCurrentText(rec.dsn);
+
+    if (rec.Options.contains("RSD_UNICODE"))
+    {
+        bool isUnicode = rec.Options["RSD_UNICODE"].toBool();
+        ui->checkUnicode->setChecked(isUnicode);
+    }
+    else
+        ui->checkUnicode->setChecked(false);
 }
 
 void OracleAuthDlg::on_connectionsTree_doubleClicked(const QModelIndex &index)
@@ -206,9 +244,9 @@ void OracleAuthDlg::on_delRecentButton_clicked()
     {
         m_pRecentList->removeRow(index.row());
 
-#ifndef _DEBUG
+//#ifndef _DEBUG
         SavePrefs();
-#endif
+//#endif
     }
 }
 

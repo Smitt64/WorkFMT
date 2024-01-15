@@ -11,7 +11,8 @@
 FmtFieldsTableView::FmtFieldsTableView(QWidget *parent) :
     QTableView(parent),
     m_fDrawDeleteMark(false),
-    m_fDrawInsertMark(false)
+    m_fDrawInsertMark(false),
+    m_fButtonsEnabled(true)
 {
     setEditTriggers(QAbstractItemView::AllEditTriggers);
     setMouseTracking(true);
@@ -92,23 +93,38 @@ void FmtFieldsTableView::MoveButton()
     pRemoveButton->move(viewport()->mapToParent(posRemove));
 }
 
+void FmtFieldsTableView::setButtonsVisible(bool value)
+{
+    pInsertButton->setVisible(value);
+    pRemoveButton->setVisible(value);
+
+    m_fButtonsEnabled = value;
+}
+
 void FmtFieldsTableView::mouseMoveEvent(QMouseEvent *event)
 {
     m_Point = event->pos();
-    MoveButton();
+
+    if (m_fButtonsEnabled)
+        MoveButton();
+
     QTableView::mouseMoveEvent(event);
 }
 
 void FmtFieldsTableView::InsertClicked()
 {
     model()->insertRow(m_Index);
-    MoveButton();
+
+    if (m_fButtonsEnabled)
+        MoveButton();
 }
 
 void FmtFieldsTableView::RemoveClicked()
 {
     model()->removeRow(m_Index);
-    MoveButton();
+
+    if (m_fButtonsEnabled)
+        MoveButton();
 }
 
 bool FmtFieldsTableView::eventFilter(QObject *obj, QEvent *e)

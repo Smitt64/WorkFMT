@@ -173,6 +173,18 @@ bool ConnectionInfo::isOracle()
     return oracleVersion.startsWith("Oracle Database", Qt::CaseInsensitive);
 }
 
+bool ConnectionInfo::isPostgre()
+{
+    QSqlQuery query(_db);
+    query.prepare("SELECT version()");
+
+    if (ExecuteQuery(&query) || !query.next())
+        return false;
+
+    QString oracleVersion = query.value(0).toString();
+    return oracleVersion.startsWith("PostgreSQL", Qt::CaseInsensitive);
+}
+
 bool ConnectionInfo::isSqlite()
 {
     QSqlQuery query(_db);
@@ -190,7 +202,7 @@ void ConnectionInfo::close()
         _db.close();
 }
 
-bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn, QString *error)
+bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn, const QString &options, QString *error)
 {
     bool hr = false;
     m_Alias = QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
@@ -201,6 +213,7 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
     _db.setUserName(user);
     _db.setPassword(password);
     _db.setDatabaseName(dsn);
+    _db.setConnectOptions(options);
 
     hr = _db.open();
 
@@ -213,6 +226,8 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
 
         if (isOracle())
             m_Type = CON_ORA;
+        else if (isPostgre())
+             m_Type = CON_POSTGRESQL;
         else if (isSqlite())
             m_Type = CON_SQLITE;
 
@@ -309,4 +324,12 @@ int ConnectionInfo::modelCount() const
 ConnectionInfo::operator int() const
 {
     return reinterpret_cast<qintptr>(this);
+}
+
+bool ConnectionInfo::hasFeature(ConnectionInfo::ConnectionFeature feature) const
+{
+    if (m_Type == CON_ORA)
+        return true;
+
+    return false;
 }

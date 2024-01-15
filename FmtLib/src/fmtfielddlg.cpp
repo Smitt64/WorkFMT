@@ -49,6 +49,21 @@ void FmtFieldDlg::setCurrentIndex(const int &index)
     mapper->setCurrentIndex(index);
 }
 
+void FmtFieldDlg::setReadOnly(bool value)
+{
+    ui->idEdit->setReadOnly(value);
+    ui->fmtIdEdit->setReadOnly(value);
+    ui->nameEdit->setReadOnly(value);
+    ui->sizeBox->setReadOnly(value);
+    ui->offsetBox->setReadOnly(value);
+    ui->outlenBox->setReadOnly(value);
+    ui->decpointBox->setReadOnly(value);
+    ui->commentEdit->setReadOnly(value);
+    ui->ishiddenBox->setEnabled(!value);
+
+    ui->typeCombo->setEnabled(!value);
+}
+
 void FmtFieldDlg::currentIndexChanged(const int &index)
 {
     if (index == mapper->model()->rowCount() - 1)

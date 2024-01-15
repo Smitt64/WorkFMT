@@ -1,7 +1,11 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
-	<version ver="1.0.5.2">
-        <fix>Исправлено падение при попытке открыть таблицу, если запускать из Far'а, через команду: "start C:\Users\Evdokimov\WorkFmt\WorkFMT.exe --cs "CONNSTRING = dsn=THOR_DB12DEV1;user ..." ;</fix>
+    <version ver="1.0.5.4">
+        <add>Доработки, связанные с подключением к базе данных PostgreSQL;</add>
+        <add>Добавлена поддержка подключения к Unicode базам (RDDrvOu.dll);</add>
+    </version>
+	<version ver="1.0.5.3">
+        <fix>Исправлено падение при попытке открыть таблицу, если запускать из командной строки, через команду: "start C:\Users\...\WorkFmt\WorkFMT.exe --cs "CONNSTRING = dsn=THOR_DB12DEV1;user ..." ;</fix>
 		<fix>Теперь файлы с параметрами приложения и списком сохраненных подключений загружаются из каталога с приложением, а не из текущего;</fix>
     </version>
 	<version ver="1.0.5.2">

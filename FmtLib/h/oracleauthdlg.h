@@ -31,7 +31,9 @@ public:
                            const QString &user,
                            const QString &pass,
                            const QString &dsn,
+                           const QString &options,
                            QWidget *parent);
+    static QString OptionsMapToOptions(const QMap<QString, QVariant> &map);
 private:
     Ui::OracleAuthDlg *ui;
 

@@ -29,6 +29,7 @@ void FmtTablesModel::updateFmtList()
         QString str = "%" + m_FilterString + "%";
         pQuery->prepare("select /*+ FIRST_ROWS */ * from FMT_NAMES WHERE lower(T_NAME) LIKE ? ORDER BY T_NAME ASC");
         pQuery->bindValue(0, str.toLower());
+        //pQuery->prepare("select /*+ FIRST_ROWS */ * from FMT_NAMES ORDER BY T_NAME ASC");
         ExecuteQuery(pQuery);
     }
     else

@@ -5,13 +5,13 @@
 
 RsdDriver::RsdDriver(QObject *parent) :
     QSqlDriver(parent),
-    BaseErrorSetter<RsdDriver>(this)
+    BaseErrorSetter<RsdDriver>(this),
+    m_RDDrvO("RDDrvO"),
+    m_RDDrvODll("RDDrvO.dll")
 {
     qputenv("NLS_LANG", "AMERICAN_CIS.RU8PC866");
     codec866 = QTextCodec::codecForName("IBM 866");
     codec1251 = QTextCodec::codecForName("Windows-1251");
-    m_Env.reset(new CRsdEnvironment("RDDrvO", "RDDrvO.dll"));
-    m_Env->setClientEncoding(RSDENC_OEM);
 }
 
 RsdDriver::~RsdDriver()
@@ -25,7 +25,7 @@ void RsdDriver::close()
     {
         if (m_Connection)
         {
-            for (auto item : m_ResultsList)
+            for (auto item : qAsConst(m_ResultsList))
                 item->onBeforeCloseConnection();
 
             m_Connection->close();
@@ -82,6 +82,16 @@ bool RsdDriver::open(const QString &db, const QString &user, const QString &pass
 
     try
     {
+        if (options.contains("RSD_UNICODE"))
+        {
+            m_RDDrvO = "RDDrvOu";
+            m_RDDrvODll = QString("%1.dll").arg(m_RDDrvO);
+        }
+
+        m_Env.reset(new CRsdEnvironment(m_RDDrvO.toLocal8Bit().data(),
+                                        m_RDDrvODll.toLocal8Bit().data()));
+        m_Env->setClientEncoding(RSDENC_OEM);
+
         QByteArray db866 = codec866->fromUnicode(db);
         QByteArray user866 = codec866->fromUnicode(user);
         QByteArray password866 = codec866->fromUnicode(password);

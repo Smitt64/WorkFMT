@@ -13,6 +13,8 @@ public:
     FmtIndexTreeView(QWidget *parent = NULL);
     void setFmtTable(FmtTable *table);
 
+    void setButtonsVisible(bool value);
+
 protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
 
@@ -26,6 +28,7 @@ private:
     FmtTable *pFmtTable;
     QPushButton *pRemoveButton, *pInsertButton;
     FmtIndecesDelegate *pIndecesDelegate;
+    bool m_fButtonsEnabled;
 
     QModelIndex m_Index;
 };

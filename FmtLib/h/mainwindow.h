@@ -79,6 +79,8 @@ private slots:
     void UpdateCheckStarted();
     void HighlighterTheme();
 
+    void on_actionDebug_triggered();
+
 protected:
     virtual void closeEvent(QCloseEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);

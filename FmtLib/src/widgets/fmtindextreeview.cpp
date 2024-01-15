@@ -4,7 +4,8 @@
 
 FmtIndexTreeView::FmtIndexTreeView(QWidget *parent)
     :QTreeView(parent),
-      pFmtTable(Q_NULLPTR)
+      pFmtTable(Q_NULLPTR),
+      m_fButtonsEnabled(true)
 {
     setItemsExpandable(false);
     setRootIsDecorated(false);
@@ -61,11 +62,22 @@ void FmtIndexTreeView::MoveButton()
     m_Index = indexAt(RemovePos);
 }
 
+void FmtIndexTreeView::setButtonsVisible(bool value)
+{
+    pRemoveButton->setVisible(value);
+    pInsertButton->setVisible(value);
+
+    m_fButtonsEnabled = value;
+}
+
 void FmtIndexTreeView::mouseMoveEvent(QMouseEvent *event)
 {
     m_Point = event->pos();
     pIndecesDelegate->setPoint(m_Point);
-    MoveButton();
+
+    if (m_fButtonsEnabled)
+        MoveButton();
+
     QTreeView::mouseMoveEvent(event);
 }
 
@@ -78,13 +90,19 @@ void FmtIndexTreeView::setFmtTable(FmtTable *table)
 void FmtIndexTreeView::RemoveButton()
 {
     model()->removeRow(m_Index.row(), m_Index.parent());
-    MoveButton();
+
+    if (m_fButtonsEnabled)
+        MoveButton();
+
     expandAll();
 }
 
 void FmtIndexTreeView::InsertButton()
 {
     model()->insertRow(m_Index.row(), m_Index);
-    MoveButton();
+
+    if (m_fButtonsEnabled)
+        MoveButton();
+
     expandAll();
 }

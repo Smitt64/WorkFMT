@@ -20,10 +20,16 @@ typedef struct tagRecentList : RecentListOld
     quint16 connectionType;
 }RecentList;
 
+typedef struct tagRecentList2 : tagRecentList
+{
+    QMap<QString, QVariant> Options;
+}RecentList2;
+
+typedef QMap<QString, QVariant> OptionsMap;
 class RecentConnectionList : public QAbstractTableModel
 {
     Q_OBJECT
-    typedef QList<RecentList> RecentListType;
+    typedef QList<RecentList2> RecentListType;
 public:
     enum ConnectionType
     {
@@ -37,7 +43,7 @@ public:
     bool load();
     bool save();
     bool isEmpty() const;
-    void append(const QString &user, const QString &pass, const QString &dsn);
+    void append(const QString &user, const QString &pass, const QString &dsn, const quint16 &type, const OptionsMap &Options);
     void setConnectionType(const QString &user, const QString &dsn, const quint16 &type);
 
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_FINAL;
@@ -53,8 +59,8 @@ public:
     static QString connectionName(const RecentList &rec);
     static QString connectionToolTip(const RecentList &rec);
 
-    RecentList record(const QModelIndex &item) const;
-    RecentList record(const int &item) const;
+    RecentList2 record(const QModelIndex &item) const;
+    RecentList2 record(const int &item) const;
 
 private:
     void sortPrivate();
@@ -69,5 +75,6 @@ private:
 
 Q_DECLARE_METATYPE(RecentListOld)
 Q_DECLARE_METATYPE(RecentList)
+Q_DECLARE_METATYPE(RecentList2)
 
 #endif // RECENTCONNECTIONLIST_H

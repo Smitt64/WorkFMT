@@ -43,7 +43,7 @@ void SelServerDirDlg::on_toolButton_clicked()
     QScopedPointer<ConnectionInfo> connection(new ConnectionInfo());
 
     QString error;
-    if (connection->open(QRSD_DRIVER, ui->lineEdit->text(), ui->lineEdit_2->text(), ui->comboBox->currentText(), &error))
+    if (connection->open(QRSD_DRIVER, ui->lineEdit->text(), ui->lineEdit_2->text(), ui->comboBox->currentText(), "", &error))
     {
         ui->comboBox_2->clear();
         QSqlQuery query("select directory_name, directory_path from dba_directories where directory_name in ('EXPDP_DIR1', 'IMPDP_DIR1')", connection->db());

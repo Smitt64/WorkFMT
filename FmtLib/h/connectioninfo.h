@@ -24,6 +24,14 @@ public:
         CON_POSTGRESQL,
         CON_SQLITE
     };
+
+    enum ConnectionFeature
+    {
+        NoFeature = 0,
+        CanCreateTable = 1,
+        CanSaveToXml,
+        CanLoadUnloadDbf
+    };
     /**
      * @brief ConnectionInfo
      * @param dbalias
@@ -34,6 +42,8 @@ public:
     FmtTablesModel *tablesModel();
     QSqlDatabase &db();
     QSqlDriver *driver();
+
+    bool hasFeature(ConnectionInfo::ConnectionFeature feature) const;
 
     /**
      * @brief Устанавливает имя схемы
@@ -64,7 +74,8 @@ public:
     int type() const;
     QString typeName() const;
 
-    bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn, QString *error = nullptr);
+    bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn,
+              const QString &options = QString(), QString *error = nullptr);
     bool openSqlite(const QString &filename);
     bool openSqlteMemory();
     void close();
@@ -81,6 +92,7 @@ public:
 protected:
     bool isOracle();
     bool isSqlite();
+    bool isPostgre();
     QString m_Alias, m_SchemeName, m_Host, m_Service, m_User, m_Password, m_DSN;
     qint32 m_Port;
     QSqlDatabase _db;

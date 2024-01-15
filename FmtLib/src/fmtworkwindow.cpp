@@ -283,13 +283,52 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     dcolor = QColor(info->color()).darker();
     color = info->color();
 
-#ifndef QT_DEBUG
+/*#ifndef QT_DEBUG
     if (info->type() != ConnectionInfo::CON_ORA)
     {
         ui->pushButton->setEnabled(false);
         m_saveToXml->setEnabled(false);
     }
-#endif
+#endif*/
+
+    if (!info->hasFeature(ConnectionInfo::CanCreateTable))
+    {
+        pTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        pTableView->setButtonsVisible(false);
+
+        pTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        pTreeView->setButtonsVisible(false);
+
+        ui->buttonBox->setEnabled(false);
+        ui->nameEdit->setReadOnly(true);
+        ui->commentEdit->setReadOnly(true);
+
+        ui->autoCamelCase->setEnabled(false);
+        ui->isTemp->setEnabled(false);
+        ui->isRec->setEnabled(false);
+        ui->keyComboBox->setEnabled(false);
+        ui->blobLen->setEnabled(false);
+        ui->pushButton->setEnabled(false);
+
+        m_AddFieldsToEnd->setEnabled(false);
+        m_InsertFields->setEnabled(false);
+        m_CamelCaseAction->setEnabled(false);
+        m_PasteFields->setEnabled(false);
+        m_MassRemoveFields->setEnabled(false);
+        m_rebuildOffsets->setEnabled(false);
+
+        pAddIndex->setEnabled(false);
+        m_rebuildOffsets->setEnabled(false);
+    }
+
+    if (!info->hasFeature(ConnectionInfo::CanSaveToXml))
+        m_saveToXml->setEnabled(false);
+
+    if (!info->hasFeature(ConnectionInfo::CanLoadUnloadDbf))
+    {
+        m_unloadDbf->setEnabled(false);
+        m_loadDbf->setEnabled(false);
+    }
 
     ui->scriptButton->setEnabled(true);
 
@@ -466,11 +505,17 @@ void FmtWorkWindow::OnOk()
 
 void FmtWorkWindow::Clicked(const QModelIndex &index)
 {
+    ConnectionInfo *info = pTable->connection();
+
     if (index.column() == FmtFildsModel::fld_Custom && index.row() < pTable->fieldsCount())
     {
         FmtFieldDlg dlg(this);
         dlg.setModel(pTable->fieldsModel());
         dlg.setCurrentIndex(index.row());
+
+        if (!info->hasFeature(ConnectionInfo::CanCreateTable))
+            dlg.setReadOnly(true);
+
         dlg.exec();
     }
 }
@@ -850,10 +895,16 @@ void FmtWorkWindow::OnImport()
 
 void FmtWorkWindow::SegmentButtonClicked(const QModelIndex &index)
 {
+    ConnectionInfo *info = pTable->connection();
+
     if (index.parent().isValid() && index.column() == FmtIndecesModelItem::fld_Flag)
     {
         FmtSegment *pSegment = static_cast<FmtSegment*>(index.internalPointer());
         FmtSegmentFlagsDlg dlg(pSegment, this);
+
+        if (!info->hasFeature(ConnectionInfo::CanCreateTable))
+            dlg.setReadOnly(true);
+
         dlg.exec();
     }
 }

@@ -267,12 +267,27 @@ QSharedPointer<HighlighterStyle::StyleItem> HighlighterStyle::style(const QStrin
 
 void HighlighterStyle::loadStyles()
 {
+    bool hr = true;
     QDir syntaxhighlighter = QDir::currentPath();
 
+    qInfo(logCore()) << "Try detect syntaxhighlighter folder";
     if (!syntaxhighlighter.cd("syntaxhighlighter"))
+    {
+        qWarning(logCore()) << QString("Working directory %1: false").arg(syntaxhighlighter.path());
         syntaxhighlighter = QDir(qApp->applicationDirPath());
 
-    if (syntaxhighlighter.cd("syntaxhighlighter"))
+        if (!syntaxhighlighter.cd("syntaxhighlighter"))
+        {
+            hr = false;
+            qWarning(logCore()) << QString("Application directory %1: false").arg(syntaxhighlighter.path());
+        }
+        else
+            qInfo(logCore()) << QString("Syntaxhighlighter folder: %1").arg(syntaxhighlighter.path());
+    }
+    else
+        qInfo(logCore()) << QString("Syntaxhighlighter folder: %1").arg(syntaxhighlighter.path());
+
+    if (hr)
     {
         QFileInfoList lst = syntaxhighlighter.entryInfoList(QStringList() << "*.json");
 
@@ -281,11 +296,14 @@ void HighlighterStyle::loadStyles()
             QString name = fi.baseName();
 
             try {
+                qInfo(logCore()) << "Try load highlighter style:" << name;
+
                 QSharedPointer<StyleItem> item(new StyleItem());
                 item->load(fi.absoluteFilePath());
                 m_Styles.insert(name, item);
 
                 m_Themes.append(name);
+                qInfo(logCore()) << "Highlighter style successfully loaded";
             }  catch (QJsonParseError e) {
                 qWarning(logCore()) << QString("Can't load highlighter style [%1]: %2")
                                        .arg(name, e.errorString());
@@ -295,6 +313,16 @@ void HighlighterStyle::loadStyles()
                                        .arg(name, e);
             }
         }
+    }
+    else
+    {
+        qWarning(logCore()) << QString("Syntaxhighlighter folder not found... Used default scheme...");
+
+        QSharedPointer<StyleItem> item(new StyleItem());
+        item->load("");
+        m_Styles.insert("Default", item);
+
+        m_Themes.append("Default");
     }
 }
 

@@ -42,7 +42,7 @@ void ImportOperation::run()
     QScopedPointer<ConnectionInfo> connection(new ConnectionInfo());
 
     QString error;
-    if (connection->open(QRSD_DRIVER, SystemName, SystemPass, Service, &error))
+    if (connection->open(QRSD_DRIVER, SystemName, SystemPass, Service, "", &error))
     {
         QSqlQuery query(connection->db());
         query.prepare("SELECT count(*) FROM ALL_USERS WHERE USERNAME=UPPER(:1)");

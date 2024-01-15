@@ -53,7 +53,12 @@ bool RsdSqlResult::setCmdText(const QString &sql)
     if (!m_Cmd)
         return false;
 
+    QSqlResult::BindingSyntax syntax = bindingSyntax();
     m_QueryString = QLatin1String(m_Driver->toOem866(sql));
+
+    if (syntax == QSqlResult::PositionalBinding)
+        m_QueryString = m_QueryString.replace(QRegExp("\\:\\w+"), "?");
+
     QSqlResult::setQuery(sql);
     return m_Cmd->setCmdText(m_QueryString.toLatin1().data());
 }
@@ -379,12 +384,16 @@ bool RsdSqlResult::exec()
             QSql::ParamType type = bindValueType(i);
 
             if (syntax == QSqlResult::NamedBinding)
-                m_Cmd->bindValue(boundValueName(i), value, type);
+            {
+                QString bindName = boundValueName(i).mid(1);
+                m_Cmd->bindValue(bindName, value, type);
+            }
             else
-                m_Cmd->bindValue(i, value, type);
+               m_Cmd->bindValue(i, value, type);
         }
 
         QSqlResult::setQuery(m_QueryString);
+        setCmdText(m_QueryString);
         m_Cmd->execute();
 
         setActive(true);
@@ -414,7 +423,11 @@ bool RsdSqlResult::prepare(const QString &query)
     {
         m_RecSet.reset();
         //m_QueryString = QLatin1String(m_Driver->toOem866(query));
+        QSqlResult::BindingSyntax syntax = bindingSyntax();
         m_QueryString = query;
+
+        if (syntax == QSqlResult::PositionalBinding)
+            m_QueryString = m_QueryString.replace(QRegExp("\\:\\w+"), "?");
 
         QString str = QLatin1String(m_Driver->toOem866(query));
         m_Cmd->setCmdText(str.toLatin1());

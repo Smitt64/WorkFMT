@@ -46,6 +46,7 @@ private:
     QScopedPointer<CRsdEnvironment> m_Env;
     QScopedPointer<CRsdConnection> m_Connection;
 
+    QString m_RDDrvO, m_RDDrvODll;
     QList<RsdSqlResult*> m_ResultsList;
 };
 

@@ -43,7 +43,7 @@ bool UserConnectionPage::validatePage()
     QScopedPointer<ConnectionInfo> connection(new ConnectionInfo());
 
     QString error;
-    if (connection->open(QRSD_DRIVER, ui->systemEdit->text(), ui->syspswdEdit->text(), ui->serviceBox->currentText(), &error))
+    if (connection->open(QRSD_DRIVER, ui->systemEdit->text(), ui->syspswdEdit->text(), ui->serviceBox->currentText(), "", &error))
     {
         QSqlQuery query("select directory_name, directory_path from dba_directories where directory_name in ('EXPDP_DIR1', 'IMPDP_DIR1')", connection->db());
 

@@ -16,6 +16,8 @@ public:
     explicit FmtSegmentFlagsDlg(FmtSegment *Segment, QWidget *parent = nullptr);
     ~FmtSegmentFlagsDlg();
 
+    void setReadOnly(bool value);
+
 private slots:
     void UpdateFlagValue();
     void ApplyFlags();
