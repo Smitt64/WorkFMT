@@ -7,9 +7,6 @@
 
 int main(int argc, char *argv[])
 {
-//    QApplication a(argc, argv);
-
-    //QScopedPointer<QCoreApplication> app1(new QApplication(argc, argv));
     FmtApplication app2(argc, argv);
 
     Task *pTask = new Task();
@@ -17,12 +14,4 @@ int main(int argc, char *argv[])
     QTimer::singleShot(0, pTask, SLOT(run()));
 
     return app2.exec();
-
-
-    //emit dp.finished();
-//    MainWindow w;
-//    w.show();
-
-    //return a.exec();
-    return 0;
 }

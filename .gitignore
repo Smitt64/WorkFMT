@@ -126,3 +126,7 @@ fmtdatapumpwrp/build/
 fmtdatapumpwrp/debug/
 
 fmtdatapumpwrp/release/
+
+DiffToScript/build/
+
+DiffToScript/debug/
