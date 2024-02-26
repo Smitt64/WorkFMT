@@ -319,7 +319,7 @@ void HighlighterStyle::loadStyles()
         qWarning(logCore()) << QString("Syntaxhighlighter folder not found... Used default scheme...");
 
         QSharedPointer<StyleItem> item(new StyleItem());
-        item->load("");
+        item->load(":/../syntaxhighlighter/Default.json");
         m_Styles.insert("Default", item);
 
         m_Themes.append("Default");
