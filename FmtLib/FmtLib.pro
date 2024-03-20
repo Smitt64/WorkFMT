@@ -37,7 +37,6 @@ SOURCES += \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
-    src/core/maintenancetool.cpp \
     src/core/recentconnectionlist.cpp \
     src/datfile.cpp \
     src/dbinitdlg.cpp \
@@ -289,7 +288,6 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
-    h/maintenancetool.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
@@ -340,3 +338,10 @@ HEADERS += \
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin
 INSTALLS += target
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../RsWorkTools/ToolsRuntime
+DEPENDPATH += $$PWD/../RsWorkTools/ToolsRuntime

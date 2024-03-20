@@ -2,9 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
-#include "errordlg.h"
 #include "fmtlib_global.h"
-#include "maintenancetool.h"
+#include "updatechecker.h"
 
 namespace Ui {
 class MainWindow;
@@ -125,8 +124,7 @@ private:
     QPushButton *pLogButton, *pUpdateButton;
 
     SubWindowsModel *pWindowsModel;
-    MaintenanceTool *pMaintenanceTool;
-    bool m_UpdatesChecked;
+    UpdateChecker *pUpdateChecker;
 };
 
 #endif // MAINWINDOW_H

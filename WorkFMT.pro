@@ -14,7 +14,9 @@ SUBDIRS += \
     FmtDbgHelp \
     FmtScript \
     FmtScriptTest \
-    fmtdatapumpwrp
+    fmtdatapumpwrp \
+    RsWorkTools/ToolsRuntime
+
 win32-msvc* {
 
 SUBDIRS += \
@@ -24,8 +26,8 @@ SUBDIRS += \
     FmtLib.depends = qrsd
     fmtdatapumpwrp.depends = qrsd
 }
-
-WorkFMT.depends = FmtLib
+FmtLib.depends = RsWorkTools/ToolsRuntime
+WorkFMT.depends = FmtLib RsWorkTools/ToolsRuntime
 FmtScript.depends = FmtLib
 FmtScriptTest.depends = FmtLib FmtScript
 DBFileTool.depends = FmtLib

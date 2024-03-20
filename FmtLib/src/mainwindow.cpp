@@ -15,6 +15,7 @@
 #include "aboutdlg.h"
 #include "tablesdockwidget.h"
 #include "exporttoxmlwizard.h"
+#include "errordlg.h"
 #include "tablesgroupprovider.h"
 #include "windowslistdlg.h"
 #include "tablesgroupsdlg.h"
@@ -28,6 +29,7 @@
 #include "recentconnectionlist.h"
 #include "highlighter.h"
 #include "debugconnect.h"
+#include "updatecheckermessagebox.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -36,6 +38,7 @@
 #include <QWhatsThis>
 #include <QWidgetAction>
 #include <QInputDialog>
+#include <QThreadPool>
 
 class SearchActionWidget : public QWidgetAction
 {
@@ -626,7 +629,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     s->setValue("Geometry", saveGeometry());
     s->setValue("State", saveState());
     event->accept();
-    pMaintenanceTool->requestInterruption();
 }
 
 void MainWindow::conActionTriggered(QAction *action)
@@ -1419,59 +1421,26 @@ void MainWindow::CreateFromXml()
 
 void MainWindow::CreateCheckUpdateRunnable()
 {
-    qRegisterMetaType<CheckUpdateData>();
-    qRegisterMetaType<CheckDataList>();
+    pUpdateChecker = new UpdateChecker();
+    pUpdateChecker->setProgramName("RsWorkMaintenanceTool.exe");
 
-    m_UpdatesChecked = false;
-    pMaintenanceTool = new MaintenanceTool();
-    connect(pMaintenanceTool, &MaintenanceTool::checkStarted, this, &MainWindow::UpdateCheckStarted);
-    connect(pMaintenanceTool, &MaintenanceTool::checkFinished, this, &MainWindow::UpdateCheckFinished);
-    QThreadPool::globalInstance()->start(pMaintenanceTool);
+    pUpdateChecker->setInterval(120000);
+    QThreadPool::globalInstance()->start(pUpdateChecker);
+
+    connect(pUpdateChecker, &UpdateChecker::checkFinished, this, &MainWindow::UpdateCheckFinished);
 }
 
 void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata)
 {
     if (!hasUpdates)
-    {
         pUpdateButton->setIcon(QIcon(":/img/base_globe_32.png"));
-        m_UpdatesChecked = false;
-    }
     else
     {
-        QPoint globalPoint = pUpdateButton->mapToGlobal(pUpdateButton->pos());
-        pUpdateButton->setIcon(QIcon(":/img/base_globe_has_update.png"));
-        pUpdateButton->setToolTip(tr("Доступны обновления"));
-
-        const QString hasUpdatesString = tr("Доступны обновления");
-        if (updatedata.empty())
-        {
-            if (!m_UpdatesChecked)
-            {
-                QWhatsThis::showText(globalPoint, hasUpdatesString + "...", this);
-                m_UpdatesChecked = true;
-            }
-        }
-        else
-        {
-            QString text;
-            QTextStream stream(&text);
-            stream << hasUpdatesString << ":" << Qt::endl;
-
-            for(const CheckUpdateData &item : updatedata)
-            {
-                stream << tr("Компонент \"%1\" (%2), новая версия %3, размером %4")
-                          .arg(item.name)
-                          .arg(item.id)
-                          .arg(item.version)
-                          .arg(item.sizeString) << Qt::endl;
-            }
-
-            if (!m_UpdatesChecked)
-            {
-                QWhatsThis::showText(globalPoint, text, this);
-                m_UpdatesChecked = true;
-            }
-        }
+        pUpdateChecker->setCheckUpdateFlag(false);
+        UpdateCheckerMessageBox dlg(this);
+        dlg.setList(updatedata);
+        dlg.exec();
+        pUpdateChecker->setCheckUpdateFlag(true);
     }
 }
 

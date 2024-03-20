@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.5.5">
+        <add>Проверка наличия обновлений;</add>
+    </version>
     <version ver="1.0.5.4">
         <add>Доработки, связанные с подключением к базе данных PostgreSQL;</add>
         <add>Добавлена поддержка подключения к Unicode базам (RDDrvOu.dll);</add>

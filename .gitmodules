@@ -1,0 +1,3 @@
+[submodule "RsWorkTools"]
+	path = RsWorkTools
+	url = https://github.com/Smitt64/RsWorkTools.git
