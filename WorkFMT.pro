@@ -6,6 +6,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    DiffToScript \
     DumpTool \
     FmtLib \
     HotfixCreator \
@@ -34,6 +35,7 @@ DBFileTool.depends = FmtLib
 HotfixCreator.depends = FmtLib
 fmtdatapumpwrp.depends += FmtLib
 DumpTool.depends = FmtLib fmtdatapumpwrp
+DiffToScript.depends += FmtLib
 
 RESOURCES += \
     FmtLib/ui/fmt.qrc
