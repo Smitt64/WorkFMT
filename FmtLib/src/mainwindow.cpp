@@ -950,7 +950,7 @@ void MainWindow::showWindowList()
 
 void MainWindow::about()
 {
-    AboutDlg dlg(this);
+    AboutDlg dlg(":/AboutDlg", this);
     dlg.exec();
 }
 
@@ -1462,22 +1462,6 @@ void MainWindow::HighlighterTheme()
 
     if (!theme.isEmpty())
         HighlighterStyle::inst()->setDefaultTheme(theme);
-
-    /*QDir cur = QDir::current();
-    QFile f(cur.absoluteFilePath("1fmt_fields.txt"));
-    f.open(QIODevice::WriteOnly);
-    QTextStream s(&f);
-    qDebug() << cur.absoluteFilePath("1fmt_fields.txt");
-
-    ConnectionInfo *current = currentConnection();
-    QSqlQuery q(current->db());
-    q.prepare("select distinct replace(t_name, 't_') from fmt_fields ");
-    q.exec();
-    while (q.next())
-    {
-        s << q.value(0).toString() << endl;
-    }
-    f.close();*/
 }
 
 /*void MainWindow::OnCreateQuery()

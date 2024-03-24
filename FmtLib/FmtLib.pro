@@ -83,7 +83,6 @@ SOURCES += \
     src/wizards/expresultpage.cpp \
     src/wizards/expsettingspage.cpp \
     src/wizards/fmtfromrichtext.cpp \
-    src/aboutdlg.cpp \
     src/fmt/fmtgeninterface.cpp \
     src/fmtgentablessql.cpp \
     src/fmtworkwndgen.cpp \
@@ -170,7 +169,6 @@ FORMS += \
     src/massop/destribcreate/massdestribprogress.ui \
     src/widgets/fmtsegmentflagsdlg.ui \
     src/widgets/selectfolderdlg.ui \
-    ui/aboutdlg.ui \
     ui/dbinitdlg.ui \
     ui/documentwindow.ui \
     ui/errordlg.ui \
@@ -246,7 +244,6 @@ HEADERS += \
     h/tablesselectwidget.h \
     h/treecombobox.h \
     h/windowslistdlg.h \
-    h/aboutdlg.h \
     h/resource.h \
     h/fmtgeninterface.h \
     h/fmtgentablessql.h \
