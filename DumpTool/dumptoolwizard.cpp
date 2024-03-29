@@ -5,8 +5,11 @@
 #include "summarypage.h"
 #include "actionlogpage.h"
 #include "expparampage.h"
+#include "exppgparampage.h"
+#include <QPushButton>
 
-DumpToolWizard::DumpToolWizard()
+DumpToolWizard::DumpToolWizard() :
+    QWizard()
 {
     m_ConnectionPage = new UserConnectionPage(this);
     m_SelectActionPage = new SelectActionPage(this);
@@ -14,6 +17,7 @@ DumpToolWizard::DumpToolWizard()
     m_pSummaryPage = new SummaryPage(this);
     m_pActionLogPage = new ActionLogPage(this);
     m_pExpParamPage = new ExpParamPage(this);
+    m_pExpPgParamPage = new ExpPgParamPage(this);
 
     addPage(m_SelectActionPage);
     addPage(m_ConnectionPage);
@@ -21,12 +25,16 @@ DumpToolWizard::DumpToolWizard()
     addPage(m_pSummaryPage);
     addPage(m_pActionLogPage);
     addPage(m_pExpParamPage);
+    addPage(m_pExpPgParamPage);
 
     setTitleFormat(Qt::RichText);
+    setOption(QWizard::HaveHelpButton);
     setWindowTitle(tr("Мастер импорта/экспорта файла дампа"));
     setMinimumSize(QSize(800, 600));
 
     setWindowIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
+
+    m_HelpButton = button(QWizard::HelpButton);
 }
 
 DumpToolWizard::~DumpToolWizard()

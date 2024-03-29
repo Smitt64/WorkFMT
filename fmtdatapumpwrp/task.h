@@ -4,7 +4,9 @@
 #include <QDir>
 #include <QObject>
 #include <QProcess>
+#include <QTemporaryDir>
 
+class QTemporaryDir;
 class Task : public QObject
 {
     Q_OBJECT
@@ -19,6 +21,10 @@ signals:
     void finished();
 
 private:
+    bool isOracle();
+    bool isPostgres();
+    bool SetupOra();
+    bool SetupPostgres();
     QString m_Service;
     QString m_SystemName;
     QString m_SystemPass;
@@ -33,6 +39,7 @@ private:
 
     QScopedPointer<QProcess> m_Process;
     QScopedPointer<QTimer> m_Timer;
+    QScopedPointer<QTemporaryDir> m_TempDir;
 };
 
 #endif // TASK_H

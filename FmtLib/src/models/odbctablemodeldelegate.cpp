@@ -1,6 +1,7 @@
 #include "odbctablemodeldelegate.h"
 #include "odbctablemodel.h"
 #include <QPainter>
+#include <QSortFilterProxyModel>
 
 OdbcTableModelDelegate::OdbcTableModelDelegate(QObject *parent)
     : QStyledItemDelegate{parent}
@@ -21,11 +22,22 @@ QSize OdbcTableModelDelegate::sizeHint(const QStyleOptionViewItem &option, const
 void OdbcTableModelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     const OdbcTableModel *model = qobject_cast<const OdbcTableModel*>(index.model());
+
+    if (!model)
+    {
+        const QSortFilterProxyModel *sortModel = qobject_cast<const QSortFilterProxyModel*>(index.model());
+
+        if (sortModel)
+            model = qobject_cast<const OdbcTableModel*>(sortModel->sourceModel());
+    }
     const OdbcElement &element = model->element(index);
 
     QStyledItemDelegate::paint(painter, option, index);
-    painter->save();
 
+    if (!model)
+        return;
+
+    painter->save();
     QFont font = option.font;
 
     int pixelSize = font.pointSize();

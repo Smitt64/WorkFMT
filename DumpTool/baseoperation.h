@@ -15,7 +15,7 @@ public:
     virtual ~BaseOperation();
 
     DumpToolWizard *wizzard();
-    void highlighter(BaseLogHighlighter **obj, QTextDocument *parent);
+    virtual void highlighter(BaseLogHighlighter **obj, QTextDocument *parent);
 
 Q_SIGNALS:
     void message(QString);

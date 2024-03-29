@@ -12,6 +12,7 @@ class ImpFileSelectPage;
 class SummaryPage;
 class ActionLogPage;
 class ExpParamPage;
+class ExpPgParamPage;
 class DumpToolWizard : public QWizard
 {
     Q_OBJECT
@@ -23,7 +24,8 @@ public:
         eImpFileSelectPage,
         eSummaryPage,
         eActionLogPage,
-        eExpParamPage
+        eExpParamPage,
+        eExpPgParamPage
     };
 
     DumpToolWizard();
@@ -41,6 +43,9 @@ private:
     SummaryPage *m_pSummaryPage;
     ActionLogPage *m_pActionLogPage;
     ExpParamPage *m_pExpParamPage;
+    ExpPgParamPage *m_pExpPgParamPage;
+
+    QAbstractButton *m_HelpButton;
 
     QMap<QString, QVariant> m_Fields;
 };

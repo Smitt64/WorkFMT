@@ -14,8 +14,10 @@ SelectActionPage::SelectActionPage(QWidget *parent) :
 
     fakeBtn = new QSpinBox();
     m_pGroup = new QButtonGroup(this);
-    m_pGroup->addButton(ui->radioButton, 0);
-    m_pGroup->addButton(ui->radioButton_2, 1);
+    m_pGroup->addButton(ui->oraImport, 0);
+    m_pGroup->addButton(ui->oraExport, 1);
+    m_pGroup->addButton(ui->pgImport, 2);
+    m_pGroup->addButton(ui->pgExport, 3);
 
     setTitle(tr("Выбор действия"));
     registerField("Action", fakeBtn, "value");
@@ -24,6 +26,8 @@ SelectActionPage::SelectActionPage(QWidget *parent) :
         if (checked)
             setField("Action", id);
     });
+
+    ui->oraImport->setChecked(true);
 }
 
 SelectActionPage::~SelectActionPage()
@@ -34,8 +38,12 @@ SelectActionPage::~SelectActionPage()
 
 int SelectActionPage::nextId() const
 {
-    if (field("Action").toInt() == ActionImport)
+    if (field("Action").toInt() == ActionImportOra)
         return DumpToolWizard::eConnectionPage;
+    if (field("Action").toInt() == ActionExportOra)
+        return DumpToolWizard::eExpParamPage;
+    if (field("Action").toInt() == ActionExportPg)
+        return DumpToolWizard::eExpPgParamPage;
 
-    return DumpToolWizard::eExpParamPage;
+    return -1;
 }

@@ -24,6 +24,7 @@ DumpToolWizard *BaseOperation::wizzard()
 void BaseOperation::highlighter(BaseLogHighlighter **obj, QTextDocument *parent)
 {
     *obj = new BaseLogHighlighter(parent);
+    (*obj)->initStdOraPatterns();
 }
 
 bool BaseOperation::UnpackFile(const QString &res, const QString &dst)

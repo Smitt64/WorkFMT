@@ -4,6 +4,7 @@
 #include "baseloghighlighter.h"
 #include "selectactionpage.h"
 #include "exportoperation.h"
+#include "pgexportoperation.h"
 #include <QThreadPool>
 #include <QPushButton>
 #include <QProgressDialog>
@@ -27,9 +28,9 @@ TextBrowser::~TextBrowser()
 
 void TextBrowser::appendHtml(const QString &msg)
 {
-    moveCursor(QTextCursor::End);
+    //moveCursor(QTextCursor::End);
     appendPlainText(msg);
-    moveCursor (QTextCursor::End);
+    //moveCursor (QTextCursor::End);
 }
 
 void TextBrowser::message(const QString &msg)
@@ -58,15 +59,12 @@ ActionLogPage::ActionLogPage(QWidget *parent) :
 {
     ui->setupUi(this);
     setTitle(tr("Выполнение операции"));
-
     m_TextBrowser.reset(new TextBrowser());
-    //m_TextBrowser->moveToThread(m_Thread.data());
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(m_TextBrowser.data());
 
     setLayout(layout);
-    //m_Thread.reset(new QThread());
     setFinalPage(true);
 }
 
@@ -127,10 +125,12 @@ void ActionLogPage::initializePage()
     m_IsFinished = false;
     BaseOperation *op = nullptr;
 
-    if (field("Action").toInt() == SelectActionPage::ActionImport)
+    if (field("Action").toInt() == SelectActionPage::ActionImportOra)
         op = new ImportOperation(qobject_cast<DumpToolWizard*>(wizard()));
-    else
+    else if (field("Action").toInt() == SelectActionPage::ActionExportOra)
         op = new ExportOperation(qobject_cast<DumpToolWizard*>(wizard()));
+    else if (field("Action").toInt() == SelectActionPage::ActionExportPg)
+        op = new PgExportOperation(qobject_cast<DumpToolWizard*>(wizard()));
 
     connect(op, &ImportOperation::finished, this, &ActionLogPage::finished);
     connect(op, &ImportOperation::message, m_TextBrowser.data(), &TextBrowser::message);

@@ -4,5 +4,6 @@
         <file>opr/10g-recreateUser.sql</file>
         <file>opr/CrUser_V6.cmd</file>
         <file>opr/_import_DP.cmd</file>
+        <file>res/pg_dump_keys.json</file>
     </qresource>
 </RCC>

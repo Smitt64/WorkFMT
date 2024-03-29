@@ -17,8 +17,10 @@ class SelectActionPage : public QWizardPage
 public:
     enum
     {
-        ActionImport = 0,
-        ActionExport
+        ActionImportOra = 0,
+        ActionExportOra,
+        ActionImportPg,
+        ActionExportPg
     }Action;
     explicit SelectActionPage(QWidget *parent = nullptr);
     ~SelectActionPage();

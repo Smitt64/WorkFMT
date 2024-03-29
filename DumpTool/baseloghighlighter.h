@@ -14,6 +14,9 @@ public:
 
     void addMarkItem(const QString &pattern);
     void addErrorItem(const QString &pattern);
+    void addRule(const QString &pattern, const QTextCharFormat &format);
+
+    void initStdOraPatterns();
 
 private:
     struct HighlightingRule

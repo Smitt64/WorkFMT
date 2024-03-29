@@ -13,11 +13,15 @@ SOURCES += \
     dumptoolwizard.cpp \
     exportoperation.cpp \
     expparampage.cpp \
+    exppgparampage.cpp \
     filelistdialog.cpp \
     impfileselectpage.cpp \
     importoperation.cpp \
     main.cpp \
+    pgexportaddprmdlg.cpp \
+    pgexportoperation.cpp \
     selectactionpage.cpp \
+    selectserverdlg.cpp \
     selserverdirdlg.cpp \
     summarypage.cpp \
     userconnectionpage.cpp
@@ -29,10 +33,14 @@ HEADERS += \
     dumptoolwizard.h \
     exportoperation.h \
     expparampage.h \
+    exppgparampage.h \
     filelistdialog.h \
     impfileselectpage.h \
     importoperation.h \
+    pgexportaddprmdlg.h \
+    pgexportoperation.h \
     selectactionpage.h \
+    selectserverdlg.h \
     selserverdirdlg.h \
     summarypage.h \
     userconnectionpage.h
@@ -57,12 +65,22 @@ INSTALLS += target
 FORMS += \
     actionlogpage.ui \
     expparampage.ui \
+    exppgparampage.ui \
     filelistdialog.ui \
     impfileselectpage.ui \
+    pgexportaddprmdlg.ui \
     selectactionpage.ui \
+    selectserverdlg.ui \
     selserverdirdlg.ui \
     summarypage.ui \
     userconnectionpage.ui
 
 RESOURCES += \
     res.qrc
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../RsWorkTools/ToolsRuntime
+DEPENDPATH += $$PWD/../RsWorkTools/ToolsRuntime

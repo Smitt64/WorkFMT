@@ -3,10 +3,24 @@
 BaseLogHighlighter::BaseLogHighlighter(QTextDocument *parent) :
     QSyntaxHighlighter(parent)
 {
-    HighlightingRule rule;
-
     succeededFormat.setForeground(Qt::darkGreen);
     succeededFormat.setFontWeight(QFont::Bold);
+
+    markFormat.setForeground(Qt::black);
+    markFormat.setFontWeight(QFont::Bold);
+
+    errorFormat.setForeground(Qt::darkRed);
+    errorFormat.setFontWeight(QFont::Bold);
+}
+
+BaseLogHighlighter::~BaseLogHighlighter()
+{
+
+}
+
+void BaseLogHighlighter::initStdOraPatterns()
+{
+    HighlightingRule rule;
 
     const QString succeedePatterns[] = {
         "Grant succeeded.",
@@ -22,12 +36,6 @@ BaseLogHighlighter::BaseLogHighlighter(QTextDocument *parent) :
         rule.format = succeededFormat;
         highlightingRules.append(rule);
     }
-
-    markFormat.setForeground(Qt::black);
-    markFormat.setFontWeight(QFont::Bold);
-
-    errorFormat.setForeground(Qt::darkRed);
-    errorFormat.setFontWeight(QFont::Bold);
 
     rule.pattern = QRegularExpression("((old)|(new))\\s*\\d+[:]");
     rule.format = markFormat;
@@ -47,12 +55,7 @@ BaseLogHighlighter::BaseLogHighlighter(QTextDocument *parent) :
 
     addErrorItem("ERROR at line[^\n]*");
     addErrorItem("ORA-[^\n]*");
-    addErrorItem("Failing sql is:"); 
-}
-
-BaseLogHighlighter::~BaseLogHighlighter()
-{
-
+    addErrorItem("Failing sql is:");
 }
 
 void BaseLogHighlighter::addMarkItem(const QString &pattern)
@@ -68,6 +71,14 @@ void BaseLogHighlighter::addErrorItem(const QString &pattern)
     HighlightingRule rule;
     rule.pattern = QRegularExpression(pattern);
     rule.format = errorFormat;
+    highlightingRules.append(rule);
+}
+
+void BaseLogHighlighter::addRule(const QString &pattern, const QTextCharFormat &format)
+{
+    HighlightingRule rule;
+    rule.pattern = QRegularExpression(pattern);
+    rule.format = format;
     highlightingRules.append(rule);
 }
 
