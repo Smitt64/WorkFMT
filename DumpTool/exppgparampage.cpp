@@ -19,8 +19,6 @@ ExpPgParamPage::ExpPgParamPage(QWidget *parent) :
     registerField("PgExpDatabase", ui->databaseImpEdit);
     registerField("PgExpPath", ui->exportPath);
 
-    ui->addParamsBtn->setDescription("test");
-
     connect(ui->selectServer, &QToolButton::clicked, this, &ExpPgParamPage::onSelectServer);
 
     connect(ui->serverImpEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
@@ -140,7 +138,6 @@ void ExpPgParamPage::on_addParamsBtn_clicked()
 
         DumpToolWizard *wzrd = qobject_cast<DumpToolWizard*>(wizard());
         wzrd->addUserField("PgExpAddParams", desc);
-
     }
 }
 

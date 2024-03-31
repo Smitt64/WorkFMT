@@ -9,7 +9,7 @@
 PgExportOperation::PgExportOperation(DumpToolWizard *wizzard) :
     BaseOperation(wizzard)
 {
-
+    setAutoDelete(false);
 }
 
 PgExportOperation::~PgExportOperation()
@@ -27,6 +27,8 @@ void PgExportOperation::run()
     QString PgExpDatabase = wzrd->field("PgExpDatabase").toString();
     QString PgExpPath = wzrd->field("PgExpPath").toString();
     QString PgBinPath = wzrd->userField("PgBinPath").toString();
+    QString PgExpAddParams = wzrd->userField("PgExpAddParams").toString();
+    QStringList PgExpAddParamsLst = PgExpAddParams.split(",");
 
     emit stageChanged(QString("Экспорт дампа"));
     m_Proc.reset(new QProcess());
@@ -43,12 +45,13 @@ void PgExportOperation::run()
             << PgExpUser
             << QString("-d")
             << PgExpDatabase
-            << "--verbose"
             << "-b"
             << "-N"
             << "sqlj"
             << QString("-f")
             << PgExpPath;
+
+    params.append(PgExpAddParamsLst);
 
     QDir dir(PgBinPath);
     CoreStartProcess(m_Proc.data(), "fmtdatapumpwrp.exe",
@@ -73,11 +76,7 @@ void PgExportOperation::StandardRead(QByteArray &data)
     while (!stream.atEnd())
     {
         QString msg = stream.readLine();
-
-        if (msg.contains("Error at line ", Qt::CaseInsensitive) || msg.contains("ORA-"))
-            emit errormsg(msg);
-        else
-            emit message(msg);
+        emit message(msg);
     }
 }
 

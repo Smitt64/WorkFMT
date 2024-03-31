@@ -60,6 +60,12 @@ void SummaryPage::initializePage()
         AddParam(tr("Имя администратора"), field("PgExpUser").toString());
         AddParam(tr("Имя базы"), field("PgExpDatabase").toString());
         AddParam(tr("Имя файла дампа"), field("PgExpPath").toString());
+
+        QString params =  wzrd->userField("PgExpAddParams").toString();
+
+        if (!params.isEmpty())
+            AddParam(tr("Дополнительные параметры выгрузки"), params);
+
         AddParam(tr("Путь к клиенту PostgreSQL"), wzrd->userField("PgBinPath").toString());
     }
 

@@ -6,6 +6,7 @@
 #include "actionlogpage.h"
 #include "expparampage.h"
 #include "exppgparampage.h"
+#include "pgimpparampage.h"
 #include <QPushButton>
 
 DumpToolWizard::DumpToolWizard() :
@@ -18,6 +19,7 @@ DumpToolWizard::DumpToolWizard() :
     m_pActionLogPage = new ActionLogPage(this);
     m_pExpParamPage = new ExpParamPage(this);
     m_pExpPgParamPage = new ExpPgParamPage(this);
+    m_pPgImpParamPage = new PgImpParamPage(this);
 
     addPage(m_SelectActionPage);
     addPage(m_ConnectionPage);
@@ -26,6 +28,7 @@ DumpToolWizard::DumpToolWizard() :
     addPage(m_pActionLogPage);
     addPage(m_pExpParamPage);
     addPage(m_pExpPgParamPage);
+    addPage(m_pPgImpParamPage);
 
     setTitleFormat(Qt::RichText);
     setOption(QWizard::HaveHelpButton);

@@ -44,6 +44,8 @@ int SelectActionPage::nextId() const
         return DumpToolWizard::eExpParamPage;
     if (field("Action").toInt() == ActionExportPg)
         return DumpToolWizard::eExpPgParamPage;
+    if (field("Action").toInt() == ActionImportPg)
+        return DumpToolWizard::eImpPgParamPage;
 
     return -1;
 }

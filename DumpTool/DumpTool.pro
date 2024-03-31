@@ -18,8 +18,10 @@ SOURCES += \
     impfileselectpage.cpp \
     importoperation.cpp \
     main.cpp \
+    pgaddjarsdlg.cpp \
     pgexportaddprmdlg.cpp \
     pgexportoperation.cpp \
+    pgimpparampage.cpp \
     selectactionpage.cpp \
     selectserverdlg.cpp \
     selserverdirdlg.cpp \
@@ -37,8 +39,10 @@ HEADERS += \
     filelistdialog.h \
     impfileselectpage.h \
     importoperation.h \
+    pgaddjarsdlg.h \
     pgexportaddprmdlg.h \
     pgexportoperation.h \
+    pgimpparampage.h \
     selectactionpage.h \
     selectserverdlg.h \
     selserverdirdlg.h \
@@ -68,7 +72,9 @@ FORMS += \
     exppgparampage.ui \
     filelistdialog.ui \
     impfileselectpage.ui \
+    pgaddjarsdlg.ui \
     pgexportaddprmdlg.ui \
+    pgimpparampage.ui \
     selectactionpage.ui \
     selectserverdlg.ui \
     selserverdirdlg.ui \

@@ -13,6 +13,7 @@ class SummaryPage;
 class ActionLogPage;
 class ExpParamPage;
 class ExpPgParamPage;
+class PgImpParamPage;
 class DumpToolWizard : public QWizard
 {
     Q_OBJECT
@@ -25,7 +26,8 @@ public:
         eSummaryPage,
         eActionLogPage,
         eExpParamPage,
-        eExpPgParamPage
+        eExpPgParamPage,
+        eImpPgParamPage
     };
 
     DumpToolWizard();
@@ -44,6 +46,7 @@ private:
     ActionLogPage *m_pActionLogPage;
     ExpParamPage *m_pExpParamPage;
     ExpPgParamPage *m_pExpPgParamPage;
+    PgImpParamPage *m_pPgImpParamPage;
 
     QAbstractButton *m_HelpButton;
 
