@@ -628,6 +628,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings *s = settings();
     s->setValue("Geometry", saveGeometry());
     s->setValue("State", saveState());
+    pUpdateChecker->requestInterruption();
+    pUpdateChecker->deleteLater();
     event->accept();
 }
 
@@ -1425,6 +1427,7 @@ void MainWindow::CreateCheckUpdateRunnable()
     pUpdateChecker->setProgramName("RsWorkMaintenanceTool.exe");
 
     pUpdateChecker->setInterval(120000);
+    pUpdateChecker->setAutoDelete(false);
     QThreadPool::globalInstance()->start(pUpdateChecker);
 
     connect(pUpdateChecker, &UpdateChecker::checkFinished, this, &MainWindow::UpdateCheckFinished);

@@ -1253,6 +1253,9 @@ QString FmtCapitalizeField(const QString &undecoratedfield, bool force)
     proc->waitForFinished();
     result = proc->readAllStandardOutput().simplified();
 
+    if (result.isEmpty())
+        result = undecoratedfield;
+
     return result;
 }
 

@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="DumpTool">
+    <version ver="1.0.1.1">
+        <add>Добавлена поддержка дампов для PostgresSQL;</add>
+    </version>
     <version ver="1.0.0.1">
         <add>Поддержка нового инструмента;</add>
     </version>
