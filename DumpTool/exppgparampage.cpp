@@ -20,7 +20,6 @@ ExpPgParamPage::ExpPgParamPage(QWidget *parent) :
     registerField("PgExpPath", ui->exportPath);
 
     connect(ui->selectServer, &QToolButton::clicked, this, &ExpPgParamPage::onSelectServer);
-
     connect(ui->serverImpEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->userImpEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->databaseImpEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));

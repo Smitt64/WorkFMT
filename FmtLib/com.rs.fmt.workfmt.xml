@@ -1,5 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.5.6">
+        <fix>Исправлено падение после undo команды вставки поля из буфера обмена;</fix>
+        <fix>Исправлены ошибки заполнения полей с включеным флагом "CamelCase";</fix>
+    </version>
     <version ver="1.0.5.5">
         <add>Проверка наличия обновлений;</add>
     </version>

@@ -687,6 +687,7 @@ void FmtTable::rebuildOffsets(QUndoCommand *pLastCommand)
 
         for (int i = 0; i < m_pFields.size(); i++)
         {
+            bool old = m_pFields[i]->m_IgnoreUndoStack;
             if (m_IgnoreUndoStack)
                 m_pFields[i]->m_IgnoreUndoStack = true;
 
@@ -694,7 +695,7 @@ void FmtTable::rebuildOffsets(QUndoCommand *pLastCommand)
             value += m_pFields[i]->size();
 
             if (m_IgnoreUndoStack)
-                m_pFields[i]->m_IgnoreUndoStack = false;
+                m_pFields[i]->m_IgnoreUndoStack = old;
         }
 
         if (!hasParentCommand)
@@ -704,6 +705,7 @@ void FmtTable::rebuildOffsets(QUndoCommand *pLastCommand)
     {
         for (int i = 0; i < m_pFields.size(); i++)
         {
+            bool old = m_pFields[i]->m_IgnoreUndoStack;
             if (m_IgnoreUndoStack)
                 m_pFields[i]->m_IgnoreUndoStack = true;
 
@@ -711,7 +713,7 @@ void FmtTable::rebuildOffsets(QUndoCommand *pLastCommand)
             value += m_pFields[i]->size();
 
             if (m_IgnoreUndoStack)
-                m_pFields[i]->m_IgnoreUndoStack = false;
+                m_pFields[i]->m_IgnoreUndoStack = old;
         }
     }
 }
@@ -871,8 +873,9 @@ bool FmtTable::setDataPrivate(const FmtFldType &fld, const QVariant &value)
 
 FmtField *FmtTable::addField(const QString &name, const FmtFldType &type)
 {
+    QString value = name.mid(0, fmtm_FieldNameMaxSize);
     FmtUndoTableAddField *cmd = new FmtUndoTableAddField(this);
-    cmd->setNameAndType(name, type);
+    cmd->setNameAndType(value, type);
     pUndoStack->push(cmd);
 
     return cmd->getField();
@@ -893,6 +896,7 @@ FmtField *FmtTable::addFieldPrivate(const QString &name, const FmtFldType &type)
     FmtField *fld = new FmtField(this);
     m_pFields.append(fld);
 
+    bool old = fld->m_IgnoreUndoStack;
     fld->m_IgnoreUndoStack = true;
     fld->setName("t_" + name);
     fld->setType(type);
@@ -908,7 +912,7 @@ FmtField *FmtTable::addFieldPrivate(const QString &name, const FmtFldType &type)
     }
 
     fld->setOffset(value);
-    fld->m_IgnoreUndoStack = false;
+    fld->m_IgnoreUndoStack = old;
     emit fieldAdded(fld);
     pFieldsModel->endInsertRows();
 

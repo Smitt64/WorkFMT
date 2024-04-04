@@ -3,15 +3,21 @@
 #include "selectactionpage.h"
 #include "impfileselectpage.h"
 #include "summarypage.h"
+#include "toolsruntime.h"
 #include "actionlogpage.h"
 #include "expparampage.h"
 #include "exppgparampage.h"
 #include "pgimpparampage.h"
 #include <QPushButton>
+#include <QApplication>
+#include <QDesktopServices>
 
 DumpToolWizard::DumpToolWizard() :
     QWizard()
 {
+    QDir dir(qApp->applicationDirPath());
+    m_pSettings = new QSettings(dir.absoluteFilePath("DumpTool.ini"), QSettings::IniFormat);
+
     m_ConnectionPage = new UserConnectionPage(this);
     m_SelectActionPage = new SelectActionPage(this);
     m_ImpFileSelectPage = new ImpFileSelectPage(this);
@@ -38,11 +44,21 @@ DumpToolWizard::DumpToolWizard() :
     setWindowIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
 
     m_HelpButton = button(QWizard::HelpButton);
+
+    connect(m_HelpButton, &QPushButton::clicked, []
+    {
+        QDesktopServices::openUrl(QUrl("https://confluence.softlab.ru/pages/viewpage.action?pageId=609091997"));
+    });
 }
 
 DumpToolWizard::~DumpToolWizard()
 {
+    delete m_pSettings;
+}
 
+QSettings *DumpToolWizard::settings()
+{
+    return m_pSettings;
 }
 
 void DumpToolWizard::addUserField(const QString &name, const QVariant &value)

@@ -16,7 +16,7 @@ void FmtUndoTableAddField::setNameAndType(const QString &name, const FmtFldType 
     m_Name = name;
     m_Type = type;
 
-    if (m_Name.toLower() == m_Name)
+    if (m_Name.toLower() == name || m_Name.toUpper() == name)
         m_Name = FmtCapitalizeField(m_Name);
 
     QString mtypename = fmtTypeNameForType(type);

@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QMap>
 #include <QVariant>
+#include <QSettings>
 
 class UserConnectionPage;
 class SelectActionPage;
@@ -38,6 +39,8 @@ public:
 
     QString userValName(const QString &value) const;
 
+    QSettings *settings();
+
 private:
     UserConnectionPage *m_ConnectionPage;
     SelectActionPage *m_SelectActionPage;
@@ -51,6 +54,7 @@ private:
     QAbstractButton *m_HelpButton;
 
     QMap<QString, QVariant> m_Fields;
+    QSettings *m_pSettings;
 };
 
 #endif // DUMPTOOLWIZARD_H

@@ -142,6 +142,11 @@ FmtFldIndex FmtField::index() const
 void FmtField::setName(const QString &v)
 {
     QString value = v.mid(0, fmtm_FieldNameMaxSize);
+
+    QString tmp = value.mid(2);
+    if (tmp.toLower() == tmp || tmp.toUpper() == tmp)
+        value = FmtCapitalizeField(value);
+
     if (m_Name == value)
         return;
 
@@ -149,9 +154,6 @@ void FmtField::setName(const QString &v)
     {
         bool hasParentCommand = pLastCommand ? true : false;
         FmtUndoFieldProperty *cmd = new FmtUndoFieldProperty(pTable, pTable->fieldNum(this), pLastCommand);
-
-        if (value.toLower() == value)
-            value = FmtCapitalizeField(value);
 
         cmd->setValueToUndo(m_Name);
         cmd->setValueToRedo(value);

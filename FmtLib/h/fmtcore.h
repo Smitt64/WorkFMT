@@ -195,7 +195,8 @@ int FMTLIBSHARED_EXPORT CoreStartProcess(QProcess *exe, const QString &program,
                      const QStringList& arguments,
                      bool waitForFinished = false,
                      bool waitForStarted = false,
-                     int timeout = 30000);
+                     int timeout = 30000,
+                     bool waitForReadyRead = false);
 QString FMTLIBSHARED_EXPORT ProcessExitStatusText(qint16 State);
 QString FMTLIBSHARED_EXPORT ProcessStateText(qint16 State);
 

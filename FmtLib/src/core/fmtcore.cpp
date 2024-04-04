@@ -13,6 +13,7 @@
 #include "selectfiltereddlg.h"
 #include "selectfieldsmodel.h"
 #include "fmtfildsmodel.h"
+#include "toolsruntime.h"
 #include <Windows.h>
 #include <QtCore>
 #include <QSqlError>
@@ -963,7 +964,7 @@ QString ProcessExitStatusText(qint16 State)
     return result;
 }
 
-int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& arguments, bool waitForFinished, bool waitForStarted, int timeout)
+int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& arguments, bool waitForFinished, bool waitForStarted, int timeout, bool waitForReadyRead)
 {
     int stat = 0;
     qCInfo(logCore()) << "Process: " << exe;
@@ -986,6 +987,9 @@ int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& a
 
     if (waitForStarted)
         exe->waitForStarted();
+
+    if (waitForReadyRead)
+        exe->waitForReadyRead();
 
     if (waitForFinished)
     {
@@ -1237,10 +1241,9 @@ QString FmtCapitalizeField(const QString &undecoratedfield, bool force)
     if (!settings()->value("AutoCamelCase", true).toBool() && !force)
         return undecoratedfield;
 
-    QDir d = QDir::current();
     QString result = undecoratedfield;
     QScopedPointer<QProcess> proc(new QProcess());
-    proc->setProgram(d.absoluteFilePath("CapitalizeField.exe"));
+    proc->setProgram(toolFullFileNameFromDir("CapitalizeField.exe"));
 
     QStringList args;
     args << "--field" << undecoratedfield;

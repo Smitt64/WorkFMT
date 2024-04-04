@@ -12,18 +12,20 @@
 #include <QKeyEvent>
 #include <QFile>
 #include <QFileIconProvider>
+#include <QSettings>
 
-const QString filter;// = tr("Jar файлы (*.jar)");
+const QString filter = QObject::tr("Jar файлы (*.jar)");
 
 class EditableJarDelegate : public QStyledItemDelegate
 {
+    QSettings *m_pSettings;
 public:
-    EditableJarDelegate(QObject *parent = nullptr) :
+    EditableJarDelegate(QSettings *settings, QObject *parent = nullptr) :
         QStyledItemDelegate(parent),
         m_pCurrent(nullptr),
         m_IsOpenDialog(false)
     {
-
+        m_pSettings = settings;
     }
 
     virtual QWidget *createEditor(QWidget *parent,
@@ -56,15 +58,26 @@ public:
 
         connect(btn, &QPushButton::clicked, [=]() -> void
         {
+            m_pSettings->beginGroup("PgAddJarsDlg");
+            QString lastPath = m_pSettings->value("LastJarDir").toString();
+            m_pSettings->endGroup();
+
             pThis->m_IsOpenDialog = true;
             QString filename = QFileDialog::getOpenFileName(parent,
                                                             QString(),
-                                                            QString(),
+                                                            lastPath,
                                                             filter);
 
             if (!filename.isEmpty())
             {
                 edit->setText(filename);
+
+                QFileInfo fi(filename);
+                m_pSettings->beginGroup("PgAddJarsDlg");
+                m_pSettings->setValue("LastJarDir", fi.absoluteDir().path());
+                m_pSettings->endGroup();
+                m_pSettings->sync();
+
                 QApplication::postEvent(edit, new QKeyEvent(QKeyEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier));
             }
             edit->setFocus();
@@ -128,16 +141,18 @@ private:
     bool m_IsOpenDialog;
 };
 
-PgAddJarsDlg::PgAddJarsDlg(QWidget *parent) :
+PgAddJarsDlg::PgAddJarsDlg(QSettings *settings, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PgAddJarsDlg)
 {
     ui->setupUi(this);
 
     m_pModel = new QStandardItemModel(this);
-    m_pDelegate = new EditableJarDelegate(ui->listView);
+    m_pDelegate = new EditableJarDelegate(settings, ui->listView);
     ui->listView->setModel(m_pModel);
     ui->listView->setItemDelegate(m_pDelegate);
+
+    m_pSettings = settings;
 
     connect(m_pModel, &QStandardItemModel::dataChanged, this, &PgAddJarsDlg::dataChanged);
 }
@@ -204,8 +219,12 @@ QStringList PgAddJarsDlg::files()
 
 void PgAddJarsDlg::on_addFilesBtn_clicked()
 {
+    m_pSettings->beginGroup("PgAddJarsDlg");
+    QString lastPath = m_pSettings->value("LastJarDir").toString();
+    m_pSettings->endGroup();
+
     QStringList lst = QFileDialog::getOpenFileNames(this, QString(),
-                                                    QString(),
+                                                    lastPath,
                                                     filter);
 
     if (lst.isEmpty())
@@ -219,6 +238,12 @@ void PgAddJarsDlg::on_addFilesBtn_clicked()
         item->setIcon(provider.icon(file));
         m_pModel->appendRow(item);
     }
+
+    QFileInfo fi(lst.first());
+    m_pSettings->beginGroup("PgAddJarsDlg");
+    m_pSettings->setValue("LastJarDir", fi.absoluteDir().path());
+    m_pSettings->endGroup();
+    m_pSettings->sync();
 }
 
 

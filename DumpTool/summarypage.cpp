@@ -10,6 +10,11 @@ SummaryPage::SummaryPage(QWidget *parent) :
     ui->setupUi(this);
     setCommitPage(true);
 
+    QFont font("Consolas");
+    font.setPointSize(10);
+    setFont(font);
+
+    ui->textBrowser->setFont(font);
     m_Stream.reset(new QTextStream(&m_Text));
 }
 
@@ -67,6 +72,22 @@ void SummaryPage::initializePage()
             AddParam(tr("Дополнительные параметры выгрузки"), params);
 
         AddParam(tr("Путь к клиенту PostgreSQL"), wzrd->userField("PgBinPath").toString());
+    }
+    else if (action == SelectActionPage::ActionImportPg)
+    {
+        setTitle(tr("Информация об операции импорта (PostgreSQL)"));
+        AddParam(tr("Адрес сервера"), field("PgImpServer").toString());
+        AddParam(tr("Порт сервера"), field("PgImpPort").toString());
+        AddParam(tr("Имя администратора"), field("PgImpAdmin").toString());
+        AddParam(tr("Имя владельца дампа"), field("PgImpOwner").toString());
+        AddParam(tr("Имя файла дампа"), field("PgImpPath").toString());
+        AddParam(tr("Имя имя базы, куда заливать"), field("PgImpDstUser").toString());
+
+        AddParam(tr("Загружаемые jar файлы"), "");
+        QStringList jars = wzrd->userField("PgJarFiles").toStringList();
+        jars.prepend("PLXmlFunctions.jar");
+        for (const QString &file : jars)
+            (*m_Stream) << file << "<br/>";
     }
 
     ui->textBrowser->setHtml(m_Text);

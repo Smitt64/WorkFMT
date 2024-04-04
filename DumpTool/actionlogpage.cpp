@@ -5,6 +5,7 @@
 #include "selectactionpage.h"
 #include "exportoperation.h"
 #include "pgexportoperation.h"
+#include "pgimportoperation.h"
 #include <QThreadPool>
 #include <QPushButton>
 #include <QProgressDialog>
@@ -15,9 +16,11 @@ TextBrowser::TextBrowser(QWidget *parent) :
     QPlainTextEdit(parent)
 {
     setReadOnly(true);
+    setWordWrapMode(QTextOption::NoWrap);
 
     QFont font("Consolas");
     font.setPointSize(10);
+    font.setFixedPitch(true);
     setFont(font);
 }
 
@@ -131,6 +134,8 @@ void ActionLogPage::initializePage()
         op = new ExportOperation(qobject_cast<DumpToolWizard*>(wizard()));
     else if (field("Action").toInt() == SelectActionPage::ActionExportPg)
         op = new PgExportOperation(qobject_cast<DumpToolWizard*>(wizard()));
+    else if (field("Action").toInt() == SelectActionPage::ActionImportPg)
+        op = new PgImportOperation(qobject_cast<DumpToolWizard*>(wizard()));
 
     connect(op, &ImportOperation::finished, this, &ActionLogPage::finished);
     connect(op, &ImportOperation::message, m_TextBrowser.data(), &TextBrowser::message);

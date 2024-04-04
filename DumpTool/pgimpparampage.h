@@ -15,7 +15,8 @@ public:
     explicit PgImpParamPage(QWidget *parent = nullptr);
     ~PgImpParamPage();
 
-    bool isComplete() const;
+    virtual bool isComplete() const;
+    virtual int nextId() const;
 
 private slots:
     void on_selectServer_clicked();

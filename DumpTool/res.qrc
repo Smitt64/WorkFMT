@@ -6,6 +6,7 @@
         <file>opr/_import_DP.cmd</file>
         <file>res/pg_dump_keys.json</file>
         <file>img/jar.png</file>
+        <file>res/CreateRole.sql</file>
         <file>res/PLXmlFunctions.jar</file>
     </qresource>
 </RCC>

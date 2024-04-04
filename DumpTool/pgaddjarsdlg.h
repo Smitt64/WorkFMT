@@ -10,12 +10,13 @@ class PgAddJarsDlg;
 
 class EditableJarDelegate;
 class QStandardItemModel;
+class QSettings;
 class PgAddJarsDlg : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit PgAddJarsDlg(QWidget *parent = nullptr);
+    explicit PgAddJarsDlg(QSettings *settings, QWidget *parent = nullptr);
     ~PgAddJarsDlg();
 
     void addStatic(const QString &value, const QIcon &icon = QIcon());
@@ -35,6 +36,8 @@ private:
 
     QStandardItemModel *m_pModel;
     EditableJarDelegate *m_pDelegate;
+
+    QSettings *m_pSettings;
 };
 
 #endif // PGADDJARSDLG_H

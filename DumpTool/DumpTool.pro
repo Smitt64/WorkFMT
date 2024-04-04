@@ -21,6 +21,7 @@ SOURCES += \
     pgaddjarsdlg.cpp \
     pgexportaddprmdlg.cpp \
     pgexportoperation.cpp \
+    pgimportoperation.cpp \
     pgimpparampage.cpp \
     selectactionpage.cpp \
     selectserverdlg.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
     pgaddjarsdlg.h \
     pgexportaddprmdlg.h \
     pgexportoperation.h \
+    pgimportoperation.h \
     pgimpparampage.h \
     selectactionpage.h \
     selectserverdlg.h \
