@@ -65,17 +65,13 @@ private:
     QIcon m_Folder;
 };
 
-SelectFolderDlg::SelectFolderDlg(const QString &context, QWidget *parent) :
+SelectFolderDlg::SelectFolderDlg(QSettings *settings, const QString &context, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectFolderDlg),
-    m_Context(context),
-    m_pSettings(Q_NULLPTR)
+    m_pSettings(settings)
 {
     ui->setupUi(this);
     m_pModel = new FoldersModel(this);
-
-    FmtApplication *app = qobject_cast<FmtApplication*>(qApp);
-    m_pSettings = app->settings();
 
     int size = m_pSettings->beginReadArray(m_Context);
     for (int i = 0; i < size; i++)
@@ -100,6 +96,30 @@ SelectFolderDlg::SelectFolderDlg(const QString &context, QWidget *parent) :
     connect(ui->listView, &QAbstractItemView::activated, this, &SelectFolderDlg::clicked);
     connect(ui->listView, &QAbstractItemView::clicked, this, &SelectFolderDlg::clicked);
     connect(ui->listView, &QAbstractItemView::doubleClicked, this, &SelectFolderDlg::doubleClicked);
+}
+
+SelectFolderDlg::SelectFolderDlg(const QString &context, QWidget *parent) :
+    SelectFolderDlg(qobject_cast<FmtApplication*>(qApp)->settings(), context, parent)
+{
+    m_pModel = new FoldersModel(this);
+
+    FmtApplication *app = qobject_cast<FmtApplication*>(qApp);
+    m_pSettings = app->settings();
+
+    int size = m_pSettings->beginReadArray(m_Context);
+    for (int i = 0; i < size; i++)
+    {
+        m_pSettings->setArrayIndex(i);
+
+        QString dir = m_pSettings->value(DIR_SECTION).toString();
+        int uses = m_pSettings->value(USES_SECTION, 1).toInt();
+
+        QStandardItem *item = new QStandardItem(dir);
+        item->setData(uses, UsesCount);
+        m_pModel->appendRow(item);
+    }
+    m_pSettings->endArray();
+
 }
 
 SelectFolderDlg::SelectFolderDlg(const QString &context, const QString &title, QWidget *parent) :

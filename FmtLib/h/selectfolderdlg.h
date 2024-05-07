@@ -2,7 +2,7 @@
 #define SELECTFOLDERDLG_H
 
 #include <QDialog>
-
+#include "fmtcore.h"
 namespace Ui {
 class SelectFolderDlg;
 }
@@ -10,11 +10,12 @@ class SelectFolderDlg;
 class QSettings;
 class FoldersModel;
 class FoldersSortModel;
-class SelectFolderDlg : public QDialog
+class FMTLIBSHARED_EXPORT SelectFolderDlg : public QDialog
 {
     Q_OBJECT
 
 public:
+    explicit SelectFolderDlg(QSettings *settings, const QString &context, QWidget *parent = nullptr);
     explicit SelectFolderDlg(const QString &context, QWidget *parent = nullptr);
     explicit SelectFolderDlg(const QString &context, const QString &title, QWidget *parent = nullptr);
     ~SelectFolderDlg();

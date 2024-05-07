@@ -1,4 +1,5 @@
 #include "task.h"
+#include "dbttoolwizard.h"
 #include <QApplication>
 
 Task::Task(int argc, char *argv[], QObject *parent) : QObject(parent)
@@ -70,10 +71,17 @@ void Task::run()
     bool fImport = parser.isSet(*importOption.data());
     if (!fExport && !fImport)
     {
+#ifndef _DEBUG
         w = new DbMainWindow();
         w->setAttribute(Qt::WA_DeleteOnClose);
         connect(w, SIGNAL(destroyed(QObject*)), SIGNAL(finished()));
         w->show();
+#else
+        DbtToolWizard *w = new DbtToolWizard();
+        w->setAttribute(Qt::WA_DeleteOnClose);
+        connect(w, SIGNAL(destroyed(QObject*)), SIGNAL(finished()));
+        w->show();
+#endif
     }
     else if (fExport)
     {

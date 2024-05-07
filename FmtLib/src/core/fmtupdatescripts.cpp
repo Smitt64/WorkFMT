@@ -117,6 +117,78 @@ static void FmtGenUpdateDeleteColumnScriptField(QTextStream &stream, FmtField *f
     stream << "/" << endl;
 }
 
+QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table)
+{
+    if (connection->type() != ConnectionInfo::CON_ORA)
+        return QStringList();
+
+    QStringList triggers;
+
+    QSqlQuery query(connection->db());
+    query.prepare("select trigger_name from USER_TRIGGERS where table_name = upper(?) and INSTR (trigger_name, 'AINC') = 0");
+    query.addBindValue(table);
+
+    if (!query.exec())
+        return QStringList();
+
+    while (query.next())
+        triggers.append(query.value(0).toString());
+
+    return triggers;
+}
+
+QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable)
+{
+    QString str;
+    QTextStream stream(&str, QIODevice::WriteOnly);
+
+    if (flds.isEmpty())
+        return QString();
+
+    QStringList triggers = FmtGenGetTriggers(flds.first()->table()->connection(),
+                                             flds.first()->table()->name());
+
+    if (triggers.isEmpty())
+        return QString();
+
+    stream << "DECLARE" << Qt::endl;
+    stream << "\tTYPE nested_type IS TABLE OF VARCHAR2(150);" << Qt::endl;
+    stream << "\tupgrade_object nested_type;" << Qt::endl;
+    stream << "BEGIN" << Qt::endl;
+    stream << "\tupgrade_object := nested_type" << Qt::endl;
+    stream << "\t(" << Qt::endl;
+
+    for (const QString &trigger : triggers)
+    {
+        stream << QString("\t\t'%1'").arg(trigger);
+
+        if (trigger != triggers.last())
+            stream << "," << Qt::endl;
+        else
+            stream << Qt::endl;
+    }
+
+    stream << "\t);" << Qt::endl << Qt::endl;
+    stream << "\tFOR i IN upgrade_object.FIRST .. upgrade_object.LAST LOOP" << Qt::endl;
+    stream << "\t\tBEGIN" << Qt::endl;
+    if (disable)
+        stream << "\t\t\tEXECUTE IMMEDIATE 'ALTER TRIGGER ' || upgrade_object(i) || ' DISABLE';" << Qt::endl;
+    else
+    {
+        stream << "\t\t\tEXECUTE IMMEDIATE 'ALTER TRIGGER ' || upgrade_object(i) || ' COMPILE';" << Qt::endl;
+        stream << "\t\t\tEXECUTE IMMEDIATE 'ALTER TRIGGER ' || upgrade_object(i) || ' ENABLE';" << Qt::endl;
+    }
+    stream << "\t\EXCEPTION" << Qt::endl;
+    stream << "\t\t\tWHEN OTHERS THEN NULL;" << Qt::endl;
+    stream << "\t\tEND;" << Qt::endl;
+    stream << "\tEND LOOP;" << Qt::endl;
+    stream << "\tupgrade_object.DELETE;" << Qt::endl;
+    stream << "END;" << Qt::endl;
+    stream << "/" << Qt::endl;
+
+    return str;
+}
+
 QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds)
 {
     QString str;
@@ -136,6 +208,8 @@ QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds)
 
     QString str, tableName = flds[0]->table()->name().toUpper();
     QTextStream stream(&str, QIODevice::WriteOnly);
+
+    stream << FmtGenTriggersScrip(flds, true) << Qt::endl;
 
     stream << "DECLARE" << endl;
     stream << "\te_col_exist EXCEPTION;" << endl;
@@ -183,6 +257,8 @@ QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds)
     stream << "EXCEPTION WHEN e_col_exist THEN NULL;" << endl;
     stream << "END;" << endl;
     stream << "/" << endl;
+
+    stream << Qt::endl << FmtGenTriggersScrip(flds, false) << Qt::endl;
     return str;
 }
 

@@ -1,34 +1,31 @@
-#ifndef EXPPARAMPAGE_H
-#define EXPPARAMPAGE_H
+#ifndef ORACONNECTIONPAGE_H
+#define ORACONNECTIONPAGE_H
 
 #include <QWizardPage>
 
 namespace Ui {
-class ExpParamPage;
+class OraConnectionPage;
 }
 
-class QLineEdit;
 class OdbcTableModel;
 class OdbcTableModelDelegate;
-class ExpParamPage : public QWizardPage
+class OraConnectionPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    explicit ExpParamPage(QWidget *parent = nullptr);
-    ~ExpParamPage();
+    explicit OraConnectionPage(QWidget *parent = nullptr);
+    ~OraConnectionPage();
 
     virtual int nextId() const;
     virtual bool isComplete() const;
     virtual bool validatePage();
 
 private:
-    Ui::ExpParamPage *ui;
+    Ui::OraConnectionPage *ui;
 
     OdbcTableModel *m_pDsnModel;
     OdbcTableModelDelegate *m_DataSourceDelegate;
-
-    QLineEdit *fakeDirEdit;
 };
 
-#endif // EXPPARAMPAGE_H
+#endif // ORACONNECTIONPAGE_H

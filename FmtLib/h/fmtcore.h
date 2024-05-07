@@ -225,6 +225,9 @@ QString FmtGetTableFileName(const QString &table);
 FMTLIBSHARED_EXPORT QString GetProcessErrorText(const QProcess::ProcessError &error);
 QString GetVersionNumberString();
 
+QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
+QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable);
+
 QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
 QString FmtGenModifyColumnScript(QList<FmtField*> flds);

@@ -36,7 +36,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp \
     dbfileobject.cpp \
     dbmainwindow.cpp \
+    dbttoolwizard.cpp \
+    exportpage.cpp \
     loghighlighter.cpp \
+    oraconnectionpage.cpp \
+    selectactionpage.cpp \
+    selecttablespage.cpp \
     task.cpp
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
@@ -55,11 +60,26 @@ INSTALLS += target
 HEADERS += \
     dbfileobject.h \
     dbmainwindow.h \
+    dbttoolwizard.h \
+    exportpage.h \
     loghighlighter.h \
+    oraconnectionpage.h \
+    selectactionpage.h \
+    selecttablespage.h \
     task.h
 
 FORMS += \
-    dbmainwindow.ui
+    dbmainwindow.ui \
+    exportpage.ui \
+    oraconnectionpage.ui \
+    selectactionpage.ui
 
 RESOURCES += \
     res.qrc
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../RsWorkTools/ToolsRuntime
+DEPENDPATH += $$PWD/../RsWorkTools/ToolsRuntime
