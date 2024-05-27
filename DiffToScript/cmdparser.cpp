@@ -38,6 +38,14 @@ CommandLineParseResult CmdParser::parse()
     QCommandLineOption targetOutputOption("output", "Файл, в который нужно сохранить результат", "output_file");
     parser.addOption(targetOutputOption);
 
+    QCommandLineOption connectionStringOption(QStringList() << "cs" << "con-str",
+                                              QApplication::translate("main", "Подключиться к базе данных использую строку подключения <constring>"),
+                                              QApplication::translate("main", "constring"));
+    parser.addOption(connectionStringOption);
+
+    QCommandLineOption unicodeConnectionOption("unicodedb", "Признак unicode базы данных.", "");
+    parser.addOption(unicodeConnectionOption);
+
 //    QCommandLineOption autoIncOption("autoinc", "0 - исключает автоинкрементные поля из результата, 1 - включает (по умолчанию)", "0|1");
 //    parser.addOption(autoIncOption);
 
@@ -84,6 +92,8 @@ CommandLineParseResult CmdParser::parse()
     opts[ctoLog].isSet = parser.isSet(logOption);
     opts[ctoOracle].isSet = parser.isSet(oracleOption);
     opts[ctoPostgres].isSet = parser.isSet(postgresOption);
+    opts[ctoConnectionString].isSet = parser.isSet(connectionStringOption);
+    opts[ctoConnectionUnicode].isSet = parser.isSet(unicodeConnectionOption);
 
     if (opts[ctoOracle].isSet & opts[ctoPostgres].isSet)
     {
@@ -101,6 +111,9 @@ CommandLineParseResult CmdParser::parse()
 //        opts[ctoIndex].value = parser.value(indexOption);
     if (opts[ctoLog].isSet)
         opts[ctoLog].value = parser.value(logOption);
+
+    if (opts[ctoConnectionString].isSet)
+        opts[ctoConnectionString].value = parser.value(connectionStringOption);
 
     // Значения по умолчанию
     if (!opts[ctoDelete].isSet && !opts[ctoInsert].isSet && !opts[ctoUpdate].isSet)

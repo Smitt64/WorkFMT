@@ -68,6 +68,7 @@ private:
 SelectFolderDlg::SelectFolderDlg(QSettings *settings, const QString &context, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectFolderDlg),
+    m_Context(context),
     m_pSettings(settings)
 {
     ui->setupUi(this);

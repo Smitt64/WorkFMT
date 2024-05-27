@@ -369,6 +369,9 @@ const JoinTable* getParent(JoinTable* joinTable)
 
 void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 {
+    if (!joinTable)
+        return;
+
     QStringList variables = makeVariables(joinTable);
     QStringList sql;
     sql << _dbSpelling->getDeclare()

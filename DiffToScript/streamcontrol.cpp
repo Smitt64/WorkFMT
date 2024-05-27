@@ -56,21 +56,22 @@ QIODevice* StreamControl::makeOutputDevice(QString fileName)
     return &_outputFile;
 }
 
-QString& StreamControl::getInput(QString fileName)
+QTextStream *StreamControl::getInput(QString fileName)
 {
-    _buff.clear();
+    //_buff.clear();
     if (fileName != "")
     {
         _inputFile.setFileName(fileName);
         if (!_inputFile.open(QFile::ReadOnly))
             qCritical(logStreamControl) << "file " + fileName + " not opened";
-        _buff = QTextStream(&_inputFile).readAll();
+        //_buff = QTextStream(&_inputFile).readAll();
+        _stream.reset(new QTextStream(&_inputFile));
         qCInfo(logDiff) << "Input is " << fileName;
     }
     else
     {
         qCInfo(logDiff) << "Input is stdin";
-        _buff = QTextStream(stdin).readAll();
+        _stream.reset(new QTextStream(stdin));
     }
-    return _buff;
+    return _stream.data();
 }

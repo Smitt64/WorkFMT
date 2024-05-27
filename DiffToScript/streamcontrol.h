@@ -13,12 +13,13 @@ public:
     StreamControl();
     ~StreamControl();
     QIODevice* makeOutputDevice(QString fileName);
-    QString& getInput(QString fileName);
+    QTextStream *getInput(QString fileName);
 private:
     QFile _inputFile;
     QFile _outputFile;
     QString _buff;
     QtMessageHandler _oldMsgHandler;
+    QScopedPointer<QTextStream> _stream;
 };
 
 #endif // STREAMCONTROL_H

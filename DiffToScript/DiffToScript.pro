@@ -1,4 +1,4 @@
-QT       += core gui sql testlib
+QT       += core gui sql testlib xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -39,7 +39,13 @@ SOURCES += \
     tablestree.cpp \
     task.cpp \
     taskoptions.cpp \
-    wherescript.cpp
+    wherescript.cpp \
+    wizard/actionpage.cpp \
+    wizard/connactionpage.cpp \
+    wizard/diffwizard.cpp \
+    wizard/scriptspage.cpp \
+    wizard/svnsatatusmodel.cpp \
+    wizard/svntool.cpp
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib
@@ -71,10 +77,19 @@ HEADERS += \
     tablestree.h \
     task.h \
     taskoptions.h \
-    wherescript.h
+    wherescript.h \
+    wizard/actionpage.h \
+    wizard/connactionpage.h \
+    wizard/diffwizard.h \
+    wizard/scriptspage.h \
+    wizard/svnsatatusmodel.h \
+    wizard/svntool.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    wizard/actionpage.ui \
+    wizard/connactionpage.ui \
+    wizard/scriptspage.ui
 
 # Default rules for deployment.
 #qnx: target.path = /tmp/$${TARGET}/bin
@@ -94,3 +109,9 @@ DEPENDPATH += $$PWD/../FmtLib/h
 QMAKE_CFLAGS += -FS
 QMAKE_CXXFLAGS += -FS
 
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../RsWorkTools/ToolsRuntime
+DEPENDPATH += $$PWD/../RsWorkTools/ToolsRuntime

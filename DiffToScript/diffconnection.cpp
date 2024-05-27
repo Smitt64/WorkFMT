@@ -1,5 +1,5 @@
 #include "diffconnection.h"
-
+#include "fmtcore.h"
 #include <QObject>
 #include <QApplication>
 #include <QSettings>
@@ -24,9 +24,29 @@ DiffConnection::DiffConnection()
     _user = sett.value("connect/user", "user").toString();
     _pass = sett.value("connect/pass", "pass").toString();
     _dsn = sett.value("connect/dsn", "dsn").toString();
+    isUnicode = sett.value("connect/isUnicode", "isUnicode").toBool();
 
+    open();
+}
+
+DiffConnection::DiffConnection(const QString &connectionString, bool unicode)
+{
+    qCInfo(logDiff) << "Start connect to FMT";
+
+    isUnicode = unicode;
+    ParseConnectionString(connectionString, _user, _pass, _dsn);
+
+    open();
+}
+
+void DiffConnection::open()
+{
     _conn = new ConnectionInfo();
     QString optionStr;
+
+    if (isUnicode)
+        optionStr = "RSD_UNICODE";
+
     qCInfo(logDiff) << "user=" << _user << " pass=" << _pass << " dsn=" << _dsn;
     _connected = _conn->open("qrsd", _user, _pass, _dsn, optionStr);
     if (_connected)

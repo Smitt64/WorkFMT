@@ -20,6 +20,8 @@ enum CmdTaskOption
     ctoLog,
     ctoOracle,
     ctoPostgres,
+    ctoConnectionString,
+    ctoConnectionUnicode,
 
     toLast
 };

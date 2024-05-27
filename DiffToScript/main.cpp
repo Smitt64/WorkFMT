@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include "wizard/diffwizard.h"
 #include "mainwindow.h"
 #include "task.h"
 #include "fmtapplication.h"
@@ -19,35 +19,43 @@
 
 int main(int argc, char *argv[])
 {
-    Task *pTask = new Task();
-
-    FmtApplication app2(argc, argv);
-#ifdef QT_DEBUG
+    FmtApplication app(argc, argv);
+/*#ifdef QT_DEBUG
     QLoggingCategory::setFilterRules(QStringLiteral("Fmt=false\nSql=false\nCore=false\n*.info=false"));
     QTest::qExec(new DiffToScriptTest);
     QLoggingCategory::setFilterRules(QStringLiteral("Fmt=false\nSql=false\nCore=false\n*.info=true"));
     return 0;
-#endif
+#endif*/
 
-
-    QFileInfo current(QCoreApplication::applicationFilePath());
-    QApplication::addLibraryPath(current.path());
-    QApplication::addLibraryPath(current.path() + "\\sqldrivers");
-    QApplication::addLibraryPath(current.path() + "\\platforms");
-
-    CmdParser cmdParser(&app2);
-    CommandLineParseResult result = cmdParser.parse();
-
-    if (result.statusCode == CommandLineParseResult::Status::Error)
+    if (argc > 1)
     {
-        QTextStream(stdout) << result.errorString <<Qt::endl;
-        return 1;
+        QFileInfo current(QCoreApplication::applicationFilePath());
+        QApplication::addLibraryPath(current.path());
+        QApplication::addLibraryPath(current.path() + "\\sqldrivers");
+        QApplication::addLibraryPath(current.path() + "\\platforms");
+
+        CmdParser cmdParser(&app);
+        CommandLineParseResult result = cmdParser.parse();
+
+        Task *pTask = new Task();
+        if (result.statusCode == CommandLineParseResult::Status::Error)
+        {
+            QTextStream(stdout) << result.errorString <<Qt::endl;
+            return 1;
+        }
+        QObject::connect(pTask, SIGNAL(finished()), &app, SLOT(quit()));
+
+        pTask->optns = cmdParser.opts;
+
+        QTimer::singleShot(0, pTask, SLOT(run()));
+        return app.exec();
     }
-    QObject::connect(pTask, SIGNAL(finished()), &app2, SLOT(quit()));
+    else
+    {
+        DiffWizard wzrd;
+        wzrd.show();
+        return app.exec();
+    }
 
-    pTask->optns = cmdParser.opts;
-
-    QTimer::singleShot(0, pTask, SLOT(run()));
-
-    return app2.exec();
+    return 0;
 }

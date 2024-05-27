@@ -21,7 +21,6 @@
 #include <QApplication>
 #include "qloggingcategory.h"
 
-
 Task::Task(QObject *parent) : QObject(parent)
 {
     //снятие всех опций
@@ -137,7 +136,7 @@ void Task::run()
     emit finished();
 }
 
-
+// --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188"
 void Task::runTask()
 {
     QString rules = getRules(optns);
@@ -146,7 +145,9 @@ void Task::runTask()
     // Определение потоков вывода
     StreamControl sc;
     QTextStream os(sc.makeOutputDevice(optns[ctoOutput].value));
-    QTextStream is(&sc.getInput(optns[ctoInput].value));
+    QTextStream *is = sc.getInput(optns[ctoInput].value);
+    is->setCodec("IBM 866");
+    os.setCodec("IBM 866");
 
 //    QTextStream os(stdout);
 //    QTextStream is(stdin);
@@ -175,14 +176,25 @@ void Task::runTask()
     QVector<DatTable> datTables;
     QVector<TableLinks> tableLinks;
 
-    DiffConnection conn;
-    if (!conn.isConnected())
-        return;
-    qCInfo(logTask) << "Connection success. User =" << conn.getUser() << ", dsn =" << conn.getDsn();
+    QScopedPointer<DiffConnection> conn;
 
-    while (!is.atEnd())
+    if (optns[ctoConnectionString].isSet)
     {
-        linesParser.parseDoc(is);
+        conn.reset(new DiffConnection(optns[ctoConnectionString].value,
+                                      optns[ctoConnectionUnicode].isSet));
+    }
+    else
+        conn.reset(new DiffConnection());
+
+    if (!conn->isConnected())
+        return;
+
+    qCInfo(logTask) << "Connection success. User =" << conn->getUser() << ", dsn =" << conn->getDsn();
+
+    is->device()->waitForReadyRead(-1);
+    while (!is->atEnd())
+    {
+        linesParser.parseDoc(*is);
         qCInfo(logTask) << "Diff parsed. Lines:"
                         << "insert -" << linesParser.linesCount({ltInsert})
                         << "delete -" << linesParser.linesCount({ltDelete})
@@ -199,7 +211,7 @@ void Task::runTask()
 
         DatTable& datTable= datTables.back();
 
-        FmtTable fmtTable(conn.getConnection());
+        FmtTable fmtTable(conn->getConnection());
         if (!fmtTable.load(linesParser.getLines({ltTable})[0].toLower()))
         {
             QString tableName = linesParser.getLines({ltTable})[0].toLower();
@@ -241,6 +253,7 @@ void Task::runTask()
             qCWarning(logTask) << "File not exist: " << fileName;
             tableLink.tableName = datTable.name.toLower();
         }
+        is->device()->waitForReadyRead(-1);
     }
 
     JoinTables joinTables;
@@ -260,6 +273,5 @@ void Task::runTask()
 
     qInfo(logTask) << "Start sql building.";
     ssm.build(os, joinTables.getRoot());    
-
 }
 

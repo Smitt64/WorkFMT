@@ -26,7 +26,7 @@ typedef struct tagRecentList2 : tagRecentList
 }RecentList2;
 
 typedef QMap<QString, QVariant> OptionsMap;
-class RecentConnectionList : public QAbstractTableModel
+class FMTLIBSHARED_EXPORT RecentConnectionList : public QAbstractTableModel
 {
     Q_OBJECT
     typedef QList<RecentList2> RecentListType;
