@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+	<version ver="1.0.5.9">
+        <add>Доработки, необходимые для DiffToScript;</add>
+    </version>
 	<version ver="1.0.5.8">
         <fix>Исправлена ошибка выбора каталогов при выгрузке файлов;</fix>
     </version>

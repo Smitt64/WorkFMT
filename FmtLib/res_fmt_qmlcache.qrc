@@ -117,5 +117,6 @@
         <file alias="img/VCProject.dll_I000d_0409.ico">res/img/VCProject.dll_I000d_0409.ico</file>
         <file alias="../syntaxhighlighter/Default.json">syntaxhighlighter/Default.json</file>
         <file alias="AboutDlg">json/AboutDlg.json</file>
+        <file alias="img/DiffToScript.png">res/img/DiffToScript.png</file>
     </qresource>
 </RCC>

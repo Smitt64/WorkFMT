@@ -1,0 +1,6 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<changelog project="DB file tool">
+    <version ver="1.0.0.0">
+        <add>Генерация скриптов по локальным изменениям</add>
+    </version>
+</changelog>
