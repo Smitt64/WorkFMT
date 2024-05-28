@@ -1,0 +1,21 @@
+{
+    "table": 
+    {
+        "index": ["T_CHAPTER","T_INUMPLAN","T_BALANCE"],
+        "child_tbls": 
+        [
+            {
+                "fld_names": ["T_BALANCEID"],
+                "parent_fld_names": ["T_ID"],
+                "tbl_name": "DBALANCEBWPHIST_DBT"
+            },
+            {
+                "fld_names": ["T_BALANCEID"],
+                "parent_fld_names": ["T_ID"],
+                "tbl_name": "DBALANCEPARMHIST_DBT"
+            }
+        ],
+
+        "tbl_name": "DBALANCE_DBT"
+    }
+}

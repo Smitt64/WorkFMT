@@ -20,6 +20,7 @@
 int main(int argc, char *argv[])
 {
     FmtApplication app(argc, argv);
+    QApplication::setApplicationName("DiffToScript");
 /*#ifdef QT_DEBUG
     QLoggingCategory::setFilterRules(QStringLiteral("Fmt=false\nSql=false\nCore=false\n*.info=false"));
     QTest::qExec(new DiffToScriptTest);

@@ -10,6 +10,8 @@ class ScriptsPage;
 
 class CodeEditor;
 class DiffWizard;
+class QSplitter;
+class Highlighter;
 class ScriptsPage : public QWizardPage
 {
     Q_OBJECT
@@ -22,11 +24,15 @@ public:
 
 public slots:
     void oracleScriptReady(const QString &data);
+    void postgresScriptReady(const QString &data);
 
 private:
     Ui::ScriptsPage *ui;
 
+    QSplitter *m_pSplitter;
     CodeEditor *m_pOracle, *m_pPostgres;
+
+    Highlighter *m_pOracleHighlighter, *m_pPostgresHighlighter;
 };
 
 class GenerateOperation : public QObject, public QRunnable
@@ -40,6 +46,7 @@ public:
 
 signals:
     void oracleScriptReady(const QString &data);
+    void postgresScriptReady(const QString &data);
 
 private:
     DiffWizard *m_pWzrd;

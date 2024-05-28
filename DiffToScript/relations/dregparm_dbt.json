@@ -1,0 +1,16 @@
+{
+    "table": 
+    {
+        "index": ["T_KEYID"],
+        "child_tbls": 
+        [
+            {
+                "fld_names": ["T_KEYID"],
+                "parent_fld_names": ["T_KEYID"],
+                "tbl_name": "DREGVAL_DBT"
+            }
+        ],
+
+        "tbl_name": "DREGPARM_DBT"
+    }
+}

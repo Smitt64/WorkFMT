@@ -1,0 +1,20 @@
+{
+    "table": 
+    {
+        "index": 
+        [
+            "T_CODE",
+            "T_BALANCE",
+            "T_OPENDATE"
+        ],
+        "child_tbls": 
+        [
+            {
+                "fld_names": ["T_OFRRECID"],
+                "parent_fld_names": ["T_RECID"],
+                "tbl_name": "DOPUSYMHIST_DBT"
+            }
+        ],
+        "tbl_name": "DOPUSYMB_DBT"
+    }
+}

@@ -8,8 +8,7 @@ DbSpellingPostgres::DbSpellingPostgres()
 QStringList DbSpellingPostgres::getDeclare()
 {
     return QStringList()
-            << "DO"
-            << "$$"
+            << "do $do$"
             << "DECLARE";
 }
 
@@ -23,7 +22,10 @@ QStringList DbSpellingPostgres::getEnd()
 {
     return QStringList()
             << "end;"
-            << "$$ "
-            << "language plpgsql;";
+            << "$do$ language plpgsql;";
+}
 
+QString DbSpellingPostgres::chr()
+{
+    return "glob_func.chr";
 }

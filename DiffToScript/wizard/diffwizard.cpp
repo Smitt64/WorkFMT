@@ -2,10 +2,12 @@
 #include "wizard/actionpage.h"
 #include "wizard/connactionpage.h"
 #include "wizard/scriptspage.h"
+#include <QIcon>
 
 DiffWizard::DiffWizard(QWidget *parent) :
     QWizard(parent)
 {
+    setWindowIcon(QIcon(":/img/DiffToScript.png"));
     setFixedSize(800, 600);
 
     m_pActionPage = new ActionPage(this);

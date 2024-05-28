@@ -1,5 +1,5 @@
 #include <memory>
-
+#include "toolsruntime.h"
 #include "join.h"
 #include "task.h"
 #include "fmttable.h"
@@ -242,7 +242,9 @@ void Task::runTask()
 
         tableLinks.append(TableLinks());
         TableLinks& tableLink = tableLinks.back();
-        QString fileName = curDir + "/" + datTable.name.toLower() + ".json";
+        QString fileName = toolFullFileNameFromDir(QString("relations/%1.json")
+                                                   .arg(datTable.name.toLower()));
+
         if (QFile::exists(fileName))
         {
             tableLink.loadLinks(fileName);

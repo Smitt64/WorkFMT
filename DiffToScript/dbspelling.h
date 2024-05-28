@@ -9,6 +9,7 @@ class DbSpelling
 {
 public:
     virtual QString toDate(const QString& value);
+    virtual QString chr();
     virtual void setSpelling(const DiffFields& fields, QStringList& values);
     virtual QStringList getDeclare() = 0;
     virtual QStringList getBegin() = 0;

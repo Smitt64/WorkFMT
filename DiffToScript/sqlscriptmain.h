@@ -32,6 +32,7 @@ public:
     void build(QTextStream& os, JoinTable* joinTable);
 
     void dateSpelling(const JoinTable* joinTable, DatRecord& rec);
+    void stringSpelling(const JoinTable* joinTable, DatRecord& rec);
 private:
     QScopedPointer<DbSpelling> _dbSpelling;
 

@@ -17,5 +17,6 @@ QStringList DbSpellingOracle::getBegin()
 
 QStringList DbSpellingOracle::getEnd()
 {
-    return QStringList() << "END;";
+    return QStringList() << "END;"
+                         << "/";
 }

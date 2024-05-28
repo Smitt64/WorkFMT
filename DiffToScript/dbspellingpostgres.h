@@ -8,12 +8,10 @@ class DbSpellingPostgres : public DbSpelling
 public:
     DbSpellingPostgres();
 
-
-    // DbSpelling interface
-public:
     QStringList getDeclare() override;
     QStringList getBegin() override;
     QStringList getEnd() override;
+    QString chr() override;
 };
 
 #endif // DBSPELLINGPOSTGRES_H

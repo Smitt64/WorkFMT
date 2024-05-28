@@ -1,5 +1,6 @@
 #include "sqlscriptmain.h"
 #include "difflogging.h"
+#include "fmtcore.h"
 
 const QString PADDING = "  ";
 
@@ -173,6 +174,7 @@ QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecor
     replaceForeignAutoinc(joinTable, rec);
 
     dateSpelling(joinTable, rec);
+    stringSpelling(joinTable, rec);
 
     if (keyFieldIndexes.count() == 0)
         keyFieldIndexes = indexesOfUniqueIndex(joinTable);
@@ -204,6 +206,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     replaceForeignAutoinc(joinTable, rec);
 
     dateSpelling(joinTable, rec);
+    stringSpelling(joinTable, rec);
 
     //Проверка индекса на автоинкрементное поле
     QString variable = buildVariableName(joinTable->datTable);
@@ -394,6 +397,35 @@ void SqlScriptMain::dateSpelling(const JoinTable *joinTable, DatRecord &rec)
             rec.values[i] = _dbSpelling->toDate(rec.values[i]);
 }
 
+void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord &rec)
+{
+    for (int i = 0; i < joinTable->datTable->fields.count(); ++i)
+    {
+        qint16 type = joinTable->datTable->fields[i].type;
+
+        if (type == fmtt_STRING || type == fmtt_SNR)
+        {
+            if (rec.values[i].isEmpty() || rec.values[i].at(0) == QChar(1))
+            {
+                rec.values[i] = QString("%1(1)")
+                        .arg(_dbSpelling->chr());
+            }
+        }
+        else if (type == fmtt_CHR || type == fmtt_UCHR)
+        {
+            if (rec.values[i].isEmpty() || rec.values[i].at(0) == QChar(0) || rec.values[i].at(0) == QChar(2))
+            {
+                rec.values[i] = QString("%1(0)")
+                        .arg(_dbSpelling->chr());
+            }
+            else if (rec.values[i].size() == 3 && rec.values[i].at(1) == QChar(2))
+            {
+                rec.values[i] = QString("%1(0)")
+                        .arg(_dbSpelling->chr());
+            }
+        }
+    }
+}
 
 
 
