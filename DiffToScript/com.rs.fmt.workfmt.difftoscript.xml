@@ -1,5 +1,10 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
-<changelog project="DB file tool">
+<changelog project="Diff to Script">
+    <version ver="1.0.0.1">
+        <add>Добавлены перечисления полей из структуры dat файлов для insert запросов</add>
+        <fix>Исправлена генерация запросов для "новых" файлов</fix>
+        <fix>Исправлена ситуация, когда некоторые скрипты дублировались при генерации в интерфейсном режиме</fix>
+    </version>
     <version ver="1.0.0.0">
         <add>Генерация скриптов по локальным изменениям</add>
     </version>

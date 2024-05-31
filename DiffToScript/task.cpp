@@ -15,6 +15,7 @@
 #include "fmtindex.h"
 #include "fmtsegment.h"
 #include "sqlscriptmain.h"
+#include <QTemporaryFile>
 
 #include <QTextStream>
 #include <QFile>
@@ -149,8 +150,33 @@ void Task::runTask()
     is->setCodec("IBM 866");
     os.setCodec("IBM 866");
 
-//    QTextStream os(stdout);
-//    QTextStream is(stdin);
+    // normalize input for new files
+    QTemporaryFile tmp;
+    if (tmp.open())
+    {
+        const QString end_pattern = "+BEGINDATA";
+        QTextStream tmpStream(&tmp);
+        tmpStream.setCodec("IBM 866");
+
+        QString lines = is->readAll();
+
+        int begin_pos = lines.indexOf("+LOAD DATA");
+        int end_pos = lines.indexOf(end_pattern);
+
+        if (begin_pos != -1 && end_pos != -1)
+        {
+            lines = lines.remove(begin_pos, (end_pos - begin_pos) + end_pattern.size());
+            tmpStream.seek(0);
+            tmpStream << lines;
+            qDebug() << tmp.fileName();
+            tmp.close();
+
+            is = sc.getInput(tmp.fileName());
+            is->setCodec("IBM 866");
+        }
+        else
+            tmp.close();
+    }
 
     //Распознование типа строк в исходном файле
     LinesParserMain linesParser;

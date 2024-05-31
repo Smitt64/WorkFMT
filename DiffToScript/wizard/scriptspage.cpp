@@ -116,7 +116,6 @@ void GenerateOperation::run()
         QScopedPointer<QProcess> proc(new QProcess);
         proc->setWorkingDirectory(Path);
 
-        args.append(files);
         CoreStartProcess(proc.data(), "svn.exe", args, true, true);
 
         DiffData[file] = proc->readAllStandardOutput();

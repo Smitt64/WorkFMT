@@ -196,6 +196,15 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     if (autoIncIndex != -1)
         rec.values[autoIncIndex] = "0";
 
+    QString InsertFieldList;
+    for (const DiffField &fld : joinTable->datTable->fields)
+    {
+        if (!InsertFieldList.isEmpty())
+            InsertFieldList += ",";
+
+        InsertFieldList += fld.name;
+    }
+
     //QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
 
     //Замена автоинкремента родительской талицы
@@ -216,12 +225,12 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
         QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
 
         QString values = rec.values.join(", ");
-        sql.append(QString(PADDING + "INSERT INTO %1 VALUES (%2) RETURNING %3 INTO %4;").arg(joinTable->datTable->name,  values, autoIncField, variable));
+        sql.append(QString(PADDING + "INSERT INTO %1(%5) VALUES (%2) RETURNING %3 INTO %4;").arg(joinTable->datTable->name,  values, autoIncField, variable, InsertFieldList));
     }
     else
     {
         QString values = rec.values.join(", ");
-        sql.append(QString(PADDING + "INSERT INTO %1 VALUES (%2);").arg(joinTable->datTable->name,  values));
+        sql.append(QString(PADDING + "INSERT INTO %1(%3) VALUES (%2);").arg(joinTable->datTable->name, values, InsertFieldList));
     }
     return ++recIndex;
 }

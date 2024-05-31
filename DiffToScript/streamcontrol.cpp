@@ -73,5 +73,6 @@ QTextStream *StreamControl::getInput(QString fileName)
         qCInfo(logDiff) << "Input is stdin";
         _stream.reset(new QTextStream(stdin));
     }
+
     return _stream.data();
 }

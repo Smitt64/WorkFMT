@@ -1,0 +1,16 @@
+{
+    "table": 
+    {
+        "index": ["T_FIID"],
+        "child_tbls": 
+        [
+            {
+                "fld_names": ["T_FIID"],
+                "parent_fld_names": ["T_FIID"],
+                "tbl_name": "DARTICLE_DBT"
+            }
+        ],
+
+        "tbl_name": "DFININSTR_DBT"
+    }
+}
