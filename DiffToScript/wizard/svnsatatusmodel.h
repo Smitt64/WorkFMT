@@ -26,7 +26,7 @@ public:
     explicit SvnSatatusModel(QObject *parent = nullptr);
     virtual ~SvnSatatusModel();
 
-    void setPath(const QString &path);
+    void setPath(const QString &path, const QString &revision);
 
     virtual QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;

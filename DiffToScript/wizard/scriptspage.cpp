@@ -6,6 +6,7 @@
 #include "diffwizard.h"
 #include "tablelinks.h"
 #include "task.h"
+#include "svnlogmodel.h"
 #include <QProcess>
 #include <QThreadPool>
 #include <QMapIterator>
@@ -13,6 +14,7 @@
 #include <QTextStream>
 #include <QSplitter>
 #include <QScrollBar>
+#include <QTabWidget>
 
 enum
 {
@@ -39,6 +41,10 @@ void GenerateOperation::run()
     QString User = m_pWzrd->field("User").toString();
     QString Password = m_pWzrd->field("Password").toString();
     QString Service = m_pWzrd->field("Service").toString();
+    QString Revision = m_pWzrd->field("Revision").toString();
+
+    SvnInfoMap info = SvnGetRepoInfo(Path);
+
     bool IsUnicode = m_pWzrd->field("IsUnicode").toBool();
     QStringList files = m_pWzrd->userField("Files").toStringList();
     QStringList filesCleared = files;
@@ -72,6 +78,13 @@ void GenerateOperation::run()
 
     QMap<QString, QByteArray> DiffData;
     QStringList args = { "diff" };
+
+    if (!Revision.isEmpty())
+    {
+        args.append("-c");
+        args.append(Revision);
+    }
+
     for (const TableLinks &tableLink : tableLinks)
     {
         QStringList::iterator file = std::find_if(files.begin(), files.end(), [=](const QString &f)
@@ -80,7 +93,12 @@ void GenerateOperation::run()
         });
 
         if (file != files.end())
-            args.append(*file);
+        {
+            if (Revision.isEmpty())
+                args.append(*file);
+            else
+                args.append(QString("%1/%2").arg(info["url"], *file));
+        }
 
         for (const Link &childlnk : tableLink.links)
         {
@@ -90,18 +108,22 @@ void GenerateOperation::run()
             });
 
             if (file != files.end())
-                args.append(*file);
+            {
+                if (Revision.isEmpty())
+                    args.append(*file);
+                else
+                    args.append(QString("%1/%2").arg(info["url"], *file));
+            }
         }
     }
 
-    if (Action == ActionByLocalDiff)
+    //if (Action == ActionByLocalDiff)
     {
         if (args.count() > 1)
         {
             QScopedPointer<QProcess> proc(new QProcess);
             proc->setWorkingDirectory(Path);
 
-            args.append(files);
             CoreStartProcess(proc.data(), "svn.exe", args, true, true);
 
             DiffData[args.at(1)] = proc->readAllStandardOutput();
@@ -111,7 +133,18 @@ void GenerateOperation::run()
     for (const QString &file : filesCleared)
     {
         args = QStringList { "diff" };
-        args.append(file);
+
+        if (!Revision.isEmpty())
+        {
+            args.append("-c");
+            args.append(Revision);
+        }
+
+        if (Revision.isEmpty())
+            args.append(file);
+        else
+            args.append(QString("%1/%2").arg(info["url"], file));
+        //args.append(info["url"]);
 
         QScopedPointer<QProcess> proc(new QProcess);
         proc->setWorkingDirectory(Path);
@@ -203,11 +236,15 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
     m_pOracle = new CodeEditor(this);
     m_pPostgres = new CodeEditor(this);
 
-    m_pSplitter = new QSplitter(Qt::Vertical, this);
-    layout()->addWidget(m_pSplitter);
+    m_pTabWidget = new QTabWidget(this);
+    //m_pSplitter = new QSplitter(Qt::Vertical, this);
+    //layout()->addWidget(m_pSplitter);
+    layout()->addWidget(m_pTabWidget);
 
-    m_pSplitter->addWidget(m_pOracle);
-    m_pSplitter->addWidget(m_pPostgres);
+    m_pTabWidget->addTab(m_pOracle, "Oracle");
+    m_pTabWidget->addTab(m_pPostgres, "Postgres");
+    //m_pSplitter->addWidget(m_pOracle);
+    //m_pSplitter->addWidget(m_pPostgres);
 
     m_pOracle->setReadOnly(true);
     m_pPostgres->setReadOnly(true);

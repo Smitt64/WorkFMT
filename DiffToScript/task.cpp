@@ -175,7 +175,10 @@ void Task::runTask()
             is->setCodec("IBM 866");
         }
         else
+        {
+            is->seek(0);
             tmp.close();
+        }
     }
 
     //Распознование типа строк в исходном файле

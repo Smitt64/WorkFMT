@@ -29,3 +29,8 @@ QString DbSpellingPostgres::chr()
 {
     return "glob_func.chr";
 }
+
+QString DbSpellingPostgres::toBlob(const QString& value)
+{
+    return QString("decode(%1, 'hex')").arg(value);
+}

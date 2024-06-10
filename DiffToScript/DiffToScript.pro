@@ -45,6 +45,8 @@ SOURCES += \
     wizard/connactionpage.cpp \
     wizard/diffwizard.cpp \
     wizard/scriptspage.cpp \
+    wizard/svnlogdlg.cpp \
+    wizard/svnlogmodel.cpp \
     wizard/svnsatatusmodel.cpp \
     wizard/svntool.cpp
 
@@ -83,6 +85,8 @@ HEADERS += \
     wizard/connactionpage.h \
     wizard/diffwizard.h \
     wizard/scriptspage.h \
+    wizard/svnlogdlg.h \
+    wizard/svnlogmodel.h \
     wizard/svnsatatusmodel.h \
     wizard/svntool.h
 
@@ -90,7 +94,8 @@ FORMS += \
     mainwindow.ui \
     wizard/actionpage.ui \
     wizard/connactionpage.ui \
-    wizard/scriptspage.ui
+    wizard/scriptspage.ui \
+    wizard/svnlogdlg.ui
 
 # Default rules for deployment.
 #qnx: target.path = /tmp/$${TARGET}/bin

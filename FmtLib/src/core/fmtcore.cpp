@@ -352,7 +352,26 @@ FmtFldIndex fmtIndexForType(const FmtFldType &id)
     }
 
     return static_cast<FmtFldIndex>(indx);*/
-    return id;
+    //return id;
+
+    const QVector<int> ids =
+    {
+        fmtt_INT,
+        fmtt_LONG,
+        fmtt_BIGINT,
+        fmtt_FLOAT,
+        fmtt_DOUBLE,
+        fmtt_MONEY,
+        fmtt_STRING,
+        fmtt_SNR,
+        fmtt_DATE,
+        fmtt_TIME,
+        fmtt_CHR,
+        fmtt_UCHR,
+        fmtt_NUMERIC
+    };
+
+    return ids.indexOf(id);
 }
 
 QString fmtTypeNameForType(const FmtFldType &type)
@@ -664,6 +683,12 @@ QString BlobTypeToString(int type)
 
     throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")
                              .arg(type).toLocal8Bit().data());
+}
+
+bool isBlobType(const QString &typeName)
+{
+    static QStringList lst = {"BT_BLOB_VAR", "BT_BLOB_STREAM", "BT_CLOB"};
+    return lst.contains(typeName);
 }
 
 QString BoolToString(bool value)

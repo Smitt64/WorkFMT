@@ -25,6 +25,8 @@ public:
 private slots:
     void on_selFolderBtn_clicked();
 
+    void on_logButton_clicked();
+
 private:
     Ui::ActionPage *ui;
 

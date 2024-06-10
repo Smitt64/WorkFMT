@@ -11,6 +11,7 @@ public:
     QStringList getDeclare() override;
     QStringList getBegin() override;
     QStringList getEnd() override;
+    QString toBlob(const QString& value) override;
     QString chr() override;
 };
 

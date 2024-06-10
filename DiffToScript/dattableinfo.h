@@ -9,9 +9,13 @@ class DatTableInfo
 public:
     DatTableInfo();
     QString name;
+
+    QStringList realFields;
     DiffFields fields;
-    DatIndexes indexes;    
+    DatIndexes indexes;
+
     void loadFromFmt(FmtTable* fmtTable);
+    DiffField field(const QString &name) const;
 };
 
 #endif // DATTABLEINFO_H

@@ -12,6 +12,7 @@ class CodeEditor;
 class DiffWizard;
 class QSplitter;
 class Highlighter;
+class QTabWidget;
 class ScriptsPage : public QWizardPage
 {
     Q_OBJECT
@@ -29,7 +30,8 @@ public slots:
 private:
     Ui::ScriptsPage *ui;
 
-    QSplitter *m_pSplitter;
+    //QSplitter *m_pSplitter;
+    QTabWidget *m_pTabWidget;
     CodeEditor *m_pOracle, *m_pPostgres;
 
     Highlighter *m_pOracleHighlighter, *m_pPostgresHighlighter;

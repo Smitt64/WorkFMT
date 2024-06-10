@@ -19,3 +19,8 @@ void DbSpelling::setSpelling(const DiffFields &fields, QStringList &values)
             values[i] = toDate(values[i]);
     }
 }
+
+QString DbSpelling::toBlob(const QString& value)
+{
+    return value;
+}

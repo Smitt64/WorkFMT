@@ -2,6 +2,7 @@
 #include "ui_actionpage.h"
 #include "svnsatatusmodel.h"
 #include "diffwizard.h"
+#include "svnlogdlg.h"
 #include <selectfolderdlg.h>
 #include <QButtonGroup>
 #include <QSpinBox>
@@ -84,7 +85,7 @@ ActionPage::ActionPage(QWidget *parent) :
     ui(new Ui::ActionPage)
 {
     ui->setupUi(this);
-    ui->stackedWidget->widget(0)->layout()->setMargin(0);
+    ui->widget->layout()->setMargin(0);
 
     m_pModel = new SvnSatatusModel(this);
     m_pStatusModel = new DatSatatusModel(this);
@@ -94,7 +95,9 @@ ActionPage::ActionPage(QWidget *parent) :
     ui->listView->setModelColumn(SvnSatatusModel::fld_FileName);
 
     ui->localRadio->setChecked(true);
-    ui->revisionRadio->setEnabled(false);
+
+    ui->widget->setVisible(false);
+    //ui->revisionRadio->setEnabled(false);
 
     fakeBtn = new QSpinBox();
     m_pGroup = new QButtonGroup(this);
@@ -104,13 +107,29 @@ ActionPage::ActionPage(QWidget *parent) :
     setTitle(tr("Параметры репозитория"));
     registerField("Action", fakeBtn, "value");
     registerField("Path", ui->pathEdit);
+    registerField("Revision", ui->revisionEdit);
 
     connect(m_pGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled), [=](int id, bool checked)
     {
         if (checked)
             setField("Action", id);
+
+        if (checked && id == 1)
+            ui->widget->setVisible(true);
+        else
+        {
+            ui->revisionEdit->setText("");
+            ui->widget->setVisible(false);
+        }
+
+        m_pModel->setPath(ui->pathEdit->text(), ui->revisionEdit->text());
     });
 
+    connect(ui->revisionEdit, &QLineEdit::editingFinished, [=]()
+    {
+        m_pModel->setPath(ui->pathEdit->text(), ui->revisionEdit->text());
+        emit completeChanged();
+    });
     connect(m_pStatusModel, &DatSatatusModel::checkChanged, this, &ActionPage::completeChanged);
 }
 
@@ -128,7 +147,7 @@ void ActionPage::on_selFolderBtn_clicked()
     if (filderDir.exec() == QDialog::Accepted)
     {
         ui->pathEdit->setText(filderDir.selectedPath());
-        m_pModel->setPath(ui->pathEdit->text());
+        m_pModel->setPath(ui->pathEdit->text(), ui->revisionEdit->text());
         emit completeChanged();
     }
 }
@@ -147,3 +166,19 @@ bool ActionPage::isComplete() const
 
     return true;
 }
+
+void ActionPage::on_logButton_clicked()
+{
+    SvnLogDlg dlg(this);
+    dlg.setPath(ui->pathEdit->text());
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        ui->revisionEdit->blockSignals(true);
+        ui->revisionEdit->setText(dlg.revision());
+        ui->revisionEdit->blockSignals(false);
+
+        m_pModel->setPath(ui->pathEdit->text(), ui->revisionEdit->text());
+        emit completeChanged();
+    }
+}
+

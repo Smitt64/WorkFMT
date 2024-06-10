@@ -13,9 +13,9 @@
   <property name="windowTitle">
    <string>WizardPage</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
@@ -30,7 +30,7 @@
       </spacer>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
@@ -49,6 +49,9 @@
          </item>
          <item>
           <widget class="QToolButton" name="selFolderBtn">
+           <property name="toolTip">
+            <string>Выбор репозитория</string>
+           </property>
            <property name="text">
             <string>...</string>
            </property>
@@ -85,16 +88,47 @@
         </widget>
        </item>
        <item>
-        <widget class="QStackedWidget" name="stackedWidget">
-         <widget class="QWidget" name="page">
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <widget class="QListView" name="listView"/>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="page_2"/>
+        <widget class="QWidget" name="widget" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Ревизия:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="revisionEdit"/>
+          </item>
+          <item>
+           <widget class="QToolButton" name="logButton">
+            <property name="toolTip">
+             <string>Выбор ревизии</string>
+            </property>
+            <property name="text">
+             <string>Выбор ревизии</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../../FmtLib/res/fmt.qrc">
+              <normaloff>:/img/book_32.png</normaloff>:/img/book_32.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_2">
+         <property name="frameShape">
+          <enum>QFrame::HLine</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListView" name="listView"/>
        </item>
       </layout>
      </item>

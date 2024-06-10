@@ -6,7 +6,7 @@
 #include "cmdparser.h"
 #include "taskoptions.h"
 #include "difftoscripttest.h"
-
+#include <QMessageBox>
 #include <QFileInfo>
 //#include <QApplication>
 #include <QTimer>
@@ -53,6 +53,25 @@ int main(int argc, char *argv[])
     }
     else
     {
+        QDir trDir(QApplication::applicationDirPath());
+        if (!trDir.cd("translations"))
+            trDir = QDir::current();
+        else
+            trDir = QApplication::applicationDirPath();
+
+        QTranslator qt_translator;
+        if (trDir.cd("translations"))
+        {
+            QString translatorFile = QString("qt_%1").arg("ru");
+            if (qt_translator.load(translatorFile, trDir.absolutePath()))
+            {
+                //qCInfo(logCore()) << "Translator installed: " << translatorFile;
+                QApplication::installTranslator(&qt_translator);
+            }
+            else
+                QMessageBox::critical(nullptr, "Ошибка!", QString("Не удалось загрузить перевод %1").arg(translatorFile));
+        }
+
         DiffWizard wzrd;
         wzrd.show();
         return app.exec();

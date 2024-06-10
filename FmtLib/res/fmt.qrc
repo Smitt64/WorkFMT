@@ -117,5 +117,6 @@
         <file>../syntaxhighlighter/Default.json</file>
         <file alias="AboutDlg">../json/AboutDlg.json</file>
         <file>img/DiffToScript.png</file>
+        <file>img/book_32.png</file>
     </qresource>
 </RCC>

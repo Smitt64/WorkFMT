@@ -66,8 +66,12 @@ QVector<int> SqlScriptMain::indexesOfKeyFields(const JoinTable *joinTable)
     for (int i = 0; i < joinTable->datTable->fields.count(); ++i)
     {
         for (const Field& keyField: joinTable->keyFields)
+        {
             if (joinTable->datTable->fields[i].name.toLower() == keyField.toLower())
-                keyFieldIndexes.append(i);
+            {
+                keyFieldIndexes.append(joinTable->datTable->realFields.indexOf(keyField.toUpper()));
+            }
+        }
     }
 
     if (keyFieldIndexes.count())
@@ -180,7 +184,9 @@ QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecor
         keyFieldIndexes = indexesOfUniqueIndex(joinTable);
 
     for (int i = 0; i < keyFieldIndexes.count(); ++i)
+    {
         where.append(joinTable->datTable->fields[keyFieldIndexes[i]].name + " = " + rec.values[keyFieldIndexes[i]]);
+    }
 
     return where;
 }
@@ -197,12 +203,12 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
         rec.values[autoIncIndex] = "0";
 
     QString InsertFieldList;
-    for (const DiffField &fld : joinTable->datTable->fields)
+    for (const QString &fld : joinTable->datTable->realFields)
     {
         if (!InsertFieldList.isEmpty())
             InsertFieldList += ",";
 
-        InsertFieldList += fld.name;
+        InsertFieldList += fld;
     }
 
     //QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
@@ -225,12 +231,20 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
         QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
 
         QString values = rec.values.join(", ");
-        sql.append(QString(PADDING + "INSERT INTO %1(%5) VALUES (%2) RETURNING %3 INTO %4;").arg(joinTable->datTable->name,  values, autoIncField, variable, InsertFieldList));
+        sql.append(QString(PADDING + "INSERT INTO %1(%5) VALUES (%2) RETURNING %3 INTO %4;")
+                   .arg(joinTable->datTable->name,
+                        values,
+                        autoIncField,
+                        variable,
+                        InsertFieldList));
     }
     else
     {
         QString values = rec.values.join(", ");
-        sql.append(QString(PADDING + "INSERT INTO %1(%3) VALUES (%2);").arg(joinTable->datTable->name, values, InsertFieldList));
+        sql.append(QString(PADDING + "INSERT INTO %1(%3) VALUES (%2);")
+                   .arg(joinTable->datTable->name,
+                        values,
+                        InsertFieldList));
     }
     return ++recIndex;
 }
@@ -272,13 +286,17 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
     //Изменёные значения
     QVector<int> modifiedValues;
     for (int i = 0; i < oldRec.values.count(); ++i)
+    {
         if (oldRec.values[i] != newRec.values[i])
             modifiedValues.append(i);
+    }
 
     replaceForeignAutoinc(joinTable, newRec);
+    dateSpelling(joinTable, newRec);
+    stringSpelling(joinTable, newRec);
 
     for (int i: modifiedValues)
-        setList.append(joinTable->datTable->fields[i].name + " = " + newRec.values[i]);
+        setList.append(joinTable->datTable->realFields[i] + " = " + newRec.values[i]);
 
     QStringList where = buildWhere(joinTable, oldRec);
 
@@ -290,11 +308,19 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
         int autoIncIndex = getAutoincIndex(joinTable->datTable);
         QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
 
-        sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;").arg(joinTable->datTable->name, setList.join(", "), where.join(" AND "), autoIncField, variable));
+        sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;")
+                   .arg(joinTable->datTable->name,
+                        setList.join(", "),
+                        where.join(" AND "),
+                        autoIncField,
+                        variable));
     }
     else
     {
-        sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3;").arg(joinTable->datTable->name, setList.join(", "), where.join(" AND ")));
+        sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3;")
+                   .arg(joinTable->datTable->name,
+                        setList.join(", "),
+                        where.join(" AND ")));
     }
     return ++oldIndex;
 }
@@ -401,16 +427,22 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
 void SqlScriptMain::dateSpelling(const JoinTable *joinTable, DatRecord &rec)
 {
-    for (int i = 0; i < joinTable->datTable->fields.count(); ++i)
-        if (joinTable->datTable->fields[i].isDate())
+    for (int i = 0; i < joinTable->datTable->realFields.count(); ++i)
+    {
+        DiffField fld = joinTable->datTable->field(joinTable->datTable->realFields[i]);
+        qCInfo(logSqlScriptMain) << fld.name << joinTable->datTable->fields[i].typeName;
+
+        if (fld.isDate())
             rec.values[i] = _dbSpelling->toDate(rec.values[i]);
+    }
 }
 
 void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord &rec)
 {
-    for (int i = 0; i < joinTable->datTable->fields.count(); ++i)
+    for (int i = 0; i < joinTable->datTable->realFields.count(); ++i)
     {
-        qint16 type = joinTable->datTable->fields[i].type;
+        DiffField fld = joinTable->datTable->field(joinTable->datTable->realFields[i]);
+        qint16 type = fld.type;
 
         if (type == fmtt_STRING || type == fmtt_SNR)
         {
@@ -432,6 +464,10 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord &rec)
                 rec.values[i] = QString("%1(0)")
                         .arg(_dbSpelling->chr());
             }
+        }
+        else if (isBlobType(fld.typeName))
+        {
+            rec.values[i] = _dbSpelling->toBlob(rec.values[i]);
         }
     }
 }

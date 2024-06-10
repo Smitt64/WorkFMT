@@ -1,4 +1,5 @@
 #include "svnsatatusmodel.h"
+#include "svnlogmodel.h"
 #include <fmtcore.h>
 #include <QProcess>
 #include <QDir>
@@ -58,15 +59,33 @@ const SvnSatatusElement &SvnSatatusModel::element(const int &row) const
     return m_Elements[row];
 }
 
-void SvnSatatusModel::setPath(const QString &path)
+void SvnSatatusModel::setPath(const QString &path, const QString &revision)
 {
+    SvnInfoMap info = SvnGetRepoInfo(path);
     m_Path = path;
     beginResetModel();
     m_Elements.clear();
 
     QProcess proc;
     proc.setWorkingDirectory(m_Path);
-    CoreStartProcess(&proc, "svn.exe", {"status", "--ignore-externals", "--xml"}, true, true, 30000, true);
+
+    QStringList args = {"--xml"};
+
+    if (!revision.isEmpty())
+    {
+        args.prepend("log");
+        args.append("-r");
+        args.append(revision);
+        args.append("-v");
+        args.append(info["url"]);
+    }
+    else
+    {
+        args.prepend("status");
+        args.append("--ignore-externals");
+    }
+
+    CoreStartProcess(&proc, "svn.exe", args, true, true, 30000, true);
 
     QByteArray data = proc.readAllStandardOutput();
     QDomDocument doc;
@@ -97,22 +116,50 @@ void SvnSatatusModel::setPath(const QString &path)
         m_Elements.append(element);
     };
 
-    QDomNode n = docElem.firstChild();
-    while(!n.isNull())
+    if (revision.isEmpty())
     {
-        QDomElement e = n.toElement();
-
-        if (e.nodeName() == "target")
+        QDomNode n = docElem.firstChild();
+        while(!n.isNull())
         {
-            QDomNode target = e.firstChild();
+            QDomElement e = n.toElement();
 
-            while(!target.isNull())
+            if (e.nodeName() == "target")
             {
-                entryFunc(target.toElement());
-                target = target.nextSibling();
+                QDomNode target = e.firstChild();
+
+                while(!target.isNull())
+                {
+                    entryFunc(target.toElement());
+                    target = target.nextSibling();
+                }
             }
+            n = n.nextSibling();
         }
-        n = n.nextSibling();
+    }
+    else
+    {
+        QDomNode n = docElem.firstChildElement("logentry").firstChildElement("paths").firstChild();
+        while(!n.isNull())
+        {
+            QDomElement e = n.toElement();
+
+            if (e.nodeName() == "path")
+            {
+                SvnSatatusElement element;
+
+                QString rel_url = info["relative-url"].mid(2) + "/";
+                element.fullpath = e.text().mid(1);
+                element.path = e.text().remove(rel_url).mid(1);
+
+                QFileInfo fi(element.fullpath);
+                element.filename = fi.completeBaseName();
+                element.action = e.attribute("action");
+
+                if (!element.path.isEmpty())
+                    m_Elements.append(element);
+            }
+            n = n.nextSibling();
+        }
     }
 
     endResetModel();

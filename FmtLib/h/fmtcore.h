@@ -200,8 +200,9 @@ int FMTLIBSHARED_EXPORT CoreStartProcess(QProcess *exe, const QString &program,
 QString FMTLIBSHARED_EXPORT ProcessExitStatusText(qint16 State);
 QString FMTLIBSHARED_EXPORT ProcessStateText(qint16 State);
 
-QString BlobTypeToString(int type);
-QString BoolToString(bool value);
+FMTLIBSHARED_EXPORT QString BlobTypeToString(int type);
+FMTLIBSHARED_EXPORT bool isBlobType(const QString &typeName);
+FMTLIBSHARED_EXPORT QString BoolToString(bool value);
 
 QColor GenerateColor();
 void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent);

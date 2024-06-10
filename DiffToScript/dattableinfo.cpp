@@ -1,39 +1,35 @@
 #include "dattableinfo.h"
 #include "fmtcore.h"
+#include "toolsruntime.h"
 #include "fmtfield.h"
 #include "difflogging.h"
 #include "fmtindex.h"
 #include "fmtsegment.h"
+#include <QtSql>
 
 DatTableInfo::DatTableInfo()
 {
 
 }
 
-QString BlobTypeToString(int type)
+DiffField DatTableInfo::field(const QString &name) const
 {
-    switch (type)
+    DiffFields::const_iterator iter = std::find_if(fields.cbegin(), fields.cend(), [=](const DiffField &fld) -> bool
     {
-    case 0:
-        return "BT_BLOB_NO";
-    case 1:
-        return "BT_BLOB_VAR";
-    case 2:
-        return "BT_BLOB_STREAM";
-    case 3:
-        return "BT_CLOB";
-    }
+        return fld.name.toUpper() == name.toUpper();
+    });
 
-    throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")
-                             .arg(type).toLocal8Bit().data());
+    if (iter != fields.cend())
+        return *iter;
+
+    return DiffField();
 }
-
 
 void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
 {   
     FmtInit();
     fields.clear();
-    name = fmtTable->name();
+    name = fmtTable->name().toUpper();
     qCInfo(logDatTable) << "Start load from fmt. Table name = " << name;
     for (int i = 0; i < fmtTable->fieldsCount(); ++i)
     {
@@ -41,13 +37,14 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
         bool isString = (fld->isString() || fld->type() == fmtt_CHR);
 
         DiffField df;
-        df.name = fld->name();
+        df.name = fld->name().toUpper();
         df.type = fld->type();
         df.typeName = fmtTypeNameForType(fld->type());
         df.isAutoinc = fld->isAutoInc();
         df.isString = isString;
 
         fields.append(df);
+        realFields.append(df.name.toUpper());
         qCInfo(logDatTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
     }
     if (fmtTable->blobLen() > 0)
@@ -74,4 +71,49 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
         }
     }
     qCInfo(logDatTable) << "End load from fmt. Table name = " << name;
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", QUuid::createUuid().toString());
+    QString infoFile = toolFullFileNameFromDir("datstruct.info");
+    db.setDatabaseName(infoFile);
+
+    if (db.open())
+    {
+        QSqlQuery q(db);
+        if (q.prepare("SELECT column FROM DAT_FIELDS where upper(NAME) = :val order by id"))
+        {
+            q.bindValue(":val", name);
+
+            if (q.exec())
+            {
+                bool isFirst = true;
+                while(q.next())
+                {
+                    if (isFirst)
+                    {
+                        realFields.clear();
+                        isFirst = false;
+                    }
+
+                    QString fld = q.value(0).toString();
+                    qCInfo(logDatTable) << "Loaded dat struc field" << fld;
+
+                    realFields.append(fld);
+                }
+            }
+            else
+            {
+                QString err = q.lastError().text();
+                qCWarning(logDatTable) << "Can't find dat struct info for table" << name << q.lastError().text();
+            }
+        }
+        else
+        {
+            QString err = q.lastError().text();
+            qCWarning(logDatTable) << "Can't find dat struct info for table" << name << q.lastError().text();
+        }
+
+        db.close();
+    }
+    else
+        qCWarning(logDatTable) << "Can't open dat struct info file: datstruct.info";
 }

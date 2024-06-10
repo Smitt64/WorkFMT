@@ -118,5 +118,6 @@
         <file alias="../syntaxhighlighter/Default.json">syntaxhighlighter/Default.json</file>
         <file alias="AboutDlg">json/AboutDlg.json</file>
         <file alias="img/DiffToScript.png">res/img/DiffToScript.png</file>
+        <file alias="img/book_32.png">res/img/book_32.png</file>
     </qresource>
 </RCC>
