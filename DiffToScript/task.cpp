@@ -91,7 +91,27 @@ DatRecords::iterator parseUpdateBlock(int indexPrimaryKey, DatRecords::iterator 
 {
     DatRecords::iterator it = first;
 
-    for(;it != last && it->lineType == ltUpdate; ++it);
+    for (;it != last && it->lineType == ltUpdate; ++it)
+    {
+        if (it->lineUpdateType == lutOld)
+        {
+            DatRecords::iterator next = it + 1;
+
+            if (next != last && next->lineUpdateType == lutNew)
+            {
+                if (it->values[indexPrimaryKey] != next->values[indexPrimaryKey])
+                {
+                    it->lineType = ltDelete;
+                    it->lineUpdateType = lutOld;
+
+                    next->lineType = ltInsert;
+                    next->lineUpdateType = lutNew;
+                    it ++;
+                }
+            }
+        }
+    }
+    /*for(;it != last && it->lineType == ltUpdate; ++it);
     last = it;
 
     DatRecords::iterator mid = first + (last - first) / 2;
@@ -108,7 +128,8 @@ DatRecords::iterator parseUpdateBlock(int indexPrimaryKey, DatRecords::iterator 
 
             qCInfo(logTask) << "Line type changed for primary key " << first->values[indexPrimaryKey];
         }
-    }
+    }*/
+
     return last;
 }
 

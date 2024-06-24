@@ -375,7 +375,7 @@ int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable,
     {
         if (!childJoin)
         {
-            for (nextRecIndex = recIndex; nextRecIndex < joinTable->datTable->records.count(); ++nextRecIndex)
+            /*for (nextRecIndex = recIndex; nextRecIndex < joinTable->datTable->records.count(); ++nextRecIndex)
             {
                 const DatRecord& upd_rec = joinTable->datTable->records[nextRecIndex];
                 if (joinTable->datTable->records[nextRecIndex].lineType != ltUpdate)
@@ -391,6 +391,38 @@ int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable,
                 qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->datTable->name << ", record index" << recIndex;
                 buildUpdateStatement(os, joinTable, sql, oldRec, newRec);
                 buildChildStatement(os, joinTable, sql, newRec);
+            }*/
+            int OldIndex = -1;
+            int NewIndex = -1;
+
+            for (nextRecIndex = recIndex; nextRecIndex < joinTable->datTable->records.count(); ++nextRecIndex)
+            {
+                const DatRecord& upd_rec = joinTable->datTable->records[nextRecIndex];
+
+                if (upd_rec.lineType == ltUpdate && upd_rec.lineUpdateType == lutOld)
+                    OldIndex = nextRecIndex;
+
+                if (upd_rec.lineType == ltUpdate && upd_rec.lineUpdateType == lutNew)
+                    NewIndex = nextRecIndex;
+
+                if (OldIndex != -1 && NewIndex != -1)
+                {
+                    qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->datTable->name << ", record index" << recIndex;
+                    buildUpdateStatement(os, joinTable, sql, OldIndex, NewIndex);
+                    buildChildStatement(os, joinTable, sql, NewIndex);
+
+                    OldIndex = -1;
+                    NewIndex = -1;
+                    nextRecIndex ++;
+                    break;
+                }
+
+                if (upd_rec.lineType != ltUpdate)
+                {
+                    OldIndex = -1;
+                    NewIndex = -1;
+                    break;
+                }
             }
         }
         else

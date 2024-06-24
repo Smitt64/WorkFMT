@@ -18,6 +18,13 @@ void LinesParser::parseLines(QTextStream& is, ParsedLines& lines)
 bool LinesInsertParser::parseLine(QTextStream& is, ParsedLines& lines)
 {
     QString s = is.read(_token.count());
+
+    while (s == "\\" && !is.atEnd())
+    {
+        is.readLine();
+        s = is.read(_token.count());
+    }
+
     if (s == _token)
     {        
         lines.append(ParsedLine{is.readLine(), ltInsert});

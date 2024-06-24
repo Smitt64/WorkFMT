@@ -73,6 +73,12 @@ bool LinesParserMain::parseDoc(QTextStream &is)
         {
             is.readLineInto(&line); // skip line
             qCInfo(logLinesParserMain()) << "Parse line skipped";
+
+            if (line == "\\ No newline at end of file")
+            {
+                int k = 0;
+                k = 1;
+            }
         }
         else if (!_linesUpdateParser.isNull() && token == _linesUpdateParser->getToken())
         {
