@@ -73,6 +73,7 @@ public slots:
     void GenModifyTableFields();
     void GenCreateTableScript();
     void GenInsertTemplateSql();
+    void DiffToScript();
 
 private slots:
     void indexModelReseted();
@@ -146,7 +147,7 @@ private:
     QAction *m_unloadDbf, *m_loadDbf, *m_ImportData;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
-    QAction *m_GenInsertTemplate, *m_CamelCaseAction;
+    QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript;
     FmtWorkWndGen *pCodeGenWidget;
 
     QFrame *pUndoRedoBtnContainer;

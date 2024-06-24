@@ -68,8 +68,8 @@ bool LinesParserMain::parseDoc(QTextStream &is)
     while (!is.atEnd())
     {
         token = lookToken(is);
-       qCInfo(logLinesParserMain) << logLinesParserMain().categoryName() <<  "Token = " << token;
-        if (token == "+++" || token == "---" || token == "")
+        qCInfo(logLinesParserMain) << logLinesParserMain().categoryName() <<  "Token = " << token;
+        if (token == "+++" || token == "---" || token == "" || token == "\\")
         {
             is.readLineInto(&line); // skip line
             qCInfo(logLinesParserMain()) << "Parse line skipped";

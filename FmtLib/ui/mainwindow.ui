@@ -88,6 +88,7 @@
     <addaction name="actionLoadDbf"/>
     <addaction name="separator"/>
     <addaction name="menuUpdateScripts"/>
+    <addaction name="action_Diff_to_Script"/>
     <addaction name="separator"/>
     <addaction name="actionEditGroups"/>
     <addaction name="actionMassOp"/>
@@ -454,6 +455,15 @@
    </property>
    <property name="text">
     <string>Настроить отлаку на схеме</string>
+   </property>
+  </action>
+  <action name="action_Diff_to_Script">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/DiffToScript.png</normaloff>:/img/DiffToScript.png</iconset>
+   </property>
+   <property name="text">
+    <string>Скрипт изменения (Diff to Script)</string>
    </property>
   </action>
  </widget>

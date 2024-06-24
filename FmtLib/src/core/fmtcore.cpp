@@ -1463,3 +1463,72 @@ QString getFullFileNameFromDir(const QString &file)
 
     return QString();
 }
+
+QString FmtGenDiffToScript(const QString &filename,
+                           const QString &connectionString,
+                           bool IsUnicodeDb,
+                           QString *err)
+{
+    QString result;
+
+    QStringList args{"diff", filename};
+    QProcess process;
+    CoreStartProcess(&process, "svn", args, true, true);
+
+    auto GetResult = [=](const QString &filename) -> QString
+    {
+        QString result;
+        QFile f(filename);
+
+        if (f.open(QIODevice::ReadOnly))
+        {
+            QTextStream ostream(&f);
+            ostream.setCodec("IBM 866");
+            ostream.seek(0);
+
+            result = ostream.readAll();
+            f.close();
+        }
+
+        return result;
+    };
+
+    QByteArray errdata = process.readAllStandardError();
+    if (!errdata.isEmpty())
+    {
+        *err = QString::fromLocal8Bit(errdata);
+        return QString();
+    }
+    else
+    {
+        QTemporaryFile tmp;
+        QTemporaryFile resultfile;
+        tmp.open();
+        resultfile.open();
+        tmp.write(process.readAllStandardOutput());
+        tmp.close();
+        resultfile.close();
+
+        args = QStringList
+        {
+            "--input",
+            tmp.fileName(),
+            "--output",
+            resultfile.fileName(),
+            "--delete",
+            "--insert",
+            "--update",
+            "--cs",
+            connectionString
+        };
+
+        if (IsUnicodeDb)
+            args.append("--unicodedb");
+
+        CoreStartProcess(&process, "DiffToScript.exe", args, true, true);
+
+        result = GetResult(resultfile.fileName());
+    }
+
+    return result;
+}

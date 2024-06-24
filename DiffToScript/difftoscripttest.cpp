@@ -11,6 +11,7 @@
 #include "fmttable.h"
 #include "diffconnection.h"
 #include "sqlscriptmain.h"
+#include <QSharedPointer>
 
 DiffToScriptTest::DiffToScriptTest(QObject *parent) : QObject(parent)
 {
@@ -139,8 +140,9 @@ void DiffToScriptTest::caseParseStringField()
     dt.indexes.append(index);
     dt.loadData(linesParser.getParsedLines());
 
-    QScopedPointer<DbSpelling> ora(new DbSpellingOracle);
-    SqlScriptMain ssm(ora);
+    QSharedPointer<DiffConnection> conn(new DiffConnection());;
+    QSharedPointer<DbSpelling> ora(new DbSpellingOracle);
+    SqlScriptMain ssm(ora, conn);
 
     TableLinks tableLinks;
     tableLinks.tableName = "table";
@@ -301,8 +303,9 @@ void DiffToScriptTest::caseDoubleInsert()
 //    QCOMPARE(join->indexDownToUp.size(), 4);
 //    QCOMPARE(join->indexUpToDown.size(), 3);
 
-    QScopedPointer<DbSpelling> ora(new DbSpellingOracle);
-    SqlScriptMain ssm(ora);
+    QSharedPointer<DiffConnection> conn(new DiffConnection());
+    QSharedPointer<DbSpelling> ora(new DbSpellingOracle);
+    SqlScriptMain ssm(ora, conn);
 
     QFile outFile("test\\opu_insert_out.txt");
     QCOMPARE(outFile.open(QFile::WriteOnly), true);

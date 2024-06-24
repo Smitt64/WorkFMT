@@ -1,8 +1,13 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
+	<version ver="1.0.0.3">
+		<add>Добавлена обработка исключений DUP_VAL_ON_INDEX (in Oracle) и UNIQUE_VIOLATION (in PostgreSQL) для insert скриптов</add>
+		<add>Добавлена обертка HEXTORAW для blob полей (in Oracle)</add>
+        <fix>Заменена конструкция TO_DATE на glob_func.to_timestamp_immutable для скриптов на PostgreSQL</fix>
+    </version>
     <version ver="1.0.0.2">
-        <add>Добавлена обертка decode(hex) для blob полей</add>
-        <add>Добавлена обертка decode(hex), to_date и chr при генерации скриптов update</add>
+        <add>Добавлена обертка decode(hex) для blob полей (in PostgreSQL)</add>
+        <add>Добавлена обертка decode(hex), to_date и chr при генерации скриптов update (in PostgreSQL)</add>
         <add>Добавлена ссылка на confluence</add>
         <fix>Исправлено падение в ситуации, когда количество полей в dat файле отличалось от записи fmt</fix>
         <fix>Исправлена ошибка генерации скриптов, когда порядок полей в dat файлах не совпадал с fmt</fix>

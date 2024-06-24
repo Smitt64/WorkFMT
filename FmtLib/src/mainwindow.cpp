@@ -125,6 +125,19 @@ MainWindow::MainWindow(QWidget *parent) :
         });
     }
 
+    if (QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
+    {
+        QAction *actionDiffTool = new QAction(this);
+        actionDiffTool->setText(tr("Запустить DiffToScript"));
+        actionDiffTool->setIcon(QIcon(":/img/DiffToScript.png"));
+        ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDiffTool);
+
+        connect(actionDiffTool, &QAction::triggered, [=]()
+        {
+            QProcess::startDetached(dir.absoluteFilePath("DiffToScript.exe"), QStringList());
+        });
+    }
+
     m_ConnectionsGroup = new QActionGroup(this);
     pLogButton = new QPushButton(this);
     pLogButton->setToolTip(tr("Параметры трассы"));
@@ -194,6 +207,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionConfluence, SIGNAL(triggered(bool)), SLOT(OnConfluence()));
     connect(ui->actionCreateXml, SIGNAL(triggered(bool)), SLOT(CreateFromXml()));
     connect(ui->actionHighlighterTheme, SIGNAL(triggered(bool)), SLOT(HighlighterTheme()));
+    connect(ui->action_Diff_to_Script, SIGNAL(triggered(bool)), SLOT(GenDiffToScriptScript()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
@@ -873,6 +887,7 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.setDefaultAction(actionEdit);
     menu.addAction(ui->actionSql);
     menu.addMenu(ui->menuUpdateScripts);
+    menu.addAction(ui->action_Diff_to_Script);
 
     menu.addSeparator();
     menu.addAction(ui->actionCreate);
@@ -1359,6 +1374,28 @@ void MainWindow::GenAddFiledsScript()
             FmtWorkWindow *window = Q_NULLPTR;
             CreateDocument(table, &window)->show();
             window->GenAddFiledsScript();
+        }
+    }
+}
+
+void MainWindow::GenDiffToScriptScript()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            FmtWorkWindow *window = Q_NULLPTR;
+            CreateDocument(table, &window)->show();
+            window->DiffToScript();
         }
     }
 }

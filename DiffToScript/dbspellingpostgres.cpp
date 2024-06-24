@@ -34,3 +34,22 @@ QString DbSpellingPostgres::toBlob(const QString& value)
 {
     return QString("decode(%1, 'hex')").arg(value);
 }
+
+QString DbSpellingPostgres::toDate(const QString& value)
+{
+    return "glob_func.to_timestamp_immutable('" + value + "', 'DD-MM-YYY')";
+}
+
+QString DbSpellingPostgres::getExceptionName(const ExcceptionType &type)
+{
+    QString result;
+
+    switch(type)
+    {
+    case ExceptDupValOnIndex:
+        result = "UNIQUE_VIOLATION";
+        break;
+    }
+
+    return result;
+}

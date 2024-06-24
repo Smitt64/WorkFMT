@@ -5,11 +5,13 @@
 
 #include "join.h"
 #include "dbspelling.h"
+#include "diffconnection.h"
+#include <QSharedPointer>
 
 class SqlScriptMain
 {
 public:
-    SqlScriptMain(QScopedPointer<DbSpelling>& dbSpelling);
+    SqlScriptMain(QSharedPointer<DbSpelling>& dbSpelling, QSharedPointer<DiffConnection> connection);
 
     QStringList makeVariables(JoinTable* joinTable);
     QString buildVariableName(const DatTable* datTable);
@@ -27,15 +29,20 @@ public:
     int buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
     int buildDeleteStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
     int buildUpdateStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int recIndex, int newIndex);
-    int buildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
+    int buildStatement(QTextStream& os, const JoinTable* joinTable,
+                       QStringList& sql,
+                       int recIndex,
+                       Join *childJoin = nullptr,
+                       const QStringList &ParentValuesByIndex = QStringList());
     int buildChildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
     void build(QTextStream& os, JoinTable* joinTable);
 
     void dateSpelling(const JoinTable* joinTable, DatRecord& rec);
     void stringSpelling(const JoinTable* joinTable, DatRecord& rec);
-private:
-    QScopedPointer<DbSpelling> _dbSpelling;
 
+private:
+    QSharedPointer<DiffConnection> _connection;
+    QSharedPointer<DbSpelling> _dbSpelling;
 };
 
 #endif // SQLSCRIPTMAIN_H

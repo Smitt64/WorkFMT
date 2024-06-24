@@ -70,6 +70,7 @@ private slots:
     void GenModifyTableFields();
     void GenAddFiledsScript();
     void GenDeleteFiledsScript();
+    void GenDiffToScriptScript();
     void OnTableChangeUpdtList();
     void OnMassOpAction();
     void OnConfluence();

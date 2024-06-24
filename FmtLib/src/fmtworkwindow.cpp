@@ -35,7 +35,7 @@
 #include <QShortcut>
 #include <QTemporaryFile>
 #include <QProgressDialog>
-
+#include <QDirIterator>
 
 FmtFieldsTableViewFilterController::FmtFieldsTableViewFilterController(FmtFieldsDelegate *delegate) :
     pDelegate(delegate)
@@ -164,6 +164,8 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu->addSeparator();
     m_saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
     pActionsMenu->addSeparator();
+    m_GenDiffToScript = pActionsMenu->addAction(QIcon(":/img/DiffToScript.png"), tr("Diff to Script"));
+    pActionsMenu->addSeparator();
     m_MassRemoveFields = pActionsMenu->addAction(QIcon(":/img/remove.png"), tr("Удалить поля из таблицы"));
     pActionsMenu->addSeparator();
     m_EditContent = pActionsMenu->addAction(QIcon(":/img/EditTableHS.png"), tr("Редактировать содержимое"));
@@ -200,6 +202,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
     connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
     connect(m_CamelCaseAction, SIGNAL(triggered(bool)), SLOT(CamelCaseAction()));
+    connect(m_GenDiffToScript, SIGNAL(triggered(bool)), SLOT(DiffToScript()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
@@ -965,5 +968,70 @@ void FmtWorkWindow::CamelCaseAction()
             FldList[i]->setName(lst[i]);
 
         tableUndoStack()->endMacro();
+    }
+}
+
+void FmtWorkWindow::DiffToScript()
+{
+    ConnectionInfo *conn = pTable->connection();
+    SelectFolderDlg folder(RsDiffToScriptContext, tr("Выбор каталога с репозиторием"), this);
+
+    if (folder.exec() != QDialog::Accepted)
+        return;
+
+    QString datname = QString("%1.dat").arg(pTable->name().toUpper());
+
+    QDir dir(folder.selectedPath());
+    QString filename = dir.absoluteFilePath(datname);
+
+    auto ShowErrMsg = [=](const QString &msg)
+    {
+        QMessageBox dlg(this);
+        dlg.setIcon(QMessageBox::Critical);
+        dlg.setText(tr("Не удалось сформировать скрипт обновления записей"));
+        dlg.setDetailedText(msg);
+
+        dlg.exec();
+    };
+
+    if (!QFile::exists(filename))
+    {
+        filename = QString();
+        QDirIterator iter(dir.path(), {"*.dat"},
+                          QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks,
+                          QDirIterator::Subdirectories);
+
+        QStringList files;
+        while (iter.hasNext())
+        {
+            iter.next();
+            if (!iter.fileName().compare(datname, Qt::CaseInsensitive))
+            {
+                filename = iter.filePath();
+                break;
+            }
+        }
+    }
+
+    if (filename.isEmpty())
+    {
+        ShowErrMsg(tr("Файл <b>%1</b> не найден").arg(datname));
+        return;
+    }
+
+    QString err;
+    QString connectionString = QString("CONNSTRING=dsn=%1;user id=%2;password=%3")
+            .arg(conn->dsn(), conn->user(), conn->password());
+    QString result = FmtGenDiffToScript(filename,
+                                        connectionString,
+                                        conn->isUnicode(),
+                                        &err);
+
+    if (!err.isEmpty())
+        ShowErrMsg(err);\
+    else
+    {
+        if (!result.isEmpty())
+            AddSqlCodeTab(tr("Diff To Script"), result);
     }
 }

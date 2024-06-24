@@ -71,6 +71,7 @@ public:
     void updateFmtList();
 
     bool isOpen() const;
+    bool isUnicode() const;
     int type() const;
     QString typeName() const;
 

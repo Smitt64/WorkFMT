@@ -8,6 +8,10 @@
 class DbSpelling
 {
 public:
+    enum ExcceptionType
+    {
+        ExceptDupValOnIndex = 1,
+    };
     virtual QString toDate(const QString& value);
     virtual QString toBlob(const QString& value);
     virtual QString chr();
@@ -15,6 +19,8 @@ public:
     virtual QStringList getDeclare() = 0;
     virtual QStringList getBegin() = 0;
     virtual QStringList getEnd() = 0;
+
+    virtual QString getExceptionName(const ExcceptionType &type) = 0;
 };
 
 #endif // DBBUILDER_H

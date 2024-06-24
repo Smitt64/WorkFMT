@@ -137,7 +137,7 @@ void Task::run()
     emit finished();
 }
 
-// --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188"
+// --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
 void Task::runTask()
 {
     QString rules = getRules(optns);
@@ -205,7 +205,7 @@ void Task::runTask()
     QVector<DatTable> datTables;
     QVector<TableLinks> tableLinks;
 
-    QScopedPointer<DiffConnection> conn;
+    QSharedPointer<DiffConnection> conn;
 
     if (optns[ctoConnectionString].isSet)
     {
@@ -294,15 +294,15 @@ void Task::runTask()
         qCInfo(logTask) << "Added " << datTables[i].name << "to JoinTables list.";
     }
 
-    QScopedPointer<DbSpelling> dbSpelling;
+    QSharedPointer<DbSpelling> dbSpelling;
     if (optns[ctoPostgres].isSet)
         dbSpelling.reset(new DbSpellingPostgres());
     else
         dbSpelling.reset(new DbSpellingOracle());
 
-    SqlScriptMain ssm(dbSpelling);
+    SqlScriptMain ssm(dbSpelling, conn);
 
     qInfo(logTask) << "Start sql building.";
-    ssm.build(os, joinTables.getRoot());    
+    ssm.build(os, joinTables.getRoot());
 }
 

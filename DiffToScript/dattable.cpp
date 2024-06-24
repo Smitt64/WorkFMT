@@ -20,6 +20,7 @@ void DatTable::loadData(const ParsedLines& lines)
             qCInfo(logDatTable) << "Table name loaded " << name;
             continue;
         }
+
         if (recParser.parseRecord(line.value))
         {
             records.append({recParser.getValues(), line.lineType, line.lineUpdateType});

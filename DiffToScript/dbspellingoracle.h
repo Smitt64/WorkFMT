@@ -14,6 +14,9 @@ public:
     QStringList getDeclare() override;
     QStringList getBegin() override;
     QStringList getEnd() override;
+    QString toBlob(const QString& value) override;
+
+    QString getExceptionName(const ExcceptionType &type) override;
 };
 
 #endif // DBBUILDERORACLE_H

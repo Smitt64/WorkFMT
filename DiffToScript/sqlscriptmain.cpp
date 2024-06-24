@@ -1,12 +1,19 @@
 #include "sqlscriptmain.h"
 #include "difflogging.h"
 #include "fmtcore.h"
+#include <QSqlQuery>
 
 const QString PADDING = "  ";
 
-SqlScriptMain::SqlScriptMain(QScopedPointer<DbSpelling>& dbSpelling)
+static QString Padding(int depth = 1)
 {
-    _dbSpelling.swap(dbSpelling);
+    return PADDING.repeated(depth);
+}
+
+SqlScriptMain::SqlScriptMain(QSharedPointer<DbSpelling> &dbSpelling, QSharedPointer<DiffConnection> connection)
+{
+    _dbSpelling = dbSpelling;
+    _connection = connection;
 }
 
 QStringList SqlScriptMain::makeVariables(JoinTable* joinTable)
@@ -195,12 +202,15 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
 {
     DatRecord rec = joinTable->datTable->records[recIndex];
 
+    //Проверка индекса на автоинкрементное поле
+    QString variable = buildVariableName(joinTable->datTable);
+
     //Определение полей для замены
 
     //Определение автоинкрементного поля и замена на ноль
     int autoIncIndex = getAutoincIndex(joinTable->datTable);
     if (autoIncIndex != -1)
-        rec.values[autoIncIndex] = "0";
+        rec.values[autoIncIndex] = variable;
 
     QString InsertFieldList;
     for (const QString &fld : joinTable->datTable->realFields)
@@ -210,8 +220,6 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
 
         InsertFieldList += fld;
     }
-
-    //QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
 
     //Замена автоинкремента родительской талицы
     int foreignIndex = getForeignReplaceField(joinTable, rec);
@@ -223,29 +231,40 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     dateSpelling(joinTable, rec);
     stringSpelling(joinTable, rec);
 
-    //Проверка индекса на автоинкрементное поле
-    QString variable = buildVariableName(joinTable->datTable);
+    sql.append(QString(Padding(1) + "BEGIN"));
     if (variable != "")
     {
         int autoIncIndex = getAutoincIndex(joinTable->datTable);
         QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
 
+        if (autoIncIndex != -1)
+            rec.values[autoIncIndex] = variable;
+
+        sql.append(QString(Padding(2) + "SELECT NVL(MAX(%1), 0) + 1 INTO %3 FROM %2;")
+                   .arg(autoIncField)
+                   .arg(joinTable->datTable->name)
+                   .arg(variable));
+
         QString values = rec.values.join(", ");
-        sql.append(QString(PADDING + "INSERT INTO %1(%5) VALUES (%2) RETURNING %3 INTO %4;")
+        sql.append(QString(Padding(2) + "INSERT INTO %1(%3) VALUES (%2);")
                    .arg(joinTable->datTable->name,
                         values,
-                        autoIncField,
-                        variable,
                         InsertFieldList));
     }
     else
     {
         QString values = rec.values.join(", ");
-        sql.append(QString(PADDING + "INSERT INTO %1(%3) VALUES (%2);")
+        sql.append(QString(Padding(2) + "INSERT INTO %1(%3) VALUES (%2);")
                    .arg(joinTable->datTable->name,
                         values,
                         InsertFieldList));
     }
+
+    QString exception = _dbSpelling->getExceptionName(DbSpelling::ExceptDupValOnIndex);
+    sql.append(QString(Padding(1) + QString("EXCEPTION WHEN %1 THEN NULL;")
+                       .arg(exception)));
+    sql.append(QString(Padding(1) + "END;"));
+
     return ++recIndex;
 }
 
@@ -325,7 +344,11 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
     return ++oldIndex;
 }
 
-int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex)
+int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable,
+                                  QStringList& sql,
+                                  int recIndex,
+                                  Join* childJoin,
+                                  const QStringList &ParentValuesByIndex)
 {
     int nextRecIndex = recIndex + 1;
     if (recIndex >= joinTable->datTable->records.count())
@@ -338,6 +361,7 @@ int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable, Q
     if (rec.lineType == ltInsert)
     {
         qCInfo(logSqlScriptMain) << "Build script for insert. Table " << joinTable->datTable->name << ", record index" << recIndex;
+
         buildInsertStatement(os, joinTable, sql, recIndex);
         buildChildStatement(os, joinTable, sql, recIndex);
     }
@@ -349,24 +373,68 @@ int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable, Q
     }
     else if (rec.lineType == ltUpdate)
     {
-        for (nextRecIndex = recIndex; nextRecIndex < joinTable->datTable->records.count(); ++nextRecIndex)
-             if (joinTable->datTable->records[nextRecIndex].lineType != ltUpdate)
-                 break;
-
-        int updCnt = (nextRecIndex - recIndex);
-        int mid = recIndex + updCnt / 2;
-
-        for (int oldRec = recIndex; oldRec < mid; ++oldRec)
+        if (!childJoin)
         {
-            int newRec = oldRec + updCnt / 2;
-            qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->datTable->name << ", record index" << recIndex;
-            buildUpdateStatement(os, joinTable, sql, oldRec, newRec);
-            buildChildStatement(os, joinTable, sql, newRec);
+            for (nextRecIndex = recIndex; nextRecIndex < joinTable->datTable->records.count(); ++nextRecIndex)
+            {
+                const DatRecord& upd_rec = joinTable->datTable->records[nextRecIndex];
+                if (joinTable->datTable->records[nextRecIndex].lineType != ltUpdate)
+                    break;
+            }
+
+            int updCnt = (nextRecIndex - recIndex);
+            int mid = recIndex + updCnt / 2;
+
+            for (int oldRec = recIndex; oldRec < mid; ++oldRec)
+            {
+                int newRec = oldRec + updCnt / 2;
+                qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->datTable->name << ", record index" << recIndex;
+                buildUpdateStatement(os, joinTable, sql, oldRec, newRec);
+                buildChildStatement(os, joinTable, sql, newRec);
+            }
         }
+        else
+        {
+            int OldIndex = -1;
+            int NewIndex = -1;
+
+            for (nextRecIndex = recIndex; nextRecIndex < joinTable->datTable->records.count(); ++nextRecIndex)
+            {
+                const DatRecord& upd_rec = joinTable->datTable->records[nextRecIndex];
+
+                QStringList ThisValuesByIndex = childJoin->getValuesByIndex(childJoin->parentForeignFields, upd_rec);
+
+                if (ThisValuesByIndex == ParentValuesByIndex)
+                {
+                    if (upd_rec.lineType == ltUpdate && upd_rec.lineUpdateType == lutOld)
+                        OldIndex = nextRecIndex;
+
+                    if (upd_rec.lineType == ltUpdate && upd_rec.lineUpdateType == lutNew)
+                        NewIndex = nextRecIndex;
+
+                    if (OldIndex != -1 && NewIndex != -1)
+                    {
+                        qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->datTable->name << ", record index" << recIndex;
+                        buildUpdateStatement(os, joinTable, sql, OldIndex, NewIndex);
+                        buildChildStatement(os, joinTable, sql, NewIndex);
+
+                        OldIndex = -1;
+                        NewIndex = -1;
+                    }
+
+                    if (upd_rec.lineType != ltUpdate)
+                    {
+                        OldIndex = -1;
+                        NewIndex = -1;
+                    }
+                }
+            }
+        }
+
+
     }
 
     return nextRecIndex;
-
 }
 
 int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJoinTable, QStringList &sql, int recIndex)
@@ -388,12 +456,13 @@ int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJ
 
         qCInfo(logSqlScriptMain) << "There are child records" << childJoin->parent->datTable->name  << childJoin->child->datTable->name;
 
+        QStringList ParentValuesByIndex = childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->datTable->records[recIndex]);
         //Обрадотка дочерних записей
         qCInfo(logSqlScriptMain)
-                << "Parent primary keys =" << childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->datTable->records[recIndex])
+                << "Parent primary keys =" << ParentValuesByIndex
                 << ". Child records count =" << childJoin->indexUpToDown[recIndex].count();
         for (int childIndex: childJoin->indexUpToDown[recIndex])
-            buildStatement(os, childJoin->child, sql, childIndex);
+            buildStatement(os, childJoin->child, sql, childIndex, childJoin, ParentValuesByIndex);
     }
     return nextRecIndex;
 }
@@ -416,10 +485,51 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
         << variables
         << _dbSpelling->getBegin();
 
+    auto DisEnableAutoIncTrigger = [=](DatTable* datTable, QStringList &sql, bool enable = false)
+    {
+        for (const DatIndex &idx : datTable->indexes)
+        {
+            if (idx.hasAutoinc())
+            {
+                if (!enable)
+                {
+                    sql.append(QString("%1rsb_ainc.disable_trigger('%2');")
+                               .arg(Padding(1))
+                               .arg(datTable->name.toUpper()));
+                }
+                else
+                {
+                    sql.append(QString("%1rsb_ainc.enable_trigger('%2');")
+                               .arg(Padding(1))
+                               .arg(datTable->name.toUpper()));
+
+                    sql.append(QString("%1rsb_ainc.restore_seq('%2');")
+                               .arg(Padding(1))
+                               .arg(datTable->name.toUpper()));
+                }
+                break;
+            }
+        }
+    };
+
+    DisEnableAutoIncTrigger(joinTable->datTable, sql);
+
+    for (const Join *idx : joinTable->joinList)
+    {
+        DisEnableAutoIncTrigger(idx->child->datTable, sql);
+        sql.append(QString());
+    }
+
     for (int recno = 0; recno < joinTable->datTable->records.count(); )
     {
         recno = buildStatement(os, joinTable, sql, recno);
+        sql.append(QString());
     }
+
+    DisEnableAutoIncTrigger(joinTable->datTable, sql, true);
+
+    for (const Join *idx : joinTable->joinList)
+        DisEnableAutoIncTrigger(idx->child->datTable, sql, true);
 
     sql << _dbSpelling->getEnd() << "";
     os << sql.join("\n");
@@ -471,17 +581,3 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord &rec)
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -20,6 +20,7 @@
 #define RsExpUnlDirContext "RsExpUnlDir"
 #define RsFmtUnlDirContext "RsFmtUnlDir"
 #define RsCreateSqlContext "RsCreateSqlDir"
+#define RsDiffToScriptContext "RsDiffToScript"
 
 #define HEX_COLOR_REGEX QString("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
 
@@ -253,6 +254,8 @@ FMTLIBSHARED_EXPORT QString getFullFileNameFromDir(const QString &file);
 
 FMTLIBSHARED_EXPORT QString FmtCapitalizeField(const QString &undecoratedfield, bool force = false);
 FMTLIBSHARED_EXPORT QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force = false);
+
+FMTLIBSHARED_EXPORT QString FmtGenDiffToScript(const QString &filename, const QString &connectionString, bool IsUnicodeDb, QString *err);
 
 template<class T> std::string ContainerToString(const T &container)
 {

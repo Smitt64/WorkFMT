@@ -48,6 +48,11 @@ bool ConnectionInfo::isOpen() const
     return _db.isOpen();
 }
 
+bool ConnectionInfo::isUnicode() const
+{
+    return _db.connectOptions().contains("RSD_UNICODE");
+}
+
 QSqlDatabase &ConnectionInfo::db()
 {
     return _db;
