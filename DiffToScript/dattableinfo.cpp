@@ -25,6 +25,20 @@ DiffField DatTableInfo::field(const QString &name) const
     return DiffField();
 }
 
+DiffFields DatTableInfo::missingFldInDat() const
+{
+    DiffFields missing;
+
+    DiffFields::const_iterator iter = fields.cbegin();
+    for (; iter != fields.cend(); ++iter)
+    {
+        if (!realFields.contains((*iter).name.toUpper()))
+            missing.append(*iter);
+    }
+
+    return missing;
+}
+
 void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
 {   
     FmtInit();
@@ -39,6 +53,7 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
         DiffField df;
         df.name = fld->name().toUpper();
         df.type = fld->type();
+        df.size = fld->size();
         df.typeName = fmtTypeNameForType(fld->type());
         df.isAutoinc = fld->isAutoInc();
         df.isString = isString;
@@ -49,7 +64,7 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
     }
     if (fmtTable->blobLen() > 0)
     {
-        DiffField df = { "T_FMTBLOBDATA_XXXX", fmtTable->blobType(), BlobTypeToString(fmtTable->blobType()), false, true};
+        DiffField df = { BlobFieldString(fmtTable->blobType()), fmtTable->blobType(), BlobTypeToString(fmtTable->blobType()), false, true};
         fields.append(df);
         qCInfo(logDatTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
     }

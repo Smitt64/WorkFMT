@@ -33,8 +33,10 @@ struct DiffField: IndexField
 {
     qint16 type;
     QString typeName;
+    int size;
     bool isString;
     bool isDate() const;
+    bool isBlob() const;
     DiffField(){}
     DiffField(const QString& name, qint16 type, const QString& typeName, bool isAutoinc = false, bool isString = false)
         : IndexField{name, isAutoinc}, type(type), typeName(typeName), isString(isString){}

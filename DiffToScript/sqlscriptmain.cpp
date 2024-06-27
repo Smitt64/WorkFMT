@@ -33,6 +33,182 @@ QStringList SqlScriptMain::makeVariables(JoinTable* joinTable)
     return variables;
 }
 
+QStringList SqlScriptMain::makeInsertFunctions(JoinTable* joinTable)
+{
+    QStringList functions;
+
+    if (joinTable->datTable->hasInserts())
+    {
+        functions << buildInsertFunctions(joinTable->datTable);
+        functions.append(QString());
+    }
+
+    JoinListIterator it(joinTable, joinTable->joinList.firstChild(joinTable));
+    for (; it.itChild != joinTable->joinList.end(); it = it.nextChild())
+    {
+        if ((*it.itChild)->child->datTable->hasInserts())
+        {
+            functions << buildInsertFunctions((*it.itChild)->child->datTable);
+            functions.append(QString());
+        }
+    }
+
+    return functions;
+}
+
+QStringList SqlScriptMain::buildInsertFunctions(const DatTable* datTable)
+{
+    QStringList function;
+
+    QString params, returnType;
+    QString undecorateTable = undecorateTableName(datTable->name).toLower();
+    QString variable = buildVariableName(datTable);
+
+    undecorateTable.front() = undecorateTable.front().toUpper();
+
+    QString name = QString("InsertInto%1").arg(undecorateTable);
+    int autoIncIndex = getAutoincIndex(datTable);
+
+    if (autoIncIndex != -1)
+    {
+        QString autoIncField = datTable->fields[autoIncIndex].name;
+
+        returnType = QString("%1.%2\%TYPE")
+                .arg(datTable->name.toUpper())
+                .arg(autoIncField);
+    }
+
+    QString InsertFieldList;
+    for (const QString &fld : datTable->realFields)
+    {
+        if (!InsertFieldList.isEmpty())
+            InsertFieldList += ",";
+
+        InsertFieldList += fld.toUpper();
+    }
+
+    QString missingFldInDatValues;
+    DiffFields missingFldInDat = datTable->missingFldInDat();
+    for (DiffFields::iterator iter = missingFldInDat.begin(); iter != missingFldInDat.end(); ++iter)
+    {
+        InsertFieldList += ", ";
+        missingFldInDatValues += ", ";
+
+        InsertFieldList += (*iter).name.toUpper();
+
+        missingFldInDatValues += _dbSpelling->getDefaultValueForType(iter->type, iter->size);
+    }
+
+    DatRecord rec = datTable->records[0];
+    for (int i = 0; i < datTable->fields.size(); i++)
+    {
+        if (i != autoIncIndex)
+        {
+            QString undecorateFldName = datTable->fields[i].name;
+            if (undecorateFldName.mid(0, 2).toLower() == "t_")
+                undecorateFldName = undecorateFldName.mid(2);
+
+            if (!params.isEmpty())
+                params += ", ";
+
+            QString paramName = QString("p_%1")
+                    .arg(undecorateFldName);
+
+            QString paramType = _dbSpelling->functionParamType(datTable->fields[i].type);
+
+            if (datTable->fields[i].isBlob())
+                paramType = _dbSpelling->blobTypeName(datTable->fields[i].type);
+
+            params += QString("%1 IN %2")
+                    .arg(paramName)
+                    .arg(paramType);
+
+            rec.values[i] = paramName;
+        }
+    }
+
+    QStringList BeginCreateReplace;
+    QStringList EndCreateReplace;
+
+    _dbSpelling->functionChunks(BeginCreateReplace, EndCreateReplace,
+                                name, params, returnType);
+
+    function.append(BeginCreateReplace);
+
+    if (autoIncIndex != -1)
+    {
+        QString variableName = buildVariable(datTable);
+        function.append(variableName);
+    }
+
+    function.append("BEGIN");
+
+    if (autoIncIndex != -1)
+    {
+        rec.values[autoIncIndex] = variable;
+
+        QString autoIncField = datTable->fields[autoIncIndex].name;
+        function.append(QString(Padding(1) + "SELECT %4(MAX(%1), 0) + 1 INTO %3 FROM %2;")
+                        .arg(autoIncField)
+                        .arg(datTable->name.toUpper())
+                        .arg(variable)
+                        .arg(_dbSpelling->nvl()));
+
+        function.append(QString());
+
+        QString values = rec.values.join(", ");
+        function.append(QString(Padding(1) + "INSERT INTO %1(%3) VALUES (%2);")
+                   .arg(datTable->name,
+                        values + missingFldInDatValues,
+                        InsertFieldList));
+    }
+    else
+    {
+        QString values = rec.values.join(", ");
+        function.append(QString(Padding(2) + "INSERT INTO %1(%3) VALUES (%2);")
+                   .arg(datTable->name.toUpper(),
+                        values + missingFldInDatValues,
+                        InsertFieldList));
+    }
+
+    if (autoIncIndex != -1)
+    {
+        QString variableName = buildVariableName(datTable);
+        function.append(QString());
+        function.append(Padding(1) + QString("RETURN %1;").arg(variableName));
+    }
+
+    QString exception = _dbSpelling->getExceptionName(DbSpelling::ExceptDupValOnIndex);
+
+    if (autoIncIndex == -1)
+    {
+        function.append(QString(QString("EXCEPTION WHEN %1 THEN NULL;")
+                           .arg(exception)));
+    }
+    else
+    {
+        function.append(QString(QString("EXCEPTION WHEN %1 THEN ")
+                           .arg(exception)));
+        function.append(Padding(1) + "RETURN -1;");
+    }
+    function.append(EndCreateReplace);
+
+    m_InsertFunctions[datTable->name.toUpper()] = { name, returnType };
+
+    return function;
+}
+
+QString SqlScriptMain::undecorateTableName(const QString &name) const
+{
+    QRegularExpression re("[d|D](\\w+)\\_\\w{3}");
+    QRegularExpressionMatch match = re.match(name);
+
+    if (match.hasMatch())
+        return match.captured(1);
+
+    return name;
+}
+
 int SqlScriptMain::getAutoincIndex(const DatTable* datTable)
 {
     for (int i = 0; i < datTable->fields.count(); ++i)
@@ -231,7 +407,39 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     dateSpelling(joinTable, rec);
     stringSpelling(joinTable, rec);
 
-    sql.append(QString(Padding(1) + "BEGIN"));
+    if (autoIncIndex != -1)
+    {
+        QString values;
+
+        for (int i = 0; i < rec.values.size(); i++)
+        {
+            if (i != autoIncIndex)
+            {
+                if (!values.isEmpty())
+                    values += ", ";
+
+                values += rec.values[i];
+            }
+        }
+
+        QString call = QString("%1 := %2 (%3);")
+                .arg(variable)
+                .arg(m_InsertFunctions[joinTable->datTable->name.toUpper()].name)
+                .arg(values);
+
+        sql.append(Padding(1) + call);
+
+    }
+    else
+    {
+        QString values = rec.values.join(", ");
+        QString call = QString("%1 (%2);")
+                .arg(m_InsertFunctions[joinTable->datTable->name.toUpper()].name)
+                .arg(values);
+
+        sql.append(Padding(1) + _dbSpelling->callProcedure(call));
+    }
+    /*sql.append(QString(Padding(1) + "BEGIN"));
     if (variable != "")
     {
         int autoIncIndex = getAutoincIndex(joinTable->datTable);
@@ -263,7 +471,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     QString exception = _dbSpelling->getExceptionName(DbSpelling::ExceptDupValOnIndex);
     sql.append(QString(Padding(1) + QString("EXCEPTION WHEN %1 THEN NULL;")
                        .arg(exception)));
-    sql.append(QString(Padding(1) + "END;"));
+    sql.append(QString(Padding(1) + "END;"));*/
 
     return ++recIndex;
 }
@@ -321,25 +529,29 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
 
     //Проверка наличия автоинкрементного поля, чтобы потом сохранить его в переменную sql
     QString variable = buildVariableName(joinTable->datTable);
-    if (variable != "")
-    {
-        //Получение имени автоинкрементного поля
-        int autoIncIndex = getAutoincIndex(joinTable->datTable);
-        QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
 
-        sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;")
-                   .arg(joinTable->datTable->name,
-                        setList.join(", "),
-                        where.join(" AND "),
-                        autoIncField,
-                        variable));
-    }
-    else
+    if (!setList.isEmpty())
     {
-        sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3;")
-                   .arg(joinTable->datTable->name,
-                        setList.join(", "),
-                        where.join(" AND ")));
+        if (variable != "")
+        {
+            //Получение имени автоинкрементного поля
+            int autoIncIndex = getAutoincIndex(joinTable->datTable);
+            QString autoIncField = joinTable->datTable->fields[autoIncIndex].name;
+
+            sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;")
+                       .arg(joinTable->datTable->name,
+                            setList.join(", "),
+                            where.join(" AND "),
+                            autoIncField,
+                            variable));
+        }
+        else
+        {
+            sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3;")
+                       .arg(joinTable->datTable->name,
+                            setList.join(", "),
+                            where.join(" AND ")));
+        }
     }
     return ++oldIndex;
 }
@@ -362,8 +574,24 @@ int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable,
     {
         qCInfo(logSqlScriptMain) << "Build script for insert. Table " << joinTable->datTable->name << ", record index" << recIndex;
 
+        QStringList childsql;
         buildInsertStatement(os, joinTable, sql, recIndex);
-        buildChildStatement(os, joinTable, sql, recIndex);
+        buildChildStatement(os, joinTable, childsql, recIndex);
+
+        int autoIncIndex = getAutoincIndex(joinTable->datTable);
+        if (autoIncIndex == -1)
+            sql.append(childsql);
+        else
+        {
+            QString variable = buildVariableName(joinTable->datTable);
+            sql.append(Padding(1) + QString("IF %1 <> -1 THEN")
+                       .arg(variable));
+
+            for (const QString &s : childsql)
+                sql.append(Padding(1) + s);
+
+            sql.append(Padding(1) + "END IF;");
+        }
     }
     else if (rec.lineType == ltDelete)
     {
@@ -375,23 +603,6 @@ int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable,
     {
         if (!childJoin)
         {
-            /*for (nextRecIndex = recIndex; nextRecIndex < joinTable->datTable->records.count(); ++nextRecIndex)
-            {
-                const DatRecord& upd_rec = joinTable->datTable->records[nextRecIndex];
-                if (joinTable->datTable->records[nextRecIndex].lineType != ltUpdate)
-                    break;
-            }
-
-            int updCnt = (nextRecIndex - recIndex);
-            int mid = recIndex + updCnt / 2;
-
-            for (int oldRec = recIndex; oldRec < mid; ++oldRec)
-            {
-                int newRec = oldRec + updCnt / 2;
-                qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->datTable->name << ", record index" << recIndex;
-                buildUpdateStatement(os, joinTable, sql, oldRec, newRec);
-                buildChildStatement(os, joinTable, sql, newRec);
-            }*/
             int OldIndex = -1;
             int NewIndex = -1;
 
@@ -462,8 +673,6 @@ int SqlScriptMain::buildStatement(QTextStream& os, const JoinTable* joinTable,
                 }
             }
         }
-
-
     }
 
     return nextRecIndex;
@@ -513,9 +722,33 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
     QStringList variables = makeVariables(joinTable);
     QStringList sql;
+
+    if (_dbSpelling->functionDeclare() == DbSpelling::FunctionBeforeBlocks)
+        sql << makeInsertFunctions(joinTable);
+
     sql << _dbSpelling->getDeclare()
-        << variables
-        << _dbSpelling->getBegin();
+        << variables;
+
+    auto AddPadding = [=](QString &str) -> void
+    {
+        str = Padding(1) + str;
+    };
+
+    if (_dbSpelling->functionDeclare() == DbSpelling::FunctionInDeclareBlock)
+    {
+        QStringList funcs = makeInsertFunctions(joinTable);
+        std::for_each(funcs.begin(), funcs.end(), AddPadding);
+        sql << QString() << funcs;
+    }
+
+    sql << _dbSpelling->getBegin();
+
+    if (_dbSpelling->functionDeclare() == DbSpelling::FunctionInBeginBlock)
+    {
+        QStringList funcs = makeInsertFunctions(joinTable);
+        std::for_each(funcs.begin(), funcs.end(), AddPadding);
+        sql << funcs;
+    }
 
     auto DisEnableAutoIncTrigger = [=](DatTable* datTable, QStringList &sql, bool enable = false)
     {
@@ -525,19 +758,21 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
             {
                 if (!enable)
                 {
-                    sql.append(QString("%1rsb_ainc.disable_trigger('%2');")
-                               .arg(Padding(1))
-                               .arg(datTable->name.toUpper()));
+                    QString call = QString("rsb_ainc.disable_trigger('%1');")
+                            .arg(datTable->name.toUpper());
+
+                    sql.append(Padding(1) + _dbSpelling->callProcedure(call));
                 }
                 else
                 {
-                    sql.append(QString("%1rsb_ainc.enable_trigger('%2');")
-                               .arg(Padding(1))
-                               .arg(datTable->name.toUpper()));
+                    QString call = QString("rsb_ainc.enable_trigger('%1');")
+                            .arg(datTable->name.toUpper());
 
-                    sql.append(QString("%1rsb_ainc.restore_seq('%2');")
-                               .arg(Padding(1))
-                               .arg(datTable->name.toUpper()));
+                    sql.append(Padding(1) + _dbSpelling->callProcedure(call));
+
+                    call = QString("rsb_ainc.restore_seq('%1');")
+                            .arg(datTable->name.toUpper());
+                    sql.append(Padding(1) + _dbSpelling->callProcedure(call));
                 }
                 break;
             }
@@ -554,8 +789,11 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
     for (int recno = 0; recno < joinTable->datTable->records.count(); )
     {
+        int oldSize = sql.size();
         recno = buildStatement(os, joinTable, sql, recno);
-        sql.append(QString());
+
+        if (sql.size() != oldSize)
+            sql.append(QString());
     }
 
     DisEnableAutoIncTrigger(joinTable->datTable, sql, true);
@@ -564,6 +802,18 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
         DisEnableAutoIncTrigger(idx->child->datTable, sql, true);
 
     sql << _dbSpelling->getEnd() << "";
+
+    if (_dbSpelling->needDropFunctions())
+    {
+        QMapIterator<QString, InsertFunction> iter(m_InsertFunctions);
+        while (iter.hasNext())
+        {
+            iter.next();
+            sql << _dbSpelling->dropFunction(iter.value().name, iter.value().returnType)
+                << "/"
+                << QString();
+        }
+    }
     os << sql.join("\n");
 }
 

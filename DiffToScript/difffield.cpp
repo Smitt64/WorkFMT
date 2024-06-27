@@ -90,6 +90,17 @@ bool DiffField::isDate() const
     return (type == fmtt_DATE || type == fmtt_DATETIME);
 }
 
+bool DiffField::isBlob() const
+{
+    if (typeName == "BT_BLOB_VAR" ||
+            typeName == "BT_BLOB_STREAM" ||
+            typeName == "BT_CLOB")
+    {
+        return true;
+    }
+
+    return false;
+}
 
 
 

@@ -71,6 +71,7 @@ typedef struct tagFmtTypeInfo
     quint16 _size;
     quint16 _indexType;
     QString _oraType;
+    QString _pgType;
     QString _cppType;
     QString _cppDbType;
     QString _cppDbBaseType;
@@ -204,6 +205,7 @@ void FmtInit()
                 itemInfo._type = fmtTypesStrMap[element["type"].toString()];
                 itemInfo._size = element["size"].toInt();
                 itemInfo._oraType = element["oraType"].toString();
+                itemInfo._pgType = element["pgType"].toString();
                 itemInfo._indexType = indexTypesStrMap[element["indexType"].toString()];
                 itemInfo._cppType = element["cppType"].toString();
                 itemInfo._cppDbType = element["cppDbType"].toString();
@@ -290,6 +292,11 @@ quint16 fmtTypeSize(const FmtFldType &Type)
 QString fmtOracleDecl(const FmtFldType &Type)
 {
     return FmtTypesMap[fmtTypeForId(Type)]._oraType;
+}
+
+QString fmtPostgresDecl(const FmtFldType &Type)
+{
+    return FmtTypesMap[fmtTypeForId(Type)]._pgType;
 }
 
 QString fmtCppStructTypeName(const FmtFldType &Type)
@@ -397,18 +404,18 @@ FmtFldType fmtTypeFromXmlType(const QString &type)
 
 FmtFldType fmtTypeFromIndex(const FmtFldIndex &id)
 {
-    int index = static_cast<int>(fmtIndexForType(id));
+    /*int index = static_cast<int>(fmtIndexForType(id));
     if (index < 0 || index >= FmtTypesList.size())
-        return -1;
+        return -1;*/
     return FmtTypesMap[FmtTypesList[id]]._type;
 }
 
 quint16 fmtTypeIndexSize(const FmtFldType &id)
 {
-    int index = fmtIndexForType(id);
+    /*int index = fmtIndexForType(id);
     if (index < 0 || index >= FmtTypesList.size())
-        return -1;
-    return FmtTypesMap[FmtTypesList[index]]._size;
+        return -1;*/
+    return FmtTypesMap[FmtTypesList[id]]._size;
 }
 
 QString fmtRsdType(const FmtFldType &Type)
@@ -449,6 +456,95 @@ FmtFldType fmtIndexFromFmtType(const FmtFldType &id)
     }
 
     return 0;
+}
+
+bool fmtIsStringType(const FmtFldType &Type, const int &size)
+{
+    bool hr = false;
+    if (Type == fmtt_STRING || Type == fmtt_SNR)
+        hr = true;
+    else if (Type == fmtt_CHR || Type == fmtt_UCHR)
+    {
+        if (size > 1)
+            hr = true;
+    }
+    return hr;
+}
+
+QString fmtGetOraDefaultVal(const FmtFldType &Type, const int &size)
+{
+    QString t;
+    if (fmtIsStringType(Type, size) && Type != fmtt_UCHR)
+        t = "CHR(1)";
+    else
+    {
+       switch(Type)
+       {
+       case fmtt_INT:
+       case fmtt_LONG:
+       case fmtt_BIGINT:
+           t = "0";
+           break;
+       case fmtt_FLOAT:
+       case fmtt_DOUBLE:
+       case fmtt_NUMERIC:
+       case fmtt_MONEY:
+           t = "0.0";
+           break;
+       case fmtt_DATE:
+           t = "TO_DATE(''01/01/0001'', ''MM/DD/YYYY'')";
+           break;
+       case fmtt_TIME:
+           t = "TO_DATE(''01/01/0001 00:00:00'',''MM/DD/YYYY HH24:MI:SS'')";
+           break;
+       case fmtt_CHR:
+           t = "CHR(0)";
+           break;
+       case fmtt_UCHR:
+           t = "UTL_RAW.CAST_TO_RAW(CHR(0))";
+           break;
+       }
+    }
+
+    return t;
+}
+
+QString fmtGetPgDefaultVal(const FmtFldType &Type, const int &size)
+{
+    QString t;
+    if (fmtIsStringType(Type, size) && Type != fmtt_UCHR)
+        t = "GLOB_FUNC.CHR(1)";
+    else
+    {
+       switch(Type)
+       {
+       case fmtt_INT:
+       case fmtt_LONG:
+       case fmtt_BIGINT:
+           t = "0";
+           break;
+       case fmtt_FLOAT:
+       case fmtt_DOUBLE:
+       case fmtt_NUMERIC:
+       case fmtt_MONEY:
+           t = "0.0";
+           break;
+       case fmtt_DATE:
+           t = "GLOB_FUNC.TO_TIMESTAMP_IMMUTABLE(''01/01/0001'', ''MM/DD/YYYY'')";
+           break;
+       case fmtt_TIME:
+           t = "GLOB_FUNC.TO_TIMESTAMP_IMMUTABLE(''01/01/0001 00:00:00'',''MM/DD/YYYY HH24:MI:SS'')";
+           break;
+       case fmtt_CHR:
+           t = "GLOB_FUNC.CHR(0)";
+           break;
+       case fmtt_UCHR:
+           t = "DECODE(''00'', ''hex'')";
+           break;
+       }
+    }
+
+    return t;
 }
 
 QString AddTabButtonCss()
@@ -679,6 +775,60 @@ QString BlobTypeToString(int type)
         return "BT_BLOB_STREAM";
     case 3:
         return "BT_CLOB";
+    }
+
+    throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")
+                             .arg(type).toLocal8Bit().data());
+}
+
+QString BlobFieldString(int type)
+{
+    switch (type)
+    {
+    case 0:
+        return "";
+    case 1:
+        return "T_FMTBLOBDATA_XXXX";
+    case 2:
+        return "T_FMTBLOBDATA_XXXX";
+    case 3:
+        return "T_FMTCLOBDATA_XXXX";
+    }
+
+    throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")
+                             .arg(type).toLocal8Bit().data());
+}
+
+QString BlobFieldTypeOraString(int type)
+{
+    switch (type)
+    {
+    case 0:
+        return "";
+    case 1:
+        return "BLOB";
+    case 2:
+        return "BLOB";
+    case 3:
+        return "CLOB";
+    }
+
+    throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")
+                             .arg(type).toLocal8Bit().data());
+}
+
+QString BlobFieldTypePgString(int type)
+{
+    switch (type)
+    {
+    case 0:
+        return "";
+    case 1:
+        return "BYTEA";
+    case 2:
+        return "BYTEA";
+    case 3:
+        return "TEXT";
     }
 
     throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")

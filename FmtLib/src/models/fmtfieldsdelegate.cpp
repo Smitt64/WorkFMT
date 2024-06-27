@@ -130,7 +130,9 @@ void FmtFieldsDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     if (index.column() == FmtFildsModel::fld_Type)
     {
         QComboBox *combo = qobject_cast<QComboBox*>(editor);
-        model->setData(index, fmtTypeFromIndex(combo->currentIndex()), Qt::EditRole);
+
+        int Type = fmtTypeFromIndex(combo->currentIndex());
+        model->setData(index, Type, Qt::EditRole);
 
         if (fmtTypeIndexSize(combo->currentIndex()) != 0)
             model->setData(model->index(index.row(), FmtFildsModel::fld_Size), fmtTypeIndexSize(combo->currentIndex()));

@@ -16,6 +16,8 @@ public:
 
     void loadFromFmt(FmtTable* fmtTable);
     DiffField field(const QString &name) const;
+
+    DiffFields missingFldInDat() const;
 };
 
 #endif // DATTABLEINFO_H

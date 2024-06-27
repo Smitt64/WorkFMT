@@ -167,12 +167,15 @@ QSettings *settings();
 FMTLIBSHARED_EXPORT QStringList fmtTypes();
 FMTLIBSHARED_EXPORT QString fmtTypeForId(const FmtFldType &id);
 FMTLIBSHARED_EXPORT QString fmtOracleDecl(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtPostgresDecl(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT QString fmtCppStructTypeName(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT QString fmtCppStructDbTypeName(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT QString fmtCppStructDbBaseTypeName(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT QString fmtRslTypeName(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT QString fmtRslValueName(const FmtFldType &Type);
 FMTLIBSHARED_EXPORT bool fmtTypeCanHaveCustomSize(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT QString fmtGetOraDefaultVal(const FmtFldType &Type, const int &size);
+FMTLIBSHARED_EXPORT QString fmtGetPgDefaultVal(const FmtFldType &Type, const int &size);
 
 FMTLIBSHARED_EXPORT quint32 fmtTypeIndexForId(const quint32 &id);
 FMTLIBSHARED_EXPORT FmtFldType fmtTypeFromIndex(const FmtFldIndex &id);
@@ -202,8 +205,11 @@ QString FMTLIBSHARED_EXPORT ProcessExitStatusText(qint16 State);
 QString FMTLIBSHARED_EXPORT ProcessStateText(qint16 State);
 
 FMTLIBSHARED_EXPORT QString BlobTypeToString(int type);
+FMTLIBSHARED_EXPORT QString BlobFieldString(int type);
 FMTLIBSHARED_EXPORT bool isBlobType(const QString &typeName);
 FMTLIBSHARED_EXPORT QString BoolToString(bool value);
+FMTLIBSHARED_EXPORT QString BlobFieldTypeOraString(int type);
+FMTLIBSHARED_EXPORT QString BlobFieldTypePgString(int type);
 
 QColor GenerateColor();
 void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent);

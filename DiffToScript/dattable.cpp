@@ -37,4 +37,13 @@ void DatTable::loadData(const ParsedLines& lines)
     qCInfo(logDatTable) << "End load records. Record added " << records.count();
 }
 
+bool DatTable::hasInserts() const
+{
+    for (const DatRecord &rec : records)
+    {
+        if (rec.lineType == ltInsert)
+            return true;
+    }
 
+    return false;
+}

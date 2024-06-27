@@ -589,40 +589,7 @@ TO_DATE(''01/01/0001'', ''MM/DD/YYYY'')
 */
 QString FmtField::getOraDefaultVal() const
 {
-    QString t;
-    if (isStringType() && m_Type != fmtt_UCHR)
-        t = "CHR(1)";
-    else
-    {
-       switch(m_Type)
-       {
-       case fmtt_INT:
-       case fmtt_LONG:
-       case fmtt_BIGINT:
-           t = "0";
-           break;
-       case fmtt_FLOAT:
-       case fmtt_DOUBLE:
-       case fmtt_NUMERIC:
-       case fmtt_MONEY:
-           t = "0.0";
-           break;
-       case fmtt_DATE:
-           t = "TO_DATE(''01/01/0001'', ''MM/DD/YYYY'')";
-           break;
-       case fmtt_TIME:
-           t = "TO_DATE(''01/01/0001 00:00:00'',''MM/DD/YYYY HH24:MI:SS'')";
-           break;
-       case fmtt_CHR:
-           t = "CHR(0)";
-           break;
-       case fmtt_UCHR:
-           t = "UTL_RAW.CAST_TO_RAW(CHR(0))";
-           break;
-       }
-    }
-
-    return t;
+    return fmtGetOraDefaultVal(m_Type, m_Size);
 }
 
 QString FmtField::getCommentSql() const

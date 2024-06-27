@@ -12,6 +12,8 @@ public:
     void loadData(const ParsedLines& lines);
     const QStringList& getErrors() const { return _errors; }
     int errorCount() const { return _errorCount; }
+
+    bool hasInserts() const;
 private:
     QStringList _errors; //Ошибки после выполнения функции loadData.
     int _errorCount; // Ошибки за всё время существования объекта.
