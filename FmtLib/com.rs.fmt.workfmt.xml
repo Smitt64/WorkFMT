@@ -1,5 +1,12 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.6.2">
+        <add>Добавлена информация о типе данных для PostgreSQL;</add>
+        <add>Добавлен вызов интерфейсного режима для DiffToScript из меню &quot;Файл&quot;;</add>
+        <add>Добавлен вызов DiffToScript для таблицы;</add>
+        <add>Доработки, необходимые для DiffToScript;</add>
+        <fix>Исправлена ошибка при выборе типа поля из выпадающего списка;</fix>
+    </version>
     <version ver="1.0.6.1">
         <fix>Мелкие доработки;</fix>
     </version>

@@ -128,7 +128,14 @@ bool DbSpellingPostgres::needDropFunctions() const
     return true;
 }
 
-QString DbSpellingPostgres::dropFunction(const QString &proc, const QString &returnType) const
+QString DbSpellingPostgres::dropFunction(const QString &proc,
+                                         const QString &fullproc,
+                                         const QString &returnType) const
 {
-    return QString("DROP FUNCTION IF EXISTS %1;").arg(proc);
+    QString normal = fullproc;
+    normal = normal.remove("FUNCTION ");
+
+    int pos = normal.indexOf("RETURNS");
+    normal = normal.mid(0, pos).simplified();
+    return QString("DROP FUNCTION IF EXISTS %1;").arg(normal);
 }

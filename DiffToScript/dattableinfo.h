@@ -14,6 +14,8 @@ public:
     DiffFields fields;
     DatIndexes indexes;
 
+    bool firstUniq(DatIndex &idx, bool skipAutoInc) const;
+
     void loadFromFmt(FmtTable* fmtTable);
     DiffField field(const QString &name) const;
 

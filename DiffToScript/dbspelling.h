@@ -34,7 +34,7 @@ public:
     virtual QString getExceptionName(const ExcceptionType &type) = 0;
 
     virtual bool needDropFunctions() const;
-    virtual QString dropFunction(const QString &proc, const QString &returnType) const;
+    virtual QString dropFunction(const QString &proc, const QString &fullproc, const QString &returnType) const;
     virtual FunctionDeclarePos functionDeclare() const;
     virtual QString functionParamType(const qint16 &type) = 0;
     virtual void functionChunks(QStringList &BeginCreateReplace,

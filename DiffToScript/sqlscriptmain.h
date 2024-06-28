@@ -13,6 +13,7 @@
 typedef struct
 {
     QString name, returnType;
+    QString fullname;
 }InsertFunction;
 
 class SqlScriptMain

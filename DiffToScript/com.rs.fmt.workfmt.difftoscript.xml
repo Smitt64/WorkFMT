@@ -3,8 +3,10 @@
 	<version ver="1.0.0.3">
 		<add>Добавлена обработка исключений DUP_VAL_ON_INDEX (in Oracle) и UNIQUE_VIOLATION (in PostgreSQL) для insert скриптов</add>
 		<add>Добавлена обертка HEXTORAW для blob полей (in Oracle)</add>
-        <add>Добавлено игнорирование инструкции &quot\ No newline at end of file&quot</add>
+        <add>Добавлено игнорирование инструкции &quot;\ No newline at end of file&quot;</add>
         <add>Добавлен вызов rsb_ainc.disable_trigger, rsb_ainc.enable_trigger и rsb_ainc.restore_seq для таблиц с автоинкрементным индексом</add>
+        <add>Добавлена обертка в функции/процедуры для insert запросов</add>
+        <add>Добавлена обработка исключений с описанием полей, при вставке которых, происходит ошибка вставки записей</add>
         <fix>Заменена конструкция TO_DATE на glob_func.to_timestamp_immutable для скриптов на PostgreSQL</fix>
         <fix>Исправлена ситуация, когда для update скрпипта смежной талицы не учитывалось значение индекса из родительской</fix>
     </version>
@@ -24,20 +26,3 @@
         <add>Генерация скриптов по локальным изменениям</add>
     </version>
 </changelog>
-
-CREATE TABLE DTEST_TABLE
-(
-	T_1 INTEGER,
-	T_2 INTEGER,
-	T_3 BIGINT,
-	T_4 FLOAT(24),
-	T_5 FLOAT(53),
-	T_6 NUMERIC(19, 4),
-	T_77 VARCHAR(1),
-	T_8 TIMESTAMP,
-	T_9 TIMESTAMP,
-	T_10 CHAR(1),
-	T_11 BYTEA,
-	T_12 NUMERIC(32, 12)
-);
-/

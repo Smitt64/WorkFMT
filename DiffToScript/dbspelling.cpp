@@ -61,7 +61,7 @@ bool DbSpelling::needDropFunctions() const
     return false;
 }
 
-QString DbSpelling::dropFunction(const QString &proc, const QString &returnType) const
+QString DbSpelling::dropFunction(const QString &proc, const QString &fullproc, const QString &returnType) const
 {
     return QString();
 }

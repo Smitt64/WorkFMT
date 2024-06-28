@@ -17,6 +17,9 @@ struct IndexField
 {
     QString name;
     bool isAutoinc;
+    qint16 type;
+
+    bool isString;
 //    IndexField(const QString& name, bool isAutoinc):name(name),isAutoinc(isAutoinc){}
 };
 bool operator==(const IndexField& a, const IndexField& b);
@@ -54,6 +57,7 @@ struct DatIndex
 {
     QString name = "";
     IndexFields fields;
+
     bool isUnique = false;
     bool hasAutoinc() const;
 //    DatIndex& operator=(const DatIndex& a);

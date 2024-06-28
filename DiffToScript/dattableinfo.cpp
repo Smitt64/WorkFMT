@@ -39,6 +39,27 @@ DiffFields DatTableInfo::missingFldInDat() const
     return missing;
 }
 
+bool DatTableInfo::firstUniq(DatIndex &idx, bool skipAutoInc) const
+{
+    bool found = false;
+
+    for (const DatIndex &index : indexes)
+    {
+        if (index.isUnique)
+        {
+            if (index.hasAutoinc() && skipAutoInc)
+                continue;
+            else
+            {
+                found = true;
+                idx = index;
+                break;
+            }
+        }
+    }
+    return found;
+}
+
 void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
 {   
     FmtInit();
@@ -81,7 +102,13 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
         for (int j = 0; j < indx->segmentsCount(); ++j)
         {
             FmtSegment* sgmt = indx->segment(j);
-            it->fields.append({sgmt->field()->name(), sgmt->field()->isAutoInc()});
+            it->fields.append(
+                        {
+                            sgmt->field()->name(),
+                            sgmt->field()->isAutoInc(),
+                            sgmt->field()->type(),
+                            sgmt->field()->isString()
+                        });
             qCInfo(logDatTable) << "Added field for index: name = " << sgmt->field()->name() << " isAutoInc = " << sgmt->field()->isAutoInc();
         }
     }
@@ -112,7 +139,7 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
                     QString fld = q.value(0).toString();
                     qCInfo(logDatTable) << "Loaded dat struc field" << fld;
 
-                    realFields.append(fld);
+                    realFields.append(fld.toUpper());
                 }
             }
             else

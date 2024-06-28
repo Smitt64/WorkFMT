@@ -22,7 +22,7 @@ public:
     QString functionParamType(const qint16 &type) override;
 
     bool needDropFunctions() const override;
-    QString dropFunction(const QString &proc, const QString &returnType) const override;
+    QString dropFunction(const QString &proc, const QString &fullproc, const QString &returnType) const override;
     FunctionDeclarePos functionDeclare() const override;
     void functionChunks(QStringList &BeginCreateReplace,
                         QStringList &EndCreateReplace,

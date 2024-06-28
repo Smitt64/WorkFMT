@@ -2,6 +2,7 @@
 #include "difflogging.h"
 #include "fmtcore.h"
 #include <QSqlQuery>
+#include <QTextCodec>
 
 const QString PADDING = "  ";
 
@@ -58,9 +59,10 @@ QStringList SqlScriptMain::makeInsertFunctions(JoinTable* joinTable)
 
 QStringList SqlScriptMain::buildInsertFunctions(const DatTable* datTable)
 {
+    QTextCodec *code = QTextCodec::codecForName("IBM 866");
     QStringList function;
 
-    QString params, returnType;
+    QString params, returnType, fullFunctionName;
     QString undecorateTable = undecorateTableName(datTable->name).toLower();
     QString variable = buildVariableName(datTable);
 
@@ -133,6 +135,8 @@ QStringList SqlScriptMain::buildInsertFunctions(const DatTable* datTable)
     _dbSpelling->functionChunks(BeginCreateReplace, EndCreateReplace,
                                 name, params, returnType);
 
+    fullFunctionName = QString(BeginCreateReplace.first())
+            .remove("CREATE OR REPLACE ");
     function.append(BeginCreateReplace);
 
     if (autoIncIndex != -1)
@@ -180,20 +184,76 @@ QStringList SqlScriptMain::buildInsertFunctions(const DatTable* datTable)
 
     QString exception = _dbSpelling->getExceptionName(DbSpelling::ExceptDupValOnIndex);
 
+    //QStringList ParentValuesByIndex = childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->datTable->records[recIndex]);
+    function.append(QString("EXCEPTION "));
+    QString tmpException = QString::fromWCharArray(L"dbms_output.put_line('%WARNING%: Ошибка вставки в таблицу %1: ' || sqlerrm)")
+            .arg(datTable->name.toUpper());
+    QString rusException = code->toUnicode(tmpException.toLocal8Bit());
+    QString exceptionInfo;
+
+    DatIndex Unique;
+    bool hasUnique = datTable->firstUniq(Unique, true);
+
+    if (hasUnique)
+    {
+        QString fldNames, fldValues;
+
+        for (const IndexField &fld : Unique.fields)
+        {
+            if (!fldNames.isEmpty())
+            {
+                fldNames += ",";
+                fldValues += " || ', ' || ";
+            }
+
+            fldNames += fld.name;
+
+            int realfld = datTable->realFields.indexOf(fld.name.toUpper());
+            fldValues += rec.values[realfld];
+        }
+
+        exceptionInfo = QString("dbms_output.put_line('(%1) = (' || %2 || ')');")
+                .arg(fldNames)
+                .arg(fldValues);
+    }
+
     if (autoIncIndex == -1)
     {
-        function.append(QString(QString("EXCEPTION WHEN %1 THEN NULL;")
-                           .arg(exception)));
+        function.append(QString("WHEN %1 THEN")
+                           .arg(exception));
+        function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
+
+        if (!exceptionInfo.isEmpty())
+            function.append(Padding(1) + _dbSpelling->callProcedure(exceptionInfo));
+
+        function.append( QString("WHEN OTHERS THEN"));
+        function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
+
+        if (!exceptionInfo.isEmpty())
+            function.append(Padding(1) + _dbSpelling->callProcedure(exceptionInfo));
     }
     else
     {
-        function.append(QString(QString("EXCEPTION WHEN %1 THEN ")
-                           .arg(exception)));
+        function.append(QString("WHEN %1 THEN ")
+                           .arg(exception));
+        function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
+
+        if (!exceptionInfo.isEmpty())
+            function.append(Padding(1) + _dbSpelling->callProcedure(exceptionInfo));
+
+        function.append(Padding(1) + "RETURN -1;");
+
+        function.append(QString("WHEN OTHERS THEN"));
+        function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
+
+        if (!exceptionInfo.isEmpty())
+            function.append(Padding(1) + _dbSpelling->callProcedure(exceptionInfo));
+
         function.append(Padding(1) + "RETURN -1;");
     }
     function.append(EndCreateReplace);
 
-    m_InsertFunctions[datTable->name.toUpper()] = { name, returnType };
+    m_InsertFunctions[datTable->name.toUpper()] = { name, returnType, fullFunctionName };
 
     return function;
 }
@@ -809,7 +869,9 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
         while (iter.hasNext())
         {
             iter.next();
-            sql << _dbSpelling->dropFunction(iter.value().name, iter.value().returnType)
+            sql << _dbSpelling->dropFunction(iter.value().name,
+                                             iter.value().fullname,
+                                             iter.value().returnType)
                 << "/"
                 << QString();
         }
