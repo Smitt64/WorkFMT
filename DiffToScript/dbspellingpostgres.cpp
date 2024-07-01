@@ -49,7 +49,12 @@ QString DbSpellingPostgres::blobTypeName(const int &type)
 
 QString DbSpellingPostgres::toDate(const QString& value)
 {
-    return "glob_func.to_timestamp_immutable('" + value + "', 'DD-MM-YYY')";
+    QString tmp = value;
+
+    if (tmp.isEmpty())
+        tmp = "01-01-0001";
+
+    return "glob_func.to_timestamp_immutable('" + tmp + "', 'DD-MM-YYY')";
 }
 
 QString DbSpellingPostgres::getExceptionName(const ExcceptionType &type)

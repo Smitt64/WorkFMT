@@ -10,7 +10,7 @@ DatTable::DatTable()
 void DatTable::loadData(const ParsedLines& lines)
 {
     qCInfo(logDatTable) << "Start load records. Parsed lines = " << lines.count();
-    RecordParser recParser(&fields);
+    RecordParser recParser(&fields, realFields);
 
     for (const ParsedLine& line: lines)
     {

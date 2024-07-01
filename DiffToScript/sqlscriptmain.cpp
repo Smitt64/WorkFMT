@@ -102,11 +102,11 @@ QStringList SqlScriptMain::buildInsertFunctions(const DatTable* datTable)
     }
 
     DatRecord rec = datTable->records[0];
-    for (int i = 0; i < datTable->fields.size(); i++)
+    for (int i = 0; i < datTable->realFields.size(); i++)
     {
         if (i != autoIncIndex)
         {
-            QString undecorateFldName = datTable->fields[i].name;
+            QString undecorateFldName = datTable->realFields[i];
             if (undecorateFldName.mid(0, 2).toLower() == "t_")
                 undecorateFldName = undecorateFldName.mid(2);
 
@@ -116,10 +116,10 @@ QStringList SqlScriptMain::buildInsertFunctions(const DatTable* datTable)
             QString paramName = QString("p_%1")
                     .arg(undecorateFldName);
 
-            QString paramType = _dbSpelling->functionParamType(datTable->fields[i].type);
+            QString paramType = _dbSpelling->functionParamType(datTable->field(datTable->realFields[i]).type);
 
             if (datTable->fields[i].isBlob())
-                paramType = _dbSpelling->blobTypeName(datTable->fields[i].type);
+                paramType = _dbSpelling->blobTypeName(datTable->field(datTable->realFields[i]).type);
 
             params += QString("%1 IN %2")
                     .arg(paramName)
@@ -186,9 +186,9 @@ QStringList SqlScriptMain::buildInsertFunctions(const DatTable* datTable)
 
     //QStringList ParentValuesByIndex = childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->datTable->records[recIndex]);
     function.append(QString("EXCEPTION "));
-    QString tmpException = QString::fromWCharArray(L"dbms_output.put_line('%WARNING%: Ошибка вставки в таблицу %1: ' || sqlerrm)")
+    QString tmpException = QString("dbms_output.put_line('%WARNING%: Ошибка вставки в таблицу %1: ' || sqlerrm)")
             .arg(datTable->name.toUpper());
-    QString rusException = code->toUnicode(tmpException.toLocal8Bit());
+    QString rusException = tmpException;//code->toUnicode(tmpException.toLocal8Bit());
     QString exceptionInfo;
 
     DatIndex Unique;

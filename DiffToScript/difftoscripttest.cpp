@@ -104,7 +104,11 @@ void DiffToScriptTest::caseParseStringField()
     dfs.append(DiffField {"f_uchr",     13, "UCHR",     false,      true });     //fmtt_UCHR = 13
     dfs.append(DiffField {"f_numeric",  25, "NUMERIC",  false,      false});     //fmtt_NUMERIC = 25
 
-    RecordParser rp(&dfs);
+    QStringList realFields;
+    for (auto fld : dfs)
+        realFields.append(fld.name);
+
+    RecordParser rp(&dfs, realFields);
     QVERIFY(rp.parseRecord(input));
     QCOMPARE(rp.getValues().count(), 10);
 

@@ -69,6 +69,8 @@ WorkFMT/build/
 
 *.zip
 
+ui_*.h
+
 WorkFMT/debug/
 
 WorkFMT/release/
@@ -88,18 +90,6 @@ FmtScript/release/
 DBFileTool/release/
 
 DBFileTool/debug/
-
-<<<<<<< HEAD
-.qtc_clangd/
-
-WorkFMT.pro.user.b2456cf
-=======
-WorkFMT/fmtopt.ini
-
-DBFileTool/tables.dat
-
-WorkFMT/tables.dat
->>>>>>> master
 
 pytools/destrib/
 
@@ -132,3 +122,5 @@ DiffToScript/build/
 DiffToScript/debug/
 
 DiffToScript/release/
+
+WorkFMT.pro.user.b2456cf

@@ -3,10 +3,27 @@
 #include "fmtcore.h"
 #include <QRegExp>
 
-RecordParser::RecordParser(DiffFields* diffFields, QObject *parent) : QObject(parent)
-  , _diffFields(diffFields)
+RecordParser::RecordParser(DiffFields* diffFields, const QStringList &realFields, QObject *parent) :
+    QObject(parent),
+    _diffFields(diffFields),
+    _realFields(realFields)
 {
 
+}
+
+DiffField RecordParser::field(const QString &name)
+{
+    DiffFields::const_iterator iter = std::find_if(_diffFields->cbegin(),
+                                                   _diffFields->cend(),
+                                                   [name](const DiffField &fld) -> bool
+    {
+        if (!fld.name.compare(name, Qt::CaseInsensitive))
+            return true;
+
+        return false;
+    });
+
+    return *iter;
 }
 
 bool RecordParser::parseRecord(QString line)
@@ -17,9 +34,9 @@ bool RecordParser::parseRecord(QString line)
     _values.clear();
     int readCnt = 0;
 
-    for (int i = 0; i < _diffFields->count(); ++i)
+    for (int i = 0; i < _realFields.count(); ++i)
     {
-        DiffField fld = _diffFields->at(i);
+        DiffField fld = field(_realFields[i]);
         QString value;
         bool success = true;
         if (fld.isString)

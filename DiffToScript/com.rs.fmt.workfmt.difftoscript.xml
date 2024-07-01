@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
+    <version ver="1.0.0.4">
+        <add>Insert скрипты теперь добавляют значения по умолчанию для отсутствующих в *.dat файле колонок</add>
+    </version>
 	<version ver="1.0.0.3">
 		<add>Добавлена обработка исключений DUP_VAL_ON_INDEX (in Oracle) и UNIQUE_VIOLATION (in PostgreSQL) для insert скриптов</add>
 		<add>Добавлена обертка HEXTORAW для blob полей (in Oracle)</add>

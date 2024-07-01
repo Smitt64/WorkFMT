@@ -137,7 +137,7 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
                     }
 
                     QString fld = q.value(0).toString();
-                    qCInfo(logDatTable) << "Loaded dat struc field" << fld;
+                    qCInfo(logDatTable) << "Loaded dat struct field" << fld;
 
                     realFields.append(fld.toUpper());
                 }
