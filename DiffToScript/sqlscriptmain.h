@@ -16,6 +16,12 @@ typedef struct
     QString fullname;
 }InsertFunction;
 
+enum SqlScriptBuildErrors
+{
+    // Различается состав полей в dat и fmt
+    SqlBuildError_FieldComposition = 1000,
+};
+
 class SqlScriptMain
 {
 public:
@@ -48,10 +54,12 @@ public:
                        Join *childJoin = nullptr,
                        const QStringList &ParentValuesByIndex = QStringList());
     int buildChildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
-    void build(QTextStream& os, JoinTable* joinTable);
+    int build(QTextStream& os, JoinTable* joinTable);
 
     void dateSpelling(const JoinTable* joinTable, DatRecord& rec);
     void stringSpelling(const JoinTable* joinTable, DatRecord& rec);
+
+    void checkDatFldsCount(QStringList& sql, JoinTable *joinTable);
 
 private:
     QSharedPointer<DiffConnection> _connection;

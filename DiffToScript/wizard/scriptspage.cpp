@@ -7,6 +7,8 @@
 #include "tablelinks.h"
 #include "task.h"
 #include "svnlogmodel.h"
+#include "fmterrors.h"
+#include "errordlg.h"
 #include <QProcess>
 #include <QThreadPool>
 #include <QMapIterator>
@@ -23,7 +25,8 @@ enum
 
 GenerateOperation::GenerateOperation(DiffWizard *wizrd) :
     QObject(),
-    QRunnable()
+    QRunnable(),
+    m_Errors(nullptr)
 {
     m_pWzrd = wizrd;
     setAutoDelete(true);
@@ -32,6 +35,11 @@ GenerateOperation::GenerateOperation(DiffWizard *wizrd) :
 GenerateOperation::~GenerateOperation()
 {
 
+}
+
+void GenerateOperation::setErrorsBuf(FmtErrors *err)
+{
+    m_Errors = err;
 }
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
 void GenerateOperation::run()
@@ -185,7 +193,7 @@ void GenerateOperation::run()
         return result;
     };
 
-    auto ExecDiff = [=](const QByteArray &data, const QString &mode) -> QString
+    auto ExecDiff = [this, GetResult, argtmpl](const QByteArray &data, const QString &mode) -> QString
     {
         QString resultStr;
         QScopedPointer<QProcess> proc(new QProcess);
@@ -205,7 +213,47 @@ void GenerateOperation::run()
            << "--output"
            << result.fileName()
            << mode;
-        CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true);
+
+        int ExitCode = CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true);
+
+        if (ExitCode)
+        {
+            QByteArray errdata = proc->readAllStandardError();
+            QTextStream stream(&errdata);
+            stream.setCodec("IBM 866");
+
+            QString ModeStr;
+            if (mode == "--pg")
+                ModeStr = "PostgreSQL";
+            else
+                ModeStr = "Oracle";
+
+            while (!stream.atEnd())
+            {
+                QString line = stream.readLine();
+
+                if (line.startsWith("WARNING:"))
+                {
+                    m_Errors->appendError(QString("%1: %2")
+                                          .arg(ModeStr)
+                                          .arg(line.remove("WARNING:").simplified()),
+                                          FmtErrors::fmtet_Warning);
+                }
+                else if (line.startsWith("Error:"))
+                {
+                    m_Errors->appendError(QString("%1: %2")
+                                          .arg(ModeStr)
+                                          .arg(line.remove("WARNING:").simplified()));
+                }
+                else
+                {
+                    m_Errors->appendError(QString("%1: %2")
+                                          .arg(ModeStr)
+                                          .arg(line.simplified()),
+                                          FmtErrors::fmtet_Info);
+                }
+            }
+        }
 
         resultStr = GetResult(result.fileName());
         return resultStr;
@@ -222,6 +270,8 @@ void GenerateOperation::run()
         result = ExecDiff(iter.value(), "--pg");
         emit postgresScriptReady(result);
     }
+
+    emit finished();
 }
 
 // -------------------------------------------------------------
@@ -233,6 +283,7 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
     ui->setupUi(this);
     setTitle(tr("Сгенерированные скрипты"));
 
+    m_Errors = new FmtErrors();
     m_pOracle = new CodeEditor(this);
     m_pPostgres = new CodeEditor(this);
 
@@ -273,16 +324,31 @@ void ScriptsPage::postgresScriptReady(const QString &data)
     m_pPostgres->verticalScrollBar()->setValue(m_pPostgres->verticalScrollBar()->maximum());
 }
 
+void ScriptsPage::finished()
+{
+    if (m_Errors->isEmpty())
+        return;
+
+    ErrorDlg dlg(ErrorDlg::mode_Information, this);
+    dlg.setErrors(m_Errors);
+    dlg.setMessage(tr("При формировании скриптов возникли проблемы:"));
+    dlg.exec();
+}
+
 void ScriptsPage::initializePage()
 {
     DiffWizard *wzrd = qobject_cast<DiffWizard*>(wizard());
 
     m_pOracle->clear();
     m_pPostgres->clear();
+    m_Errors->clear();
 
     GenerateOperation *oper = new GenerateOperation(wzrd);
+    oper->setErrorsBuf(m_Errors);
+
     connect(oper, &GenerateOperation::oracleScriptReady, this, &ScriptsPage::oracleScriptReady);
     connect(oper, &GenerateOperation::postgresScriptReady, this, &ScriptsPage::postgresScriptReady);
+    connect(oper, &GenerateOperation::finished, this, &ScriptsPage::finished);
 
     QThreadPool::globalInstance()->start(oper);
 }

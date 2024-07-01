@@ -44,7 +44,10 @@ int main(int argc, char *argv[])
             QTextStream(stdout) << result.errorString <<Qt::endl;
             return 1;
         }
-        QObject::connect(pTask, SIGNAL(finished()), &app, SLOT(quit()));
+        QObject::connect(pTask, &Task::finished, &app, [&app, &pTask]()
+        {
+            app.exit(pTask->result());
+        });
 
         pTask->optns = cmdParser.opts;
 

@@ -1,8 +1,10 @@
 #include "sqlscriptmain.h"
 #include "difflogging.h"
 #include "fmtcore.h"
+#include <cstdio>
 #include <QSqlQuery>
 #include <QTextCodec>
+#include <QTextStream>
 
 const QString PADDING = "  ";
 
@@ -775,13 +777,45 @@ const JoinTable* getParent(JoinTable* joinTable)
             return join->parent;
 }
 
-void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
+void SqlScriptMain::checkDatFldsCount(QStringList& sql, JoinTable* joinTable)
 {
+    auto CheckFlds = [&sql](const DatTable &table)
+    {
+        if (table.realFields.count() != table.fields.count())
+        {
+            sql.append(QString("WARNING: Для таблицы %1 набор полей в *.dat файле не соответствует набору в fmt словаре.")
+                       .arg(table.name.toUpper()));
+            sql.append(QString("Необходимо актуализировать *.dat файл"));
+        }
+    };
+
+    CheckFlds(*joinTable->datTable);
+
+    for (Join* childJoin: joinTable->joinList)
+        CheckFlds(*childJoin->child->datTable);
+}
+
+int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
+{
+    int stat = 0;
     if (!joinTable)
-        return;
+        return -1;
+
+    QTextStream StdErr(stderr);
+    StdErr.setCodec("IBM 866");
 
     QStringList variables = makeVariables(joinTable);
     QStringList sql;
+
+    QStringList errors;
+    checkDatFldsCount(errors, joinTable);
+
+    for (const QString &err : errors)
+    {
+        sql.append(QString("-- %1").arg(err));
+        StdErr << err << Qt::endl;
+        stat = SqlBuildError_FieldComposition;
+    }
 
     if (_dbSpelling->functionDeclare() == DbSpelling::FunctionBeforeBlocks)
         sql << makeInsertFunctions(joinTable);
@@ -877,6 +911,8 @@ void SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
         }
     }
     os << sql.join("\n");
+
+    return stat;
 }
 
 void SqlScriptMain::dateSpelling(const JoinTable *joinTable, DatRecord &rec)

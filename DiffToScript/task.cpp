@@ -22,7 +22,9 @@
 #include <QApplication>
 #include "qloggingcategory.h"
 
-Task::Task(QObject *parent) : QObject(parent)
+Task::Task(QObject *parent) :
+    QObject(parent),
+    m_Result(0)
 {
     //снятие всех опций
     std::fill(optns.begin(), optns.end() - 1, TaskOption{ false, "" } );
@@ -156,6 +158,11 @@ void Task::run()
 {
     runTask();
     emit finished();
+}
+
+int Task::result() const
+{
+    return m_Result;
 }
 
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
@@ -324,6 +331,6 @@ void Task::runTask()
     SqlScriptMain ssm(dbSpelling, conn);
 
     qInfo(logTask) << "Start sql building.";
-    ssm.build(os, joinTables.getRoot());
+    m_Result = ssm.build(os, joinTables.getRoot());
 }
 

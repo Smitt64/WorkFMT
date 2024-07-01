@@ -19,8 +19,12 @@ public:
 //    bool getOption(TaskOption opt) const { return optns[opt];}
     void runTask();
     void setInput(QString fileName);
+
+    int result() const;
+
 public slots:
     void run();
+
 signals:
     void finished();
 
@@ -28,6 +32,8 @@ private:
     void showAppInfo(QTextStream& os);
     void makeInputBuff(QString& buff, const TaskOptions& optns);
     void makeOutputStream(QTextStream& os, const TaskOptions& optns);
+
+    int m_Result;
 };
 
 #endif // TASK_H

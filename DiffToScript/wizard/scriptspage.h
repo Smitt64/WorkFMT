@@ -13,6 +13,7 @@ class DiffWizard;
 class QSplitter;
 class Highlighter;
 class QTabWidget;
+class FmtErrors;
 class ScriptsPage : public QWizardPage
 {
     Q_OBJECT
@@ -26,9 +27,12 @@ public:
 public slots:
     void oracleScriptReady(const QString &data);
     void postgresScriptReady(const QString &data);
+    void finished();
 
 private:
     Ui::ScriptsPage *ui;
+
+    FmtErrors *m_Errors;
 
     //QSplitter *m_pSplitter;
     QTabWidget *m_pTabWidget;
@@ -46,11 +50,15 @@ public:
 
     virtual void run() Q_DECL_OVERRIDE;
 
+    void setErrorsBuf(FmtErrors *err);
+
 signals:
     void oracleScriptReady(const QString &data);
     void postgresScriptReady(const QString &data);
+    void finished();
 
 private:
+    FmtErrors *m_Errors;
     DiffWizard *m_pWzrd;
 };
 
