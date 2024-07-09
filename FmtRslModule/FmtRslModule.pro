@@ -1,39 +1,35 @@
-QT -= gui
-QT += sql core
+QT += widgets
 
-CONFIG += c++11 console
-CONFIG -= app_bundle
+TEMPLATE = lib
+DEFINES += FMTRSLMODULE_LIBRARY
 
-UI_DIR = build
-MOC_DIR = build
-OBJECTS_DIR = build
-RCC_DIR = build
-
-INCLUDEPATH += $$PWD/../FmtLib/h
-DEPENDPATH += $$PWD/../FmtLib/h
-
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib
-else:unix:!macx: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
-
-target.path = $$PWD/../bin
-INSTALLS += target
+CONFIG += c++11
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        main.cpp \
-        task.cpp
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+    fmtrslmodule.cpp \
+    fmtrslmoduleplugin.cpp
 
 HEADERS += \
-    task.h
+    FmtRslModule_global.h \
+    fmtrslmodule.h \
+    fmtrslmoduleplugin.h
+
+# Default rules for deployment.
+unix {
+    target.path = /usr/lib
+}
+!isEmpty(target.path): INSTALLS += target
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib
+else:unix: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
+
+INCLUDEPATH += $$PWD/../FmtLib
+DEPENDPATH += $$PWD/../FmtLib
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
