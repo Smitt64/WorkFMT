@@ -8,18 +8,24 @@
 #include <QCommandLineParser>
 #include <QSettings>
 #include <QDir>
+#include <QStyleFactory>
 
 static void ProcessRsreqOption(MainWindow *w, const QString &constringsdir);
 static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser, QCommandLineOption &logOption, QCommandLineOption &logruleOption);
 
 int main(int argc, char *argv[])
-{    
+{
     FmtApplication a(argc, argv);
 
     QCommandLineParser parser;
     QCommandLineOption helpOption = parser.addHelpOption();
     Q_UNUSED(helpOption)
     parser.addVersionOption();
+
+    qDebug() << QStyleFactory::keys();
+    QStyle *s = QStyleFactory::create("WindowsModernStyleBlue");
+    qDebug() << s;
+    a.setStyle(s);
 
     QCommandLineOption connectionStringOption(QStringList() << "cs" << "con-str",
                                         QApplication::translate("main", "Подключиться к базе данных использую строку подключения <constring>"),
