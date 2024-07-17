@@ -16,6 +16,13 @@ class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
     friend class FmtTablesModel;
     /// @private
     friend class OracleAuthDlg;
+    Q_PROPERTY(bool isOpen READ isOpen)
+    Q_PROPERTY(bool isUnicode READ isUnicode)
+    Q_PROPERTY(QString typeName READ typeName)
+    Q_PROPERTY(int type READ type)
+    Q_PROPERTY(QString user READ user)
+    Q_PROPERTY(QString password READ password)
+    Q_PROPERTY(QString dsn READ dsn)
 public:
     enum ConnectionType
     {
@@ -32,18 +39,21 @@ public:
         CanSaveToXml,
         CanLoadUnloadDbf
     };
+
+    Q_ENUM(ConnectionType)
+    Q_ENUM(ConnectionFeature)
     /**
      * @brief ConnectionInfo
      * @param dbalias
      */
-    ConnectionInfo(const QString &dbalias = QString());
+    Q_INVOKABLE ConnectionInfo(const QString &dbalias = QString());
     virtual ~ConnectionInfo();
 
     FmtTablesModel *tablesModel();
     QSqlDatabase &db();
     QSqlDriver *driver();
 
-    bool hasFeature(ConnectionInfo::ConnectionFeature feature) const;
+    Q_INVOKABLE bool hasFeature(ConnectionInfo::ConnectionFeature feature) const;
 
     /**
      * @brief Устанавливает имя схемы
@@ -75,11 +85,12 @@ public:
     int type() const;
     QString typeName() const;
 
-    bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn,
+    Q_INVOKABLE bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn,
               const QString &options = QString(), QString *error = nullptr);
-    bool openSqlite(const QString &filename);
-    bool openSqlteMemory();
-    void close();
+
+    Q_INVOKABLE bool openSqlite(const QString &filename);
+    Q_INVOKABLE bool openSqlteMemory();
+    Q_INVOKABLE void close();
 
     FmtTablesModel *addModel();
     FmtTablesModel *getModel(const int &index);

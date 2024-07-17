@@ -201,7 +201,7 @@ bool FmtFildsModel::setData(const QModelIndex &index, const QVariant &value, int
     return QAbstractItemModel::setData(index, value, role);
 }
 
-void FmtFildsModel::setFieldPropertyChanged(const FmtField *fld, const FmtFldIndex &prop)
+void FmtFildsModel::setFieldPropertyChanged(const FmtField *fld, const qint16 &prop)
 {
     int row = fld->index();
     //quint16 col = -1;

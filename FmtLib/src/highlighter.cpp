@@ -240,7 +240,10 @@ void HighlighterStyle::StyleItem::load(const QString &filename)
 HighlighterStyle *HighlighterStyle::m_Inst = nullptr;
 HighlighterStyle::HighlighterStyle()
 {
-    m_DefaultTheme = settings()->value("editor.theme", "Default").toString();
+    if (settings())
+        m_DefaultTheme = settings()->value("editor.theme", "Default").toString();
+    else
+        m_DefaultTheme = "Default";
 }
 
 HighlighterStyle *HighlighterStyle::inst()

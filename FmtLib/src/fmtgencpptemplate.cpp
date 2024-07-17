@@ -170,7 +170,7 @@ void FmtGenCppTemplate::createKeysUnion(const FmtSharedTablePtr &pTable, QTextSt
 
     stream << "typedef union" << Qt::endl;
     stream << "{" << Qt::endl;
-    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
+    for (qint16 i = 0; i < pTable->indecesCount(); i++)
     {
         FmtIndex *index = pTable->tableIndex(i);
 
@@ -229,7 +229,7 @@ void FmtGenCppTemplate::createKeysEnum(const FmtSharedTablePtr &pTable, QTextStr
     stream << "typedef enum" << Qt::endl;
     stream << "{" << Qt::endl;
 
-    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
+    for (qint16 i = 0; i < pTable->indecesCount(); i++)
     {
         FmtIndex *index = pTable->tableIndex(i);
         stream << tab << block->m_IndexEnumValue[index];
@@ -420,7 +420,7 @@ void FmtGenCppTemplate::createFindFunctions(const FmtSharedTablePtr &pTable, QTe
         stream << Qt::endl;
 
     int IndexNum = 1;
-    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
+    for (qint16 i = 0; i < pTable->indecesCount(); i++)
     {
         FmtIndex *index = pTable->tableIndex(i);
 
@@ -449,7 +449,7 @@ void FmtGenCppTemplate::createSkfDeclFunctions(const FmtSharedTablePtr &pTable, 
     if ((Mode & SkfMode_Create) != SkfMode_Create)
         return;
 
-    for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
+    for (qint16 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
 
@@ -562,14 +562,14 @@ void FmtGenCppTemplate::createSkfFunctions(const FmtSharedTablePtr &pTable, QTex
     if (!block)
         return;
 
-    for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
+    for (qint16 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
         createSkfKfFunctions(pIndex, stream);
     }
 
     int count = 0;
-    for (FmtNumber5 k = 0; k < pTable->indecesCount(); k++)
+    for (qint16 k = 0; k < pTable->indecesCount(); k++)
     {
         FmtIndex *pIndex = pTable->tableIndex(k);
 
@@ -703,7 +703,7 @@ void FmtGenCppTemplate::CreateBlocks(const FmtSharedTablePtr &pTable)
     m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(block->m_EnumName)), FormatType});
 
     QList<FmtField*> fields;
-    for (FmtNumber5 i = 0; i < pTable->indecesCount(); i++)
+    for (qint16 i = 0; i < pTable->indecesCount(); i++)
     {
         QString EnumName, UnionName, SkfName;
         FmtIndex *index = pTable->tableIndex(i);

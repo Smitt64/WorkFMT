@@ -18,12 +18,13 @@ class QAction;
 class FMTLIBSHARED_EXPORT FmtTable : public QAbstractItemModel
 {
     Q_OBJECT
-    Q_PROPERTY(FmtRecId Id READ id NOTIFY idChanged)
-    Q_PROPERTY(FmtNumber10 CacheSize READ cacheSize WRITE setCacheSize NOTIFY cacheSizeChanged)
-    Q_PROPERTY(FmtNumber10 BlobLen READ blobLen WRITE setBlobLen NOTIFY blobLenChanged)
+    Q_PROPERTY(qint64 Id READ id NOTIFY idChanged)
+    Q_PROPERTY(qint32 CacheSize READ cacheSize WRITE setCacheSize NOTIFY cacheSizeChanged)
+    Q_PROPERTY(qint32 BlobLen READ blobLen WRITE setBlobLen NOTIFY blobLenChanged)
     Q_PROPERTY(quint32 FieldsCount READ fieldsCount)
-    Q_PROPERTY(FmtNumber5 PkIDx READ pkIDx WRITE setPkIDx)
-    Q_PROPERTY(FmtNumber5 BlobType READ blobType WRITE setBlobType)
+    Q_PROPERTY(quint32 IndecesCount READ indecesCount)
+    Q_PROPERTY(qint16 PkIDx READ pkIDx WRITE setPkIDx)
+    Q_PROPERTY(qint16 BlobType READ blobType WRITE setBlobType)
     Q_PROPERTY(quint32 TableFlags READ tableFlags WRITE setTableFlags)
 
     Q_PROPERTY(bool isTemporary READ isTemporary WRITE setIsTemporary NOTIFY isTemporaryChanged)
@@ -69,7 +70,7 @@ public:
         fld_isRecord,
     };
     explicit FmtTable(QObject *parent = Q_NULLPTR);
-    explicit FmtTable(ConnectionInfo *connection, QObject *parent = Q_NULLPTR);
+    Q_INVOKABLE FmtTable(ConnectionInfo *connection, QObject *parent = Q_NULLPTR);
     ~FmtTable();
 
     /// @private
@@ -82,19 +83,19 @@ public:
     bool isExistsInDb() const;
 
     /// @private
-    FmtRecId id() const { return m_Id; }
+    quint64 id() const { return m_Id; }
     /// @private
-    FmtNumber10 cacheSize() const { return m_CacheSize; }
+    qint32 cacheSize() const { return m_CacheSize; }
     /// @private
-    FmtNumber10 blobLen() const { return m_BlobLen; }
+    qint32 blobLen() const { return m_BlobLen; }
     /// @private
-    FmtNumber5 indecesCount() const;
+    qint16 indecesCount() const;
     /// @private
-    FmtNumber5 pkIDx() const { return m_PkIDx; }
+    qint16 pkIDx() const { return m_PkIDx; }
     /// @private
-    FmtNumber5 blobType() const { return m_BlobType; }
+    qint16 blobType() const { return m_BlobType; }
     /// @private
-    FmtNumber10 tableFlags() const { return m_Flags; }
+    qint32 tableFlags() const { return m_Flags; }
 
     /// @private
     QString name() const;
@@ -129,12 +130,12 @@ public:
     QAction *undoAction();
     QAction *redoAction();
 
-    void setCacheSize(const FmtNumber10 &v);
-    void setBlobLen(const FmtNumber10 &v);
+    void setCacheSize(const qint32 &v);
+    void setBlobLen(const qint32 &v);
     void setName(const QString &v);
-    void setPkIDx(const FmtNumber5 &v);
-    void setTableFlags(const FmtNumber10 &v);
-    void setBlobType(const FmtNumber5 &v);
+    void setPkIDx(const qint16 &v);
+    void setTableFlags(const qint32 &v);
+    void setBlobType(const qint16 &v);
     void setComment(const QString &v);
     void setOwner(const QString &v);
     void setIsTemporary(const bool &v);
@@ -144,7 +145,7 @@ public:
     void copyToAsTmp(QSharedPointer<FmtTable> cTable);
 
 signals:
-    void idChanged(FmtRecId);
+    void idChanged(quint64);
     void cacheSizeChanged(quint32);
     void blobLenChanged(quint32);
     void nameChanged(QString);
@@ -159,44 +160,44 @@ signals:
     void fieldRemoved(const int &row);
     void fieldAdded(FmtField *fld);
 
-public slots:
+public:
     ConnectionInfo *connection();
-    bool load(const FmtRecId &id);
-    bool load(const QString &name);
-    bool loadFromXml(const QString &filename, const QString &tableName = QString());
+    Q_INVOKABLE bool load(const quint64 &id);
+    Q_INVOKABLE bool load(const QString &name);
+    Q_INVOKABLE bool loadFromXml(const QString &filename, const QString &tableName = QString());
 
-    FmtField *addField(const QString &name, const FmtFldType &type);
-    FmtField *addField(const QMap<quint16,QVariant> &data);
+    Q_INVOKABLE FmtField *addField(const QString &name, const qint16 &type);
+    Q_INVOKABLE FmtField *addField(const QMap<quint16,QVariant> &data);
 
-    FmtField *insertField(const FmtFldIndex &befor, const QString &name, const FmtFldType &type);
-    FmtField *field(const FmtNumber5 &index);
-    FmtFldIndex fieldNum(FmtField *fld);
-    FmtFldIndex fieldsCount() const;
-    bool isFieldAutoInc(FmtField *fld) const;
-    bool isFieldAutoInc(const FmtFldIndex &index) const;
+    Q_INVOKABLE FmtField *insertField(const qint16 &befor, const QString &name, const qint16 &type);
+    Q_INVOKABLE FmtField *field(const qint16 &index);
+    Q_INVOKABLE qint16 fieldNum(FmtField *fld);
+    qint32 fieldsCount() const;
+    Q_INVOKABLE bool isFieldAutoInc(FmtField *fld) const;
+    Q_INVOKABLE bool isFieldAutoInc(const qint16 &index) const;
 
-    FmtIndex *addIndex();
-    FmtIndex *tableIndex(const FmtNumber5 &index);
-    FmtFldIndex tableIndexNum(const FmtIndex *pIndex);
-    void removeIndex(const FmtFldIndex &index);
+    Q_INVOKABLE FmtIndex *addIndex();
+    Q_INVOKABLE FmtIndex *tableIndex(const qint16 &index);
+    Q_INVOKABLE qint16 tableIndexNum(const FmtIndex *pIndex);
+    Q_INVOKABLE void removeIndex(const qint16 &index);
 
     QString generateCreateTableSql();
     QString getCommentSql();
 
-    bool hasUniqueIndexes() const;
-    bool hasNonUniqueIndexes() const;
+    Q_INVOKABLE bool hasUniqueIndexes() const;
+    Q_INVOKABLE bool hasNonUniqueIndexes() const;
 
-    void removeField(const FmtFldIndex &row);
-    void rebuildOffsets(QUndoCommand *pLastCommand = Q_NULLPTR);
-    void clear();
+    Q_INVOKABLE void removeField(const qint16 &row);
+    Q_INVOKABLE void rebuildOffsets(QUndoCommand *pLastCommand = Q_NULLPTR);
+    Q_INVOKABLE void clear();
 
-    int save();
+    Q_INVOKABLE int save();
     int safeSave(const bool &IgnoreWarnings);
     qint16 createDbTable(QString *err = Q_NULLPTR);
     int dbInit(const QString &log = QString());
 
-    bool checkErrors(FmtErrors *e);
-    FmtErrors *lastErrors();
+    Q_INVOKABLE bool checkErrors(FmtErrors *e);
+    Q_INVOKABLE FmtErrors *lastErrors();
 
     FmtFildsModel *fieldsModel() { return pFieldsModel; }
     FmtIndecesModel *indecesModel() { return pIndecesModel; }
@@ -218,37 +219,37 @@ private:
     /// @private
     int SaveTrn();
     /// @private
-    FmtRecId FindFirstEmptyID();
+    quint64 FindFirstEmptyID();
     /// @private
     int deleteDbTable();
     /// @private
     qint16 calcMaxOraLenght(qint16 *maxfieldname);
     /// @private
-    FmtField *FindField(const FmtRecId &Id);
+    FmtField *FindField(const quint64 &Id);
     /// @private
-    bool setDataPrivate(const FmtFldType &fld, const QVariant &value);
+    bool setDataPrivate(const qint16 &fld, const QVariant &value);
     /// @private
-    FmtField *addFieldPrivate(const QString &name, const FmtFldType &type);
+    FmtField *addFieldPrivate(const QString &name, const qint16 &type);
     /// @private
     FmtField *addFieldPrivate(const QMap<quint16,QVariant> &data);
     /// @private
-    FmtField *insertFieldPrivate(const FmtFldIndex &befor, const QString &name, const FmtFldType &type);
+    FmtField *insertFieldPrivate(const qint16 &befor, const QString &name, const qint16 &type);
     /// @private
-    FmtField *insertFieldPrivate(const FmtFldIndex &befor, const QMap<quint16,QVariant> &data);
+    FmtField *insertFieldPrivate(const qint16 &befor, const QMap<quint16,QVariant> &data);
     /// @private
-    void removeInsertedFieldPrivate(const FmtFldIndex &row);
+    void removeInsertedFieldPrivate(const qint16 &row);
     /// @private
-    void removeFieldPrivate(const FmtFldIndex &row);
+    void removeFieldPrivate(const qint16 &row);
     /// @private
-    FmtIndex *addIndexPrivate(const FmtFldIndex &row = -1);
+    FmtIndex *addIndexPrivate(const qint16 &row = -1);
     /// @private
-    void removeIndexPrivate(const FmtFldIndex &index, bool AutoDelete = true);
+    void removeIndexPrivate(const qint16 &index, bool AutoDelete = true);
     /// @private
     bool setIgnoreUndoStack(const bool &v);
 
-    FmtRecId m_Id;
-    FmtNumber10 m_CacheSize, m_BlobLen, m_Flags;
-    FmtNumber5 m_PkIDx, m_BlobType;
+    quint64 m_Id;
+    qint32 m_CacheSize, m_BlobLen, m_Flags;
+    qint16 m_PkIDx, m_BlobType;
     QString m_Name, m_Owner, m_Comment;
 
     QSqlRecord m_Record;
@@ -270,9 +271,9 @@ private:
     FmtErrors *m_pErrors;
 };
 
-QString FmtTablePropertyByFieldId(const FmtFldIndex &fld);
-QString FmtTablePropertyTextByFieldId(const FmtFldIndex &fld);
-QString FmtTableMakeIndexName(FmtTable *pTable, const FmtFldIndex &indexNum);
+QString FmtTablePropertyByFieldId(const qint16 &fld);
+QString FmtTablePropertyTextByFieldId(const qint16 &fld);
+QString FmtTableMakeIndexName(FmtTable *pTable, const qint16 &indexNum);
 QString FmtTableFindFirstEmptyIDSql(const QString &table, const QString &fld);
 typedef QSharedPointer<FmtTable> FmtSharedTablePtr;
 

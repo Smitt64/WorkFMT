@@ -23,7 +23,7 @@ QByteArray FmtGenTablesSql::makeContent(FmtSharedTablePtr pTable)
     stream << pTable->getCommentSql();
     stream << ";" << endl;
 
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *fld = pTable->field(i);
         stream << fld->getCommentSql() << ";" << endl;

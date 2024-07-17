@@ -71,7 +71,7 @@ void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTa
 
         foreach (const QString &str, indexes) {
             bool ok = false;
-            FmtNumber5 id = static_cast<FmtNumber5>(str.toInt(&ok));
+            qint16 id = static_cast<qint16>(str.toInt(&ok));
 
             if (ok)
             {
@@ -93,7 +93,7 @@ void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTa
     stream << Qt::endl;
 
     stream << tab << "int Add(";
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         if (i != 0)
@@ -410,7 +410,7 @@ void FmtGenCppClassTemplate::createGetDefenition(const FmtSharedTablePtr &pTable
 
         foreach (const QString &str, indexes) {
             bool ok = false;
-            FmtNumber5 id = static_cast<FmtNumber5>(str.toInt(&ok));
+            qint16 id = static_cast<qint16>(str.toInt(&ok));
 
             if (ok)
             {
@@ -496,7 +496,7 @@ void FmtGenCppClassTemplate::createAddDefenition(const FmtSharedTablePtr &pTable
     QString className = getClassName(pTable);
     QString structName = FmtTableStructName(pTable->name());
     stream << QString("int %1::Add(").arg(className);
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         if (i != 0)
@@ -509,7 +509,7 @@ void FmtGenCppClassTemplate::createAddDefenition(const FmtSharedTablePtr &pTable
     stream << tab << QString("%1 buf;").arg(structName) << Qt::endl;
     stream << tab << QString("memset(&buf, 0, sizeof(%1));").arg(structName) << Qt::endl;
 
-    for (FmtNumber5 j = 0; j < pTable->fieldsCount(); j++)
+    for (qint16 j = 0; j < pTable->fieldsCount(); j++)
     {
         FmtField *fld = pTable->field(j);
         QString fldName = fld->undecorateName();
@@ -567,7 +567,7 @@ void FmtGenCppClassTemplate::createRslClassDeclaration(const FmtSharedTablePtr &
     stream << Qt::endl;
 
     stream << tab << QString("RSL_CLASS(%1)").arg(rslClassName) << Qt::endl;
-    for (FmtFldIndex i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         stream << tab << QString("RSL_GETPROP_DECL(%1);").arg(pFld->undecorateName()) << Qt::endl;
@@ -625,7 +625,7 @@ void FmtGenCppClassTemplate::createRslClassDefenition(const FmtSharedTablePtr &p
     stream << tab << "END_RSBEXCEPTION_HANDLER_INSTAT(stat);" << Qt::endl;
     stream << "}" << Qt::endl << Qt::endl;
 
-    for (FmtFldIndex i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         createRslFldPropertyDefenition(pTable, pFld, stream);
@@ -834,14 +834,14 @@ void FmtGenCppClassTemplate::createRslAddDefenition(const FmtSharedTablePtr &pTa
 
     stream << tab << "enum" << Qt::endl;
     stream << tab << "{" << Qt::endl;
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         stream << tab << tab << QString("prm_%1%2,").arg(pFld->undecorateName(), i == 0 ? QString(" = 1") : QString()) << Qt::endl;
     }
     stream << tab << "};" << Qt::endl << Qt::endl;
 
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
 
@@ -870,7 +870,7 @@ void FmtGenCppClassTemplate::createRslAddDefenition(const FmtSharedTablePtr &pTa
     stream << tab << "if (!stat)" << Qt::endl << tab << "{" << Qt::endl;
     stream << tab << tab << QString("stat = %1::Add(").arg(className);
 
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
 
@@ -902,7 +902,7 @@ void FmtGenCppClassTemplate::createRslClassDefines(const FmtSharedTablePtr &pTab
     stream <<  QString("RSL_METH(Delete)") << Qt::endl;
     stream <<  QString("RSL_METH(Get)") << Qt::endl << Qt::endl;
 
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         stream << QString("RSL_PROP_METH2(%1)").arg(pFld->undecorateName()) << Qt::endl;
@@ -933,7 +933,7 @@ QString FmtGenCppClassTemplate::normalizeFieldName(const QString &m_Name)
     return name;
 }
 
-QString FmtGenCppClassTemplate::getUnionKeyName(const FmtSharedTablePtr &pTable, const FmtNumber5 &key)
+QString FmtGenCppClassTemplate::getUnionKeyName(const FmtSharedTablePtr &pTable, const qint16 &key)
 {
     QString keyName;
     FmtIndex *pIndex = pTable->tableIndex(key);

@@ -26,7 +26,7 @@ void FmtUndoTablePasteField::setData(const QMap<quint16,QVariant> &data)
     setText(QObject::tr("Вставка поля из буффера %1").arg(data[FmtField::fld_Name].toString()));
 }
 
-void FmtUndoTablePasteField::setInsertBefor(const FmtFldIndex &befor)
+void FmtUndoTablePasteField::setInsertBefor(const qint16 &befor)
 {
     m_Befor = befor;
 }

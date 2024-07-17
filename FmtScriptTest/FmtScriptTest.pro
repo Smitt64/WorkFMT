@@ -47,3 +47,10 @@ else:unix:!macx: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
 INCLUDEPATH += $$PWD/../FmtLib/h
 DEPENDPATH += $$PWD/../FmtLib/h
 
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime

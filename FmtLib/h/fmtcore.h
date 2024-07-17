@@ -146,8 +146,8 @@ class FmtField;
 class ConnectionInfo;
 
 FMTLIBSHARED_EXPORT void FmtInit();
-bool hasTemporaryFlag(const FmtNumber10 &flag);
-bool hasRecordFlag(const FmtNumber10 &flag);
+bool hasTemporaryFlag(const qint32 &flag);
+bool hasRecordFlag(const qint32 &flag);
 
 FMTLIBSHARED_EXPORT int ExecuteQuery(QSqlQuery *query, QString *err = Q_NULLPTR);
 FMTLIBSHARED_EXPORT int ExecuteQuery(const QString &query, QSqlDatabase db = QSqlDatabase(), QString *err = Q_NULLPTR);
@@ -160,35 +160,35 @@ QString MinusButtonCss();
 QString AddTabButtonCss();
 QString CheckSymbol();
 QString CheckSymbolFromVariant(const bool &value);
-QString NullString(const int &index);
+FMTLIBSHARED_EXPORT QString NullString(const int &index);
 
 QSettings *settings();
 
 FMTLIBSHARED_EXPORT QStringList fmtTypes();
-FMTLIBSHARED_EXPORT QString fmtTypeForId(const FmtFldType &id);
-FMTLIBSHARED_EXPORT QString fmtOracleDecl(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtPostgresDecl(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtCppStructTypeName(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtCppStructDbTypeName(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtCppStructDbBaseTypeName(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtRslTypeName(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtRslValueName(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT bool fmtTypeCanHaveCustomSize(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtGetOraDefaultVal(const FmtFldType &Type, const int &size);
-FMTLIBSHARED_EXPORT QString fmtGetPgDefaultVal(const FmtFldType &Type, const int &size);
+FMTLIBSHARED_EXPORT QString fmtTypeForId(const qint16 &id);
+FMTLIBSHARED_EXPORT QString fmtOracleDecl(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtPostgresDecl(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtCppStructTypeName(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtCppStructDbTypeName(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtCppStructDbBaseTypeName(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtRslTypeName(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtRslValueName(const qint16 &Type);
+FMTLIBSHARED_EXPORT bool fmtTypeCanHaveCustomSize(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtGetOraDefaultVal(const qint16 &Type, const int &size);
+FMTLIBSHARED_EXPORT QString fmtGetPgDefaultVal(const qint16 &Type, const int &size);
 
 FMTLIBSHARED_EXPORT quint32 fmtTypeIndexForId(const quint32 &id);
-FMTLIBSHARED_EXPORT FmtFldType fmtTypeFromIndex(const FmtFldIndex &id);
-FMTLIBSHARED_EXPORT FmtFldIndex fmtIndexForType(const FmtFldType &id);
-FMTLIBSHARED_EXPORT FmtFldType fmtIndexFromFmtType(const FmtFldType &id);
-FMTLIBSHARED_EXPORT QString fmtTypeNameForType(const FmtFldType &type);
-FMTLIBSHARED_EXPORT FmtFldType fmtTypeFromXmlType(const QString &type);
+FMTLIBSHARED_EXPORT qint16 fmtTypeFromIndex(const qint16 &id);
+FMTLIBSHARED_EXPORT qint16 fmtIndexForType(const qint16 &id);
+FMTLIBSHARED_EXPORT qint16 fmtIndexFromFmtType(const qint16 &id);
+FMTLIBSHARED_EXPORT QString fmtTypeNameForType(const qint16 &type);
+FMTLIBSHARED_EXPORT qint16 fmtTypeFromXmlType(const QString &type);
 
-FMTLIBSHARED_EXPORT quint16 fmtTypeSize(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT quint16 fmtTypeIndexSize(const FmtFldType &id);
-FMTLIBSHARED_EXPORT QString fmtRsdType(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtRsdConstant(const FmtFldType &Type);
-FMTLIBSHARED_EXPORT QString fmtZeroConstant(const FmtFldType &Type);
+FMTLIBSHARED_EXPORT quint16 fmtTypeSize(const qint16 &Type);
+FMTLIBSHARED_EXPORT quint16 fmtTypeIndexSize(const qint16 &id);
+FMTLIBSHARED_EXPORT QString fmtRsdType(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtRsdConstant(const qint16 &Type);
+FMTLIBSHARED_EXPORT QString fmtZeroConstant(const qint16 &Type);
 
 FMTLIBSHARED_EXPORT int trn(QSqlDatabase &db, std::function<int(void)> func);
 
@@ -231,7 +231,7 @@ QString FmtGetTableExtension(const QString &table);
 QString FmtGetTableFileName(const QString &table);
 
 FMTLIBSHARED_EXPORT QString GetProcessErrorText(const QProcess::ProcessError &error);
-QString GetVersionNumberString();
+FMTLIBSHARED_EXPORT QString GetVersionNumberString();
 
 QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
 QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable);

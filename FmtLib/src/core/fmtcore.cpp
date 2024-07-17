@@ -51,7 +51,7 @@ static QStringList FmtTypesList/* = QStringList()
 /*typedef struct tagFmtTypeInfoT : public
         DataStructure
         <
-        FmtFldType, // type;
+        qint16, // type;
         quint16,    // size;
         quint16,    // indexType;
         QString,    // oraType;
@@ -67,7 +67,7 @@ static QStringList FmtTypesList/* = QStringList()
 
 typedef struct tagFmtTypeInfo
 {
-    FmtFldType _type;
+    qint16 _type;
     quint16 _size;
     quint16 _indexType;
     QString _oraType;
@@ -127,6 +127,9 @@ static fmtTypesMap fmtTypesStrMap, indexTypesStrMap;
 
 void FmtInit()
 {
+    if (!indexTypesStrMap.isEmpty())
+        return;
+
     AddFmtTypesMap(fmtt_DATETIME);
     AddFmtTypesMap(fmtt_INT);
     AddFmtTypesMap(fmtt_LONG);
@@ -224,7 +227,7 @@ void FmtInit()
     }
 }
 
-bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)
+bool fmtTypeCanHaveCustomSize(const qint16 &Type)
 {
     bool hr = false;
     switch(Type)
@@ -240,19 +243,24 @@ bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)
     return hr;
 }
 
-bool hasTemporaryFlag(const FmtNumber10 &flag)
+bool hasTemporaryFlag(const qint32 &flag)
 {
     return (flag & fmtnf_Temp) == fmtnf_Temp;
 }
 
-bool hasRecordFlag(const FmtNumber10 &flag)
+bool hasRecordFlag(const qint32 &flag)
 {
     return (flag & fmtnf_Rec) == fmtnf_Rec;
 }
 
 QSettings *settings()
 {
-    return ((FmtApplication*)qApp)->settings();
+    FmtApplication *FmtApp = qobject_cast<FmtApplication*>(qApp);
+
+    if (!FmtApp)
+        return nullptr;
+
+    return FmtApp->settings();
 }
 
 QStringList fmtTypes()
@@ -260,7 +268,7 @@ QStringList fmtTypes()
     return QStringList(FmtTypesList);
 }
 
-QString fmtTypeForId(const FmtFldType &id)
+QString fmtTypeForId(const qint16 &id)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -273,9 +281,9 @@ QString fmtTypeForId(const FmtFldType &id)
     return QString::number(id);
 }
 
-quint16 fmtTypeSize(const FmtFldType &Type)
+quint16 fmtTypeSize(const qint16 &Type)
 {
-    FmtFldType type = Type;
+    qint16 type = Type;
     if (type == fmtt_DATETIME)
         type = fmtt_DATE;
 
@@ -289,41 +297,41 @@ quint16 fmtTypeSize(const FmtFldType &Type)
     return 0;
 }
 
-QString fmtOracleDecl(const FmtFldType &Type)
+QString fmtOracleDecl(const qint16 &Type)
 {
     return FmtTypesMap[fmtTypeForId(Type)]._oraType;
 }
 
-QString fmtPostgresDecl(const FmtFldType &Type)
+QString fmtPostgresDecl(const qint16 &Type)
 {
     return FmtTypesMap[fmtTypeForId(Type)]._pgType;
 }
 
-QString fmtCppStructTypeName(const FmtFldType &Type)
+QString fmtCppStructTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._cppType;
 }
 
-QString fmtCppStructDbTypeName(const FmtFldType &Type)
+QString fmtCppStructDbTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._cppDbType;
 }
 
-QString fmtRslTypeName(const FmtFldType &Type)
+QString fmtRslTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._rslType;
 }
 
-QString fmtRslValueName(const FmtFldType &Type)
+QString fmtRslValueName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._rslValueName;
 }
 
-QString fmtCppStructDbBaseTypeName(const FmtFldType &Type)
+QString fmtCppStructDbBaseTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._cppDbBaseType;
@@ -342,7 +350,7 @@ quint32 fmtTypeIndexForId(const quint32 &id)
     return 0;
 }
 
-FmtFldIndex fmtIndexForType(const FmtFldType &id)
+qint16 fmtIndexForType(const qint16 &id)
 {
    /*QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
 
@@ -358,7 +366,7 @@ FmtFldIndex fmtIndexForType(const FmtFldType &id)
         }
     }
 
-    return static_cast<FmtFldIndex>(indx);*/
+    return static_cast<qint16>(indx);*/
     //return id;
 
     const QVector<int> ids =
@@ -381,7 +389,7 @@ FmtFldIndex fmtIndexForType(const FmtFldType &id)
     return ids.indexOf(id);
 }
 
-QString fmtTypeNameForType(const FmtFldType &type)
+QString fmtTypeNameForType(const qint16 &type)
 {
     int index = static_cast<int>(fmtIndexForType(type));
     if (index < 0 || index >= FmtTypesList.size())
@@ -389,7 +397,7 @@ QString fmtTypeNameForType(const FmtFldType &type)
     return FmtTypesList[fmtIndexForType(type)];
 }
 
-FmtFldType fmtTypeFromXmlType(const QString &type)
+qint16 fmtTypeFromXmlType(const QString &type)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -402,7 +410,7 @@ FmtFldType fmtTypeFromXmlType(const QString &type)
     return fmtt_INT;
 }
 
-FmtFldType fmtTypeFromIndex(const FmtFldIndex &id)
+qint16 fmtTypeFromIndex(const qint16 &id)
 {
     /*int index = static_cast<int>(fmtIndexForType(id));
     if (index < 0 || index >= FmtTypesList.size())
@@ -410,7 +418,7 @@ FmtFldType fmtTypeFromIndex(const FmtFldIndex &id)
     return FmtTypesMap[FmtTypesList[id]]._type;
 }
 
-quint16 fmtTypeIndexSize(const FmtFldType &id)
+quint16 fmtTypeIndexSize(const qint16 &id)
 {
     /*int index = fmtIndexForType(id);
     if (index < 0 || index >= FmtTypesList.size())
@@ -418,7 +426,7 @@ quint16 fmtTypeIndexSize(const FmtFldType &id)
     return FmtTypesMap[FmtTypesList[id]]._size;
 }
 
-QString fmtRsdType(const FmtFldType &Type)
+QString fmtRsdType(const qint16 &Type)
 {
     int index = fmtIndexForType(Type);
     if (index < 0 || index >= FmtTypesList.size())
@@ -427,7 +435,7 @@ QString fmtRsdType(const FmtFldType &Type)
     return FmtTypesMap[FmtTypesList[index]]._rsdType;
 }
 
-QString fmtRsdConstant(const FmtFldType &Type)
+QString fmtRsdConstant(const qint16 &Type)
 {
     int index = fmtIndexForType(Type);
     if (index < 0 || index >= FmtTypesList.size())
@@ -436,7 +444,7 @@ QString fmtRsdConstant(const FmtFldType &Type)
     return FmtTypesMap[FmtTypesList[index]]._rsdConst;
 }
 
-QString fmtZeroConstant(const FmtFldType &Type)
+QString fmtZeroConstant(const qint16 &Type)
 {
     int index = fmtIndexForType(Type);
     if (index < 0 || index >= FmtTypesList.size())
@@ -445,7 +453,7 @@ QString fmtZeroConstant(const FmtFldType &Type)
     return FmtTypesMap[FmtTypesList[index]]._zeroConstant;
 }
 
-FmtFldType fmtIndexFromFmtType(const FmtFldType &id)
+qint16 fmtIndexFromFmtType(const qint16 &id)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -458,7 +466,7 @@ FmtFldType fmtIndexFromFmtType(const FmtFldType &id)
     return 0;
 }
 
-bool fmtIsStringType(const FmtFldType &Type, const int &size)
+bool fmtIsStringType(const qint16 &Type, const int &size)
 {
     bool hr = false;
     if (Type == fmtt_STRING || Type == fmtt_SNR)
@@ -471,7 +479,7 @@ bool fmtIsStringType(const FmtFldType &Type, const int &size)
     return hr;
 }
 
-QString fmtGetOraDefaultVal(const FmtFldType &Type, const int &size)
+QString fmtGetOraDefaultVal(const qint16 &Type, const int &size)
 {
     QString t;
     if (fmtIsStringType(Type, size) && Type != fmtt_UCHR)
@@ -509,7 +517,7 @@ QString fmtGetOraDefaultVal(const FmtFldType &Type, const int &size)
     return t;
 }
 
-QString fmtGetPgDefaultVal(const FmtFldType &Type, const int &size)
+QString fmtGetPgDefaultVal(const qint16 &Type, const int &size)
 {
     QString t;
     if (fmtIsStringType(Type, size) && Type != fmtt_UCHR)

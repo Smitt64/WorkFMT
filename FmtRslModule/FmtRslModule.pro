@@ -1,4 +1,9 @@
-QT += widgets
+QT += widgets sql
+
+UI_DIR = build
+MOC_DIR = build
+OBJECTS_DIR = build
+RCC_DIR = build
 
 TEMPLATE = lib
 DEFINES += FMTRSLMODULE_LIBRARY
@@ -10,25 +15,21 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    fmtnamespace.cpp \
     fmtrslmodule.cpp \
     fmtrslmoduleplugin.cpp
 
 HEADERS += \
     FmtRslModule_global.h \
+    fmtnamespace.h \
     fmtrslmodule.h \
     fmtrslmoduleplugin.h
-
-# Default rules for deployment.
-unix {
-    target.path = /usr/lib
-}
-!isEmpty(target.path): INSTALLS += target
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib
 else:unix: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
 
-INCLUDEPATH += $$PWD/../FmtLib
+INCLUDEPATH += $$PWD/../FmtLib/h
 DEPENDPATH += $$PWD/../FmtLib
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
@@ -37,3 +38,6 @@ else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
 
 INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+
+target.path = $$PWD/../bin
+INSTALLS += target

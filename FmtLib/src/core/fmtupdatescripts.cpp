@@ -312,7 +312,7 @@ QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable)
     QTextStream stream(&str, QIODevice::WriteOnly);
 
     QList<FmtField*> flds;
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
         flds.append(pTable->field(i));
 
     WrapSqlBlockObjectExists(stream, pTable->generateCreateTableSql(), flds, pTable);

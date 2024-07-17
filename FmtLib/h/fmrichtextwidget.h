@@ -13,7 +13,7 @@ typedef struct
 
 typedef struct
 {
-    FmtFldType type;
+    qint16 type;
     int size;
 }FmRichTextCreateFieldParam;
 
@@ -35,7 +35,7 @@ private slots:
 
 private:
     CreateFieldParamList GetFieldsToCreate(const QString &str, const QString &comment = QString());
-    void AddToCreateFieldParamList(CreateFieldParamList &list, const FmtFldType &type, const int &size = CALC_SIZE);
+    void AddToCreateFieldParamList(CreateFieldParamList &list, const qint16 &type, const int &size = CALC_SIZE);
     void TryAutoMapFields();
     void SetAutoMapField(QComboBox *pCombo, const QString &name);
     QCheckBox *m_IngnoreNumbersCol, *m_IgnoreTitleRow;

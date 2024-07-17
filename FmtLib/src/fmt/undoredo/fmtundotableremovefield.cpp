@@ -18,7 +18,7 @@ QByteArray *FmtUndoTableRemoveField::storedDataPtr()
     return &m_StoredData;
 }
 
-void FmtUndoTableRemoveField::setFieldRow(const FmtFldIndex &row)
+void FmtUndoTableRemoveField::setFieldRow(const qint16 &row)
 {
     m_Row = row;
 }

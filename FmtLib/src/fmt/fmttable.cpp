@@ -22,7 +22,7 @@
 
 #define NOT_EXISTS 2
 
-QString FmtTableMakeIndexName(FmtTable *pTable, const FmtFldIndex &indexNum)
+QString FmtTableMakeIndexName(FmtTable *pTable, const qint16 &indexNum)
 {
     QString TableName = pTable->name().toUpper().trimmed();
 
@@ -36,7 +36,7 @@ QString FmtTableMakeIndexName(FmtTable *pTable, const FmtFldIndex &indexNum)
             .arg(QString::number(indexNum, 16).toUpper());
 }
 
-QString FmtTablePropertyByFieldId(const FmtFldIndex &fld)
+QString FmtTablePropertyByFieldId(const qint16 &fld)
 {
     QString name;
     switch(fld)
@@ -79,7 +79,7 @@ QString FmtTablePropertyByFieldId(const FmtFldIndex &fld)
     return name;
 }
 
-QString FmtTablePropertyTextByFieldId(const FmtFldIndex &fld)
+QString FmtTablePropertyTextByFieldId(const qint16 &fld)
 {
     QString name;
     switch(fld)
@@ -192,7 +192,7 @@ ConnectionInfo *FmtTable::connection()
     return pConnection;
 }
 
-void FmtTable::setCacheSize(const FmtNumber10 &v)
+void FmtTable::setCacheSize(const qint32 &v)
 {
     if (m_CacheSize == v)
         return;
@@ -213,7 +213,7 @@ void FmtTable::setCacheSize(const FmtNumber10 &v)
     emit dataChanged(createIndex(0, 0), createIndex(0, fld_CacheSize));
 }
 
-void FmtTable::setPkIDx(const FmtNumber5 &v)
+void FmtTable::setPkIDx(const qint16 &v)
 {
     if (m_PkIDx == v)
         return;
@@ -234,7 +234,7 @@ void FmtTable::setPkIDx(const FmtNumber5 &v)
     emit dataChanged(createIndex(0, 0), createIndex(0, fld_PkIndx));
 }
 
-void FmtTable::setBlobType(const FmtNumber5 &v)
+void FmtTable::setBlobType(const qint16 &v)
 {
     if (m_BlobType == v)
         return;
@@ -255,13 +255,13 @@ void FmtTable::setBlobType(const FmtNumber5 &v)
     emit dataChanged(createIndex(0, 0), createIndex(0, fld_BlobType));
 }
 
-void FmtTable::setTableFlags(const FmtNumber10 &v)
+void FmtTable::setTableFlags(const qint32 &v)
 {
     m_Flags = v;
     emit dataChanged(createIndex(0, 0), createIndex(0, fld_Flags));
 }
 
-void FmtTable::setBlobLen(const FmtNumber10 &v)
+void FmtTable::setBlobLen(const qint32 &v)
 {
     if (m_BlobLen == v)
         return;
@@ -408,7 +408,7 @@ void FmtTable::setIsTemporary(const bool &v)
     if (isTemporary() == v)
         return;
 
-    FmtNumber10 value = m_Flags;
+    qint32 value = m_Flags;
     if (v)
         value = m_Flags | fmtnf_Temp;
     else
@@ -434,7 +434,7 @@ void FmtTable::setIsRecord(const bool &v)
     if (isRecord() == v)
         return;
 
-    FmtNumber10 value = m_Flags;
+    qint32 value = m_Flags;
     if (v)
         value = m_Flags | fmtnf_Rec;
     else
@@ -458,13 +458,13 @@ bool FmtTable::load(const QString &table)
 {
     bool hr = false;
 
-    FmtRecId id = 0;
+    quint64 id = 0;
     QSqlQuery q(db);
     q.prepare("select T_ID from FMT_NAMES where T_NAME = ?");
     q.bindValue(0, table);
 
     if (!ExecuteQuery(&q) && q.next())
-        id = static_cast<FmtRecId>(q.value(0).toInt());
+        id = static_cast<quint64>(q.value(0).toInt());
 
     if (id)
         hr = load(id);
@@ -472,7 +472,7 @@ bool FmtTable::load(const QString &table)
     return hr;
 }
 
-bool FmtTable::load(const FmtRecId &id)
+bool FmtTable::load(const quint64 &id)
 {
     bool hr = true;
     QSqlQuery q(db);
@@ -482,13 +482,13 @@ bool FmtTable::load(const FmtRecId &id)
     qInfo(logFmt()) << "Loading table" << this << "by id:" << id;
     if (!ExecuteQuery(&q) && q.next())
     {
-        m_Id = static_cast<FmtRecId>(q.value(fnc_Id).toInt());
+        m_Id = static_cast<quint64>(q.value(fnc_Id).toInt());
         m_Name = q.value(fnc_Name).toString();
         m_Comment = q.value(fnc_Comment).toString();
-        m_Flags = static_cast<FmtNumber10>(q.value(fnc_Flags).toInt());
-        m_BlobLen = static_cast<FmtNumber10>(q.value(fcn_BlobLen).toInt());
-        m_PkIDx = static_cast<FmtNumber5>(q.value(fnc_PkIndx).toInt());
-        m_BlobType = static_cast<FmtNumber5>(q.value(fnc_BlobType).toInt());
+        m_Flags = static_cast<qint32>(q.value(fnc_Flags).toInt());
+        m_BlobLen = static_cast<qint32>(q.value(fcn_BlobLen).toInt());
+        m_PkIDx = static_cast<qint16>(q.value(fnc_PkIndx).toInt());
+        m_BlobType = static_cast<qint16>(q.value(fnc_BlobType).toInt());
         m_Record = q.record();
 
         QSqlQuery qf(db);
@@ -540,7 +540,7 @@ bool FmtTable::loadFromXml(const QString &filename, const QString &tableName)
     {
         QString name = e.attribute("T_NAME");
         QString typeName = e.attribute("T_TYPE");
-        FmtFldType type = fmtTypeFromXmlType(typeName);
+        qint16 type = fmtTypeFromXmlType(typeName);
 
         FmtField *fld = addFieldPrivate(name, type);
         fld->setDataPrivate(FmtField::fld_Size, e.attribute("T_SIZE"));
@@ -570,7 +570,7 @@ bool FmtTable::loadFromXml(const QString &filename, const QString &tableName)
             m_Flags |= fmtnf_Rec;
 
         m_BlobLen = e.attribute("T_BLOBLEN").toInt();
-        m_PkIDx = static_cast<FmtNumber5>(e.attribute("T_PKIDX").toInt());
+        m_PkIDx = static_cast<qint16>(e.attribute("T_PKIDX").toInt());
 
         QDomNode n = e.firstChild();
         while(!n.isNull())
@@ -587,7 +587,7 @@ bool FmtTable::loadFromXml(const QString &filename, const QString &tableName)
         // BT_BLOB_VAR
         // m_BlobType
         /*
-        m_BlobType = static_cast<FmtNumber5>(q.value(fnc_BlobType).toInt());
+        m_BlobType = static_cast<qint16>(q.value(fnc_BlobType).toInt());
         m_Record = q.record();*/
     };
 
@@ -665,7 +665,7 @@ void FmtTable::copyToAsTmp(QSharedPointer<FmtTable> cTable)
     cTable->setName(name);
 }
 
-FmtField *FmtTable::FindField(const FmtRecId &Id)
+FmtField *FmtTable::FindField(const quint64 &Id)
 {
     foreach (FmtField *fld, m_pFields) {
         if (fld->id() == Id)
@@ -741,7 +741,7 @@ void FmtTable::FillIndex()
                 indx->setName(QString("%1_IDX%2")
                               .arg(m_Name.toUpper())
                               .arg(QString::number(i++, 16).toUpper()));
-                indx->setType(static_cast<FmtNumber5>(q.value(fkc_Type).toInt()));
+                indx->setType(static_cast<qint16>(q.value(fkc_Type).toInt()));
                 ptr = indx;
                 lastkeynum = q.value(fkc_KeyNum).toInt();
                 m_pIndeces.append(ptr);
@@ -749,14 +749,14 @@ void FmtTable::FillIndex()
 
                 connect(indx, SIGNAL(indexChanged()), SLOT(onIndexChanged()));
             }
-            FmtField *fld = FindField(static_cast<FmtRecId>(q.value(fkc_FmtFld).toInt()));
+            FmtField *fld = FindField(static_cast<quint64>(q.value(fkc_FmtFld).toInt()));
 
             if (fld)
             {
                 FmtSegment *segment = new FmtSegment(ptr);
                 segment->pFld = fld;
                 segment->m_Comment = q.value(fkc_Comment).toString();
-                segment->m_Flags = static_cast<FmtNumber10>(q.value(fkc_Flags).toInt());
+                segment->m_Flags = static_cast<qint32>(q.value(fkc_Flags).toInt());
                 segment->m_IsReal = q.value(fkc_IsReal).toInt() ? true : false;
                 segment->m_ExcludeNull = q.value(fkc_NullVal).toInt();
 
@@ -826,17 +826,17 @@ bool FmtTable::setData(const QModelIndex &index, const QVariant &value, int role
         return QAbstractItemModel::setData(index, value, role);
 
     setIgnoreUndoStack(false);
-    setDataPrivate(static_cast<FmtFldType>(index.column()), value);
+    setDataPrivate(static_cast<qint16>(index.column()), value);
 
     return true;
 }
 
-bool FmtTable::setDataPrivate(const FmtFldType &fld, const QVariant &value)
+bool FmtTable::setDataPrivate(const qint16 &fld, const QVariant &value)
 {
     switch(fld)
     {
     case fld_Id:
-        m_Id = static_cast<FmtRecId>(value.toInt());
+        m_Id = static_cast<quint64>(value.toInt());
         break;
     case fld_Name:
         setName(value.toString());
@@ -855,7 +855,7 @@ bool FmtTable::setDataPrivate(const FmtFldType &fld, const QVariant &value)
         setIsRecord(value.toBool());
         break;
     case fld_PkIndx:
-        setPkIDx(value.value<FmtNumber5>());
+        setPkIDx(value.value<qint16>());
         break;
     case fld_CacheSize:
         setCacheSize(value.toInt());
@@ -864,14 +864,14 @@ bool FmtTable::setDataPrivate(const FmtFldType &fld, const QVariant &value)
         setOwner(value.toString());
         break;
     case fld_BlobType:
-        setBlobType(value.value<FmtNumber5>());
+        setBlobType(value.value<qint16>());
         break;
     }
 
     return true;
 }
 
-FmtField *FmtTable::addField(const QString &name, const FmtFldType &type)
+FmtField *FmtTable::addField(const QString &name, const qint16 &type)
 {
     QString value = name.mid(0, fmtm_FieldNameMaxSize);
     FmtUndoTableAddField *cmd = new FmtUndoTableAddField(this);
@@ -890,7 +890,7 @@ FmtField *FmtTable::addField(const QMap<quint16,QVariant> &data)
     return cmd->getField();
 }
 
-FmtField *FmtTable::addFieldPrivate(const QString &name, const FmtFldType &type)
+FmtField *FmtTable::addFieldPrivate(const QString &name, const qint16 &type)
 {
     pFieldsModel->beginInsertRows(QModelIndex(), m_pFields.size(), m_pFields.size());
     FmtField *fld = new FmtField(this);
@@ -903,8 +903,8 @@ FmtField *FmtTable::addFieldPrivate(const QString &name, const FmtFldType &type)
 
     int value = 0;
     int idx = m_pFields.indexOf(const_cast<FmtField*>(fld));
-    FmtFldIndex fieldsSize = static_cast<FmtFldIndex>(m_pFields.size());
-    FmtFldIndex i = 0;
+    qint16 fieldsSize = static_cast<qint16>(m_pFields.size());
+    qint16 i = 0;
     while (i < fieldsSize && i < idx)
     {
         value += m_pFields[i]->size();
@@ -927,17 +927,17 @@ FmtField *FmtTable::addFieldPrivate(const QMap<quint16,QVariant> &data)
 
     fld->m_IgnoreUndoStack = true;
     fld->setName(data[FmtField::fld_Name].toString());
-    fld->setType(static_cast<FmtFldType>(data[FmtField::fld_Type].toInt()));
-    fld->setSize(static_cast<FmtNumber10>(data[FmtField::fld_Size].toInt()));
+    fld->setType(static_cast<qint16>(data[FmtField::fld_Type].toInt()));
+    fld->setSize(static_cast<qint32>(data[FmtField::fld_Size].toInt()));
     fld->setComment(data[FmtField::fld_Comment].toString());
-    fld->setOutlen(static_cast<FmtNumber5>(data[FmtField::fld_Outlen].toInt()));
-    fld->setDecpoint(static_cast<FmtNumber5>(data[FmtField::fld_DecPoint].toInt()));
+    fld->setOutlen(static_cast<qint16>(data[FmtField::fld_Outlen].toInt()));
+    fld->setDecpoint(static_cast<qint16>(data[FmtField::fld_DecPoint].toInt()));
     fld->setHidden(data[FmtField::fld_Hidden].toBool());
 
     int value = 0;
     int idx = m_pFields.indexOf(const_cast<FmtField*>(fld));
-    FmtFldIndex fieldsSize = static_cast<FmtFldIndex>(m_pFields.size());
-    FmtFldIndex i = 0;
+    qint16 fieldsSize = static_cast<qint16>(m_pFields.size());
+    qint16 i = 0;
     while (i < fieldsSize && i < idx)
     {
         value += m_pFields[i]->size();
@@ -952,7 +952,7 @@ FmtField *FmtTable::addFieldPrivate(const QMap<quint16,QVariant> &data)
     return fld;
 }
 
-void FmtTable::removeField(const FmtFldIndex &row)
+void FmtTable::removeField(const qint16 &row)
 {
     if (row >= m_pFields.size())
         return;
@@ -980,7 +980,7 @@ void FmtTable::removeField(const FmtFldIndex &row)
     emit fieldRemoved(row);
 }
 
-void FmtTable::removeFieldPrivate(const FmtFldIndex &row)
+void FmtTable::removeFieldPrivate(const qint16 &row)
 {
     pFieldsModel->beginRemoveField(row);
     FmtField *fld = m_pFields.takeAt(row);
@@ -991,7 +991,7 @@ void FmtTable::removeFieldPrivate(const FmtFldIndex &row)
     pFieldsModel->endRemoveRows();
 }
 
-void FmtTable::removeInsertedFieldPrivate(const FmtFldIndex &row)
+void FmtTable::removeInsertedFieldPrivate(const qint16 &row)
 {
     if (row >= m_pFields.size())
         return;
@@ -1003,7 +1003,7 @@ void FmtTable::removeInsertedFieldPrivate(const FmtFldIndex &row)
     emit fieldRemoved(row);
 }
 
-FmtField *FmtTable::insertField(const FmtFldIndex &befor, const QString &name, const FmtFldType &type)
+FmtField *FmtTable::insertField(const qint16 &befor, const QString &name, const qint16 &type)
 {
     FmtField *fld = Q_NULLPTR;
     pUndoStack->beginMacro(tr("Вставлено поле '%1'").arg(name));
@@ -1019,7 +1019,7 @@ FmtField *FmtTable::insertField(const FmtFldIndex &befor, const QString &name, c
     return fld;
 }
 
-FmtField *FmtTable::insertFieldPrivate(const FmtFldIndex &befor, const QString &name, const FmtFldType &type)
+FmtField *FmtTable::insertFieldPrivate(const qint16 &befor, const QString &name, const qint16 &type)
 {
     pFieldsModel->beginInsertRows(QModelIndex(), befor, befor);
     FmtField *fld = new FmtField(this);
@@ -1036,7 +1036,7 @@ FmtField *FmtTable::insertFieldPrivate(const FmtFldIndex &befor, const QString &
     return fld;
 }
 
-FmtField *FmtTable::insertFieldPrivate(const FmtFldIndex &befor, const QMap<quint16,QVariant> &data)
+FmtField *FmtTable::insertFieldPrivate(const qint16 &befor, const QMap<quint16,QVariant> &data)
 {
     pFieldsModel->beginInsertRows(QModelIndex(), befor, befor);
     FmtField *fld = new FmtField(this);
@@ -1044,11 +1044,11 @@ FmtField *FmtTable::insertFieldPrivate(const FmtFldIndex &befor, const QMap<quin
 
     fld->m_IgnoreUndoStack = true;
     fld->setName(data[FmtField::fld_Name].toString());
-    fld->setType(static_cast<FmtFldType>(data[FmtField::fld_Type].toInt()));
-    fld->setSize(static_cast<FmtNumber10>(data[FmtField::fld_Type].toInt()));
+    fld->setType(static_cast<qint16>(data[FmtField::fld_Type].toInt()));
+    fld->setSize(static_cast<qint32>(data[FmtField::fld_Type].toInt()));
     fld->setComment(data[FmtField::fld_Comment].toString());
-    fld->setOutlen(static_cast<FmtNumber5>(data[FmtField::fld_Outlen].toInt()));
-    fld->setDecpoint(static_cast<FmtNumber5>(data[FmtField::fld_DecPoint].toInt()));
+    fld->setOutlen(static_cast<qint16>(data[FmtField::fld_Outlen].toInt()));
+    fld->setDecpoint(static_cast<qint16>(data[FmtField::fld_DecPoint].toInt()));
     fld->setHidden(data[FmtField::fld_Hidden].toBool());
 
     rebuildOffsets(Q_NULLPTR);
@@ -1059,19 +1059,19 @@ FmtField *FmtTable::insertFieldPrivate(const FmtFldIndex &befor, const QMap<quin
     return fld;
 }
 
-FmtField *FmtTable::field(const FmtNumber5 &index)
+FmtField *FmtTable::field(const qint16 &index)
 {
     return m_pFields.at(index);
 }
 
-FmtFldIndex FmtTable::fieldNum(FmtField *fld)
+qint16 FmtTable::fieldNum(FmtField *fld)
 {
-    return static_cast<FmtFldIndex>(m_pFields.indexOf(fld));
+    return static_cast<qint16>(m_pFields.indexOf(fld));
 }
 
-FmtFldIndex FmtTable::fieldsCount() const
+qint32 FmtTable::fieldsCount() const
 {
-    return static_cast<FmtFldIndex>(m_pFields.size());
+    return static_cast<qint16>(m_pFields.size());
 }
 
 bool FmtTable::isFieldAutoInc(FmtField *fld) const
@@ -1079,12 +1079,12 @@ bool FmtTable::isFieldAutoInc(FmtField *fld) const
     return fld->isAutoInc();
 }
 
-bool FmtTable::isFieldAutoInc(const FmtFldIndex &index) const
+bool FmtTable::isFieldAutoInc(const qint16 &index) const
 {
     return m_pFields[index]->isAutoInc();
 }
 
-FmtIndex *FmtTable::tableIndex(const FmtNumber5 &index)
+FmtIndex *FmtTable::tableIndex(const qint16 &index)
 {
     return m_pIndeces.at(static_cast<int>(index));
 }
@@ -1202,13 +1202,13 @@ QString FmtTableFindFirstEmptyIDSql(const QString &table, const QString &fld)
         "ORDER BY t1.%2").arg(table, fld);
 }
 
-FmtRecId FmtTable::FindFirstEmptyID()
+quint64 FmtTable::FindFirstEmptyID()
 {
-    FmtRecId id = 1;
+    quint64 id = 1;
     QSqlQuery q(db);
     q.prepare(FmtTableFindFirstEmptyIDSql("FMT_NAMES", "T_ID"));
     if (q.exec() && q.next())
-        id = static_cast<FmtRecId>(q.value(0).toInt());
+        id = static_cast<quint64>(q.value(0).toInt());
 
     return id;
 }
@@ -1222,7 +1222,7 @@ void FmtTable::onIndexChanged()
 FmtIndex *FmtTable::addIndex()
 {
     pUndoStack->beginMacro(tr("Добавлен индекс '%1'")
-                           .arg(FmtTableMakeIndexName(this, static_cast<FmtFldIndex>(m_pIndeces.size() + 1))));
+                           .arg(FmtTableMakeIndexName(this, static_cast<qint16>(m_pIndeces.size() + 1))));
     FmtUndoTableAddIndex *cmd = new FmtUndoTableAddIndex(this);
     pUndoStack->push(cmd);
     pUndoStack->endMacro();
@@ -1231,9 +1231,9 @@ FmtIndex *FmtTable::addIndex()
     return cmd->getIndex();
 }
 
-FmtIndex *FmtTable::addIndexPrivate(const FmtFldIndex &row)
+FmtIndex *FmtTable::addIndexPrivate(const qint16 &row)
 {
-    FmtFldIndex iRow = row == -1 ? static_cast<FmtFldIndex>(m_pIndeces.size()) : row;
+    qint16 iRow = row == -1 ? static_cast<qint16>(m_pIndeces.size()) : row;
 
     if (iRow != 0)
         pIndecesModel->beginInsertRows(QModelIndex(), iRow, iRow);
@@ -1266,7 +1266,7 @@ FmtIndex *FmtTable::addIndexPrivate(const FmtFldIndex &row)
     return indx;
 }
 
-void FmtTable::removeIndex(const FmtFldIndex &index)
+void FmtTable::removeIndex(const qint16 &index)
 {
     pUndoStack->beginMacro(tr("Удален индекс '%1'")
                            .arg(FmtTableMakeIndexName(this, index)));
@@ -1287,9 +1287,9 @@ void FmtTable::removeIndex(const FmtFldIndex &index)
     pUndoStack->endMacro();
 }
 
-void FmtTable::removeIndexPrivate(const FmtFldIndex &index, bool AutoDelete)
+void FmtTable::removeIndexPrivate(const qint16 &index, bool AutoDelete)
 {
-    if (index > static_cast<FmtFldIndex>(m_pIndeces.size()) || index < 0)
+    if (index > static_cast<qint16>(m_pIndeces.size()) || index < 0)
         return;
 
     pIndecesModel->beginRemoveRows(QModelIndex(), index, index);
@@ -1303,9 +1303,9 @@ void FmtTable::removeIndexPrivate(const FmtFldIndex &index, bool AutoDelete)
     emit indexRemoved(index);
 }
 
-FmtFldIndex FmtTable::tableIndexNum(const FmtIndex *pIndex)
+qint16 FmtTable::tableIndexNum(const FmtIndex *pIndex)
 {
-    return static_cast<FmtFldIndex>(m_pIndeces.indexOf(const_cast<FmtIndex*>(pIndex)));
+    return static_cast<qint16>(m_pIndeces.indexOf(const_cast<FmtIndex*>(pIndex)));
 }
 
 int FmtTable::SaveTrn()
@@ -1492,9 +1492,9 @@ qint16 FmtTable::createDbTable(QString *err)
     return stat;
 }
 
-FmtNumber5 FmtTable::indecesCount() const
+qint16 FmtTable::indecesCount() const
 {
-    return static_cast<FmtNumber5>(m_pIndeces.count());
+    return static_cast<qint16>(m_pIndeces.count());
 }
 
 int FmtTable::dbInit(const QString &log)

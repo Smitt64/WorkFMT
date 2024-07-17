@@ -40,7 +40,7 @@ private:
     QString getRslClassName(const FmtSharedTablePtr &pTable);
     QString FormatName(QString &Mask, const FmtSharedTablePtr &pTable);
     QString normalizeFieldName(const QString &m_Name);
-    QString getUnionKeyName(const FmtSharedTablePtr &pTable, const FmtNumber5 &key);
+    QString getUnionKeyName(const FmtSharedTablePtr &pTable, const qint16 &key);
     GenCppSettingsParams prm;
     QString pkUnionName;
 

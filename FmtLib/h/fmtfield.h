@@ -13,13 +13,13 @@ class FmtFildsModel;
 class FMTLIBSHARED_EXPORT FmtField : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(FmtRecId Id READ id NOTIFY idChanged)
+    Q_PROPERTY(quint64 Id READ id NOTIFY idChanged)
     Q_PROPERTY(quint32 TableId READ tableId NOTIFY tableIdChanged)
-    Q_PROPERTY(FmtNumber10 Size READ size WRITE setSize NOTIFY sizeChanged)
-    Q_PROPERTY(FmtFldType Type READ type WRITE setType NOTIFY typeChanged)
-    Q_PROPERTY(FmtNumber10 Offset READ offset WRITE setOffset)
-    Q_PROPERTY(FmtNumber5 Outlen READ outlen WRITE setOutlen)
-    Q_PROPERTY(FmtNumber5 Decpoint READ decpoint WRITE setDecpoint)
+    Q_PROPERTY(qint32 Size READ size WRITE setSize NOTIFY sizeChanged)
+    Q_PROPERTY(qint16 Type READ type WRITE setType NOTIFY typeChanged)
+    Q_PROPERTY(qint32 Offset READ offset WRITE setOffset)
+    Q_PROPERTY(qint16 Outlen READ outlen WRITE setOutlen)
+    Q_PROPERTY(qint16 Decpoint READ decpoint WRITE setDecpoint)
     Q_PROPERTY(bool Hidden READ isHidden WRITE setHidden)
     Q_PROPERTY(qint32 Index READ index)
 
@@ -53,12 +53,12 @@ public:
     explicit FmtField(QObject *parent = Q_NULLPTR);
     void load(const QSqlRecord &rec);
 
-    FmtRecId id() const { return m_Id; }
-    FmtNumber10 size() const { return m_Size; }
-    FmtFldType type() const { return m_Type; }
-    FmtRecId tableId() const;
-    FmtNumber5 outlen() const;
-    FmtNumber5 decpoint() const;
+    quint64 id() const { return m_Id; }
+    qint32 size() const { return m_Size; }
+    qint16 type() const { return m_Type; }
+    quint64 tableId() const;
+    qint16 outlen() const;
+    qint16 decpoint() const;
     bool isHidden() const;
 
     bool isStringType() const;
@@ -67,19 +67,19 @@ public:
     QString comment() const;
     QString undecorateName() const;
 
-    FmtNumber10 offset() const;
-    FmtFldIndex index() const;
+    qint32 offset() const;
+    qint16 index() const;
     qint32 typeIndex() const;
 
     void setName(const QString &v);
     void setComment(const QString &v);
-    void setSize(const FmtNumber10 &v);
-    void setOffset(const FmtNumber10 &v);
-    void setOutlen(const FmtNumber5 &v);
-    void setType(const FmtFldType &v);
-    void setDecpoint(const FmtNumber5 &v);
+    void setSize(const qint32 &v);
+    void setOffset(const qint32 &v);
+    void setOutlen(const qint16 &v);
+    void setType(const qint16 &v);
+    void setDecpoint(const qint16 &v);
     void setHidden(const bool &v);
-    void setTypeIndex(const FmtFldIndex &v);
+    void setTypeIndex(const qint16 &v);
 
     FmtTable *table();
 
@@ -110,17 +110,17 @@ public slots:
     bool isAutoInc() const;
 
 private:
-    FmtRecId FindFirstEmptyID();
+    quint64 FindFirstEmptyID();
     int save();
     void stroreData(QByteArray *data);
     void stroreData(QDataStream &stream);
     void restoreData(QByteArray *data);
-    bool setDataPrivate(const FmtFldIndex &fld, const QVariant &value);
+    bool setDataPrivate(const qint16 &fld, const QVariant &value);
     FmtTable *pTable;
-    FmtRecId m_Id;
-    FmtNumber10 m_Size, m_Offset;
-    FmtNumber5 m_Outlen, m_Decpoint;
-    FmtFldType m_Type;
+    quint64 m_Id;
+    qint32 m_Size, m_Offset;
+    qint16 m_Outlen, m_Decpoint;
+    qint16 m_Type;
     QString m_Name, m_Comment;
     bool m_isHidden;
 
@@ -132,5 +132,5 @@ private:
 };
 
 QDataStream &operator <<(QDataStream &stream, FmtField *fld);
-QString FmtFieldPropertyTextById(const FmtFldIndex &fld);
+QString FmtFieldPropertyTextById(const qint16 &fld);
 #endif // FMTFIELD_H

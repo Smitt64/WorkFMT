@@ -63,7 +63,7 @@ signals:
     void AddedToLast(FmtField *fld, const QModelIndex &index);
 
 private:
-    void setFieldPropertyChanged(const FmtField *fld, const FmtFldIndex &prop);
+    void setFieldPropertyChanged(const FmtField *fld, const qint16 &prop);
     FmtTable *pTable;
 };
 

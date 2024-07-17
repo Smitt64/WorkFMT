@@ -11,7 +11,7 @@ public:
     virtual ~FmtUndoTablePasteField();
 
     void setData(const QMap<quint16,QVariant> &data);
-    void setInsertBefor(const FmtFldIndex &befor);
+    void setInsertBefor(const qint16 &befor);
 
     FmtField *getField() const;
 
@@ -21,7 +21,7 @@ public:
 private:
     FmtTable *pTable;
     FmtField *pField;
-    FmtFldIndex m_Befor, m_Row;
+    qint16 m_Befor, m_Row;
     QMap<quint16,QVariant> fldDataMap;
 };
 

@@ -140,12 +140,12 @@ quint32 FmtSegment::segmentFlags() const
     return static_cast<quint32>(m_Flags);
 }
 
-FmtFldType FmtSegment::type() const
+qint16 FmtSegment::type() const
 {
-    return fmtIndexFromFmtType(static_cast<FmtFldType>(pFld->type()));
+    return fmtIndexFromFmtType(static_cast<qint16>(pFld->type()));
 }
 
-FmtNumber10 FmtSegment::flags() const
+qint32 FmtSegment::flags() const
 {
     return m_Flags;
 }
@@ -160,7 +160,7 @@ QString FmtSegment::comment() const
     return m_Comment;
 }
 
-void FmtSegment::setFlags(const FmtNumber10 &value)
+void FmtSegment::setFlags(const qint32 &value)
 {
     if (flags() == value)
         return;
@@ -168,7 +168,7 @@ void FmtSegment::setFlags(const FmtNumber10 &value)
     FmtTable *pTable = table();
     if (!m_fSetIgnoreUndoStack)
     {
-        FmtNumber10 oldFlags = flags();
+        qint32 oldFlags = flags();
         FmtUndoIndexSegmentProperty *segCmd = new FmtUndoIndexSegmentProperty(pTable);
         segCmd->setValueToUndo(oldFlags);
         segCmd->setValueToRedo(value);
@@ -208,9 +208,9 @@ void FmtSegment::setNotNull(bool use)
     emit pTable->pIndecesModel->setPropertyChanged(this, FmtIndecesModelItem::fld_NotNull);
 }
 
-FmtFldIndex FmtSegment::segmentNumber()
+qint16 FmtSegment::segmentNumber()
 {
-    return static_cast<FmtFldIndex>(parent()->indexOfChild(this));
+    return static_cast<qint16>(parent()->indexOfChild(this));
 }
 
 void FmtSegment::setComment(const QString &val)
@@ -290,20 +290,20 @@ bool FmtSegment::descOrder() const
     return (m_Flags & fmtkf_Descending) == fmtkf_Descending;
 }
 
-FmtFldIndex FmtSegment::fieldIndex()
+qint16 FmtSegment::fieldIndex()
 {
-    return static_cast<FmtFldIndex>(table()->m_pFields.indexOf(pFld));
+    return static_cast<qint16>(table()->m_pFields.indexOf(pFld));
 }
 
 void FmtSegment::setField(FmtField *fld)
 {
     FmtIndex *parentIndex = dynamic_cast<FmtIndex*>(parent());
     FmtField *const cpFld = const_cast<FmtField*>(fld);
-    FmtFldIndex iFld = static_cast<FmtFldIndex>(parentIndex->pTable->m_pFields.indexOf(cpFld));
+    qint16 iFld = static_cast<qint16>(parentIndex->pTable->m_pFields.indexOf(cpFld));
     setField(iFld);
 }
 
-void FmtSegment::setField(const FmtFldIndex &fld)
+void FmtSegment::setField(const qint16 &fld)
 {
     if (fieldIndex() == fld)
         return;
@@ -351,7 +351,7 @@ bool FmtSegment::setData(int column, const QVariant &value)
     }
     if (column == FmtIndecesModelItem::fld_Name)
     {
-        setField(value.value<FmtFldIndex>());
+        setField(value.value<qint16>());
         changed = true;
     }
 
@@ -370,9 +370,9 @@ void FmtSegment::setDataPrivate(const QVariant &value, const quint16 &column)
     if (column == FmtIndecesModelItem::fld_ExcIndx)
         setIsReal(value.toBool());
     if (column == FmtIndecesModelItem::fld_Name)
-        setField(value.value<FmtFldIndex>());
+        setField(value.value<qint16>());
     if (column == FmtIndecesModelItem::fld_Flag)
-        setFlags(value.value<FmtNumber10>());
+        setFlags(value.value<qint32>());
 
     if (column == FmtIndecesModelItem::fld_MAXCOUNT)
         m_Flags = value.toInt();

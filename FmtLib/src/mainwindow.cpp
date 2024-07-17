@@ -1251,7 +1251,7 @@ QMdiSubWindow *MainWindow::hasTableWindow(const QString &tableName)
     return find;
 }
 
-QMdiSubWindow *MainWindow::hasTableWindow(const FmtRecId &tableID)
+QMdiSubWindow *MainWindow::hasTableWindow(const quint64 &tableID)
 {
     QMdiSubWindow *find = Q_NULLPTR;
     QList<QWidget*> lst = m_Windows[currentConnection()];

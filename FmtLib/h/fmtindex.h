@@ -40,9 +40,9 @@ public:
     void setNullValue(const quint16 &val);
     void setAutoInc(bool use);
     void setLocal(bool use);
-    void setFlags(const FmtNumber10 &flags);
+    void setFlags(const qint32 &flags);
     void setName(const QString &n);
-    void setType(const FmtNumber5 &n);
+    void setType(const qint16 &n);
 
     bool isAutoInc() const;
     bool isUnique() const;
@@ -61,7 +61,7 @@ public slots:
     void NormalizeFlags();
     void removeField(FmtField *pFld);
     void removeSegment(const quint16 &segmentIndex);
-    FmtFldIndex indexNumber() const;
+    qint16 indexNumber() const;
     qint32 segmentsCount() const;
     void copyTo(FmtIndex *other);
 
@@ -79,12 +79,12 @@ protected:
 private:
     void EmitIndexPropertyChange(const quint16 &prop);
     void PushUndoSegmentProperty(FmtSegment *segment, const qint32 &oldFlags, QUndoCommand *parentCommand = Q_NULLPTR);
-    void setDataPrivate(const FmtFldIndex &fld, const QVariant &value);
-    FmtSegment *addSegmentPrivate(const FmtFldIndex &row);
-    void removeSegmentPrivate(const FmtFldIndex &index, bool AutoDelete);
+    void setDataPrivate(const qint16 &fld, const QVariant &value);
+    FmtSegment *addSegmentPrivate(const qint16 &row);
+    void removeSegmentPrivate(const qint16 &index, bool AutoDelete);
     int save();
-    FmtNumber10 m_Flags;
-    FmtNumber5 m_Type;
+    qint32 m_Flags;
+    qint16 m_Type;
     bool m_fDup, m_fAutoInc;
     bool m_fIgnoreStack;
     int m_NullValue;

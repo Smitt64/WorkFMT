@@ -2,9 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QtScript>
-#include <QtScriptTools>
 #include <codeeditor.h>
+#include <QStringListModel>
 
 namespace Ui {
 class MainWindow;
@@ -24,9 +23,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QScriptEngine *pEngine;
-    QScriptEngineDebugger dbg;
     CodeEditor *pCodeEditor;
+
+    QStringListModel m_Errors;
 };
 
 #endif // MAINWINDOW_H

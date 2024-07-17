@@ -13,14 +13,14 @@ public:
     ~FmtUndoTableRemoveField();
 
     QByteArray *storedDataPtr();
-    void setFieldRow(const FmtFldIndex &row);
+    void setFieldRow(const qint16 &row);
 
     virtual void undo();
     virtual void redo();
 private:
     FmtTable *pTable;
     QByteArray m_StoredData;
-    FmtFldIndex m_Row;
+    qint16 m_Row;
 };
 
 #endif // FMTUNDOTABLEREMOVEFIELD_H

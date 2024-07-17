@@ -38,6 +38,7 @@ HotfixCreator.depends = FmtLib
 fmtdatapumpwrp.depends += FmtLib
 DumpTool.depends = FmtLib fmtdatapumpwrp
 DiffToScript.depends += FmtLib
+FmtRslModule.depends += FmtLib
 #ToolsRuntime.depends += RslToolRuntimeStatic
 
 RESOURCES += \

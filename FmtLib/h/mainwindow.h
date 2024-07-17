@@ -95,7 +95,7 @@ private:
     void SetActiveFmtWindow(QMdiSubWindow *wnd);
     void CreateCheckUpdateRunnable();
     QMdiSubWindow *hasTableWindow(const QString &tableName);
-    QMdiSubWindow *hasTableWindow(const FmtRecId &tableID);
+    QMdiSubWindow *hasTableWindow(const quint64 &tableID);
     QAction *CreateConnectionActio(ConnectionInfo *info);
     void tablesContextMenu(QContextMenuEvent *event, QListView *view);
     QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);

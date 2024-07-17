@@ -58,7 +58,7 @@ void FmtIndex::setName(const QString &n)
     m_Name = n;
 }
 
-void FmtIndex::setType(const FmtNumber5 &n)
+void FmtIndex::setType(const qint16 &n)
 {
     m_Type = n;
 }
@@ -353,7 +353,7 @@ bool FmtIndex::setData(int column, const QVariant &value)
     return false;
 }
 
-void FmtIndex::setFlags(const FmtNumber10 &flags)
+void FmtIndex::setFlags(const qint32 &flags)
 {
     m_Flags = flags;
 }
@@ -395,7 +395,7 @@ FmtSegment *FmtIndex::addSegment(const quint16 &row)
     return cmd->segment();
 }
 
-FmtSegment *FmtIndex::addSegmentPrivate(const FmtFldIndex &row)
+FmtSegment *FmtIndex::addSegmentPrivate(const qint16 &row)
 {
     QModelIndex modelIndex = pTable->pIndecesModel->indexForItem(this);
     int parentCount = pTable->pIndecesModel->rowCount(modelIndex);
@@ -414,9 +414,9 @@ FmtSegment *FmtIndex::addSegmentPrivate(const FmtFldIndex &row)
     return segment;
 }
 
-FmtFldIndex FmtIndex::indexNumber() const
+qint16 FmtIndex::indexNumber() const
 {
-    return static_cast<FmtFldIndex>(pTable->m_pIndeces.indexOf(const_cast<FmtIndex*>(this)));
+    return static_cast<qint16>(pTable->m_pIndeces.indexOf(const_cast<FmtIndex*>(this)));
 }
 
 qint32 FmtIndex::segmentsCount() const
@@ -509,7 +509,7 @@ void FmtIndex::removeSegment(const quint16 &segmentIndex)
     pUndoStack->push(cmd);
 }
 
-void FmtIndex::removeSegmentPrivate(const FmtFldIndex &index, bool AutoDelete)
+void FmtIndex::removeSegmentPrivate(const qint16 &index, bool AutoDelete)
 {
     if (index > childCount())
         return;
@@ -565,7 +565,7 @@ void FmtIndex::storeData(QByteArray *data)
     stream << storedData;
 }
 
-void FmtIndex::setDataPrivate(const FmtFldIndex &fld, const QVariant &value)
+void FmtIndex::setDataPrivate(const qint16 &fld, const QVariant &value)
 {
     m_fIgnoreStack = true;
     switch(fld)
@@ -667,7 +667,7 @@ void FmtIndex::copyTo(FmtIndex *other)
 
     for (int i = 0; i < childItems.size(); i++)
     {
-        FmtFldIndex index = static_cast<FmtFldIndex>(childItems.size() - 1);
+        qint16 index = static_cast<qint16>(childItems.size() - 1);
         FmtSegment *segment = dynamic_cast<FmtSegment*>(childItems[i]);
         FmtSegment *seg = other->addSegmentPrivate(index);
         segment->copyTo(seg);
