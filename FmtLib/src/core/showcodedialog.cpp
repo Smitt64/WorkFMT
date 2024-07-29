@@ -3,7 +3,7 @@
 #include <QVBoxLayout>
 #include <QSyntaxHighlighter>
 #include "highlighter.h"
-#include "codeeditor.h"
+//#include <code
 #include "fmtgeninterface.h"
 
 int ShowCodeDialog(QWidget *parent, const QString &title, const int &type, const QString &code)

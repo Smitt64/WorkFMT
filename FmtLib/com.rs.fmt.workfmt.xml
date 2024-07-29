@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="2.0.0.0">
+        <fix>Исправлено падение, если в списке совисов нет записей;</fix>
+    </version>
     <version ver="1.0.6.2">
         <add>Добавлена информация о типе данных для PostgreSQL;</add>
         <add>Добавлен вызов интерфейсного режима для DiffToScript из меню &quot;Файл&quot;;</add>
