@@ -9,7 +9,7 @@ class FmtGenTablesSql : public FmtGenInterface
 public:
     FmtGenTablesSql();
     virtual ~FmtGenTablesSql();
-    virtual GenType getContentType() const { return FmtGenInterface::GenSql; }
+    virtual int getContentType() const { return HighlighterSql; }
 
     virtual GenHighlightingRuleList highlightingRuleList() const;
     virtual QByteArray makeContent(FmtSharedTablePtr pTable);

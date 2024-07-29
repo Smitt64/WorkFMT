@@ -6,6 +6,7 @@
 #include "fmtworkwindow.h"
 #include "fmttable.h"
 #include "fmtcore.h"
+#include "options/fmtoptionsdlg.h"
 #include "fmtfromrichtext.h"
 #include "treecombobox.h"
 #include "subwindowsmodel.h"
@@ -16,6 +17,7 @@
 #include "tablesdockwidget.h"
 #include "exporttoxmlwizard.h"
 #include "errordlg.h"
+#include <fmtapplication.h>
 #include "tablesgroupprovider.h"
 #include "windowslistdlg.h"
 #include "tablesgroupsdlg.h"
@@ -207,6 +209,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionCreateXml, SIGNAL(triggered(bool)), SLOT(CreateFromXml()));
     connect(ui->actionHighlighterTheme, SIGNAL(triggered(bool)), SLOT(HighlighterTheme()));
     connect(ui->action_Diff_to_Script, SIGNAL(triggered(bool)), SLOT(GenDiffToScriptScript()));
+    connect(ui->actionOptions, SIGNAL(triggered(bool)), SLOT(OptionsAction()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
@@ -1502,3 +1505,9 @@ void MainWindow::on_actionDebug_triggered()
     dlg.exec();
 }
 
+void MainWindow::OptionsAction()
+{
+    FmtApplication *app = (FmtApplication*)qApp;
+    FmtOptionsDlg dlg(app->settings(), this);
+    dlg.exec();
+}

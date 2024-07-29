@@ -92,6 +92,8 @@
     <addaction name="actionEditGroups"/>
     <addaction name="actionMassOp"/>
     <addaction name="actionQuery"/>
+    <addaction name="separator"/>
+    <addaction name="actionOptions"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="tearOffEnabled">
@@ -463,6 +465,11 @@
    </property>
    <property name="text">
     <string>Скрипт изменения (Diff to Script)</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Параметры</string>
    </property>
   </action>
  </widget>

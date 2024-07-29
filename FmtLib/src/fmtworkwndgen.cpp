@@ -113,10 +113,10 @@ void FmtWorkWndGen::onSave()
 
     switch(pInterface->getContentType())
     {
-    case FmtGenInterface::GenSql:
+    case HighlighterSql:
         filter = "Sql files(*.sql)";
         break;
-    case FmtGenInterface::GenCpp:
+    case HighlighterCpp:
         filter = "C++ files(*.c *.cpp *.h *.hpp)";
         break;
     default:

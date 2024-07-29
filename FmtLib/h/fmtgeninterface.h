@@ -29,16 +29,9 @@ class FmtGenInterface : public QObject
     friend class FmtGenInterfaceRunnable;
     friend void registerFmtGenInterface(const QString &alias);
 public:
-    enum GenType
-    {
-        GenText,
-        GenSql,
-        GenCpp
-    };
-
     FmtGenInterface();
 
-    virtual GenType getContentType() const { return GenText; }
+    virtual int getContentType() const { return 0; }
     void start(QSharedPointer<FmtTable> pTable);
     virtual bool event(QEvent *e);
 

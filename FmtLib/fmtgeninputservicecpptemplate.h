@@ -9,7 +9,7 @@ public:
     FmtGenInputServiceCppTemplate();
     virtual ~FmtGenInputServiceCppTemplate();
 
-    virtual GenType getContentType() const { return FmtGenInterface::GenCpp; }
+    virtual int getContentType() const { return HighlighterCpp; }
 
     static QString getSelectTypedefName(const FmtSharedTablePtr &pTable);
     static QString getCacheClassName(const FmtSharedTablePtr &pTable);

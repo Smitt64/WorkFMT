@@ -33,6 +33,7 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    options/fmtoptionsdlg.cpp \
     src/debugconnect.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
@@ -275,6 +276,7 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    options/fmtoptionsdlg.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \

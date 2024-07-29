@@ -10,7 +10,7 @@ public:
     FmtGenCppClassTemplate();
     virtual ~FmtGenCppClassTemplate();
 
-    virtual GenType getContentType() const { return FmtGenInterface::GenCpp; }
+    virtual int getContentType() const { return HighlighterCpp; }
     virtual GenHighlightingRuleList highlightingRuleList() const;
 
 protected:

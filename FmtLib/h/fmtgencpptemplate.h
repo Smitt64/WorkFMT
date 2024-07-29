@@ -32,7 +32,7 @@ public:
     FmtGenCppTemplate();
     virtual ~FmtGenCppTemplate();
 
-    virtual GenType getContentType() const { return FmtGenInterface::GenCpp; }
+    virtual int getContentType() const { return HighlighterCpp; }
 
     virtual void propertyEditor(QWidget *parent);
     virtual bool hasPropertes() const { return false; }//{ return true; }
