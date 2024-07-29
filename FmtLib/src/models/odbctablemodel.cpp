@@ -148,9 +148,6 @@ QModelIndex OdbcTableModel::indexOfService(const QString &key) const
 
 QVariant OdbcTableModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid())
-        return QVariant();
-
     OdbcTableModel *pThis = const_cast<OdbcTableModel*>(this);
 
     if (role == Qt::DisplayRole || role == Qt::EditRole)

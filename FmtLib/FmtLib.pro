@@ -86,6 +86,7 @@ SOURCES += \
     src/fmt/fmtgeninterface.cpp \
     src/fmtgentablessql.cpp \
     src/fmtworkwndgen.cpp \
+    src/widgets/codeeditor.cpp \
     src/highlighter.cpp \
     src/fmtgencpptemplate.cpp \
     src/gencppsettings.cpp \
@@ -248,6 +249,7 @@ HEADERS += \
     h/fmtgentablessql.h \
     h/fmtlibfactory.h \
     h/fmtworkwndgen.h \
+    h/codeeditor.h \
     h/highlighter.h \
     h/fmtgencpptemplate.h \
     h/gencppsettings.h \
