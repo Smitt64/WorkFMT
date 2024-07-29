@@ -14,7 +14,6 @@ SUBDIRS += \
     WorkFMT \
     DBFileTool \
     FmtDbgHelp \
-    FmtScript \
     FmtScriptTest \
     fmtdatapumpwrp \
     ToolsRuntimeProj
@@ -31,8 +30,6 @@ SUBDIRS += \
 
 FmtLib.depends = ToolsRuntimeProj
 WorkFMT.depends = FmtLib ToolsRuntimeProj
-FmtScript.depends = FmtLib
-FmtScriptTest.depends = FmtLib FmtScript
 DBFileTool.depends = FmtLib
 HotfixCreator.depends = FmtLib
 fmtdatapumpwrp.depends += FmtLib

@@ -41,7 +41,6 @@ SOURCES += \
     src/datfile.cpp \
     src/dbinitdlg.cpp \
     src/documentwindow.cpp \
-    src/errordlg.cpp \
     src/fmtapplication.cpp \
     src/fmtfielddlg.cpp \
     src/fmtworkwindow.cpp \
@@ -60,7 +59,6 @@ SOURCES += \
     src/core/fmtlib.cpp \
     src/core/hotfixhelp.cpp \
     src/core/tablesgroupprovider.cpp \
-    src/fmt/fmterrors.cpp \
     src/fmt/fmtfield.cpp \
     src/fmt/fmtimpexpwrp.cpp \
     src/fmt/fmtindex.cpp \
@@ -86,8 +84,6 @@ SOURCES += \
     src/fmt/fmtgeninterface.cpp \
     src/fmtgentablessql.cpp \
     src/fmtworkwndgen.cpp \
-    src/widgets/codeeditor.cpp \
-    src/highlighter.cpp \
     src/fmtgencpptemplate.cpp \
     src/gencppsettings.cpp \
     src/fmt/undoredo/fmtundotableproperty.cpp \
@@ -103,7 +99,6 @@ SOURCES += \
     src/fmt/undoredo/fmtundoindexproperty.cpp \
     src/fmt/undoredo/fmtundoindexsegmentproperty.cpp \
     src/widgets/undolistpopup.cpp \
-    src/models/fmterrorfiltermodel.cpp \
     src/fmt/fmtdbftoolwrp.cpp \
     src/widgets/tablecomboaction.cpp \
     src/widgets/toolbtncombo.cpp \
@@ -208,13 +203,11 @@ HEADERS += \
     h/connectioninfo.h \
     h/dbinitdlg.h \
     h/documentwindow.h \
-    h/errordlg.h \
     h/exporttoxmlwizard.h \
     h/expresultpage.h \
     h/expsettingspage.h \
     h/fmtapplication.h \
     h/fmtcore.h \
-    h/fmterrors.h \
     h/fmtfield.h \
     h/fmtfielddlg.h \
     h/fmtfieldsdelegate.h \
@@ -249,8 +242,6 @@ HEADERS += \
     h/fmtgentablessql.h \
     h/fmtlibfactory.h \
     h/fmtworkwndgen.h \
-    h/codeeditor.h \
-    h/highlighter.h \
     h/fmtgencpptemplate.h \
     h/gencppsettings.h \
     h/fmtundotableproperty.h \
@@ -267,7 +258,6 @@ HEADERS += \
     h/fmtundoindexproperty.h \
     h/fmtundoindexsegmentproperty.h \
     h/undolistpopup.h \
-    h/fmterrorfiltermodel.h \
     h/fmtdbftoolwrp.h \
     h/tablecomboaction.h \
     h/toolbtncombo.h \

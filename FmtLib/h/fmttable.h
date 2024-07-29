@@ -10,7 +10,7 @@ class FmtFildsModel;
 class FmtField;
 class FmtIndecesModel;
 class FmtIndex;
-class FmtErrors;
+class ErrorsModel;
 class ConnectionInfo;
 class QUndoStack;
 class QUndoCommand;
@@ -196,8 +196,8 @@ public:
     qint16 createDbTable(QString *err = Q_NULLPTR);
     int dbInit(const QString &log = QString());
 
-    Q_INVOKABLE bool checkErrors(FmtErrors *e);
-    Q_INVOKABLE FmtErrors *lastErrors();
+    Q_INVOKABLE bool checkErrors(ErrorsModel *e);
+    Q_INVOKABLE ErrorsModel *lastErrors();
 
     FmtFildsModel *fieldsModel() { return pFieldsModel; }
     FmtIndecesModel *indecesModel() { return pIndecesModel; }
@@ -268,7 +268,7 @@ private:
 
     bool m_IgnoreUndoStack;
 
-    FmtErrors *m_pErrors;
+    ErrorsModel *m_pErrors;
 };
 
 QString FmtTablePropertyByFieldId(const qint16 &fld);

@@ -68,9 +68,9 @@ bool FmtGenInterface::event(QEvent *e)
     return result;
 }
 
-FmtGenHighlightingRuleList FmtGenInterface::highlightingRuleList() const
+GenHighlightingRuleList FmtGenInterface::highlightingRuleList() const
 {
-    return FmtGenHighlightingRuleList();
+    return GenHighlightingRuleList();
 }
 
 //---------------------------------------------------------------------

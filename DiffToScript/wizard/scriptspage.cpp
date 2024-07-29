@@ -1,13 +1,14 @@
 #include "scriptspage.h"
 #include "ui_scriptspage.h"
-#include "codeeditor.h"
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/codehighlighter.h>
 #include "fmtcore.h"
 #include "toolsruntime.h"
 #include "diffwizard.h"
 #include "tablelinks.h"
 #include "task.h"
 #include "svnlogmodel.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "errordlg.h"
 #include <QProcess>
 #include <QThreadPool>
@@ -37,7 +38,7 @@ GenerateOperation::~GenerateOperation()
 
 }
 
-void GenerateOperation::setErrorsBuf(FmtErrors *err)
+void GenerateOperation::setErrorsBuf(ErrorsModel *err)
 {
     m_Errors = err;
 }
@@ -237,7 +238,7 @@ void GenerateOperation::run()
                     m_Errors->appendError(QString("%1: %2")
                                           .arg(ModeStr)
                                           .arg(line.remove("WARNING:").simplified()),
-                                          FmtErrors::fmtet_Warning);
+                                          ErrorsModel::TypeWarning);
                 }
                 else if (line.startsWith("Error:"))
                 {
@@ -250,7 +251,7 @@ void GenerateOperation::run()
                     m_Errors->appendError(QString("%1: %2")
                                           .arg(ModeStr)
                                           .arg(line.simplified()),
-                                          FmtErrors::fmtet_Info);
+                                          ErrorsModel::TypeInfo);
                 }
             }
         }
@@ -283,7 +284,7 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
     ui->setupUi(this);
     setTitle(tr("Сгенерированные скрипты"));
 
-    m_Errors = new FmtErrors();
+    m_Errors = new ErrorsModel();
     m_pOracle = new CodeEditor(this);
     m_pPostgres = new CodeEditor(this);
 
@@ -303,8 +304,8 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
     m_pOracle->setWordWrapMode(QTextOption::WordWrap);
     m_pPostgres->setWordWrapMode(QTextOption::WordWrap);
 
-    m_pOracleHighlighter = new Highlighter(Highlighter::HC_SQL, m_pOracle->document());
-    m_pPostgresHighlighter = new Highlighter(Highlighter::HC_SQL, m_pPostgres->document());
+    ToolApplyHighlighter(m_pOracle, HighlighterSql);
+    ToolApplyHighlighter(m_pPostgres, HighlighterSql);
 }
 
 ScriptsPage::~ScriptsPage()
@@ -329,7 +330,7 @@ void ScriptsPage::finished()
     if (m_Errors->isEmpty())
         return;
 
-    ErrorDlg dlg(ErrorDlg::mode_Information, this);
+    ErrorDlg dlg(ErrorDlg::ModeInformation, this);
     dlg.setErrors(m_Errors);
     dlg.setMessage(tr("При формировании скриптов возникли проблемы:"));
     dlg.exec();

@@ -11,7 +11,7 @@
 #include "subwindowsmodel.h"
 #include "impexpparams.h"
 #include "fmtimpexpwrp.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "aboutdlg.h"
 #include "tablesdockwidget.h"
 #include "exporttoxmlwizard.h"
@@ -27,7 +27,6 @@
 #include "queryeditor/queryeditor.h"
 #include "selectfolderdlg.h"
 #include "recentconnectionlist.h"
-#include "highlighter.h"
 #include "debugconnect.h"
 #include "updatecheckermessagebox.h"
 #include <QRegExp>
@@ -404,9 +403,9 @@ void MainWindow::ImpDirAction()
     {
         loop.exec();
 
-        FmtErrors log;
+        ErrorsModel log;
         imp.parseProtocol(&log);
-        ErrorDlg edlg(ErrorDlg::mode_Information, this);
+        ErrorDlg edlg(ErrorDlg::ModeInformation, this);
         edlg.setErrors(&log);
         edlg.setMessage(tr("Протокол загрузки xml файлов: "));
         edlg.exec();
@@ -440,7 +439,7 @@ void MainWindow::ImportAction()
     connect(&dlg, SIGNAL(canceled()), &loop, SLOT(quit()));
 
     int pos = 0;
-    FmtErrors log;
+    ErrorsModel log;
     foreach (const QString &file, files)
     {
         imp.importFile(file);
@@ -456,7 +455,7 @@ void MainWindow::ImportAction()
 
     if (!log.isEmpty())
     {
-        ErrorDlg edlg(ErrorDlg::mode_Information, this);
+        ErrorDlg edlg(ErrorDlg::ModeInformation, this);
         edlg.setErrors(&log);
         edlg.setMessage(tr("Протокол загрузки xml файлов: "));
         edlg.exec();
@@ -1487,21 +1486,6 @@ void MainWindow::UpdateCheckFinished(bool hasUpdates, const CheckDataList &updat
 void MainWindow::UpdateCheckStarted()
 {
     pUpdateButton->setIcon(QIcon(":/img/base_globe_updates.png"));
-}
-
-void MainWindow::HighlighterTheme()
-{
-    QStringList lst = HighlighterStyle::inst()->themes();
-
-    int defaultItem = lst.indexOf(HighlighterStyle::inst()->defaultTheme());
-    QString theme = QInputDialog::getItem(this, tr("Выбор темы"),
-                                          tr("Выберите тему подсветки синтаксиса"),
-                                          lst,
-                                          defaultItem,
-                                          false);
-
-    if (!theme.isEmpty())
-        HighlighterStyle::inst()->setDefaultTheme(theme);
 }
 
 /*void MainWindow::OnCreateQuery()

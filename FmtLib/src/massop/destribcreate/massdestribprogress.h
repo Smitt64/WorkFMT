@@ -12,7 +12,7 @@ class MassDestribProgress;
 class ConnectionInfo;
 class MassDestribCreate;
 class ErrorDlg;
-class FmtErrors;
+class ErrorsModel;
 class QSettings;
 class MassDestribProgressRun Q_DECL_FINAL: public QObject, public QRunnable
 {
@@ -52,7 +52,7 @@ public:
 
 private:
     Ui::MassDestribProgress *ui;
-    FmtErrors *pErrors;
+    ErrorsModel *pErrors;
     ErrorDlg *pErrDlg;
     bool fIsComplete;
 };

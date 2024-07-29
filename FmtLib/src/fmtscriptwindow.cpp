@@ -1,7 +1,7 @@
 #include "fmtscriptwindow.h"
-#include "codeeditor.h"
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/codehighlighter.h>
 #include "fmtcore.h"
-#include "highlighter.h"
 #include <QFileDialog>
 
 QScriptValue myPrintFunction(QScriptContext *context, QScriptEngine *engine)
@@ -108,8 +108,8 @@ void FmtScriptWindow::OnNew()
     QMdiSubWindow *wnd = pMdi->addSubWindow(pEditor);
     wnd->showMaximized();
 
-    Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pEditor->document());
-    Q_UNUSED(pHighlighter)
+    //Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pEditor->document());
+    //Q_UNUSED(pHighlighter)
     pEditor->setPlainText(sample);
 }
 
@@ -126,8 +126,8 @@ void FmtScriptWindow::OnOpen()
         QMdiSubWindow *wnd = pMdi->addSubWindow(pEditor);
         wnd->showMaximized();
 
-        Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pEditor->document());
-        Q_UNUSED(pHighlighter)
+        //Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pEditor->document());
+        //Q_UNUSED(pHighlighter)
         pEditor->setPlainText(sample);
     }
 }

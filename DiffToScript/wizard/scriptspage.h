@@ -13,7 +13,7 @@ class DiffWizard;
 class QSplitter;
 class Highlighter;
 class QTabWidget;
-class FmtErrors;
+class ErrorsModel;
 class ScriptsPage : public QWizardPage
 {
     Q_OBJECT
@@ -32,7 +32,7 @@ public slots:
 private:
     Ui::ScriptsPage *ui;
 
-    FmtErrors *m_Errors;
+    ErrorsModel *m_Errors;
 
     //QSplitter *m_pSplitter;
     QTabWidget *m_pTabWidget;
@@ -50,7 +50,7 @@ public:
 
     virtual void run() Q_DECL_OVERRIDE;
 
-    void setErrorsBuf(FmtErrors *err);
+    void setErrorsBuf(ErrorsModel *err);
 
 signals:
     void oracleScriptReady(const QString &data);
@@ -58,7 +58,7 @@ signals:
     void finished();
 
 private:
-    FmtErrors *m_Errors;
+    ErrorsModel *m_Errors;
     DiffWizard *m_pWzrd;
 };
 

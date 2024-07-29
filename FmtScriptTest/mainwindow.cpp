@@ -28,7 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listView->setModel(&m_Errors);
 
     qDebug() << QStyleFactory::keys();
-    Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pCodeEditor->document());
+    ToolApplyHighlighter(pCodeEditor, HighlighterRsl);
+    //Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pCodeEditor->document());
 }
 
 MainWindow::~MainWindow()

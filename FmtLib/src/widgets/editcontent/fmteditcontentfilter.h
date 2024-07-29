@@ -71,7 +71,6 @@ private:
     CodeEditor *pEditor;
     QSortFilterProxyModel *pProxy;
     FmtSharedTablePtr pTable;
-    SqlHighlighter *pHighlighter;
     QIntValidator m_IntValidator;
     QDoubleValidator m_DoubleValidator;
     QRegExpValidator m_DateValidator, m_TimeValidator;

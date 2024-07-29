@@ -12,7 +12,7 @@ FmtGenInputServiceCppTemplate::~FmtGenInputServiceCppTemplate()
 
 }
 
-FmtGenHighlightingRuleList FmtGenInputServiceCppTemplate::highlightingRuleList() const
+GenHighlightingRuleList FmtGenInputServiceCppTemplate::highlightingRuleList() const
 {
     return m_HighlightingRuleList;
 }
@@ -25,8 +25,8 @@ QByteArray FmtGenInputServiceCppTemplate::makeContent(FmtSharedTablePtr pTable)
     QString serviceMemberName = getInputServicePtMemberName(pTable);
     QString StructName = FmtTableStructName(pTable->name());
 
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(inputServiceClassName)), FormatType});
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(StructName)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(inputServiceClassName)), FormatElemType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(StructName)), FormatElemType});
 
     stream << "// *.h" << Qt::endl;
     createCacheClassDeclaration(pTable, stream);
@@ -88,8 +88,8 @@ void FmtGenInputServiceCppTemplate::createCacheClassDeclaration(const FmtSharedT
 {
     QString select = getSelectTypedefName(pTable);
     QString cacheClass = getCacheClassName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(select)), FormatType});
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(cacheClass)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(select)), FormatElemType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(cacheClass)), FormatElemType});
 
     stream << QString("typedef TPartySelect %1;").arg(select) << Qt::endl;
     stream << QString("class _BANKKERNELEXP %1").arg(cacheClass) << Qt::endl;
@@ -110,7 +110,7 @@ void FmtGenInputServiceCppTemplate::createCacheClassDeclaration(const FmtSharedT
     stream << "};" << Qt::endl;
 
     QString CacheWrapperName = getCacheWrapperName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(CacheWrapperName)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(CacheWrapperName)), FormatElemType});
     stream << QString("typedef TRsbCacheWrapper<%1> %2;").arg(cacheClass).arg(CacheWrapperName) << Qt::endl;
 }
 
@@ -174,7 +174,7 @@ void FmtGenInputServiceCppTemplate::createInputServiceAdmOpClass(const FmtShared
     QString serviceTypedef = getInputServiceTypedef(pTable);
     QString inputServiceClassName = getInputServiceClassName(pTable);
     QString inputServiceEnumName = getEnumRSB_INPUT_SERVICE(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(serviceTypedef)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(serviceTypedef)), FormatElemType});
     m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(inputServiceEnumName)), FormatEnum});
 
     stream << "//////////////////////////////////////////////////////////////////////////" << Qt::endl;

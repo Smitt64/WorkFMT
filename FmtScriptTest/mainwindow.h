@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <codeeditor.h>
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/codehighlighter.h>
 #include <QStringListModel>
 
 namespace Ui {

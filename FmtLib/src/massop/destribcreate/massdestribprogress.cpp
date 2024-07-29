@@ -1,7 +1,7 @@
 #include "massdestribprogress.h"
 #include "ui_massdestribprogress.h"
 #include "errordlg.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "fmttable.h"
 #include "massoperationwizard.h"
 #include "massdestribcreate.h"
@@ -97,13 +97,13 @@ void MassDestribProgressRun::run()
 
     MassDestribParamModel *pModel = pInterface->model();
     try {
-        QScopedPointer<FmtErrors> tmp(new FmtErrors());
-        connect(tmp.data(), &FmtErrors::newError, [=](const QString &msg)
+        QScopedPointer<ErrorsModel> tmp(new ErrorsModel());
+        connect(tmp.data(), &ErrorsModel::newError, [=](const QString &msg)
         {
             emit error(msg);
         });
 
-        connect(tmp.data(), &FmtErrors::newMessage, [=](const QString &msg)
+        connect(tmp.data(), &ErrorsModel::newMessage, [=](const QString &msg)
         {
             emit message(msg);
         });
@@ -150,12 +150,12 @@ void MassDestribProgressRun::run()
 
                 QEventLoop loop;
                 QScopedPointer<FmtDbfToolWrp> wrp(new FmtDbfToolWrp(element->table->connection()));
-                connect(wrp.data()->fmterrors(), &FmtErrors::newError, this, &MassDestribProgressRun::error);
-                connect(wrp.data()->fmterrors(), &FmtErrors::newMessage, this, &MassDestribProgressRun::message);
+                connect(wrp.data()->errorsModel(), &ErrorsModel::newError, this, &MassDestribProgressRun::error);
+                connect(wrp.data()->errorsModel(), &ErrorsModel::newMessage, this, &MassDestribProgressRun::message);
                 connect(wrp.data(), &FmtDbfToolWrp::finished, &loop, &QEventLoop::quit);
 
-                wrp->disconnect(wrp.data()->fmterrors(), &FmtErrors::newError, Q_NULLPTR, Q_NULLPTR);
-                wrp->disconnect(wrp.data()->fmterrors(), &FmtErrors::newMessage, Q_NULLPTR, Q_NULLPTR);
+                wrp->disconnect(wrp.data()->errorsModel(), &ErrorsModel::newError, Q_NULLPTR, Q_NULLPTR);
+                wrp->disconnect(wrp.data()->errorsModel(), &ErrorsModel::newMessage, Q_NULLPTR, Q_NULLPTR);
                 wrp->setDsn(m_dsn);
                 wrp->unload(m_DatDir.path(), table);
                 loop.exec();
@@ -225,8 +225,8 @@ MassDestribProgress::MassDestribProgress(QWidget *parent) :
 {
     ui->setupUi(this);
     setTitle(tr("Выгрузка"));
-    pErrors = new FmtErrors(this);
-    pErrDlg = new ErrorDlg(ErrorDlg::mode_Widget);
+    pErrors = new ErrorsModel(this);
+    pErrDlg = new ErrorDlg(ErrorDlg::ModeWidget);
     pErrDlg->setErrors(pErrors);
     ui->verticalLayout->insertWidget(0, pErrDlg);
 }

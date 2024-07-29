@@ -77,7 +77,6 @@ private slots:
     void CreateFromXml();
     void UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata);
     void UpdateCheckStarted();
-    void HighlighterTheme();
 
     void on_actionDebug_triggered();
 

@@ -6,7 +6,8 @@
 #include "fmttable.h"
 #include "fmtlibfactory.h"
 #include "loggingcategories.h"
-#include "highlighter.h"
+#include <codeeditor/codehighlighter.h>
+#include <codeeditor/highlighterstyle.h>
 #include <QTextCharFormat>
 
 class FmtGenFinishEvent : public QEvent
@@ -44,7 +45,7 @@ public:
     virtual void propertyEditor(QWidget *parent) { Q_UNUSED(parent) }
     virtual bool hasPropertes() const { return false; }
 
-    virtual FmtGenHighlightingRuleList highlightingRuleList() const;
+    virtual GenHighlightingRuleList highlightingRuleList() const;
 
 signals:
     void finish(const QByteArray&);

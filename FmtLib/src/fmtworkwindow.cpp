@@ -9,7 +9,7 @@
 #include "dbinitdlg.h"
 #include "fmtfielddlg.h"
 #include "fmtcore.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "errordlg.h"
 #include "fmtimpexpwrp.h"
 #include "fmtfield.h"
@@ -17,7 +17,9 @@
 #include "undolistpopup.h"
 #include "selectfieldsmodel.h"
 #include "selectfiltereddlg.h"
-#include "codeeditor.h"
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/highlighterstyle.h>
+#include <codeeditor/codehighlighter.h>
 #include "lineeditaction.h"
 #include "fmtscriptwindow.h"
 #include "fmrichtextwidget.h"
@@ -443,7 +445,7 @@ void FmtWorkWindow::OnIndexChanged(FmtIndex *index)
 
 int FmtWorkWindow::CheckAppy()
 {
-    FmtErrors err;
+    ErrorsModel err;
     pTable->checkErrors(&err);
 
     int stat = 0;
@@ -454,7 +456,7 @@ int FmtWorkWindow::CheckAppy()
             msg = tr("Сохранение не возможно, т.к имеются ошибки наполнения Fmt словаря.");
         else
             msg = tr("Имеются предупреждения по структуре Fmt словаря. Сохранить изменения не смотря на сообщения?");
-        ErrorDlg dlg(ErrorDlg::mode_MessageBox, this);
+        ErrorDlg dlg(ErrorDlg::ModeMessageBox, this);
         dlg.setErrors(&err);
         dlg.setWindowTitle(tr("Сохранение структуры"));
         dlg.setMessage(msg);
@@ -550,10 +552,10 @@ void FmtWorkWindow::InitDB()
 
 void FmtWorkWindow::CheckTable()
 {
-    FmtErrors e;
+    ErrorsModel e;
     if (!pTable->checkErrors(&e))
     {
-        ErrorDlg dlg(ErrorDlg::mode_Information, this);
+        ErrorDlg dlg(ErrorDlg::ModeInformation, this);
         dlg.setErrors(&e);
         dlg.setMessage(tr("Результат проверки: "));
         dlg.exec();
@@ -692,11 +694,11 @@ int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*
 
 void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
 {
-    Highlighter *pCurrentHighlighter = Q_NULLPTR;
     CodeEditor *editor = new CodeEditor();
-    pCurrentHighlighter = new Highlighter(Highlighter::HC_SQL, editor->document());
-    pCurrentHighlighter->addRsType(pTable->name());
-    pCurrentHighlighter->addRsType(pTable->name().toUpper());
+    ToolApplyHighlighter(editor, HighlighterSql);
+
+    editor->highlighter()->addType(pTable->name());
+    editor->highlighter()->addType(pTable->name().toUpper());
     editor->setReadOnly(true);
     editor->setPlainText(code);
 
@@ -709,10 +711,10 @@ void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, boo
 
 void FmtWorkWindow::AddCppCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
 {
-    Highlighter *pCurrentHighlighter = Q_NULLPTR;
     CodeEditor *editor = new CodeEditor();
-    pCurrentHighlighter = new Highlighter(Highlighter::HC_CPP,editor->document());
-    pCurrentHighlighter->addRsType(FmtTableStructName(pTable->name()));
+    ToolApplyHighlighter(editor, HighlighterCpp);
+
+    editor->highlighter()->addType(FmtTableStructName(pTable->name()));
     editor->setReadOnly(true);
     editor->setPlainText(code);
 

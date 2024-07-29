@@ -1,12 +1,14 @@
 #include "fmteditcontentfilter.h"
 #include "ui_fmteditcontentfilter.h"
-#include "codeeditor.h"
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/highlighterstyle.h>
+#include <codeeditor/codehighlighter.h>
 #include "fmtfildsmodel.h"
-#include "highlighter.h"
 #include "connectioninfo.h"
 #include "fmtfield.h"
 #include "datelineedit.h"
 #include "dataselectdialog.h"
+#include "fmtcore.h"
 #include <QtSql>
 #include <QDebug>
 
@@ -78,7 +80,7 @@ FmtEditContentFilter::FmtEditContentFilter(FmtSharedTablePtr table, QWidget *par
 {
     ui->setupUi(this);
     pEditor = new CodeEditor(this);
-    pHighlighter = new SqlHighlighter(pEditor->document());
+    ToolApplyHighlighter(pEditor, HighlighterSql);
 
     pTable = table;
     ui->verticalLayout_3->addWidget(pEditor);

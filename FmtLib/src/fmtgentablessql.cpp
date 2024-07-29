@@ -30,12 +30,12 @@ QByteArray FmtGenTablesSql::makeContent(FmtSharedTablePtr pTable)
     }
     stream.flush();
 
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(pTable->name())), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(pTable->name())), FormatElemType});
 
     return data;
 }
 
-FmtGenHighlightingRuleList FmtGenTablesSql::highlightingRuleList() const
+GenHighlightingRuleList FmtGenTablesSql::highlightingRuleList() const
 {
     return m_HighlightingRuleList;
 }

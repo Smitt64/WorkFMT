@@ -14,7 +14,7 @@ FmtGenCppClassTemplate::~FmtGenCppClassTemplate()
 
 }
 
-FmtGenHighlightingRuleList FmtGenCppClassTemplate::highlightingRuleList() const
+GenHighlightingRuleList FmtGenCppClassTemplate::highlightingRuleList() const
 {
     return m_HighlightingRuleList;
 }
@@ -29,8 +29,8 @@ QByteArray FmtGenCppClassTemplate::makeContent(FmtSharedTablePtr pTable)
         pkUnionName = getUnionKeyName(pTable, pTable->pkIDx());
 
     QString className = getClassName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatType});
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(FmtTableStructName(pTable->name()))), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatElemType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(FmtTableStructName(pTable->name()))), FormatElemType});
 
     stream << "// RsbParty.hpp" << Qt::endl;
     createClassDeclaration(pTable, stream);
@@ -113,7 +113,7 @@ void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTa
 
     QString PrimaryKey = FormatName(prm.GenUnion.sNameMask, pTable);
     stream << tab << PrimaryKey << " m_PrimaryKey;" << Qt::endl;
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(PrimaryKey)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(PrimaryKey)), FormatElemType});
     stream << "};";
 }
 
@@ -370,7 +370,7 @@ void FmtGenCppClassTemplate::createUpdateDefenition(const FmtSharedTablePtr &pTa
     stream << tab << "int stat = 0;" << Qt::endl;
 
     QString CachePtr = FmtGenInputServiceCppTemplate::getCacheWrapperName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(CachePtr)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(CachePtr)), FormatElemType});
 
     stream << tab << QString("%1 CachePtr;").arg(CachePtr) << Qt::endl;
     stream << tab << QString("%1 ZeroKey;").arg(FormatName(prm.GenUnion.sNameMask, pTable)) << Qt::endl;
@@ -550,8 +550,8 @@ void FmtGenCppClassTemplate::createRslClassDeclaration(const FmtSharedTablePtr &
 {
     QString className = getClassName(pTable);
     QString rslClassName = getRslClassName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(rslClassName)), FormatType});
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(rslClassName)), FormatElemType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatElemType});
 
     stream << "class _BANKKERNELEXP " << rslClassName << " : " << className << Qt::endl;
     stream << "{" << Qt::endl;
@@ -560,7 +560,7 @@ void FmtGenCppClassTemplate::createRslClassDeclaration(const FmtSharedTablePtr &
     stream << tab << QString("virtual ~%1();").arg(rslClassName) << Qt::endl;
 
     QString pThisSrv = FmtGenInputServiceCppTemplate::getInputServiceClassName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(pThisSrv)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(pThisSrv)), FormatElemType});
 
     stream << tab << QString("void Attach(int32 PartyID, %1 *pThisSrv);").arg(pThisSrv) << Qt::endl;
     stream << tab << QString("operator TGenObject* () const { return m_pRslObj; }") << Qt::endl;

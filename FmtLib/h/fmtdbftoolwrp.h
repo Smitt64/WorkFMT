@@ -5,7 +5,7 @@
 #include <QProcess>
 
 class ConnectionInfo;
-class FmtErrors;
+class ErrorsModel;
 class FmtDbfToolWrp : public QObject
 {
     Q_OBJECT
@@ -13,7 +13,7 @@ public:
     explicit FmtDbfToolWrp(ConnectionInfo *info, QObject *parent = nullptr);
     virtual ~FmtDbfToolWrp();
 
-    FmtErrors *fmterrors();
+    ErrorsModel *errorsModel();
     void setDsn(const QString &dsn);
 
 signals:
@@ -32,7 +32,7 @@ private slots:
 
 private:
     QTextCodec *codec;
-    FmtErrors *err;
+    ErrorsModel *err;
     QScopedPointer<QProcess> proc;
     ConnectionInfo *pInfo;
     QString m_dsn;

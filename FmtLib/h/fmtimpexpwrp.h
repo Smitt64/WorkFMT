@@ -7,7 +7,7 @@
 #include "fmtlib_global.h"
 
 class QProcess;
-class FmtErrors;
+class ErrorsModel;
 class FMTLIBSHARED_EXPORT FmtImpExpWrp : public QObject
 {
     Q_OBJECT
@@ -38,7 +38,7 @@ public slots:
     QString lastImportDir() const;
 
     QString protocol() const;
-    void parseProtocol(FmtErrors *ptr);
+    void parseProtocol(ErrorsModel *ptr);
 
     void setDsn(const QString &dsn);
 

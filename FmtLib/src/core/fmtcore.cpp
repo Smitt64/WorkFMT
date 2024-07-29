@@ -1,7 +1,7 @@
 #include "fmtcore.h"
 #include "fmtapplication.h"
 #include "fmtimpexpwrp.h"
-#include "fmterrors.h"
+#include <errorsmodel.h>
 #include "fmttable.h"
 #include "fmtfield.h"
 #include "errordlg.h"
@@ -934,9 +934,9 @@ void ExportFmtToXml(ConnectionInfo *connection, const QStringList &files, const 
 
         if (ShowReport)
         {
-            FmtErrors log;
+            ErrorsModel log;
             imp.parseProtocol(&log);
-            ErrorDlg edlg(ErrorDlg::mode_Information, parent);
+            ErrorDlg edlg(ErrorDlg::ModeInformation, parent);
             edlg.setErrors(&log);
             edlg.setMessage(QObject::tr("Протокол выгрузки в xml файл: "));
             edlg.exec();
@@ -1467,12 +1467,12 @@ QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force)
 
 void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
 {
-    ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
+    ErrorDlg dlg(ErrorDlg::ModeWidget, parent);
     dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
     dlg.setWindowModality(Qt::WindowModal);
 
     FmtDbfToolWrp wrp(current, parent);
-    dlg.setErrors(wrp.fmterrors());
+    dlg.setErrors(wrp.errorsModel());
     wrp.setDsn(current->dsn());
 
     QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
@@ -1486,12 +1486,12 @@ void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *pare
 
 void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
 {
-    ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
+    ErrorDlg dlg(ErrorDlg::ModeWidget, parent);
     dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
     dlg.setWindowModality(Qt::WindowModal);
 
     FmtDbfToolWrp wrp(current, parent);
-    dlg.setErrors(wrp.fmterrors());
+    dlg.setErrors(wrp.errorsModel());
     wrp.setDsn(current->dsn());
 
     QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));

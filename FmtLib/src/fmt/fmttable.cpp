@@ -4,7 +4,7 @@
 #include "fmtindecesmodel.h"
 #include "fmtfield.h"
 #include "fmtindex.h"
-#include "fmterrors.h"
+#include <errorsmodel.h>
 #include "connectioninfo.h"
 #include "fmtundotableproperty.h"
 #include "fmtundotableaddfield.h"
@@ -166,7 +166,7 @@ void FmtTable::init()
 
     if (!pFieldsModel) pFieldsModel = new FmtFildsModel(const_cast<FmtTable*>(this));
     if (!pIndecesModel) pIndecesModel = new FmtIndecesModel(const_cast<FmtTable*>(this));
-    if (!m_pErrors) m_pErrors = new FmtErrors(this);
+    if (!m_pErrors) m_pErrors = new ErrorsModel(this);
     if (!pUndoStack)
     {
         pUndoStack = new QUndoStack(this);
@@ -1549,7 +1549,7 @@ void FmtTable::clear()
     m_Comment = "";
 }
 
-FmtErrors *FmtTable::lastErrors()
+ErrorsModel *FmtTable::lastErrors()
 {
     return m_pErrors;
 }
@@ -1583,7 +1583,7 @@ QUndoStack *FmtTable::undoStack()
     return pUndoStack;
 }
 
-bool FmtTable::checkErrors(FmtErrors *e)
+bool FmtTable::checkErrors(ErrorsModel *e)
 {
     QRegExp rx("\\bd(\\w+)\\_(dbt|tmp|rec)\\b");
     QRegExpValidator validator(QRegExp("([a-zA-Z_][a-zA-Z0-9]*)*"));
@@ -1601,7 +1601,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
     }
 
     if (m_Comment.isEmpty())
-        e->appendError(tr("Таблица не содержит комментария"), FmtErrors::fmtet_Warning);
+        e->appendError(tr("Таблица не содержит комментария"), ErrorsModel::TypeWarning);
 
     if (m_pFields.isEmpty())
     {
@@ -1610,7 +1610,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
 
     if (m_pIndeces.isEmpty())
     {
-        e->appendError(tr("Таблица не содержит индексов"), FmtErrors::fmtet_Warning);
+        e->appendError(tr("Таблица не содержит индексов"), ErrorsModel::TypeWarning);
     }
 
     if (!m_Id)
@@ -1625,7 +1625,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
             e->appendError(tr("Уже существует таблица <b>%1</b> с идентификатором %2: %3")
                            .arg(q.value(1).toString())
                            .arg(q.value(0).toString())
-                           .arg(q.value(2).toString()), FmtErrors::fmtet_Warning);
+                           .arg(q.value(2).toString()), ErrorsModel::TypeWarning);
         }
     }
 
@@ -1639,7 +1639,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
             e->appendError(tr("Поле №%1 <b>%2</b> (%3) имеет недопустимое имя")
                            .arg(i + 1)
                            .arg(fld->name())
-                           .arg(fld->comment()), FmtErrors::fmtet_Warning);
+                           .arg(fld->comment()), ErrorsModel::TypeWarning);
         }
 
         if (!fld->size())
@@ -1648,7 +1648,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
                            .arg(i + 1)
                            .arg(fld->name())
                            .arg(fld->comment())
-                           .arg(fmtTypeForId(fld->type())), FmtErrors::fmtet_Warning);
+                           .arg(fmtTypeForId(fld->type())), ErrorsModel::TypeWarning);
         }
         else
         {
@@ -1662,7 +1662,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
                                    .arg(fld->name())
                                    .arg(fmtTypeForId(fld->type()))
                                    .arg(fld->size())
-                                   .arg(fldsize), FmtErrors::fmtet_Warning);
+                                   .arg(fldsize), ErrorsModel::TypeWarning);
                 }
             }
             else
@@ -1674,7 +1674,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
                                    .arg(i + 1)
                                    .arg(fld->name())
                                    .arg(fld->comment())
-                                   .arg(fmtTypeForId(fld->type())), FmtErrors::fmtet_Warning);
+                                   .arg(fmtTypeForId(fld->type())), ErrorsModel::TypeWarning);
                 }
             }
         }
@@ -1685,7 +1685,7 @@ bool FmtTable::checkErrors(FmtErrors *e)
         FmtIndex *ind = m_pIndeces[i];
         if (!ind->childCount())
         {
-            e->appendError(tr("У индекса <b>%1</b> не заданы сегменты").arg(ind->name()), FmtErrors::fmtet_Warning);
+            e->appendError(tr("У индекса <b>%1</b> не заданы сегменты").arg(ind->name()), ErrorsModel::TypeWarning);
         }
 
         if (ind->isAutoInc())
@@ -1693,12 +1693,12 @@ bool FmtTable::checkErrors(FmtErrors *e)
             if (!ind->isUnique())
             {
                 e->appendError(tr("Индекс <b>%1</b> указан автоинкрементным, но не является уникальным")
-                               .arg(ind->name()), FmtErrors::fmtet_Warning);
+                               .arg(ind->name()), ErrorsModel::TypeWarning);
             }
 
             if (ind->childCount() > 1)
             {
-                e->appendError(tr("Индекс <b>%1</b> указан автоинкрементным, но имеет несколько сегментов").arg(ind->name()), FmtErrors::fmtet_Warning);
+                e->appendError(tr("Индекс <b>%1</b> указан автоинкрементным, но имеет несколько сегментов").arg(ind->name()), ErrorsModel::TypeWarning);
             }
             /*else if (ind->childCount() == 1)
             {

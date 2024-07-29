@@ -1,6 +1,6 @@
 #include "fmtcore.h"
 #include "fmtapplication.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "fmttable.h"
 #include "fmtfield.h"
 #include "errordlg.h"
