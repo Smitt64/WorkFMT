@@ -117,6 +117,7 @@ private:
     QMap<ConnectionInfo*, WorkWindowList> m_Windows;
     QList<ConnectionInfo*> m_pConnections;
 
+    QToolBar *m_pUtils;
     QAction *actionEdit, *actionExport, *actionDeleteTable;
     QToolButton *toolConnect;
     QMenu *toolConnectMenu;

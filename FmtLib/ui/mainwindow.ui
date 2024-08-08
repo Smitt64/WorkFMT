@@ -468,6 +468,10 @@
    </property>
   </action>
   <action name="actionOptions">
+   <property name="icon">
+    <iconset resource="../../ToolsRuntimeProj/ToolsRuntime/res/res.qrc">
+     <normaloff>:/icons/shell32.dll_14_274-0.png</normaloff>:/icons/shell32.dll_14_274-0.png</iconset>
+   </property>
    <property name="text">
     <string>Параметры</string>
    </property>
@@ -476,6 +480,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <resources>
   <include location="../res/fmt.qrc"/>
+  <include location="../../ToolsRuntimeProj/ToolsRuntime/res/res.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -1,0 +1,118 @@
+import ToolsRuntime, RegExp, Fmt, sql;
+
+const CheckNameRx = "([a-zA-Z_][a-zA-Z0-9]*)*";
+
+private macro CheckFields(table : FmtTable, errors : ErrorsModel)
+    var i = 0;
+    var msg;
+
+    while (i < table.FieldsCount)
+        var fld = table.field(i);
+        if (not RegExpValidate(CheckNameRx, fld.Name, 0))
+            msg = toolFormatStr("Поле №%1 <b>%2</b> (%3) имеет недопустимое имя", (i + 1), fld.Name, fld.Comment);
+            errors.appendError(msg, errors.TypeError);
+        end;
+
+        if (not fld.Size)
+            msg = toolFormatStr("Поле №%1 <b>%2</b> (%3) типа '%4' имеет нулевую длину", (i + 1), fld.Name, fld.Comment, Fmt.fmtTypeNameForType(fld.Type));
+            errors.appendError(msg, errors.TypeError);
+        else
+            if (not Fmt.fmtTypeCanHaveCustomSize(fld.Type))
+                var fldsize = Fmt.fmtTypeSize(fld.Type);
+
+                if (fldsize != fld.Size)
+                    msg = toolFormatStr("Поле №%1 <b>%2</b> c типом '%3' имеет размер %4, когда ожидался %5", 
+                        (i + 1), fld.Name, Fmt.fmtTypeNameForType(fld.Type), fld.Size, fldsize);
+                    errors.appendError(msg, errors.TypeWarning);
+                end;
+            else
+                if (((fld.Type == FmtType.STRING) or (fld.Type == FmtType.SNR)) and (fld.Size == 1))
+                    msg = toolFormatStr("Поле №%1 <b>%2</b> (%3) типа '%4' не может иметь длину равную одному", 
+                        (i + 1), fld.Name, fld.comment, Fmt.fmtTypeNameForType(fld.Type));
+                    errors.appendError(msg, errors.TypeWarning);
+                end;
+            end;
+        end;
+        i = i + 1;
+    end;
+end;
+
+private macro CheckIndeces(table : FmtTable, errors : ErrorsModel)
+    var i = 0;
+    var msg;
+
+    while (i < table.IndecesCount)
+        var idx = table.tableIndex(i);
+        if (not idx.SegmentsCount)
+            msg = toolFormatStr("У индекса <b>%1</b> не заданы сегменты", idx.Name);
+            errors.appendError(msg, errors.TypeWarning);
+        end;
+
+        if (idx.isAutoInc)
+            if (not idx.isUnique)
+                msg = toolFormatStr("Индекс <b>%1</b> указан автоинкрементным, но не является уникальным", idx.Name);
+                errors.appendError(msg, errors.TypeWarning);
+            end;
+
+            if (idx.SegmentsCount > 1)
+                msg = toolFormatStr("Индекс <b>%1</b> указан автоинкрементным, но имеет несколько сегментов", idx.Name);
+                errors.appendError(msg, errors.TypeWarning);
+            elif (idx.SegmentsCount == 1) 
+                var fld = idx.segment(0).field();
+                if (fld.Type != FmtType.LONG)
+                    msg = toolFormatStr("Индекс <b>%1</b> указан автоинкриментным, но поле <b>%2</b> имеет тип '%3', когда ожидался тип 'LONG'", 
+                        idx.Name, fld.Name, Fmt.fmtTypeNameForType(fld.Type));
+
+                    errors.appendError(msg, errors.TypeWarning);
+                end;
+            end;
+        end;
+        i = i + 1;
+    end;
+end;
+
+macro CheckSave(table : FmtTable, errors : ErrorsModel)
+    var msg;
+    var connection = table.connection;
+    var rx = RegExp("\\bd(\\w+)\\_(dbt|tmp|rec)\\b");
+
+    var pos = rx.indexIn(table.Name);
+    if (pos == -1)
+        errors.appendError("Имя таблицы не соответствует шаблону: (d)<b>name</b>_(dbt|tmp|rec)", errors.TypeWarning);
+    end;
+
+    if (not RegExpValidate(CheckNameRx, table.Name, 0))
+        errors.appendError("Имя таблицы имеет недопустимое значение", errors.TypeError);
+    end;
+
+    if (table.Comment == "")
+        errors.appendError("Таблица не содержит комментария", errors.TypeWarning);
+    end;
+
+    if (table.FieldsCount == 0)
+        errors.appendError("Таблица не содержит полей", errors.TypeError);
+    end;
+
+    if (table.IndecesCount == 0)
+        errors.appendError("Таблица не содержит индексов", errors.TypeWarning);
+    end;
+
+    if (table.Id == 0)
+        var exists_query = SqlQuery(connection.connectionName);
+
+        exists_query.prepare("SELECT T_ID, T_NAME, T_COMMENT FROM FMT_NAMES WHERE UPPER(T_NAME) = UPPER(?)");
+        exists_query.bindValue(0, table.Name);
+        if (toolExecuteQuery(exists_query) and exists_query.next())
+            var exists_msg = toolFormatStr("Уже существует таблица <b>%1</b> с идентификатором %2: %3",
+                exists_query.value(1),
+                Int(exists_query.value(0)),
+                exists_query.value(2));
+            errors.appendError(exists_msg, errors.TypeError);
+        end;
+    end;
+
+    CheckFields(table, errors);
+    CheckIndeces(table, errors);
+
+    return errors.isEmpty();
+end;

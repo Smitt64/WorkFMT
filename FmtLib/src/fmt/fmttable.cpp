@@ -14,6 +14,7 @@
 #include "fmtundotablepastefield.h"
 #include "fmtsegment.h"
 #include "loggingcategories.h"
+#include "rslexecutors/checksaveexecutor.h"
 #include <QProcess>
 #include <QEventLoop>
 #include <QtXml>
@@ -1585,135 +1586,8 @@ QUndoStack *FmtTable::undoStack()
 
 bool FmtTable::checkErrors(ErrorsModel *e)
 {
-    QRegExp rx("\\bd(\\w+)\\_(dbt|tmp|rec)\\b");
-    QRegExpValidator validator(QRegExp("([a-zA-Z_][a-zA-Z0-9]*)*"));
-
-    int pos = 0;
-    if ((pos = rx.indexIn(m_Name, pos)) == -1)
-    {
-        e->appendError(tr("Имя таблицы не соответствует шаблону: (d)<b>name</b>_(dbt|tmp|rec)"));
-    }
-
-    pos = 0;
-    if (validator.validate(m_Name, pos) == QValidator::Invalid)
-    {
-        e->appendError(tr("Имя таблицы имеет недопустимое имя"));
-    }
-
-    if (m_Comment.isEmpty())
-        e->appendError(tr("Таблица не содержит комментария"), ErrorsModel::TypeWarning);
-
-    if (m_pFields.isEmpty())
-    {
-        e->appendError(tr("Таблица не содержит полей"));
-    }
-
-    if (m_pIndeces.isEmpty())
-    {
-        e->appendError(tr("Таблица не содержит индексов"), ErrorsModel::TypeWarning);
-    }
-
-    if (!m_Id)
-    {
-        QSqlQuery q(db);
-        q.prepare("SELECT T_ID, T_NAME, T_COMMENT FROM FMT_NAMES WHERE UPPER(T_NAME) = UPPER(?)");
-        q.bindValue(0, m_Name);
-
-        int stat = ExecuteQuery(&q);
-        if (!stat && q.next())
-        {
-            e->appendError(tr("Уже существует таблица <b>%1</b> с идентификатором %2: %3")
-                           .arg(q.value(1).toString())
-                           .arg(q.value(0).toString())
-                           .arg(q.value(2).toString()), ErrorsModel::TypeWarning);
-        }
-    }
-
-    for (int i = 0; i < m_pFields.size(); i++)
-    {
-        FmtField *fld = m_pFields[i];
-        int pos = 0;
-        QString tmpName = fld->name();
-        if (validator.validate(tmpName, pos) == QValidator::Invalid)
-        {
-            e->appendError(tr("Поле №%1 <b>%2</b> (%3) имеет недопустимое имя")
-                           .arg(i + 1)
-                           .arg(fld->name())
-                           .arg(fld->comment()), ErrorsModel::TypeWarning);
-        }
-
-        if (!fld->size())
-        {
-            e->appendError(tr("Поле №%1 <b>%2</b> (%3) типа '%4' имеет нулевую длину")
-                           .arg(i + 1)
-                           .arg(fld->name())
-                           .arg(fld->comment())
-                           .arg(fmtTypeForId(fld->type())), ErrorsModel::TypeWarning);
-        }
-        else
-        {
-            if (!fmtTypeCanHaveCustomSize(fld->type()))
-            {
-                int fldsize = fmtTypeSize(fld->type());
-                if (fldsize != fld->size())
-                {
-                    e->appendError(tr("Поле №%1 <b>%2</b> c типом '%3' имеет размер %4, когда ожидался %5")
-                                   .arg(i + 1)
-                                   .arg(fld->name())
-                                   .arg(fmtTypeForId(fld->type()))
-                                   .arg(fld->size())
-                                   .arg(fldsize), ErrorsModel::TypeWarning);
-                }
-            }
-            else
-            {
-                qint32 type = fld->type();
-                if ((type == fmtt_STRING || type == fmtt_SNR) && fld->size() == 1)
-                {
-                    e->appendError(tr("Поле №%1 <b>%2</b> (%3) типа '%4' не может иметь длину равную одному")
-                                   .arg(i + 1)
-                                   .arg(fld->name())
-                                   .arg(fld->comment())
-                                   .arg(fmtTypeForId(fld->type())), ErrorsModel::TypeWarning);
-                }
-            }
-        }
-    }
-
-    for (int i = 0; i < m_pIndeces.size(); i++)
-    {
-        FmtIndex *ind = m_pIndeces[i];
-        if (!ind->childCount())
-        {
-            e->appendError(tr("У индекса <b>%1</b> не заданы сегменты").arg(ind->name()), ErrorsModel::TypeWarning);
-        }
-
-        if (ind->isAutoInc())
-        {
-            if (!ind->isUnique())
-            {
-                e->appendError(tr("Индекс <b>%1</b> указан автоинкрементным, но не является уникальным")
-                               .arg(ind->name()), ErrorsModel::TypeWarning);
-            }
-
-            if (ind->childCount() > 1)
-            {
-                e->appendError(tr("Индекс <b>%1</b> указан автоинкрементным, но имеет несколько сегментов").arg(ind->name()), ErrorsModel::TypeWarning);
-            }
-            /*else if (ind->childCount() == 1)
-            {
-                FmtField *fld = ((FmtSegment*)ind->child(0))->pFld;
-                if (fld->type() != fmtt_LONG)
-                {
-                    e->appendError(tr("Индекс <b>%1</b> указан автоинкриментным, но поле <b>%2</b> имеет тип '%3', когда ожидался тип 'LONG'")
-                                   .arg(ind->name())
-                                   .arg(fld->name())
-                                   .arg(fmtTypeForId(fld->type())));
-                }
-            }*/
-        }
-    }
-    return e->isEmpty();
+    CheckSaveExecutor executor(this, e);
+    return executor.check().toBool();
 }
 
 const QList<FmtField*> &FmtTable::getFieldsList() const

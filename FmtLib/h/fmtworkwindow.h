@@ -112,6 +112,7 @@ private slots:
     void OnImport();
     void AutoCamelCase(bool checked);
     void CamelCaseAction();
+    void CheckAction();
 
 protected:
     void paintEvent(QPaintEvent *paintEvent);
@@ -148,6 +149,7 @@ private:
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript;
+    QAction *m_CheckAction;
     FmtWorkWndGen *pCodeGenWidget;
 
     QFrame *pUndoRedoBtnContainer;

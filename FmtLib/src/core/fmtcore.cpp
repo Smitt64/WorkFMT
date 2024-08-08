@@ -601,29 +601,7 @@ QString NullString(const int &index)
 
 int ExecuteQuery(QSqlQuery *query, QString *err)
 {
-    int stat = 0;
-
-    QMap<QString, QVariant> values = query->boundValues();
-    QMapIterator<QString, QVariant> i(values);
-    while(i.hasNext())
-    {
-        i.next();
-        qCInfo(logSql()) << i.key() << ": " << i.value();
-    }
-
-    bool result = query->exec();
-    if (!result)
-    {
-        stat = 1;
-        qCCritical(logSql()) << query->lastError().text();
-
-        if (err != Q_NULLPTR)
-            *err = query->lastError().text();
-    }
-    qCInfo(logSql()) << query->executedQuery();
-    qCInfo(logSql()) << "Result:" << result;
-
-    return stat;
+    return toolExecuteQuery(query, err);
 }
 
 int ExecuteQuery(const QString &query, QSqlDatabase db, QString *err)

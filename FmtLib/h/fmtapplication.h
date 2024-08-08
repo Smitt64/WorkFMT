@@ -36,6 +36,7 @@ public:
     void disableLogging();
     bool isLoggingEnabled() const;
     void init();
+    void applyStyle();
 
     QString logginFileName() const;
 

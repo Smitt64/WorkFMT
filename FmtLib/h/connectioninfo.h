@@ -16,13 +16,15 @@ class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
     friend class FmtTablesModel;
     /// @private
     friend class OracleAuthDlg;
-    Q_PROPERTY(bool isOpen READ isOpen)
-    Q_PROPERTY(bool isUnicode READ isUnicode)
-    Q_PROPERTY(QString typeName READ typeName)
-    Q_PROPERTY(int type READ type)
-    Q_PROPERTY(QString user READ user)
-    Q_PROPERTY(QString password READ password)
-    Q_PROPERTY(QString dsn READ dsn)
+    Q_PROPERTY(bool isOpen READ isOpen CONSTANT)
+    Q_PROPERTY(bool isUnicode READ isUnicode CONSTANT)
+    Q_PROPERTY(QString typeName READ typeName CONSTANT)
+    Q_PROPERTY(int type READ type CONSTANT)
+    Q_PROPERTY(QString user READ user CONSTANT)
+    Q_PROPERTY(QString password READ password CONSTANT)
+    Q_PROPERTY(QString dsn READ dsn CONSTANT)
+
+    Q_PROPERTY(QString connectionName READ connectionName CONSTANT)
 public:
     enum ConnectionType
     {
@@ -67,7 +69,7 @@ public:
      * @return Имя схемы
      */
     QString schemeName() const { return m_SchemeName; }
-    QString dbAlias() const { return m_Alias; }
+    QString connectionName() const { return m_Alias; }
 
     QString host() const { return m_Host; }
     QString service() const { return m_Service; }

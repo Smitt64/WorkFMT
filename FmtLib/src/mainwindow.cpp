@@ -113,12 +113,15 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
         dir = QDir::current();
 
+    m_pUtils = addToolBar(tr("Инструменты"));
+    m_pUtils->setObjectName("utilsToolBar");
     if (QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
     {
         QAction *actionDumpTool = new QAction(this);
         actionDumpTool->setText(tr("Импорт/экспорт файла дампа"));
         actionDumpTool->setIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
         ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDumpTool);
+        m_pUtils->addAction(actionDumpTool);
 
         connect(actionDumpTool, &QAction::triggered, [=]()
         {
@@ -132,6 +135,7 @@ MainWindow::MainWindow(QWidget *parent) :
         actionDiffTool->setText(tr("Запустить DiffToScript"));
         actionDiffTool->setIcon(QIcon(":/img/DiffToScript.png"));
         ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDiffTool);
+        m_pUtils->addAction(actionDiffTool);
 
         connect(actionDiffTool, &QAction::triggered, [=]()
         {
@@ -919,6 +923,7 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
 
 void MainWindow::CreateWindowFunctional()
 {
+    ui->windowToolBar->addAction(ui->actionOptions);
     ui->actionNextWnd->setShortcut(QKeySequence(QKeySequence::NextChild));
     ui->actionPrevWnd->setShortcut(QKeySequence(QKeySequence::PreviousChild));
 
@@ -944,6 +949,7 @@ void MainWindow::CreateViewMenu()
     ui->menuView->addAction(ui->mainToolBar->toggleViewAction());
     ui->menuView->addAction(ui->tabToolBar->toggleViewAction());
     ui->menuView->addAction(ui->windowToolBar->toggleViewAction());
+    ui->menuView->addAction(m_pUtils->toggleViewAction());
     ui->menuView->addSeparator();
     ui->menuView->addAction(pTablesDock->toggleViewAction());
 }

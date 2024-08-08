@@ -42,7 +42,7 @@ TIME = fmtt_TIME,
 CHR = fmtt_CHR,
 UCHR = fmtt_UCHR,
 NUMERIC = fmtt_NUMERIC,
-EndFmtEnumNamespace(FmtKeyFlags)
+EndFmtEnumNamespace(FmtTypes)
 
 BegiFmtEnumNamespace(FmtKeyNullVal)
 Nullval_None = keynullval_None,

@@ -1,7 +1,6 @@
 #include "fmtapplication.h"
 #include "mainwindow.h"
 #include "fmtcore.h"
-#include "tablesgroupprovider.h"
 #include "oracleauthdlg.h"
 #include "fmtgeninterface.h"
 #include "fmtgentablessql.h"
@@ -16,8 +15,7 @@
 #include "massop/destribcreate/massdestribcreate.h"
 #include <fmtdbghelp.h>
 #include <QDebug>
-#include <functional>
-#include <QStyleFactory>
+#include <rsscript/registerobjlist.hpp>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -70,6 +68,13 @@ FmtApplication::~FmtApplication()
 #endif
 }
 
+void FmtApplication::applyStyle()
+{
+    QString styleName = pSettings->value("style").toString();
+    QStyle *style = QStyleFactory::create(styleName);
+    QApplication::setStyle(style);
+}
+
 void FmtApplication::init()
 {
     pTnsModel = new OracleTnsListModel(this);
@@ -105,6 +110,8 @@ void FmtApplication::init()
     registerMassOpInterface<MassOpBtrvTemplate>("MassOpBtrvTemplate", tr("Шаблоны btrv"));
     registerMassOpInterface<MassOpenFuncTemplate>("MassOpenFuncTemplate", tr("Функция открытия файлов"));
     registerMassOpInterface<MassDestribCreate>("MassDestribCreate", tr("Дистрибутивное наполнение"));
+
+    rslAddStaticMacroDir(".\\mac\\fmtcore");
 }
 
 void FmtApplication::initDbgHelp()

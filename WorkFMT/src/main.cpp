@@ -15,17 +15,14 @@ static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser
 
 int main(int argc, char *argv[])
 {
+    QDir settingsDir = QDir(argv[0]);
+
     FmtApplication a(argc, argv);
 
     QCommandLineParser parser;
     QCommandLineOption helpOption = parser.addHelpOption();
     Q_UNUSED(helpOption)
     parser.addVersionOption();
-
-    qDebug() << QStyleFactory::keys();
-    QStyle *s = QStyleFactory::create("WindowsModernStyleBlue");
-    qDebug() << s;
-    a.setStyle(s);
 
     QCommandLineOption connectionStringOption(QStringList() << "cs" << "con-str",
                                         QApplication::translate("main", "Подключиться к базе данных использую строку подключения <constring>"),
@@ -52,6 +49,7 @@ int main(int argc, char *argv[])
     MainWindow *w = (MainWindow*)a.addMainWindow();
     ProcessLoggingOption(&a, &parser, logOption, logruleOption);
     a.init();
+    a.applyStyle();
 
     // строка подключения
     if (parser.isSet(connectionStringOption))

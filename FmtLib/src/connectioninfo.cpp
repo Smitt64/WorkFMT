@@ -8,6 +8,7 @@
 #include <QImage>
 #include <QRegion>
 #include <QBitmap>
+#include <QUuid>
 
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     QObject(Q_NULLPTR),
@@ -210,7 +211,8 @@ void ConnectionInfo::close()
 bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn, const QString &options, QString *error)
 {
     bool hr = false;
-    m_Alias = QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    m_Alias = QUuid::createUuid().toString();
+        //QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     m_SchemeName = QString("%1@%2").arg(user, dsn);
     m_DSN = dsn;
 
@@ -333,8 +335,9 @@ ConnectionInfo::operator int() const
 
 bool ConnectionInfo::hasFeature(ConnectionInfo::ConnectionFeature feature) const
 {
-    if (m_Type == CON_ORA)
+    /*if (m_Type == CON_ORA)
         return true;
 
-    return false;
+    return false;*/
+    return true;
 }

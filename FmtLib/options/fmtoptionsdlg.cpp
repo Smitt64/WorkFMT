@@ -6,7 +6,8 @@ FmtOptionsDlg::FmtOptionsDlg(QSettings *settings, QWidget *parent) :
 {
     setDefaultStyle("windowsvista");
     addStylePage(QString(), "style");
-    addCodeEditorPage();
+    addCodeEditorPage("CodeEditor", "theme");
+    addRslPage();
 }
 
 FmtOptionsDlg::~FmtOptionsDlg()

@@ -1,0 +1,67 @@
+import ToolsRuntime, sql;
+
+private macro TestSelectRandom(db)
+    var sqlrandom = 0;
+
+    var query = SqlQuery(db);
+    if (query.exec("SELECT ABS(RANDOM() % 100) + 1"))
+        query.next();
+        sqlrandom = query.value(0);
+    end;
+
+    return sqlrandom;
+end;
+
+private macro CreateAndFillTeable(db)
+    var query = SqlQuery(db);
+    if (query.exec("CREATE TABLE IF NOT EXISTS table_name (id INTEGER PRIMARY KEY, value TEXT)"))
+        var i = 0;
+        while (i < 10)
+            query.prepare("INSERT INTO table_name (value) VALUES (:value)");
+            query.bindValue(":value", "Element " + (i + 1));
+            query.exec();
+            i = i + 1;
+        end;
+    end;
+end;
+
+private macro SqlWithError(db)
+    var query = SqlQuery(db);
+    query.exec("select * from tablename");
+    println();
+    println("Sql error: " + query.lastError);
+end;
+
+private macro PrintTableValues(db)
+    var query = SqlQuery(db);
+
+[+-----------+------------------------+];
+[|    id     |         value          |];
+[+-----------+------------------------+];
+
+    query.prepare("select * from table_name");
+
+    if (toolExecuteQuery(query))
+        while (query.next())
+[| ######### | ###################### |](query.value("id"), query.value("value"));
+        end;
+    end;
+[+-----------+------------------------+];
+end;
+
+macro SqliteExample()
+    var db = SqlDatabase("QSQLITE");
+    db.databaseName = ":memory:";
+    if (not db.open())
+        return;
+    end;
+
+    println("Test Select Random: " + TestSelectRandom(db));
+    CreateAndFillTeable(db);
+    PrintTableValues(db);
+    SqlWithError(db);
+    
+    db.close();
+end;
+
+SqliteExample();

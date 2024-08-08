@@ -178,6 +178,7 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu->addSeparator();*/
     m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
     m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
+    m_CheckAction = pActionsMenu->addAction(tr("Проверить таблицу на ошибки"));
     pActionsMenu->addSeparator();
     pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты SQL"));
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
@@ -205,6 +206,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
     connect(m_CamelCaseAction, SIGNAL(triggered(bool)), SLOT(CamelCaseAction()));
     connect(m_GenDiffToScript, SIGNAL(triggered(bool)), SLOT(DiffToScript()));
+    connect(m_CheckAction, SIGNAL(triggered(bool)), SLOT(CheckAction()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
@@ -1035,5 +1037,25 @@ void FmtWorkWindow::DiffToScript()
     {
         if (!result.isEmpty())
             AddSqlCodeTab(tr("Diff To Script"), result);
+    }
+}
+
+void FmtWorkWindow::CheckAction()
+{
+    ErrorsModel err;
+    pTable->checkErrors(&err);
+
+    if (!err.isEmpty())
+    {
+        QString msg = tr("Имеются предупреждения по структуре Fmt словаря");
+        ErrorDlg dlg(ErrorDlg::ModeInformation, this);
+        dlg.setErrors(&err);
+        dlg.setWindowTitle(tr("Результаты проверки"));
+        dlg.setMessage(msg);
+        dlg.exec();
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Результат"), tr("Проверка ошибок не обнаружила"));
     }
 }

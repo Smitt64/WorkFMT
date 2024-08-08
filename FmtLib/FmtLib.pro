@@ -34,6 +34,7 @@ CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
     options/fmtoptionsdlg.cpp \
+    rslexecutors/checksaveexecutor.cpp \
     src/debugconnect.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
@@ -277,6 +278,7 @@ HEADERS += \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
     options/fmtoptionsdlg.h \
+    rslexecutors/checksaveexecutor.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
@@ -334,3 +336,24 @@ else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
 
 INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+
+OTHER_FILES += \
+    $$PWD/mac
+
+defineTest(copyToDestDir) {
+    files = $$1
+    dir = $$2
+    # replace slashes in destination path for Windows
+    win32:dir ~= s,/,\\,g
+
+    for(file, files) {
+        # replace slashes in source path for Windows
+        win32:file ~= s,/,\\,g
+        QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$shell_quote($$file) $$shell_quote($$dir) $$escape_expand(\\n\\t)
+    }
+
+    export(QMAKE_POST_LINK)
+}
+
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../WorkFMT/debug/mac)
