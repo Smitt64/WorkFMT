@@ -48,7 +48,6 @@
     <addaction name="actionExport"/>
     <addaction name="actionImpExpPrm"/>
     <addaction name="separator"/>
-    <addaction name="actionRsexpDir"/>
     <addaction name="action_FMT_sqlite"/>
     <addaction name="separator"/>
     <addaction name="separator"/>

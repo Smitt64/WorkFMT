@@ -10,7 +10,6 @@
 #include "fmtfromrichtext.h"
 #include "treecombobox.h"
 #include "subwindowsmodel.h"
-#include "impexpparams.h"
 #include "fmtimpexpwrp.h"
 #include "ErrorsModel.h"
 #include "aboutdlg.h"
@@ -196,7 +195,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionCopyTable, SIGNAL(triggered(bool)), SLOT(CopyTable()));
     connect(ui->actionCopyTableAs, SIGNAL(triggered(bool)), SLOT(CopyTableTo()));
     connect(ui->actionCopyTableTmp, SIGNAL(triggered(bool)), SLOT(CopyTableToTmp()));
-    connect(ui->actionRsexpDir, SIGNAL(triggered(bool)), SLOT(RsExpExportDir()));
     connect(ui->actionUnloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadDbf()));
     connect(ui->actionLoadDbf, SIGNAL(triggered(bool)), SLOT(LoadDbf()));
     connect(ui->action_FMT_sqlite, SIGNAL(triggered(bool)), SLOT(UnloadSqlite()));
@@ -372,12 +370,6 @@ void MainWindow::UpdateActions()
         ui->actionUnloadDbf->setEnabled(false);
         ui->actionLoadDbf->setEnabled(false);
     }
-}
-
-void MainWindow::ImpExpSettings()
-{
-    ImpExpParams dlg(this);
-    dlg.exec();
 }
 
 void MainWindow::ImpDirAction()
@@ -1081,16 +1073,6 @@ void MainWindow::CopyTableToTmp()
             table->copyToAsTmp(cTable);
             CreateDocument(cTable)->show();
         }
-    }
-}
-
-void MainWindow::RsExpExportDir()
-{
-    QString path = QFileDialog::getExistingDirectory(this);
-
-    if (!path.isEmpty())
-    {
-        settings()->setValue("RsExpUnlDir", path);
     }
 }
 

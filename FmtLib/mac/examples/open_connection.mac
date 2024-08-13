@@ -1,0 +1,24 @@
+/*
+$Description: Пример подключения к oracle и чтения информации о таблице
+$Author: Serpkov
+*/
+import Fmt;
+
+macro TestConnection(user, password, dsn)
+    var conn = ConnectionInfo();
+
+    if (conn.open(QRSD_DRIVER, user, password, dsn))
+        println("соеденение открыто");
+    else
+        println("Error open onnection");
+    end;
+
+    var table = FmtTable(conn);
+    if (table.load("dparty_dbt"))
+        println("Table loaded");
+    else
+        println("Error load table");
+    end;
+end;
+
+TestConnection("SERP_3185", "SERP_3185", "THOR_DB12DEV1");

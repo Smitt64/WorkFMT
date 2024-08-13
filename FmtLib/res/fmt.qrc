@@ -113,5 +113,6 @@
         <file alias="AboutDlg">../json/AboutDlg.json</file>
         <file>img/DiffToScript.png</file>
         <file>img/book_32.png</file>
+        <file>img/explorer.exe_14_103-6.png</file>
     </qresource>
 </RCC>

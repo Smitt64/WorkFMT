@@ -1,3 +1,7 @@
+/*
+$Description: Пример работы с базами данных sqlite
+$Author: Serpkov
+*/
 import ToolsRuntime, sql;
 
 private macro TestSelectRandom(db)

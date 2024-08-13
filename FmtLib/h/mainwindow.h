@@ -48,7 +48,6 @@ private slots:
     //void setSubWindowIcon(const QIcon &icon);
     void about();
 
-    void ImpExpSettings();
     void ImpDirAction();
     void ImportAction();
     void CreateTableSql();
@@ -58,7 +57,6 @@ private slots:
     void CopyTable();
     void CopyTableTo();
     void CopyTableToTmp();
-    void RsExpExportDir();
     void UnloadDbf();
     void LoadDbf();
     void UnloadSqlite();

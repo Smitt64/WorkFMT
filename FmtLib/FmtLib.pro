@@ -34,7 +34,9 @@ CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
     options/fmtoptionsdlg.cpp \
+    options/generaloptions.cpp \
     rslexecutors/checksaveexecutor.cpp \
+    rslexecutors/generatorrslexecutor.cpp \
     src/debugconnect.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
@@ -46,7 +48,6 @@ SOURCES += \
     src/fmtapplication.cpp \
     src/fmtfielddlg.cpp \
     src/fmtworkwindow.cpp \
-    src/impexpparams.cpp \
     src/mainwindow.cpp \
     src/massop/destribcreate/massdestribprogress.cpp \
     src/models/odbctablemodel.cpp \
@@ -161,6 +162,7 @@ unix {
 }
 
 FORMS += \
+    options/generaloptions.ui \
     src/debugconnect.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
@@ -171,7 +173,6 @@ FORMS += \
     ui/errordlg.ui \
     ui/fmtfielddlg.ui \
     ui/fmtworkwindow.ui \
-    ui/impexpparams.ui \
     ui/mainwindow.ui \
     ui/oracleauthdlg.ui \
     ui/tablesgroupsdlg.ui \
@@ -227,7 +228,6 @@ HEADERS += \
     h/fmttable.h \
     h/fmttablesmodel.h \
     h/fmtworkwindow.h \
-    h/impexpparams.h \
     h/mainwindow.h \
     h/oracleauthdlg.h \
     h/oracletnslistmodel.h \
@@ -278,7 +278,9 @@ HEADERS += \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
     options/fmtoptionsdlg.h \
+    options/generaloptions.h \
     rslexecutors/checksaveexecutor.h \
+    rslexecutors/generatorrslexecutor.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
@@ -334,7 +336,7 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/To
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
 else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
 
-INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime $$PWD/../ToolsRuntimeProj/ToolsRuntime/optionsdlg $$PWD/../ToolsRuntimeProj/ToolsRuntime/widgets
 DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 
 OTHER_FILES += \

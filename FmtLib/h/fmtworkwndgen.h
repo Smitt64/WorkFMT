@@ -11,6 +11,7 @@ class FmtWorkWndGen;
 class GenInterfaceFactoryModel;
 class CodeEditor;
 class Highlighter;
+class GeneratorsProxyModel;
 class FmtWorkWndGen : public QMainWindow
 {
     Q_OBJECT
@@ -34,6 +35,7 @@ private:
     Ui::FmtWorkWndGen *ui;
     QComboBox *pGenType;
     GenInterfaceFactoryModel *pGenModel;
+    GeneratorsProxyModel *pProxyModel;
 
     CodeEditor *pEditor;
     QAction *pActionRun, *pActionProperty, *pActionSave;

@@ -13,6 +13,7 @@
 #include "massop/btrvtemplate/massopbtrvtemplate.h"
 #include "massop/massopenfunc/massopenfunctemplate.h"
 #include "massop/destribcreate/massdestribcreate.h"
+#include "codeeditor/highlighterstyle.h"
 #include <fmtdbghelp.h>
 #include <QDebug>
 #include <rsscript/registerobjlist.hpp>
@@ -112,6 +113,11 @@ void FmtApplication::init()
     registerMassOpInterface<MassDestribCreate>("MassDestribCreate", tr("Дистрибутивное наполнение"));
 
     rslAddStaticMacroDir(".\\mac\\fmtcore");
+
+    pSettings->beginGroup("CodeEditor");
+    QString sHighlighterStyle = pSettings->value("theme", "Default").toString();
+    HighlighterStyle::inst()->setDefaultTheme(sHighlighterStyle);
+    pSettings->endGroup();
 }
 
 void FmtApplication::initDbgHelp()

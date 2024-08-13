@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp",
+        "qtextstream": "cpp",
+        "qsettings": "cpp",
+        "qvboxlayout": "cpp"
+    }
+}
