@@ -1,0 +1,48 @@
+/*
+$Description: Пример использования диалогов ввода
+$Author: Serpkov
+*/
+import ToolsRuntime, StdDialogs;
+
+private macro TestStringDialog()
+    var result = toolGetText("TestStringDialog", "Сообщение:", "Значение по умолчанию");
+    return result;
+end;
+
+private macro TestMulyLineDialog()
+    var result = toolGetMulyLineText("TestMulyLineDialog", "Сообщение:", "Значение по умолчанию");
+    return result;
+end;
+
+private macro TestNumberDialog(double)
+    var result;
+
+    if (double)
+        result = toolGetDouble("TestNumberDialog double", "Сообщение:", 10, 0, 100);
+    else
+        result = toolGetNumber("TestNumberDialog", "Сообщение:", 10, 0, 100);
+    end;
+
+    return result;
+end;
+
+private macro TestItemsDialog()
+    var items = TArray;
+    items[items.size] = "Item 1";
+    items[items.size] = "Item 2";
+    items[items.size] = "Item 3";
+    items[items.size] = "Item 4";
+    items[items.size] = "Item 5";
+
+    var result = toolGetItem("TestItemsDialog", "Сообщение:", items, 0, true);
+    return result;
+end;
+
+var result;
+result = TestString();
+//result = TestMulyLineDialog();
+//result = TestNumberDialog();
+//result = TestNumberDialog(true);
+//result = TestItemsDialog();
+
+println(result);

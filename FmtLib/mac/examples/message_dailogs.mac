@@ -1,0 +1,46 @@
+/*
+$Description: Пример использования диалогов сообщений
+$Author: Serpkov
+*/
+import ToolsRuntime, StdDialogs;
+
+private macro TestCritical()
+    var btn = msgCritical("Заголовок", "Текст сообщения");
+    var btnconstant = msgGetButtonConstantName(btn);
+
+    println("TestCritical: " + btnconstant);
+end;
+
+private macro TestWarning()
+    var btn = msgWarning("Заголовок", "Текст сообщения");
+    var btnconstant = msgGetButtonConstantName(btn);
+
+    println("TestWarning: " + btnconstant);
+end;
+
+private macro TestQuestion()
+    var btn = msgQuestion("Заголовок", "Текст сообщения");
+    var btnconstant = msgGetButtonConstantName(btn);
+
+    println("TestQuestion: " + btnconstant);
+end;
+
+private macro TestInformation()
+    var btn = msgInformation("Заголовок", "Текст сообщения");
+    var btnconstant = msgGetButtonConstantName(btn);
+
+    println("TestInformation: " + btnconstant);
+end;
+
+private macro TestQuestionButtons()
+    var btn = msgQuestion("Заголовок", "Текст сообщения", MsgBtn_Save + MsgBtn_SaveAll + MsgBtn_Discard);
+    var btnconstant = msgGetButtonConstantName(btn);
+
+    println("TestInformation: " + btnconstant);
+end;
+
+//TestCritical();
+//TestWarning();
+//TestInformation();
+//TestQuestion();
+TestQuestionButtons();
