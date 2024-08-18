@@ -4,12 +4,13 @@
 #include <optionsdlg/optionsdlg.h>
 
 class QSettings;
+class ConnectionInfo;
 class FmtOptionsDlg : public OptionsDlg
 {
     Q_OBJECT
 
 public:
-    FmtOptionsDlg(QSettings *settings, QWidget *parent = nullptr);
+    FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QWidget *parent = nullptr);
     virtual ~FmtOptionsDlg();
 };
 

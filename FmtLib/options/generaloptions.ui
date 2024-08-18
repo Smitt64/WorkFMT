@@ -13,126 +13,116 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QGroupBox" name="groupBox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>551</width>
-     <height>114</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Параметры импорта/экспорта в xml </string>
-   </property>
-   <property name="flat">
-    <bool>true</bool>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Параметры импорта/экспорта в xml </string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Путь до fmtxml:</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Путь до fmtxml:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="fmtXmlPath">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QLineEdit" name="fmtXmlPath">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Кодировка выходных файлов:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="fmtXmlEncode">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>rsansi</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>lcansi</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>rsoem</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>lcoem</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>utf8</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>utf16le</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>utf16be</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="fmtXmlXsdCheck">
+        <property name="text">
+         <string>Не использовать для проверки XML-файла схему fmtxml.xsd</string>
         </property>
        </widget>
       </item>
      </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="pathsGroup">
+     <property name="title">
+      <string>Каталоги выгрузки </string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Кодировка выходных файлов:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="fmtXmlEncode">
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <item>
-         <property name="text">
-          <string>rsansi</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>lcansi</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>rsoem</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>lcoem</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>utf8</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>utf16le</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>utf16be</string>
-         </property>
-        </item>
-       </widget>
+       <widget class="StringListEditor" name="pathListWidget" native="true"/>
       </item>
      </layout>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="fmtXmlXsdCheck">
-      <property name="text">
-       <string>Не использовать для проверки XML-файла схему fmtxml.xsd</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>130</y>
-     <width>541</width>
-     <height>211</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Каталоги выгрузки </string>
-   </property>
-   <property name="flat">
-    <bool>true</bool>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="StringListEditor" name="pathListWidget" native="true"/>
-    </item>
-   </layout>
-  </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>

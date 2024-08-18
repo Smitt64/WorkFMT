@@ -88,7 +88,6 @@
     <addaction name="menuUpdateScripts"/>
     <addaction name="action_Diff_to_Script"/>
     <addaction name="separator"/>
-    <addaction name="actionEditGroups"/>
     <addaction name="actionMassOp"/>
     <addaction name="actionQuery"/>
     <addaction name="separator"/>

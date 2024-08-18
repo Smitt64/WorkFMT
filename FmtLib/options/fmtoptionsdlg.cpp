@@ -1,9 +1,10 @@
 #include "fmtoptionsdlg.h"
 #include <QSettings>
 #include "generaloptions.h"
+#include "tablegroupoptions.h"
 #include <QIcon>
 
-FmtOptionsDlg::FmtOptionsDlg(QSettings *settings, QWidget *parent) :
+FmtOptionsDlg::FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QWidget *parent) :
     OptionsDlg(settings, parent)
 {
     setDefaultStyle("windowsvista");
@@ -11,6 +12,9 @@ FmtOptionsDlg::FmtOptionsDlg(QSettings *settings, QWidget *parent) :
     addStylePage(QString(), "style");
     addCodeEditorPage("CodeEditor", "theme");
     addRslPage();
+
+    if (connection)
+        addPage(tr("Группы таблиц"), QIcon(":/img/sapi.cpl_14_138-1.png"), new TableGroupOptions(connection));
 }
 
 FmtOptionsDlg::~FmtOptionsDlg()

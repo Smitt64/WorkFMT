@@ -52,7 +52,6 @@ private slots:
     void ImportAction();
     void CreateTableSql();
     void HotFixCreate();
-    void EditGroups();
     void OpenRecentConnection();
     void CopyTable();
     void CopyTableTo();

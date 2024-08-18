@@ -114,5 +114,9 @@
         <file>img/DiffToScript.png</file>
         <file>img/book_32.png</file>
         <file>img/explorer.exe_14_103-6.png</file>
+        <file>img/msgr3en.dll_14_128_0-0.png</file>
+        <file>img/nwprovau.dll_14_604-1.png</file>
+        <file>img/sapi.cpl_14_138-1.png</file>
+        <file alias="TablesGroupProvider">../json/TablesGroupProvider.json</file>
     </qresource>
 </RCC>

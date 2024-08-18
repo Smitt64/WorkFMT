@@ -35,6 +35,7 @@ CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 SOURCES += \
     options/fmtoptionsdlg.cpp \
     options/generaloptions.cpp \
+    options/tablegroupoptions.cpp \
     rslexecutors/checksaveexecutor.cpp \
     rslexecutors/generatorrslexecutor.cpp \
     src/debugconnect.cpp \
@@ -163,6 +164,7 @@ unix {
 
 FORMS += \
     options/generaloptions.ui \
+    options/tablegroupoptions.ui \
     src/debugconnect.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
@@ -279,6 +281,7 @@ HEADERS += \
     h/fmteditcontentwindow.h \
     options/fmtoptionsdlg.h \
     options/generaloptions.h \
+    options/tablegroupoptions.h \
     rslexecutors/checksaveexecutor.h \
     rslexecutors/generatorrslexecutor.h \
     src/debugconnect.h \

@@ -191,7 +191,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(pMdi, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(subWindowActivated(QMdiSubWindow*)));
     connect(ui->actionAbout, SIGNAL(triggered(bool)), SLOT(about()));
     connect(ui->actionSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
-    connect(ui->actionEditGroups, SIGNAL(triggered(bool)), SLOT(EditGroups()));
     connect(ui->actionCopyTable, SIGNAL(triggered(bool)), SLOT(CopyTable()));
     connect(ui->actionCopyTableAs, SIGNAL(triggered(bool)), SLOT(CopyTableTo()));
     connect(ui->actionCopyTableTmp, SIGNAL(triggered(bool)), SLOT(CopyTableToTmp()));
@@ -971,17 +970,6 @@ void MainWindow::about()
     dlg.exec();
 }
 
-void MainWindow::EditGroups()
-{
-    ConnectionInfo *current = currentConnection();
-
-    if (!current)
-        return;
-
-    TablesGroupsDlg dlg(current, this);
-    dlg.exec();
-}
-
 void MainWindow::OpenRecentConnection()
 {
     QAction *action = qobject_cast<QAction*>(sender());
@@ -1496,6 +1484,6 @@ void MainWindow::on_actionDebug_triggered()
 void MainWindow::OptionsAction()
 {
     FmtApplication *app = (FmtApplication*)qApp;
-    FmtOptionsDlg dlg(app->settings(), this);
+    FmtOptionsDlg dlg(currentConnection(), app->settings(), this);
     dlg.exec();
 }

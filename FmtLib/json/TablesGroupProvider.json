@@ -1,0 +1,15 @@
+{
+    "groups": [
+        {
+            "name": "Субъекты",
+            "tables": [
+                "dparty_dbt",
+                "dpartyown_dbt",
+                "dadress_dbt",
+                "dcontact_dbt",
+                "dpersn_dbt",
+                "dpersnidc_dbt"
+            ]
+        }
+    ]
+}

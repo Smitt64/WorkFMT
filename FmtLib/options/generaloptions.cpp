@@ -18,6 +18,8 @@ GeneralOptions::GeneralOptions(QWidget *parent)
         tr("Репозитории для DiffToScript")
         });
 
+    ui->pathsGroup->layout()->setMargin(0);
+
     QAbstractButton *pFolderBtn = ui->pathListWidget->button(StringListEditor::ButtonAddFolder);
     pFolderBtn->setVisible(true);
 
@@ -45,6 +47,27 @@ int GeneralOptions::save()
     setting->setValue("CodePage", ui->fmtXmlEncode->currentText());
     setting->setValue("NoXsd", ui->fmtXmlXsdCheck->isChecked());
     setting->endGroup();
+
+    auto WriteListToSettrings = [=](const int &id, const QString &context)
+    {
+        ui->pathListWidget->categoryWidget()->setCurrentIndex(id);
+
+        QStringList list = ui->pathListWidget->stringList();  
+        setting->beginWriteArray(context);
+        for (int i = 0; i < list.size(); ++i)
+        {
+            setting->setArrayIndex(i);
+
+            setting->setValue("dir", list[i]);
+            setting->setValue("uses", m_DirUses[id][list[i]]);
+        }
+        setting->endArray();
+    };
+
+    WriteListToSettrings(0, RsExpUnlDirContext);
+    WriteListToSettrings(1, RsFmtUnlDirContext);
+    WriteListToSettrings(2, RsCreateSqlContext);
+    WriteListToSettrings(3, RsDiffToScriptContext);
 
     return 0;
 }
@@ -123,4 +146,5 @@ void GeneralOptions::restore()
     }
     setting->endArray();
     m_DirUses.insert(ui->pathListWidget->categoryWidget()->currentIndex(), RsDiffToScriptUses);
+    ui->pathListWidget->categoryWidget()->setCurrentIndex(0);
 }

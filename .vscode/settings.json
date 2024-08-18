@@ -6,6 +6,9 @@
         "xutility": "cpp",
         "qtextstream": "cpp",
         "qsettings": "cpp",
-        "qvboxlayout": "cpp"
+        "qvboxlayout": "cpp",
+        "iterator": "cpp",
+        "xhash": "cpp",
+        "xtree": "cpp"
     }
 }
