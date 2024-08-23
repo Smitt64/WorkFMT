@@ -15,6 +15,8 @@ FmtOptionsDlg::FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QW
 
     if (connection)
         addPage(tr("Группы таблиц"), QIcon(":/img/sapi.cpl_14_138-1.png"), new TableGroupOptions(connection));
+
+    addCommandsPage();
 }
 
 FmtOptionsDlg::~FmtOptionsDlg()

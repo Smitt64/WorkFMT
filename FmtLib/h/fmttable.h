@@ -163,7 +163,7 @@ signals:
     void fieldAdded(FmtField *fld);
 
 public:
-    Q_INVOKABLE ConnectionInfo *connection();
+    ConnectionInfo *connection();
     Q_INVOKABLE bool load(const quint64 &id);
     Q_INVOKABLE bool load(const QString &name);
     Q_INVOKABLE bool loadFromXml(const QString &filename, const QString &tableName = QString());

@@ -21,21 +21,21 @@ void ToolbarActionExecutor::onInspectModuleSymbol(Qt::HANDLE sym)
 {
     QString name = getSymbolName(sym);
 
-    if (!name.compare("{CurrentConnection}"))
+    if (!name.compare("{CurrentConnection}", Qt::CaseInsensitive))
     {
         ConnectionInfo *info = pMainWindow->currentConnection();
 
         if (info)
-            globalSet(sym, QVariant::fromValue(info));
+            globalSet(sym, QVariant::fromValue((QObject*)info));
     }
-    else if (!name.compare("{FmtTable}"))
+    else if (!name.compare("{FmtTable}", Qt::CaseInsensitive))
     {
         FmtWorkWindow *wnd = pMainWindow->currentWorkWindow();
 
         if (wnd)
         {
             FmtSharedTablePtr table = wnd->table();
-            globalSet(sym, QVariant::fromValue(table.data()));
+            globalSet(sym, QVariant::fromValue((QObject*)table.data()));
         }
     }
 }
