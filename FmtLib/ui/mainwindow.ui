@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonIconOnly</enum>
+   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
@@ -49,6 +49,9 @@
     <addaction name="actionImpExpPrm"/>
     <addaction name="separator"/>
     <addaction name="action_FMT_sqlite"/>
+    <addaction name="separator"/>
+    <addaction name="actionDumpTool"/>
+    <addaction name="actionDiffTool"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
@@ -157,7 +160,7 @@
     <string>Окно</string>
    </property>
    <property name="allowedAreas">
-    <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
+    <set>Qt::ToolBarArea::BottomToolBarArea|Qt::ToolBarArea::TopToolBarArea</set>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -472,6 +475,24 @@
    </property>
    <property name="text">
     <string>Параметры</string>
+   </property>
+  </action>
+  <action name="actionDumpTool">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/VCProject.dll_I000d_0409.ico</normaloff>:/img/VCProject.dll_I000d_0409.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Обработка дампов</string>
+   </property>
+  </action>
+  <action name="actionDiffTool">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/DiffToScript.png</normaloff>:/img/DiffToScript.png</iconset>
+   </property>
+   <property name="text">
+    <string>Запустить Diff to Script</string>
    </property>
   </action>
  </widget>

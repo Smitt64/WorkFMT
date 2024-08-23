@@ -19,6 +19,7 @@ class WindowsComboAction;
 class FmtTableListDelegate;
 class MdiSubInterface;
 class SearchActionWidget;
+class ToolbarActionExecutor;
 class FMTLIBSHARED_EXPORT MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -29,6 +30,11 @@ public:
 
     ConnectionInfo *currentConnection();
     void OpenConnection(const QString &connectionString);
+
+    QMdiSubWindow *hasTableWindow(const QString &tableName);
+    QMdiSubWindow *hasTableWindow(const quint64 &tableID);
+
+    FmtWorkWindow *currentWorkWindow();
 
 private slots:
     void actionConnectTriggered();
@@ -91,8 +97,7 @@ private:
     void CreateSearchToolBar();
     void SetActiveFmtWindow(QMdiSubWindow *wnd);
     void CreateCheckUpdateRunnable();
-    QMdiSubWindow *hasTableWindow(const QString &tableName);
-    QMdiSubWindow *hasTableWindow(const quint64 &tableID);
+
     QAction *CreateConnectionActio(ConnectionInfo *info);
     void tablesContextMenu(QContextMenuEvent *event, QListView *view);
     QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
@@ -114,7 +119,6 @@ private:
     QMap<ConnectionInfo*, WorkWindowList> m_Windows;
     QList<ConnectionInfo*> m_pConnections;
 
-    QToolBar *m_pUtils;
     QAction *actionEdit, *actionExport, *actionDeleteTable;
     QToolButton *toolConnect;
     QMenu *toolConnectMenu;
@@ -124,6 +128,8 @@ private:
 
     SubWindowsModel *pWindowsModel;
     UpdateChecker *pUpdateChecker;
+
+    ToolbarActionExecutor *pActionExecutor;
 };
 
 #endif // MAINWINDOW_H

@@ -3,6 +3,8 @@
 
 #include "rsscript/rslstaticmodule.h"
 
+extern void fmtappRegister();
+
 class FmtRslModule : public RslStaticModule
 {
 public:

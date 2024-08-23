@@ -1,0 +1,11 @@
+import "fmtglobals.mac", fmt, StdDialogs;
+
+macro ExecAction()
+    var haswindow = fmtAppHasTableWindow("dparty_dbt");
+debugbreak;
+    if (haswindow)
+        msgInformation("информация", "Окно есть");
+    else
+        msgCritical("информация", "Окна нет");
+    end;
+end;

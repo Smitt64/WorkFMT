@@ -38,6 +38,7 @@ SOURCES += \
     options/tablegroupoptions.cpp \
     rslexecutors/checksaveexecutor.cpp \
     rslexecutors/generatorrslexecutor.cpp \
+    rslexecutors/toolbaractionexecutor.cpp \
     src/debugconnect.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
@@ -284,6 +285,7 @@ HEADERS += \
     options/tablegroupoptions.h \
     rslexecutors/checksaveexecutor.h \
     rslexecutors/generatorrslexecutor.h \
+    rslexecutors/toolbaractionexecutor.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \

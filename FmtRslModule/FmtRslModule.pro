@@ -15,6 +15,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    fmtfunctions.cpp \
     fmtnamespace.cpp \
     fmtrslmodule.cpp \
     fmtrslmoduleplugin.cpp
@@ -29,7 +30,7 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lF
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib
 else:unix: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
 
-INCLUDEPATH += $$PWD/../FmtLib/h
+INCLUDEPATH += $$PWD/../FmtLib/h $$PWD/../FmtLib
 DEPENDPATH += $$PWD/../FmtLib
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
