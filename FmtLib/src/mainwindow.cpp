@@ -30,6 +30,8 @@
 #include "recentconnectionlist.h"
 #include "debugconnect.h"
 #include "updatecheckermessagebox.h"
+#include "windowactionsregistry.h"
+#include "rslexecutors/toolbaractionexecutor.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -111,36 +113,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QDir dir = QApplication::applicationDirPath();
     if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
         dir = QDir::current();
+    if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
+        ui->actionDumpTool->setEnabled(false);
 
-    m_pUtils = addToolBar(tr("Инструменты"));
-    m_pUtils->setObjectName("utilsToolBar");
-    if (QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
-    {
-        QAction *actionDumpTool = new QAction(this);
-        actionDumpTool->setText(tr("Импорт/экспорт файла дампа"));
-        actionDumpTool->setIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
-        ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDumpTool);
-        m_pUtils->addAction(actionDumpTool);
-
-        connect(actionDumpTool, &QAction::triggered, [=]()
-        {
-            QProcess::startDetached(dir.absoluteFilePath("DumpTool.exe"), QStringList());
-        });
-    }
-
-    if (QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
-    {
-        QAction *actionDiffTool = new QAction(this);
-        actionDiffTool->setText(tr("Запустить DiffToScript"));
-        actionDiffTool->setIcon(QIcon(":/img/DiffToScript.png"));
-        ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDiffTool);
-        m_pUtils->addAction(actionDiffTool);
-
-        connect(actionDiffTool, &QAction::triggered, [=]()
-        {
-            QProcess::startDetached(dir.absoluteFilePath("DiffToScript.exe"), QStringList());
-        });
-    }
+    if (!QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
+        ui->actionDiffTool->setEnabled(false);
 
     m_ConnectionsGroup = new QActionGroup(this);
     pLogButton = new QPushButton(this);
@@ -162,6 +139,18 @@ MainWindow::MainWindow(QWidget *parent) :
     CreateViewMenu();
     CreateCheckUpdateRunnable();
 
+    pActionExecutor = new ToolbarActionExecutor(this);
+    windowActionsRegistry()->setRslExecutor(pActionExecutor);
+
+    windowActionsRegistry()->scanActions(ui->menuFile);
+    windowActionsRegistry()->scanActions(ui->menuService);
+    windowActionsRegistry()->scanActions(ui->menuWindow);
+    windowActionsRegistry()->scanActions(ui->menu);
+
+    QList<QToolBar*> toolBars = windowActionsRegistry()->makeToolBars(((FmtApplication*)qApp)->settings(), "UserCommands", "ToolBars");
+    for (QToolBar *toolbar : toolBars)
+        addToolBar(toolbar);
+
     ui->tabToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     ui->tabToolBar->setIconSize(QSize(20, 20));
 
@@ -181,7 +170,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionRebuildOffset, SIGNAL(triggered(bool)), SLOT(rebuidOffsets()));
     connect(ui->actionCreateFromText, SIGNAL(triggered(bool)), SLOT(createFromText()));
 
-    connect(ui->actionImpExpPrm, SIGNAL(triggered(bool)), SLOT(ImpExpSettings()));
     connect(ui->actionImportDir, SIGNAL(triggered(bool)), SLOT(ImpDirAction()));
     connect(ui->actionImport, SIGNAL(triggered(bool)), SLOT(ImportAction()));
 
@@ -208,12 +196,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionMassOp, SIGNAL(triggered(bool)), SLOT(OnMassOpAction()));
     connect(ui->actionConfluence, SIGNAL(triggered(bool)), SLOT(OnConfluence()));
     connect(ui->actionCreateXml, SIGNAL(triggered(bool)), SLOT(CreateFromXml()));
-    connect(ui->actionHighlighterTheme, SIGNAL(triggered(bool)), SLOT(HighlighterTheme()));
     connect(ui->action_Diff_to_Script, SIGNAL(triggered(bool)), SLOT(GenDiffToScriptScript()));
     connect(ui->actionOptions, SIGNAL(triggered(bool)), SLOT(OptionsAction()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
+
+    connect(ui->actionDumpTool, &QAction::triggered, [=]()
+    {
+        QProcess::startDetached(dir.absoluteFilePath("DumpTool.exe"), QStringList());
+    });
+
+    connect(ui->actionDiffTool, &QAction::triggered, [=]()
+    {
+        QProcess::startDetached(dir.absoluteFilePath("DiffToScript.exe"), QStringList());
+    });
 
 #ifdef QT_NO_DEBUG
     connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
@@ -940,7 +937,6 @@ void MainWindow::CreateViewMenu()
     ui->menuView->addAction(ui->mainToolBar->toggleViewAction());
     ui->menuView->addAction(ui->tabToolBar->toggleViewAction());
     ui->menuView->addAction(ui->windowToolBar->toggleViewAction());
-    ui->menuView->addAction(m_pUtils->toggleViewAction());
     ui->menuView->addSeparator();
     ui->menuView->addAction(pTablesDock->toggleViewAction());
 }
@@ -1251,6 +1247,16 @@ QMdiSubWindow *MainWindow::hasTableWindow(const quint64 &tableID)
     }
 
     return find;
+}
+
+FmtWorkWindow *MainWindow::currentWorkWindow()
+{
+    QMdiSubWindow *wnd = pMdi->activeSubWindow();
+
+    if (wnd)
+        return qobject_cast<FmtWorkWindow*>(wnd->widget());
+
+    return Q_NULLPTR;
 }
 
 void MainWindow::EditContent()

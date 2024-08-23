@@ -114,6 +114,16 @@ void FmtApplication::init()
 
     rslAddStaticMacroDir(".\\mac\\fmtcore");
 
+    int macrosize = pSettings->beginReadArray("MacroDir");
+    for (int i = 0; i < macrosize; i++)
+    {
+        pSettings->setArrayIndex(i);
+        QString macroDir = pSettings->value("value").toString();
+        rslAddMacroDir(macroDir);
+    }
+    pSettings->endArray();
+    rslObjList()->applyMacroDirs();
+
     pSettings->beginGroup("CodeEditor");
     QString sHighlighterStyle = pSettings->value("theme", "Default").toString();
     HighlighterStyle::inst()->setDefaultTheme(sHighlighterStyle);

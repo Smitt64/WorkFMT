@@ -1,6 +1,7 @@
 #include "fmtrslmodule.h"
 #include "rsscript/registerobjlist.hpp"
 #include "rslexecutor.h"
+#include "fmtworkwindow.h"
 #include "connectioninfo.h"
 #include "fmtcore.h"
 #include "fmtfield.h"
@@ -27,6 +28,8 @@ FmtRslModule::FmtRslModule() :
     RegisterObjList::inst()->RegisterRslObject<FmtField>();
     RegisterObjList::inst()->RegisterRslObject<FmtIndex>();
     RegisterObjList::inst()->RegisterRslObject<FmtSegment>();
+
+    RegisterObjList::inst()->RegisterRslObject<FmtWorkWindow>();
 }
 
 void FmtRslModule::Init()
@@ -52,4 +55,6 @@ void FmtRslModule::Proc()
     addConstant("FmtType", QVariant::fromValue<QObject*>(pFmtTypesNamespace));
     addConstant("FmtKeyFlags", QVariant::fromValue<QObject*>(pFmtKeyFlags));
     addConstant("FmtKeyNullVal", QVariant::fromValue<QObject*>(pFmtKeyNullValFlags));
+
+    fmtappRegister();
 }
