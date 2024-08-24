@@ -193,6 +193,11 @@ ConnectionInfo *FmtTable::connection()
     return pConnection;
 }
 
+QObject *FmtTable::connectionObj()
+{
+    return pConnection;
+}
+
 void FmtTable::setCacheSize(const qint32 &v)
 {
     if (m_CacheSize == v)

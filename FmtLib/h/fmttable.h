@@ -27,7 +27,7 @@ class FMTLIBSHARED_EXPORT FmtTable : public QAbstractItemModel
     Q_PROPERTY(qint16 BlobType READ blobType WRITE setBlobType)
     Q_PROPERTY(quint32 TableFlags READ tableFlags WRITE setTableFlags)
 
-    Q_PROPERTY(ConnectionInfo *connection READ connection CONSTANT)
+    Q_PROPERTY(QObject *connection READ connectionObj CONSTANT)
 
     Q_PROPERTY(bool isTemporary READ isTemporary WRITE setIsTemporary NOTIFY isTemporaryChanged)
     Q_PROPERTY(bool isRecord READ isRecord WRITE setIsRecord NOTIFY isRecordChanged)
@@ -164,6 +164,7 @@ signals:
 
 public:
     ConnectionInfo *connection();
+    QObject *connectionObj();
     Q_INVOKABLE bool load(const quint64 &id);
     Q_INVOKABLE bool load(const QString &name);
     Q_INVOKABLE bool loadFromXml(const QString &filename, const QString &tableName = QString());

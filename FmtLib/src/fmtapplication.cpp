@@ -54,8 +54,6 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     addLibraryPath(current.absoluteFilePath("sqldrivers"));
     addLibraryPath(current.absoluteFilePath("styles"));
 
-    //qRegisterMetaType<RecentList>("RecentList");
-
     //qDebug() << QStyleFactory::keys();
     m_fLogging = false;
 }
