@@ -176,7 +176,7 @@ static void fmtSelectTableFieldsDailog()
     QList<FmtField*> pFldList;
     int stat = SelectTableFieldsDlg(table, title, &pFldList);
 
-    if (!stat)
+    if (stat)
     {
         QVariantList list;
         for (FmtField *fld : pFldList)

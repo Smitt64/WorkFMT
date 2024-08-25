@@ -1,4 +1,4 @@
-import "fmtglobals.mac", fmt, StdDialogs;
+import "fmtglobals.mac", fmt, StdDialogs, ToolsRuntime;
 
 macro ExecAction()
     debugbreak;
@@ -11,10 +11,12 @@ macro ExecAction()
         msgCritical("информация", "Окна нет");
     end;*/
 
-    var haswindow = fmtappOpenTableWindow("dparty_dbt");
+    /*var haswindow = fmtappOpenTableWindow("dparty_dbt");
 
     var table = haswindow.table;
     var selected = fmtSelectTableFieldsDailog(table, "Выбор полей: ");
 
-    println(selected);
+    println(selected);*/
+
+    toolShowCodeDialog("Test code", HighlighterSql, "SELECT t_name FROM dparty_dbt\nselect t_name from dparty_dbt");
 end;

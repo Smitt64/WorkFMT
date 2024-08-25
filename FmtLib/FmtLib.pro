@@ -114,7 +114,6 @@ SOURCES += \
     src/models/selectfieldsmodel.cpp \
     src/widgets/selectfiltereddlg.cpp \
     src/core/fmtupdatescripts.cpp \
-    src/core/showcodedialog.cpp \
     h/lineeditaction.cpp \
     src/models/fmttablelistdelegate.cpp \
     src/fmt/fmtfile.cpp \

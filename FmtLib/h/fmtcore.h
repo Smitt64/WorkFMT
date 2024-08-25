@@ -250,8 +250,6 @@ FMTLIBSHARED_EXPORT QString ReadTextFileContent(const QString &filename);
 FMTLIBSHARED_EXPORT int CloneFmtFromConnection(QSqlDatabase &source, QSqlDatabase &dest, QWidget *parent);
 FMTLIBSHARED_EXPORT bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg = false, QWidget *parent = Q_NULLPTR);
 
-FMTLIBSHARED_EXPORT int ShowCodeDialog(QWidget *parent, const QString &title, const int &type, const QString &code);
-
 FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR);
 FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR);
 
