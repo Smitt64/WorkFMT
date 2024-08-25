@@ -42,7 +42,7 @@ private:
 class FMTLIBSHARED_EXPORT FmtWorkWindow : public MdiSubInterface
 {
     Q_OBJECT
-
+    Q_PROPERTY(QObject *table READ tableProp CONSTANT)
 public:
     enum FmtWinTabs
     {
@@ -63,6 +63,8 @@ public:
 
     QUndoStack *tableUndoStack();
     QString makeWindowTitle() Q_DECL_OVERRIDE;
+
+    QObject* tableProp() const { return pTable.data(); }
 
 signals:
 
@@ -110,7 +112,6 @@ private slots:
     void CopyFields();
     void PasteFields();
     void OnImport();
-    void AutoCamelCase(bool checked);
     void CamelCaseAction();
     void CheckAction();
 

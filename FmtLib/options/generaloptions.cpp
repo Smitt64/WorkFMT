@@ -42,6 +42,7 @@ GeneralOptions::~GeneralOptions()
 int GeneralOptions::save() 
 {
     QSettings *setting = settings();
+    setting->setValue("AutoCamelCase", ui->autoCamelCase->isChecked());
 
     setting->beginGroup("FmtXml");
     setting->setValue("CodePage", ui->fmtXmlEncode->currentText());
@@ -75,6 +76,8 @@ int GeneralOptions::save()
 void GeneralOptions::restore() 
 {
     QSettings *setting = settings();
+    ui->autoCamelCase->setChecked(setting->value("AutoCamelCase", true).toBool());
+
     setting->beginGroup("FmtXml");
     ui->fmtXmlPath->setText("fmtxml.exe");
     ui->fmtXmlEncode->setCurrentText(setting->value("CodePage", "utf8").toString());

@@ -1493,11 +1493,11 @@ void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidg
     }
 }
 
-int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
+int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
 {
     int stat = 0;
 
-    SelectFieldsModel selFldModel(pTable.data(), parent);
+    SelectFieldsModel selFldModel(pTable, parent);
     SelectFilteredDlg dlg(parent);
     dlg.setWindowTitle(title);
     dlg.setFilteredModel(&selFldModel);
@@ -1528,6 +1528,11 @@ int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, 
         *pFldList = selFldModel.checkedFields();
 
     return stat;
+}
+
+int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
+{
+    return SelectTableFieldsDlg(pTable.data(), title, pFldList, parent);
 }
 
 void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote)

@@ -36,6 +36,9 @@ public:
 
     FmtWorkWindow *currentWorkWindow();
 
+    QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
+    QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
+
 private slots:
     void actionConnectTriggered();
     void actionDisconnectTriggered();
@@ -100,8 +103,6 @@ private:
 
     QAction *CreateConnectionActio(ConnectionInfo *info);
     void tablesContextMenu(QContextMenuEvent *event, QListView *view);
-    QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
-    QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
     Ui::MainWindow *ui;
     TablesDock *pTablesDock;
     QMdiArea *pMdi;

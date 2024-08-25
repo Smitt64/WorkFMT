@@ -116,8 +116,6 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
         }
     }
 
-    ui->autoCamelCase->setChecked(settings()->value("AutoCamelCase", true).toBool());
-
     pCopyMenu = new QMenu(this);
     ui->copyTool->setMenu(pCopyMenu);
 
@@ -141,8 +139,6 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     connect(ui->checkButton, SIGNAL(clicked(bool)), SLOT(CheckTable()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(TabCloseRequested(int)));
     connect(ui->scriptButton, SIGNAL(clicked(bool)), SLOT(OpenScriptEditorWindow()));
-
-    connect(ui->autoCamelCase, SIGNAL(toggled(bool)), this, SLOT(AutoCamelCase(bool)));
 }
 
 FmtWorkWindow::~FmtWorkWindow()
@@ -310,7 +306,6 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
         ui->nameEdit->setReadOnly(true);
         ui->commentEdit->setReadOnly(true);
 
-        ui->autoCamelCase->setEnabled(false);
         ui->isTemp->setEnabled(false);
         ui->isRec->setEnabled(false);
         ui->keyComboBox->setEnabled(false);
@@ -947,12 +942,6 @@ void FmtWorkWindow::GenInsertTemplateSql()
             AddCppCodeTab(dlg.templateName(), code, true, true);
         }
     }
-}
-
-void FmtWorkWindow::AutoCamelCase(bool checked)
-{
-    settings()->setValue("AutoCamelCase", checked);
-    settings()->sync();
 }
 
 void FmtWorkWindow::CamelCaseAction()
