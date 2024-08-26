@@ -221,20 +221,21 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent);
 qint16 InitFmtTableExec(FmtTable *pTable, QString *err);
 
 void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent);
-QString FmtTableSqlText(QSharedPointer<FmtTable> pTable);
+FMTLIBSHARED_EXPORT QString FmtTableSqlText(FmtTable *pTable);
 void FmtHotFixCreate(QSharedPointer<FmtTable> pTable);
 //QString GenerateTableXML(const FmtTable *pTable);
 
-QString FmtTableStructName(const QString &table);
-QStringList FmtTableStringList(const QString &table);
-QString FmtGetTableExtension(const QString &table);
-QString FmtGetTableFileName(const QString &table);
+FMTLIBSHARED_EXPORT QString FmtTableStructName(const QString &table);
+FMTLIBSHARED_EXPORT QStringList FmtTableStringList(const QString &table);
+FMTLIBSHARED_EXPORT QString FmtGetTableExtension(const QString &table);
+FMTLIBSHARED_EXPORT QString FmtGetTableFileName(const QString &table);
 
 FMTLIBSHARED_EXPORT QString GetProcessErrorText(const QProcess::ProcessError &error);
 FMTLIBSHARED_EXPORT QString GetVersionNumberString();
 
-QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
-QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable);
+FMTLIBSHARED_EXPORT QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
+FMTLIBSHARED_EXPORT QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable);
+FMTLIBSHARED_EXPORT QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
 
 QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);

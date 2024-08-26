@@ -3,6 +3,9 @@
 #include "mainwindow.h"
 #include "fmtworkwindow.h"
 #include "connectioninfo.h"
+#include "rsscript/registerobjlist.hpp"
+#include <codeeditor/codehighlighter.h>
+#include "toolsruntime.h"
 #include <errordlg.h>
 #include <errorsmodel.h>
 
@@ -47,8 +50,9 @@ void ToolbarActionExecutor::PlayRepProc()
 
 void ToolbarActionExecutor::playRep(const QString &filename, const QString &output, RslExecutorProc proc)
 {
-    RslExecutor::playRep(filename, output, proc);
+    QMap<QString,QString> meta = rslGetMacroInfo(filename);
 
+    RslExecutor::playRep(filename, output, proc);
     QStringList err = errors();
     
     if (!err.isEmpty())
@@ -61,5 +65,22 @@ void ToolbarActionExecutor::playRep(const QString &filename, const QString &outp
         ErrorDlg dlg(ErrorDlg::ModeInformation, pMainWindow);
         dlg.setErrors(&model);
         dlg.exec();
+    }
+
+    if (meta.contains("ShowReport"))
+    {
+        if (!meta["ShowReport"].compare("true"))
+        {
+            QString title = meta["Title"];
+
+            if (title.isEmpty())
+                title = meta["Description"];
+
+            if (title.isEmpty())
+                title = tr("Результат выполнения");
+
+            QString code = toolReadTextFileContent(outputFileName(), "IBM 866");
+            toolShowCodeDialog(pMainWindow, title, HighlighterPlain, code);
+        }
     }
 }

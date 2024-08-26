@@ -1,0 +1,17 @@
+/*
+$Author: Serpkov
+$Description: Печать доступных Odbc
+$ShowReport: true
+*/
+
+import "fmtglobals.mac", fmt, StdDialogs, ToolsRuntime;
+
+macro ExecAction()
+    var model = OdbcTableModel();
+    var i = 0;
+    while (i < model.rowCount())
+[| ####################### | ################################### | ################################### |]
+(model.data(model.fld_Name), model.data(model.fld_Home):w, model.data(model.fld_OraHome):w);
+        i = i + 1;
+    end;
+end;

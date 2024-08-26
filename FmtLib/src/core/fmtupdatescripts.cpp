@@ -137,16 +137,11 @@ QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table)
     return triggers;
 }
 
-QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable)
+QString FmtGenTriggersScrip(ConnectionInfo *connection, const QString &table, bool disable)
 {
     QString str;
     QTextStream stream(&str, QIODevice::WriteOnly);
-
-    if (flds.isEmpty())
-        return QString();
-
-    QStringList triggers = FmtGenGetTriggers(flds.first()->table()->connection(),
-                                             flds.first()->table()->name());
+    QStringList triggers = FmtGenGetTriggers(connection, table);
 
     if (triggers.isEmpty())
         return QString();
@@ -187,6 +182,19 @@ QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable)
     stream << "/" << Qt::endl;
 
     return str;
+}
+
+QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable)
+{
+    QString str;
+    QTextStream stream(&str, QIODevice::WriteOnly);
+
+    if (flds.isEmpty())
+        return QString();
+
+    return FmtGenTriggersScrip(flds.first()->table()->connection(),
+                                             flds.first()->table()->name(),
+                                             disable);
 }
 
 QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds)

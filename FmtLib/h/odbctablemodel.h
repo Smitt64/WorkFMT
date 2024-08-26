@@ -37,7 +37,7 @@ public:
         fld_Max
     };
 
-    OdbcTableModel(QObject *parent = nullptr);
+    Q_INVOKABLE OdbcTableModel(QObject *parent = nullptr);
     virtual ~OdbcTableModel();
 
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_FINAL;

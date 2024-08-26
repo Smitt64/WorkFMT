@@ -1,3 +1,10 @@
+/*
+$Author: Serpkov
+$Description: Макрос с объявлениями глобальных переменных
+$ShowReport: true
+$Highlighter: sql
+*/
+
 import "fmtglobals.mac", fmt, StdDialogs, ToolsRuntime;
 
 macro ExecAction()
@@ -18,5 +25,6 @@ macro ExecAction()
 
     println(selected);*/
 
-    toolShowCodeDialog("Test code", HighlighterSql, "SELECT t_name FROM dparty_dbt\nselect t_name from dparty_dbt");
+    //var wnd = fmtappConnectionWindows({CurrentConnection});
+    println(fmt.fmtTableSqlText({FmtTable}));
 end;

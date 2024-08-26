@@ -479,14 +479,44 @@ void MainWindow::OpenConnection(const QString &connectionString)
 
 void MainWindow::actionConnectTriggered()
 {
+    (void)openConnection();
+}
+
+ConnectionInfo* MainWindow::openConnection()
+{
     OracleAuthDlg dlg(this);
+    ConnectionInfo *info = nullptr;
 
     if (dlg.exec() == QDialog::Accepted)
     {
-        ConnectionInfo *info = dlg.getConnectionInfo();
+        info = dlg.getConnectionInfo();
         CreateConnectionActio(info);
         info->updateFmtList();
     }
+
+    return info;
+}
+
+bool MainWindow::isExistsConnection(ConnectionInfo *connection)
+{
+    for (ConnectionInfo *info : m_pConnections)
+    {
+        if (info->connectionName() == connection->connectionName())
+            return true;
+    }
+
+    return false;
+}
+
+bool MainWindow::addConnection(ConnectionInfo *connection)
+{
+    if (isExistsConnection(connection))
+        return false;
+
+    CreateConnectionActio(connection);
+    connection->updateFmtList();
+
+    return true;
 }
 
 QAction *MainWindow::CreateConnectionActio(ConnectionInfo *info)
@@ -1492,4 +1522,22 @@ void MainWindow::OptionsAction()
     FmtApplication *app = (FmtApplication*)qApp;
     FmtOptionsDlg dlg(currentConnection(), app->settings(), this);
     dlg.exec();
+}
+
+const QList<ConnectionInfo*> &MainWindow::connections() const
+{
+    return m_pConnections;
+}
+
+const QMap<ConnectionInfo*, MainWindow::WorkWindowList> &MainWindow::windows() const
+{
+    return m_Windows;
+}
+
+MainWindow::WorkWindowList MainWindow::windows(ConnectionInfo* info) const
+{
+    if (m_Windows.contains(info))
+        return m_Windows[info];
+
+    return MainWindow::WorkWindowList();
 }

@@ -9,6 +9,9 @@
         "qvboxlayout": "cpp",
         "iterator": "cpp",
         "xhash": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "xlocale": "cpp",
+        "list": "cpp",
+        "xiosbase": "cpp"
     }
 }

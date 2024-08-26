@@ -9,6 +9,7 @@
 #include "fmttable.h"
 #include "fmtsegment.h"
 #include "fmtnamespace.h"
+#include "odbctablemodel.h"
 
 Q_GLOBAL_STATIC(FmtNamespace, pFmtNamespace)
 Q_GLOBAL_STATIC(FmtTypesNamespace, pFmtTypesNamespace)
@@ -30,6 +31,8 @@ FmtRslModule::FmtRslModule() :
     RegisterObjList::inst()->RegisterRslObject<FmtSegment>();
 
     RegisterObjList::inst()->RegisterRslObject<FmtWorkWindow>();
+
+    RegisterObjList::inst()->RegisterRslObject<OdbcTableModel>(GenInfoUseParentProps | GenInfoUseParentMeths);
 }
 
 void FmtRslModule::Init()
@@ -50,6 +53,8 @@ void FmtRslModule::Proc()
     RegisterObjList::inst()->AddObject<FmtTypesNamespace>(false);
     RegisterObjList::inst()->AddObject<FmtKeyFlagsNamespace>(false);
     RegisterObjList::inst()->AddObject<FmtKeyNullValNamespace>(false);
+
+    RegisterObjList::inst()->AddObject<OdbcTableModel>();
 
     addConstant("Fmt", QVariant::fromValue<QObject*>(pFmtNamespace));
     addConstant("FmtType", QVariant::fromValue<QObject*>(pFmtTypesNamespace));

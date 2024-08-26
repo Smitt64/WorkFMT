@@ -76,16 +76,18 @@ public slots:
     void GenCreateTableScript();
     void GenInsertTemplateSql();
     void DiffToScript();
+    void ExportXml();
+    void UnloadToDbf();
+    void LoadFromDbf();
+    void InitDB();
+    void CreateTableSql();
 
 private slots:
     void indexModelReseted();
     void indexModelInserted(const QModelIndex &parent, const int &first, const int &last);
     void AddIndex();
     void Apply();
-    void ExportXml();
-    void UnloadToDbf();
-    void LoadFromDbf();
-    void InitDB();
+
     void FillIndecesList();
     void FieldAdded(FmtField *fld);
     void OnIndexChanged(FmtIndex *index);
@@ -95,7 +97,7 @@ private slots:
     void Clicked(const QModelIndex &index);
     void SegmentButtonClicked(const QModelIndex &index);
     void OnOk();
-    void CreateTableSql();
+
     void CopyAction();
     void UpdateCopyMenu(const QString &table);
 

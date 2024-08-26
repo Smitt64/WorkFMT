@@ -2,6 +2,7 @@
 #include "rsscript/registerobjlist.hpp"
 #include "rslexecutor.h"
 #include "mdisubinterface.h"
+#include <connectioninfo.h>
 #include <fmtworkwindow.h>
 #include <mainwindow.h>
 #include <QApplication>
@@ -186,6 +187,114 @@ static void fmtSelectTableFieldsDailog()
     }
 }
 
+static void fmtappConnections()
+{
+    MainWindow *mwnd = GetMainWindow();
+
+    if (!mwnd)
+        return;
+
+    QVariantList list;
+    for (ConnectionInfo *conn : mwnd->connections())
+        list.append(QVariant::fromValue((QObject*)conn));
+
+    SetReturnVal(QVariant::fromValue(list));
+}
+
+static void fmtappConnectionWindows()
+{
+    enum
+    {
+        prm_Connection = 0,
+    };
+    MainWindow *mwnd = GetMainWindow();
+
+    if (!mwnd)
+        return;
+
+    ConnectionInfo *info = nullptr;
+    int type = GetFuncParamType(prm_Connection);
+    if (type == QVariant::UserType)
+    {
+        info = GetFuncParam<ConnectionInfo*>(prm_Connection);
+
+        if (!info)
+            ThrowParamTypeError(prm_Connection);
+    }
+    else
+        ThrowParamTypeError(prm_Connection);
+
+    QVariantList list;
+    QList<QWidget*> windows = mwnd->windows(info);
+    for (QWidget *workwnd : windows)
+        list.append(QVariant::fromValue((QObject*)workwnd));
+
+    SetReturnVal(QVariant::fromValue(list));
+}
+
+static void fmtappOpenConnection()
+{
+    MainWindow *mwnd = GetMainWindow();
+    ConnectionInfo *info = mwnd->openConnection();
+
+    if (info)
+        SetReturnVal(QVariant::fromValue((QObject*)info));
+}
+
+static void fmtappAddConnection()
+{
+    enum
+    {
+        prm_Connection = 0,
+    };
+    MainWindow *mwnd = GetMainWindow();
+
+    if (!mwnd)
+        return;
+
+    ConnectionInfo *info = nullptr;
+    int type = GetFuncParamType(prm_Connection);
+    if (type == QVariant::UserType)
+    {
+        info = GetFuncParam<ConnectionInfo*>(prm_Connection);
+
+        if (!info)
+            ThrowParamTypeError(prm_Connection);
+    }
+    else
+        ThrowParamTypeError(prm_Connection);
+
+    bool hr = mwnd->addConnection(info);
+    SetReturnVal(hr);
+}
+
+static void fmtappIsExistsConnection()
+{
+    enum
+    {
+        prm_Connection = 0,
+    };
+    MainWindow *mwnd = GetMainWindow();
+
+    if (!mwnd)
+        return;
+
+    ConnectionInfo *info = nullptr;
+    int type = GetFuncParamType(prm_Connection);
+    if (type == QVariant::UserType)
+    {
+        info = GetFuncParam<ConnectionInfo*>(prm_Connection);
+
+        if (!info)
+            ThrowParamTypeError(prm_Connection);
+    }
+    else
+        ThrowParamTypeError(prm_Connection);
+
+    bool hr = mwnd->addConnection(info);
+    SetReturnVal(hr);
+}
+
 void fmtappRegister()
 {
     RegisterObjList::inst()->AddObject<FmtWorkWindow>(false);
@@ -193,6 +302,11 @@ void fmtappRegister()
     RegisterObjList::inst()->AddStdProc("fmtAppHasTableWindow", fmtAppHasTableWindow);
     RegisterObjList::inst()->AddStdProc("fmtAppCurrentTableWindow", fmtAppCurrentTableWindow);
     RegisterObjList::inst()->AddStdProc("fmtappOpenTableWindow", fmtappOpenTableWindow);
+    RegisterObjList::inst()->AddStdProc("fmtappConnections", fmtappConnections);
+    RegisterObjList::inst()->AddStdProc("fmtappConnectionWindows", fmtappConnectionWindows);
+    RegisterObjList::inst()->AddStdProc("fmtappOpenConnection", fmtappOpenConnection);
+    RegisterObjList::inst()->AddStdProc("fmtappAddConnection", fmtappAddConnection);
+    RegisterObjList::inst()->AddStdProc("fmtappIsExistsConnection", fmtappIsExistsConnection);
 
     RegisterObjList::inst()->AddStdProc("fmtSelectTableFieldsDailog", fmtSelectTableFieldsDailog);
 }

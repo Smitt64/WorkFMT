@@ -90,10 +90,19 @@ public:
     Q_INVOKABLE QString fmtRsdConstant(const qint16 &Type) const;
     Q_INVOKABLE QString fmtZeroConstant(const qint16 &Type) const;
 
+    Q_INVOKABLE QString fmtTableStructName(const QString &table);
+    Q_INVOKABLE QStringList fmtTableStringList(const QString &table);
+    Q_INVOKABLE QString fmtGetTableExtension(const QString &table);
+    Q_INVOKABLE QString fmtGetTableFileName(const QString &table);
+
+    Q_INVOKABLE QStringList fmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
+
     Q_INVOKABLE QString BlobTypeToString(const qint16 &Type) const;
     Q_INVOKABLE QString BlobFieldString(const qint16 &Type) const;
     Q_INVOKABLE QString BlobFieldTypeOraString(const qint16 &Type) const;
     Q_INVOKABLE QString BlobFieldTypePgString(const qint16 &Type) const;
+
+    Q_INVOKABLE QString fmtTableSqlText(FmtTable *pTable) const;
 
     Q_INVOKABLE QString NullString(const int &index) const;
 

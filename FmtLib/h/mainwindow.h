@@ -39,8 +39,18 @@ public:
     QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
     QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
 
-private slots:
+    const QList<ConnectionInfo*> &connections() const;
+    const QMap<ConnectionInfo*, WorkWindowList> &windows() const;
+    WorkWindowList windows(ConnectionInfo* info) const;
+
+    ConnectionInfo* openConnection();
+    bool isExistsConnection(ConnectionInfo *connection);
+    bool addConnection(ConnectionInfo *connection); 
+
+public slots:
     void actionConnectTriggered();
+
+private slots:
     void actionDisconnectTriggered();
     void actionCreate();
     void tableClicked(const quint32 &id);

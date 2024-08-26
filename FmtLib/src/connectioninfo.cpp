@@ -262,7 +262,7 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
 bool ConnectionInfo::openSqlite(const QString &filename)
 {
     QFileInfo fi(filename);
-    m_Alias = QString("%1%2").arg(filename, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    m_Alias = QUuid::createUuid().toString();
     _db = QSqlDatabase::addDatabase("QSQLITE", m_Alias);
     _db.setDatabaseName(filename);
     m_SchemeName = fi.fileName();

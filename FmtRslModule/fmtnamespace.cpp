@@ -131,3 +131,33 @@ QString FmtNamespace::NullString(const int &index) const
 {
     return ::NullString(index);
 }
+
+QString FmtNamespace::fmtTableStructName(const QString &table)
+{
+    return ::FmtTableStructName(table);
+}
+
+QStringList FmtNamespace::fmtTableStringList(const QString &table)
+{
+    return ::FmtTableStringList(table);
+}
+
+QString FmtNamespace::fmtGetTableExtension(const QString &table)
+{
+    return ::FmtGetTableExtension(table);
+}
+
+QString FmtNamespace::fmtGetTableFileName(const QString &table)
+{
+    return ::FmtGetTableFileName(table);
+}
+
+QStringList FmtNamespace::fmtGenGetTriggers(ConnectionInfo *connection, const QString &table)
+{
+    return ::FmtGenGetTriggers(connection, table);
+}
+
+QString FmtNamespace::fmtTableSqlText(FmtTable *pTable) const
+{
+    return ::FmtTableSqlText(pTable);
+}

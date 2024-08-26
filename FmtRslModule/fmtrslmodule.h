@@ -2,7 +2,6 @@
 #define FMTRSLMODULE_H
 
 #include "rsscript/rslstaticmodule.h"
-
 extern void fmtappRegister();
 
 class FmtRslModule : public RslStaticModule

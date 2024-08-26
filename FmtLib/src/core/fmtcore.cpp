@@ -843,7 +843,7 @@ QColor GenerateColor()
     return QColor::fromHsvF(hc, 0.5, 0.95, 1);
 }
 
-QString FmtTableSqlText(QSharedPointer<FmtTable> pTable)
+QString FmtTableSqlText(FmtTable *pTable)
 {
     QString str = QString("-- Таблица %1\n").arg(pTable->name().toUpper());
     str += pTable->generateCreateTableSql() + ";\n\n";
@@ -875,7 +875,7 @@ void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent)
                 QFileInfo info(fileName);
                 QTextStream stream(&file);
                 stream.setCodec("IBM 866");
-                stream << FmtTableSqlText(pTable);
+                stream << FmtTableSqlText(pTable.data());
                 file.close();
             }
         }
