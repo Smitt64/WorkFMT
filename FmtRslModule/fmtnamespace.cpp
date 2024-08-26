@@ -1,5 +1,6 @@
 #include "fmtnamespace.h"
 #include "fmtcore.h"
+#include <fmtfield.h>
 
 FmtNamespace::FmtNamespace(QObject *parent) :
     QObject(parent)
@@ -160,4 +161,31 @@ QStringList FmtNamespace::fmtGenGetTriggers(ConnectionInfo *connection, const QS
 QString FmtNamespace::fmtTableSqlText(FmtTable *pTable) const
 {
     return ::FmtTableSqlText(pTable);
+}
+
+QString FmtNamespace::fmtCapitalizeField(const QString &undecoratedfield, bool force)
+{
+    return ::FmtCapitalizeField(undecoratedfield, force);
+}
+
+QStringList FmtNamespace::fmtCapitalizeField(const QStringList &undecoratedfield, bool force)
+{
+    return ::FmtCapitalizeField(undecoratedfield, force);
+}
+
+QString FmtNamespace::fmtGenDeleteColumnScript(const QVariantList &list)
+{
+    QList<FmtField*> flds;
+    for(int i = 0; i < list.size(); i++)
+    {
+        FmtField *fld = qobject_cast<FmtField*>(list[i].value<QObject*>());
+
+        if (fld)
+            flds.append(fld);
+    }
+
+    if (!flds.isEmpty())
+        return ::FmtGenUpdateDeleteColumnScript(flds);
+
+    return QString();
 }

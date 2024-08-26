@@ -165,10 +165,10 @@ static void fmtSelectTableFieldsDailog()
         table = GetFuncParam<FmtTable*>(0);
 
         if (!table)
-            ThrowParamTypeError(prm_Table);
+            ThrowParamTypeError<FmtTable>(prm_Table);
     }
     else
-        ThrowParamTypeError(prm_Table);
+        ThrowParamTypeError<FmtTable>(prm_Table);
 
     type = GetFuncParamType(prm_Title);
     if (type == QVariant::String)

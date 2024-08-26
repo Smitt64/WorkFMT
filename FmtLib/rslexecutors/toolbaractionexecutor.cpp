@@ -79,8 +79,10 @@ void ToolbarActionExecutor::playRep(const QString &filename, const QString &outp
             if (title.isEmpty())
                 title = tr("Результат выполнения");
 
+            int Highlighter = toolHighlighterByName(meta["Highlighter"]);
+
             QString code = toolReadTextFileContent(outputFileName(), "IBM 866");
-            toolShowCodeDialog(pMainWindow, title, HighlighterPlain, code);
+            toolShowCodeDialog(pMainWindow, title, Highlighter, code);
         }
     }
 }

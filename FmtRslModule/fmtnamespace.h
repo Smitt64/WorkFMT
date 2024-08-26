@@ -104,6 +104,11 @@ public:
 
     Q_INVOKABLE QString fmtTableSqlText(FmtTable *pTable) const;
 
+    Q_INVOKABLE QString fmtCapitalizeField(const QString &undecoratedfield, bool force = false);
+    Q_INVOKABLE QStringList fmtCapitalizeField(const QStringList &undecoratedfield, bool force = false);
+
+    Q_INVOKABLE QString fmtGenDeleteColumnScript(const QVariantList &flds);
+
     Q_INVOKABLE QString NullString(const int &index) const;
 
     QStringList fmtTypes() const;

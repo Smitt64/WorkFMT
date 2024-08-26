@@ -26,5 +26,8 @@ macro ExecAction()
     println(selected);*/
 
     //var wnd = fmtappConnectionWindows({CurrentConnection});
-    println(fmt.fmtTableSqlText({FmtTable}));
+    println(fmt.fmtTableStringList("dparty_dbt"));
+
+    //var fldlist = fmtSelectTableFieldsDailog({FmtTable});
+    //println(fmt.fmtGenDeleteColumnScript(fldlist));
 end;

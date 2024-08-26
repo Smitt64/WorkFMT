@@ -237,7 +237,7 @@ FMTLIBSHARED_EXPORT QStringList FmtGenGetTriggers(ConnectionInfo *connection, co
 FMTLIBSHARED_EXPORT QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable);
 FMTLIBSHARED_EXPORT QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
 
-QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
+FMTLIBSHARED_EXPORT QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
 QString FmtGenModifyColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable);
