@@ -80,7 +80,6 @@ private slots:
     void UnloadSqlite();
     void OpenConnection();
     void RemoveFmtTable();
-    void LoggingSettings();
     void EditContent();
     void GenCreateTableScript();
     void GenModifyTableFields();
@@ -135,7 +134,7 @@ private:
     QMenu *toolConnectMenu;
     QActionGroup *m_ConnectionsGroup;
 
-    QPushButton *pLogButton, *pUpdateButton;
+    QPushButton *pUpdateButton;
 
     SubWindowsModel *pWindowsModel;
     UpdateChecker *pUpdateChecker;

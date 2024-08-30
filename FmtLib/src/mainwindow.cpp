@@ -24,7 +24,6 @@
 #include "stringlistdlg.h"
 #include "fmttablelistdelegate.h"
 #include "massoperationwizard.h"
-#include "logsettingsdlg.h"
 #include "queryeditor/queryeditor.h"
 #include "selectfolderdlg.h"
 #include "recentconnectionlist.h"
@@ -120,11 +119,6 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->actionDiffTool->setEnabled(false);
 
     m_ConnectionsGroup = new QActionGroup(this);
-    pLogButton = new QPushButton(this);
-    pLogButton->setToolTip(tr("Параметры трассы"));
-    pLogButton->setIcon(QIcon(":/img/book_notebook.png"));
-    pLogButton->setFlat(true);
-    ui->statusBar->addPermanentWidget(pLogButton);
 
     pUpdateButton = new QPushButton(this);
     pUpdateButton->setToolTip(tr("Обновления"));
@@ -187,7 +181,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_FMT_sqlite, SIGNAL(triggered(bool)), SLOT(UnloadSqlite()));
     connect(ui->actionOpenConnection, SIGNAL(triggered(bool)), SLOT(OpenConnection()));
     connect(actionDeleteTable, SIGNAL(triggered(bool)), SLOT(RemoveFmtTable()));
-    connect(pLogButton, SIGNAL(clicked(bool)), SLOT(LoggingSettings()));
     connect(ui->actionEditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
     connect(ui->actionGenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
     connect(ui->actionGenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
@@ -1223,12 +1216,6 @@ void MainWindow::RemoveFmtTable()
                 current->updateFmtList();
         }
     }
-}
-
-void MainWindow::LoggingSettings()
-{
-    LogSettingsDlg dlg(this);
-    dlg.exec();
 }
 
 QMdiSubWindow *MainWindow::hasTableWindow(const QString &tableName)

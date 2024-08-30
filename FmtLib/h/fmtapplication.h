@@ -31,14 +31,8 @@ public:
 
     OracleTnsListModel *getOracleTnsModel();
 
-    bool initLogging(const QString &rules);
-    void setLoggingRules(const QString &rules);
-    void disableLogging();
-    bool isLoggingEnabled() const;
     void init();
     void applyStyle();
-
-    QString logginFileName() const;
 
 private:
     void initDbgHelp();
@@ -54,7 +48,6 @@ private:
     QSettings *pSettings;
     OracleTnsListModel *pTnsModel;
     QTranslator qt_translator;
-    bool m_fLogging;
 };
 
 #endif // FMTAPPLICATION_H

@@ -122,7 +122,6 @@ SOURCES += \
     src/models/fmteditcontentmodel.cpp \
     src/widgets/editcontent/fmteditcontentwindow.cpp \
     src/widgets/editcontent/fmteditcontentdialog.cpp \
-    src/logsettingsdlg.cpp \
     src/widgets/datelineedit.cpp \
     src/widgets/editcontent/fmteditcontentfilter.cpp \
     src/widgets/dataselectdialog.cpp \
@@ -184,7 +183,6 @@ FORMS += \
     ui/selectconnectiondlg.ui \
     ui/stringlistdlg.ui \
     ui/selectfiltereddlg.ui \
-    ui/logsettingsdlg.ui \
     ui/fmteditcontentfilter.ui \
     ui/dataselectdialog.ui \
     src/widgets/editcontent/import/selecttypepage.ui \
@@ -289,7 +287,6 @@ HEADERS += \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
-    h/logsettingsdlg.h \
     h/datelineedit.h \
     src/widgets/editcontent/fmteditcontentfilter.h \
     h/dataselectdialog.h \

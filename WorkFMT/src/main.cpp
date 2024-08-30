@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "fmtapplication.h"
 #include "fmtcore.h"
+#include "toolsruntime.h"
 #include <QDebug>
 #include <QApplication>
 #include <QMessageBox>
@@ -97,7 +98,9 @@ static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser
     if (parser->isSet(logOption))
     {
         QString rules;
-        if (parser->isSet(logruleOption)) rules = parser->value(logruleOption);
-        app->initLogging(rules);
+        if (parser->isSet(logruleOption))
+            rules = parser->value(logruleOption);
+
+        toolInitLogging("WorkFmt", rules);
     }
 }

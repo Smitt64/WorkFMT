@@ -9,6 +9,7 @@
 #include "loggingcategories.h"
 #include "fmtgeninputservicecpptemplate.h"
 #include "fmtgencppclasstemplate.h"
+#include "toolsruntime.h"
 #include "massop/massinittableoperation.h"
 #include "massop/btrvtemplate/massopbtrvtemplate.h"
 #include "massop/massopenfunc/massopenfunctemplate.h"
@@ -27,9 +28,6 @@ LONG CALLBACK ExceptionFilter(PEXCEPTION_POINTERS pExInfo)
     return FmtApp->UnhandledExceptionFilter(pExInfo);
 }
 #endif
-
-QScopedPointer<QFile> m_logFile;
-void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
 FmtApplication::FmtApplication(int &argc, char **argv)  :
     QApplication(argc, argv)
@@ -54,8 +52,9 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     addLibraryPath(current.absoluteFilePath("sqldrivers"));
     addLibraryPath(current.absoluteFilePath("styles"));
 
-    //qDebug() << QStyleFactory::keys();
-    m_fLogging = false;
+    toolLoggingCategoryListAdd(logCore());
+    toolLoggingCategoryListAdd(logFmt());
+    toolLoggingCategoryListAdd(logDbgHelp());
 }
 
 FmtApplication::~FmtApplication()
@@ -277,83 +276,4 @@ void FmtApplication::ShowObjectStackMsg(QObject *receiver, QKeyEvent *e)
             lastCtrlF12Msg = "";
         //e->accept();
     }
-}
-
-bool FmtApplication::initLogging(const QString &rules)
-{
-    QDir logDir(applicationDirPath());
-    if (!logDir.cd("logs"))
-    {
-        logDir.mkdir("logs");
-        logDir.cd("logs");
-    }
-
-    QString logFileName = QString("%1.txt").arg(logDir.absoluteFilePath(QDateTime::currentDateTime().toString("dd_MM_yyyy_hh_mm_ss_zzz")));
-    m_logFile.reset(new QFile(logFileName));
-
-    if (m_logFile.data()->open(QFile::Append | QFile::Text))
-    {
-        setLoggingRules(rules);
-        qInstallMessageHandler(messageHandler);
-        m_fLogging = true;
-    }
-    else
-    {
-        m_logFile.reset(Q_NULLPTR);
-        m_fLogging = false;
-    }
-
-    return m_fLogging;
-}
-
-void FmtApplication::setLoggingRules(const QString &rules)
-{
-    if (!rules.isEmpty())
-    {
-        QString r = rules;
-        QLoggingCategory::setFilterRules(r.replace(";", "\n"));
-    }
-}
-
-void FmtApplication::disableLogging()
-{
-    if (!m_logFile.isNull() && m_logFile->isOpen())
-    {
-        m_logFile->close();
-        m_logFile.reset(Q_NULLPTR);
-        qInstallMessageHandler(0);
-        m_fLogging = false;
-    }
-}
-
-bool FmtApplication::isLoggingEnabled() const
-{
-    return m_fLogging;
-}
-
-QString FmtApplication::logginFileName() const
-{
-    if (!m_logFile.isNull() && m_logFile->isOpen())
-        return m_logFile->fileName();
-
-    return QString();
-}
-
-void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    QTextStream out(m_logFile.data());
-    out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
-
-    switch (type)
-    {
-    case QtInfoMsg:     out << "INF "; break;
-    case QtDebugMsg:    out << "DBG "; break;
-    case QtWarningMsg:  out << "WRN "; break;
-    case QtCriticalMsg: out << "CRT "; break;
-    case QtFatalMsg:    out << "FTL "; break;
-    }
-
-    out << context.category << ": "
-        << msg << endl;
-    out.flush();
 }
