@@ -291,7 +291,40 @@ static void fmtappIsExistsConnection()
     else
         ThrowParamTypeError(prm_Connection);
 
-    bool hr = mwnd->addConnection(info);
+    bool hr = mwnd->isExistsConnection(info);
+    SetReturnVal(hr);
+}
+
+static void fmtappParseConnectionString()
+{
+    enum
+    {
+        prm_connString = 0,
+        prm_user,
+        prm_pass,
+        prm_service
+    };
+
+    QString connString;
+
+    int type = GetFuncParamType(prm_connString);
+    if (type == QVariant::String)
+    {
+        QVariant val = GetFuncParam(prm_connString);
+        connString = val.toString();
+    }
+    else
+        ThrowParamTypeError(prm_connString, "string");
+
+    QString user;
+    QString pass;
+    QString service;
+
+    bool hr = ParseConnectionString(connString, user, pass, service);
+
+    SetFuncParam(prm_user, user);
+    SetFuncParam(prm_pass, pass);
+    SetFuncParam(prm_service, service);
     SetReturnVal(hr);
 }
 
@@ -307,6 +340,7 @@ void fmtappRegister()
     RegisterObjList::inst()->AddStdProc("fmtappOpenConnection", fmtappOpenConnection);
     RegisterObjList::inst()->AddStdProc("fmtappAddConnection", fmtappAddConnection);
     RegisterObjList::inst()->AddStdProc("fmtappIsExistsConnection", fmtappIsExistsConnection);
+    RegisterObjList::inst()->AddStdProc("fmtappParseConnectionString", fmtappParseConnectionString);
 
     RegisterObjList::inst()->AddStdProc("fmtSelectTableFieldsDailog", fmtSelectTableFieldsDailog);
 }

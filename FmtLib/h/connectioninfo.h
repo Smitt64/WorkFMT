@@ -23,6 +23,7 @@ class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
     Q_PROPERTY(QString user READ user CONSTANT)
     Q_PROPERTY(QString password READ password CONSTANT)
     Q_PROPERTY(QString dsn READ dsn CONSTANT)
+    Q_PROPERTY(QObject *db READ sqlDatabaseObj CONSTANT)
 
     Q_PROPERTY(QString connectionName READ connectionName CONSTANT)
 public:
@@ -77,6 +78,8 @@ public:
     QString password() const { return m_Password; }
     QString dsn() const { return m_DSN; }
 
+    QObject *sqlDatabaseObj() { return m_SqlDatabaseObj; }
+
     QIcon colorIcon(const QSize &size = QSize(32, 32));
     QString color();
 
@@ -117,6 +120,8 @@ protected:
     QList<FmtTablesModel*> pModels;
     QList<int> m_Index;
     int Index;
+
+    QObject *m_SqlDatabaseObj;
 };
 
 #endif // CONNECTIONINFO_H

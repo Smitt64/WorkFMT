@@ -10,6 +10,7 @@ import "fmtglobals.mac", fmt, StdDialogs, ToolsRuntime;
 macro ExecAction()
     debugbreak;
 
+    var conn = ConnectionInfo();
     /*var haswindow = fmtAppHasTableWindow("dparty_dbt");
 
     if (haswindow)
@@ -26,8 +27,18 @@ macro ExecAction()
     println(selected);*/
 
     //var wnd = fmtappConnectionWindows({CurrentConnection});
-    println(fmt.fmtTableStringList("dparty_dbt"));
 
-    //var fldlist = fmtSelectTableFieldsDailog({FmtTable});
-    //println(fmt.fmtGenDeleteColumnScript(fldlist));
+    /*var fldlist = fmtSelectTableFieldsDailog({FmtTable});
+    println(fmt.fmtGenModifyColumnScript(fldlist));*/
+
+    /*
+    var user;
+    var pass;
+    var service;
+    var connString = "CONNSTRING = dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031";
+    fmtappParseConnectionString(connString, user, pass, service);*/
+    
+    var msg = "";
+    //fmt.fmtTableSqlText({FmtTable});
+    //fmtappOpenConnection();
 end;

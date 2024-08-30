@@ -807,7 +807,7 @@ void MainWindow::actionInit()
 
         if (table->load(index.data(Qt::UserRole).toString()))
         {
-            InitFmtTable(table, this);
+            InitFmtTable(table.data(), this);
         }
     }
 }

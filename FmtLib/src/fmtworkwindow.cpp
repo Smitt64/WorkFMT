@@ -544,7 +544,7 @@ void FmtWorkWindow::FieldAdded(FmtField *fld)
 
 void FmtWorkWindow::InitDB()
 {
-    InitFmtTable(pTable, this);
+    InitFmtTable(pTable.data(), this);
 }
 
 void FmtWorkWindow::CheckTable()

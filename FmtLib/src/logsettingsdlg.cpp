@@ -90,7 +90,7 @@ QString LogSettingsDlg::CreateRules()
         {
             QTreeWidgetItem *subcategory = category->child(j);
             if (!rules.isEmpty())
-                rules == ";";
+                rules = ";";
             rules += QString("%1.%2=%3")
                     .arg(category->text(0), subcategory->text(0))
                     .arg(subcategory->checkState(0) == Qt::Checked ? "true" : "false");

@@ -217,8 +217,8 @@ void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent
 void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidget *parent);
 
 void ExportFmtToXml(ConnectionInfo *connection, const QStringList &file, const QString &dir, bool ShowProgress, bool ShowReport, QWidget *parent = Q_NULLPTR);
-void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent);
-qint16 InitFmtTableExec(FmtTable *pTable, QString *err);
+FMTLIBSHARED_EXPORT void InitFmtTable(FmtTable *pTable, QWidget *parent);
+FMTLIBSHARED_EXPORT qint16 InitFmtTableExec(FmtTable *pTable, QString *err);
 
 void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent);
 FMTLIBSHARED_EXPORT QString FmtTableSqlText(FmtTable *pTable);
@@ -238,8 +238,8 @@ FMTLIBSHARED_EXPORT QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disa
 FMTLIBSHARED_EXPORT QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
 
 FMTLIBSHARED_EXPORT QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
-QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
-QString FmtGenModifyColumnScript(QList<FmtField*> flds);
+FMTLIBSHARED_EXPORT QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
+FMTLIBSHARED_EXPORT QString FmtGenModifyColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable);
 QString FmtGenInsertTemplateSqlScript(QList<FmtField*> flds);
 void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField *> flds = QList<FmtField*>(), const QSharedPointer<FmtTable> &pTable = QSharedPointer<FmtTable>());

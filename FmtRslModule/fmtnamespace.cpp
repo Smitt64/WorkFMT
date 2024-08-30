@@ -1,6 +1,7 @@
 #include "fmtnamespace.h"
 #include "fmtcore.h"
 #include <fmtfield.h>
+#include <QApplication>
 
 FmtNamespace::FmtNamespace(QObject *parent) :
     QObject(parent)
@@ -188,4 +189,48 @@ QString FmtNamespace::fmtGenDeleteColumnScript(const QVariantList &list)
         return ::FmtGenUpdateDeleteColumnScript(flds);
 
     return QString();
+}
+
+QString FmtNamespace::fmtGenAddColumnScript(const QVariantList &list)
+{
+    QList<FmtField*> flds;
+    for(int i = 0; i < list.size(); i++)
+    {
+        FmtField *fld = qobject_cast<FmtField*>(list[i].value<QObject*>());
+
+        if (fld)
+            flds.append(fld);
+    }
+
+    if (!flds.isEmpty()) 
+        return ::FmtGenUpdateAddColumnScript(flds);
+
+    return QString();
+}
+
+QString FmtNamespace::fmtGenModifyColumnScript(const QVariantList &list)
+{
+    QList<FmtField*> flds;
+    for(int i = 0; i < list.size(); i++)
+    {
+        FmtField *fld = qobject_cast<FmtField*>(list[i].value<QObject*>());
+
+        if (fld)
+            flds.append(fld);
+    }
+
+    if (!flds.isEmpty())
+        return ::FmtGenModifyColumnScript(flds);
+
+    return QString();
+}
+
+int FmtNamespace::fmtInitTable(FmtTable *pTable, QString &err)
+{
+    return InitFmtTableExec(pTable, &err);
+}
+
+void FmtNamespace::fmtInitTableGui(FmtTable *pTable)
+{
+    InitFmtTable(pTable, QApplication::activeWindow());
 }

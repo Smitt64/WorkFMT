@@ -1513,9 +1513,7 @@ int FmtTable::dbInit(const QString &log)
     QProcess exe;
     QStringList arguments;
 
-    QString service = db.connectionName().split("@").at(1);
-    service = service.mid(0, service.indexOf("#"));
-
+    QString service = pConnection->service();
     QString tablelist = dbtName();
 
     arguments << QString("%1:%2@%3")
@@ -1527,6 +1525,7 @@ int FmtTable::dbInit(const QString &log)
 
     if (!log.isEmpty())
         arguments.append(QString("-LOG:%1").arg(log));
+
     exe.setWorkingDirectory(dbinitexe.absolutePath());
     stat = CoreStartProcess(&exe, dbinitexe.absoluteFilePath("DbInit.exe"), arguments, true);
 

@@ -266,7 +266,11 @@ QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds)
     stream << "END;" << endl;
     stream << "/" << endl;
 
-    stream << Qt::endl << FmtGenTriggersScrip(flds, false) << Qt::endl;
+    QString triggers = FmtGenTriggersScrip(flds, false);
+
+    if (!triggers.isEmpty())
+        stream << Qt::endl << FmtGenTriggersScrip(flds, false) << Qt::endl;
+        
     return str;
 }
 

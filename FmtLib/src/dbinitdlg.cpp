@@ -3,7 +3,7 @@
 #include "fmttable.h"
 #include <QSharedPointer>
 
-DbInitDlg::DbInitDlg(QSharedPointer<FmtTable> &pTable, QWidget *parent) :
+DbInitDlg::DbInitDlg(FmtTable *pTable, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DbInitDlg)
 {

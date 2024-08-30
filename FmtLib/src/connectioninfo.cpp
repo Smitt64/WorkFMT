@@ -2,6 +2,7 @@
 #include "fmttablesmodel.h"
 #include "fmtcore.h"
 #include "loggingcategories.h"
+#include "toolsruntime.h"
 #include <QPainter>
 #include <QSqlDriver>
 #include <QSqlError>
@@ -15,6 +16,7 @@ ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     pModel(Q_NULLPTR),
     Index(0)
 {
+    m_SqlDatabaseObj = Q_NULLPTR;
     m_Alias = dbalias;
     if (!dbalias.isEmpty())
         _db = QSqlDatabase::database(m_Alias);
@@ -83,6 +85,8 @@ QString ConnectionInfo::typeName() const
         break;
     case CON_SQLITE:
         name = "Sqlite";
+        break;
+    case CON_NON:
         break;
     }
 
@@ -226,6 +230,11 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
 
     if (hr)
     {
+        if (m_SqlDatabaseObj)
+            delete m_SqlDatabaseObj;
+
+        toolMakeSqlDatabaseObj(_db, &m_SqlDatabaseObj);
+
         m_User = user;
         m_Password = password;
 

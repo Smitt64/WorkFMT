@@ -15,7 +15,7 @@ class FMTLIBSHARED_EXPORT DbInitDlg : public QDialog
     Q_OBJECT
 
 public:
-    explicit DbInitDlg(QSharedPointer<FmtTable> &pTable, QWidget *parent = 0);
+    explicit DbInitDlg(FmtTable *pTable, QWidget *parent = 0);
     ~DbInitDlg();
 
     bool getCreateTableFlag();

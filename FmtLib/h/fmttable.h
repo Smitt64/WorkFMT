@@ -84,7 +84,6 @@ public:
     /// @private
     bool isExistsInDb() const;
 
-    /// @private
     quint64 id() const { return m_Id; }
     /// @private
     qint32 cacheSize() const { return m_CacheSize; }

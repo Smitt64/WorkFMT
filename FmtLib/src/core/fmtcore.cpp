@@ -940,7 +940,7 @@ qint16 InitFmtTableExec(FmtTable *pTable, QString *err)
     return stat;
 }
 
-void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
+void InitFmtTable(FmtTable *pTable, QWidget *parent)
 {
     DbInitDlg dlg(pTable, parent);
 
@@ -969,7 +969,7 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
         if (!stat && dlg.getCreteIndexFlag())
         {
             QString err;
-            stat = InitFmtTableExec(pTable.data(), &err);
+            stat = InitFmtTableExec(pTable, &err);
             QApplication::processEvents();
 
             QMessageBox msg(parent);
