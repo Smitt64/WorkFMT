@@ -22,6 +22,10 @@ class FMTLIBSHARED_EXPORT FmtField : public QObject
     Q_PROPERTY(qint16 Decpoint READ decpoint WRITE setDecpoint)
     Q_PROPERTY(bool Hidden READ isHidden WRITE setHidden)
     Q_PROPERTY(qint32 Index READ index)
+    Q_PROPERTY(bool isNumber READ isNumber CONSTANT)
+    Q_PROPERTY(bool isRealNumber READ isRealNumber CONSTANT)
+    Q_PROPERTY(bool isString READ isString CONSTANT)
+    Q_PROPERTY(bool isAutoInc READ isAutoInc CONSTANT)
 
     Q_PROPERTY(QString Name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString UndecorateName READ undecorateName)

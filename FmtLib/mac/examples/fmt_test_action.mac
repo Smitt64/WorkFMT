@@ -38,7 +38,10 @@ macro ExecAction()
     var connString = "CONNSTRING = dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031";
     fmtappParseConnectionString(connString, user, pass, service);*/
     
-    var msg = "";
+    var selected = fmtSelectTableFieldsDailog({FmtTable}, "Выбор полей: ");
+    println(selected[0].getCommentSql());
+    println(selected[0].getCppDecl(true));
+
     //fmt.fmtTableSqlText({FmtTable});
     //fmtappOpenConnection();
 end;
