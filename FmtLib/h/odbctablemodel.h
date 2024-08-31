@@ -17,6 +17,8 @@ class FMTLIBSHARED_EXPORT OdbcTableModel : public QAbstractTableModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ rowCount CONSTANT)
+    Q_PROPERTY(int size READ rowCount CONSTANT)
+    
 #ifdef Q_OS_WIN
     typedef QMap<QString,QString> ODBCDataSources;
 #endif
