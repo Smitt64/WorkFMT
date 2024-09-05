@@ -1,8 +1,10 @@
 #include "exportpage.h"
+#include "selectactionpage.h"
 #include "ui_exportpage.h"
 #include "loghighlighter.h"
 #include "dbfileobject.h"
 #include "dbttoolwizard.h"
+#include "exportobject.h"
 #include <fmtcore.h>
 #include <QDebug>
 #include <QRunnable>
@@ -13,7 +15,7 @@
 #include <limits>
 #include <QPushButton>
 
-RsExpOperation::RsExpOperation(DbtToolWizard *Wizard, ExportPage *parent) :
+RsExpOperationOld::RsExpOperationOld(DbtToolWizard *Wizard, ExportPage *parent) :
     QObject(),
     QRunnable(),
     pParent(parent),
@@ -22,7 +24,7 @@ RsExpOperation::RsExpOperation(DbtToolWizard *Wizard, ExportPage *parent) :
     setAutoDelete(true);
 }
 
-void RsExpOperation::run()
+void RsExpOperationOld::run()
 {
     QString programmPath, ociPath, oraociPath;
 
@@ -78,11 +80,55 @@ void RsExpOperation::run()
                          std::numeric_limits<int>::max());
     }
 
-    qDebug() << "Temp directory remove:" << tmpdir.remove();
+    pParent->m_Complete = true;
+    emit pParent->completeChanged();
+}
+
+// ---------------------------------------------------------------------------
+RsExpOperation::RsExpOperation(DbtToolWizard *Wizard, ExportPage *parent) :
+    QObject(),
+    QRunnable(),
+    pParent(parent),
+    pWizard(Wizard)
+{
+    setAutoDelete(true);
+}
+
+void RsExpOperation::run()
+{
+    QString programmPath, ociPath, oraociPath;
+
+    QDir dir(pWizard->field("ExportPath").toString());
+    QStringList lst;
+    QVariant val = pWizard->userField("TableList");
+
+    if (val.isValid())
+        lst = val.toStringList();
+
+    foreach (const QString &table, lst)
+    {
+        emit procMessage("*************** Start unloading ***************");
+
+        QScopedPointer<ExportObject> obj(new ExportObject());
+        obj->setConnectionInfo(pWizard->field("User").toString(),
+                               pWizard->field("Password").toString(),
+                               pWizard->field("Service").toString(), false);
+        obj->exportTable(table, dir);
+        /*QStringList arguments = QStringList()
+                                  << pWizard->field("User").toString()
+                                  << pWizard->field("Password").toString()
+                                  << pWizard->field("Service").toString()
+                                  << table;
+
+        emit procMessage("*************** Start unloading ***************");
+        CoreStartProcess(&proc, tmpDir.absoluteFilePath("RSexp.exe"), arguments, true, true,
+                         std::numeric_limits<int>::max());*/
+    }
 
     pParent->m_Complete = true;
     emit pParent->completeChanged();
 }
+// ---------------------------------------------------------------------------
 
 ExportPage::ExportPage(QWidget *parent) :
     QWizardPage(parent),
@@ -107,9 +153,18 @@ void ExportPage::initializePage()
     m_Complete = false;
     wizard()->button(QWizard::BackButton)->setEnabled(false);
 
-    RsExpOperation *pObj = new RsExpOperation(pWizard, this);
-    connect(pObj, SIGNAL(procMessage(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
-    QThreadPool::globalInstance()->start(pObj);
+    if (field("Action").toInt() == SelectActionPage::ActionExportOraOld)
+    {
+        RsExpOperationOld *pObj = new RsExpOperationOld(pWizard, this);
+        connect(pObj, SIGNAL(procMessage(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
+        QThreadPool::globalInstance()->start(pObj);
+    }
+    else if (field("Action").toInt() == SelectActionPage::ActionExportOra)
+    {
+        RsExpOperation *pObj = new RsExpOperation(pWizard, this);
+        connect(pObj, SIGNAL(procMessage(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
+        QThreadPool::globalInstance()->start(pObj);
+    }
 }
 
 void ExportPage::setCompleteOn()

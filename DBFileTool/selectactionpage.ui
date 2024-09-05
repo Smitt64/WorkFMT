@@ -36,16 +36,16 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QRadioButton" name="radioExpOld">
+         <widget class="QRadioButton" name="radioExp">
           <property name="text">
-           <string>Экспорт (RSexp, старый функционал)</string>
+           <string>Экспорт</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="radioExp">
+         <widget class="QRadioButton" name="radioExpOld">
           <property name="text">
-           <string>Экспорт</string>
+           <string>Экспорт (RSexp, старый функционал)</string>
           </property>
          </widget>
         </item>

@@ -1018,8 +1018,9 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
 
 QString ConfigOraFilePath()
 {
-    QDir appDir = qApp->applicationDirPath();
-    return appDir.absoluteFilePath("OracleAuthDlg.cfg");
+    //QDir appDir = qApp->applicationDirPath();
+    //return appDir.absoluteFilePath("OracleAuthDlg.cfg");
+    return toolFullFileNameFromDir("OracleAuthDlg.cfg");
 }
 
 QString FmtGetTableExtension(const QString &table)

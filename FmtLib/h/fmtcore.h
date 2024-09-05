@@ -11,6 +11,7 @@
 #include <sstream>
 
 #define QRSD_DRIVER "qrsd"
+#define RSD_UNICODE "RSD_UNICODE"
 
 #define AutoIncType 15
 #define BTNS_OFFSET 25

@@ -4,5 +4,7 @@
         <file alias="FillTable">res/FillTable.sql</file>
         <file alias="oci">res/oci.dll</file>
         <file alias="oraocci11">res/oraocci11.dll</file>
+        <file>res/KeyQuery.sql</file>
+        <file>res/BlobTemplate.sql</file>
     </qresource>
 </RCC>

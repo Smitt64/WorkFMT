@@ -37,6 +37,7 @@ SOURCES += main.cpp \
     dbfileobject.cpp \
     dbmainwindow.cpp \
     dbttoolwizard.cpp \
+    exportobject.cpp \
     exportpage.cpp \
     loghighlighter.cpp \
     oraconnectionpage.cpp \
@@ -61,6 +62,7 @@ HEADERS += \
     dbfileobject.h \
     dbmainwindow.h \
     dbttoolwizard.h \
+    exportobject.h \
     exportpage.h \
     loghighlighter.h \
     oraconnectionpage.h \

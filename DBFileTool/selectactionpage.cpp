@@ -18,8 +18,6 @@ SelectActionPage::SelectActionPage(QWidget *parent) :
     m_pGroup->addButton(ui->radioExp, 1);
     m_pGroup->addButton(ui->radioImp, 2);
 
-    ui->radioExp->setVisible(false);
-
     setTitle(tr("Выбор действия"));
     registerField("Action", fakeBtn, "value");
     connect(m_pGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled), [=](int id, bool checked)

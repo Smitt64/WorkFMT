@@ -9,6 +9,7 @@ class OraConnectionPage;
 
 class OdbcTableModel;
 class OdbcTableModelDelegate;
+class RecentConnectionList;
 class OraConnectionPage : public QWizardPage
 {
     Q_OBJECT
@@ -26,6 +27,8 @@ private:
 
     OdbcTableModel *m_pDsnModel;
     OdbcTableModelDelegate *m_DataSourceDelegate;
+
+    RecentConnectionList *m_pRecentList;
 };
 
 #endif // ORACONNECTIONPAGE_H

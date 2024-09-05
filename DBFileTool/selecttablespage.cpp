@@ -44,8 +44,13 @@ SelectTablesPage::SelectTablesPage(QWidget *parent) :
             m_pPathEdit->setText(dlg.selectedPath());
         }
     });
-
+//m_pConnection->close();
     connect(m_pPathEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
+
+    /*connect(wizard()->button(QWizard::NextButton), &QAbstractButton::clicked, [=]()
+    {
+        m_pConnection->close();
+    });*/
 }
 
 SelectTablesPage::~SelectTablesPage()

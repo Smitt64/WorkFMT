@@ -342,7 +342,7 @@ bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
 
     try
     {
-        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, RSDVAL_STATIC));
+        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, RSDVAL_STATIC));// RSDVAL_CLIENT, RSDVAL_FORWARD_ONLY
         m_RecSet->open();
 
         setSelect(true);

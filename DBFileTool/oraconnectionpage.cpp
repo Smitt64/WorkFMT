@@ -6,6 +6,7 @@
 #include "odbctablemodeldelegate.h"
 #include "connectioninfo.h"
 #include "fmtcore.h"
+#include "recentconnectionlist.h"
 
 OraConnectionPage::OraConnectionPage(QWidget *parent) :
     QWizardPage(parent),
@@ -19,6 +20,10 @@ OraConnectionPage::OraConnectionPage(QWidget *parent) :
     ui->serviceBox->setModel(m_pDsnModel);
     ui->serviceBox->setItemDelegate(m_DataSourceDelegate);
 
+    m_pRecentList = new RecentConnectionList(this);
+    m_pRecentList->load();
+    ui->connectionsTree->setModel(m_pRecentList);
+
     registerField("Service", ui->serviceBox, "currentText", SIGNAL(currentTextChanged(QString)));
     registerField("User", ui->systemEdit, "text", SIGNAL(textChanged(QString)));
     registerField("Password", ui->syspswdEdit, "text", SIGNAL(textChanged(QString)));
@@ -30,6 +35,15 @@ OraConnectionPage::OraConnectionPage(QWidget *parent) :
     connect(ui->copyButton, &QToolButton::clicked, [=]() -> void
     {
         ui->syspswdEdit->setText(ui->systemEdit->text());
+    });
+
+    connect(ui->connectionsTree, &QTreeView::clicked, [=](const QModelIndex &index)
+    {
+        RecentList2 rec = m_pRecentList->record(index);
+
+        ui->systemEdit->setText(rec.user);
+        ui->syspswdEdit->setText(rec.pass);
+        ui->serviceBox->setCurrentText(rec.dsn);
     });
 }
 
