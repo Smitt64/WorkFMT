@@ -51,8 +51,9 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
         return;
 
     QSqlQuery checkExists(info->db());
-    //checkExists.prepare(QString("select * from %1 where rownum < 2").arg(table));
-    checkExists.prepare(QString("SELECT column_name, data_type FROM USER_TAB_COLUMNS WHERE table_name = '%1' order by column_id").arg(table));
+    //checkExists.setForwardOnly(true);
+    checkExists.prepare(QString("select * from %1 where rownum < 2").arg(table));
+    //checkExists.prepare(QString("SELECT column_name, data_type FROM USER_TAB_COLUMNS WHERE table_name = '%1' order by column_id").arg(table));
 
     if (ExecuteQuery(&checkExists))
         return;
@@ -61,20 +62,21 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
         qDebug() << checkExists.value(1);
 
     // Search primary or unique key or unique index for ORDER BY clause
-    //QString KeyQueryStr = toolReadTextFileContent(":/res/KeyQuery.sql").arg(table);
-    //QSqlQuery KeyQuery(info->db());
-    //KeyQuery.prepare(KeyQueryStr);
+    QString KeyQueryStr = toolReadTextFileContent(":/res/KeyQuery.sql").arg(table);
+    QSqlQuery KeyQuery(info->db());
+    //KeyQuery.setForwardOnly(true);
+    KeyQuery.prepare(KeyQueryStr);
 
-    //if (ExecuteQuery(&KeyQuery))
-    //    return;
+    if (ExecuteQuery(&KeyQuery))
+        return;
 
     QString query_part3, query_part1, query_part2 = " ";
-    /*while (KeyQuery.next())
+    while (KeyQuery.next())
     {
         query_part3 += KeyQuery.value(0).toString();
         query_part3 += KeyQuery.value(1).toString();
         query_part3 += KeyQuery.value(2).toString();
-    }*/
+    }
 
     query_part1 = "SELECT ";
 
@@ -82,6 +84,7 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
             .arg(table);
 
     QSqlQuery query1(info->db());
+    query1.setForwardOnly(false);
     query1.prepare(query1_str);
 
     if (ExecuteQuery(&query1))

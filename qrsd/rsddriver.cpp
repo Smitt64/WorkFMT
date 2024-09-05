@@ -90,15 +90,15 @@ bool RsdDriver::open(const QString &db, const QString &user, const QString &pass
 
         m_Env.reset(new CRsdEnvironment(m_RDDrvO, m_RDDrvODll));
         m_Env->SetOdbcInterface(NULL);
-        m_Env->setClientEncoding(RSDENC_OEM);
+        //m_Env->setClientEncoding(RSDENC_OEM);
 
         qstrcpy(db866, codec866->fromUnicode(db).data());
         qstrcpy(user866, codec866->fromUnicode(user).data());
         qstrcpy(password866, codec866->fromUnicode(password).data());
 
         m_Connection.reset(new CRsdConnection(*m_Env.get(), db866, user866, password866));
-        m_Connection->setClientEncoding(RSDENC_OEM);
-        m_Connection->setServerEncoding(RSDENC_OEM);
+        //m_Connection->setClientEncoding(RSDENC_OEM);
+        //m_Connection->setServerEncoding(RSDENC_OEM);
         m_Connection->open();
     }
     catch (XRsdError& e)

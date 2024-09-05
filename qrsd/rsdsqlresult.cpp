@@ -68,6 +68,7 @@ bool RsdSqlResult::reset(const QString &query)
     bool result = true;
     m_RecSet.reset();
     m_Cmd->clearParams();
+    setAt(QSql::BeforeFirstRow);
     result = setCmdText(query);
 
     /*if (result)
@@ -151,7 +152,13 @@ bool RsdSqlResult::fetchFirst()
     if (!m_RecSet || !isActive() || at() == 0)
         return false;
 
-    bool result = m_RecSet->moveFirst();
+    bool result = false;
+    if (at() == QSql::BeforeFirstRow)
+        result = m_RecSet->moveNext();
+    else
+        result = m_RecSet->moveFirst();
+
+    qDebug() << "fetchFirst" << result;
 
     if (result)
         setAt(0);
@@ -342,12 +349,17 @@ bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
 
     try
     {
-        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, RSDVAL_STATIC));// RSDVAL_CLIENT, RSDVAL_FORWARD_ONLY
+        setAt(QSql::BeforeFirstRow);
+        RSDCursorType_t CursorType = RSDVAL_STATIC;//RSDVAL_FORWARD_ONLY;
+
+        if (isForwardOnly())
+            CursorType = RSDVAL_FORWARD_ONLY;
+
+        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, CursorType));// RSDVAL_CLIENT, RSDVAL_FORWARD_ONLY
         m_RecSet->open();
 
         setSelect(true);
-        if (m_RecSet->getCursorType() == RSDVAL_FORWARD_ONLY)
-            setForwardOnly(true);
+        setActive(true);
     }
     catch (XRsdError& e)
     {
