@@ -2,6 +2,7 @@
 #define JOIN_H
 
 #include "tablelinks.h"
+#include "scripttable.h"
 #include "dattable.h"
 #include <map>
 
@@ -35,15 +36,18 @@ public:
     JoinTable* child;
     QStringList getValuesByIndex(const QVector<int>& fieldIndexes, const DatRecord& record);
 private:
-    bool makeIndex(DatTable* parent, DatTable* child, const TableLinks& parentTableLinks);
+    bool makeIndex(ScriptTable* parent, ScriptTable* child, const TableLinks& parentTableLinks);
 };
+
 
 struct JoinTable
 {
+    ScriptTable* scriptTable;
+    QVector<bool> processedRecords;
     DatTable* datTable;
     JoinList joinList;
     QStringList keyFields;
-    JoinTable(DatTable* datTable, const TableLinks& tableLinks);
+    JoinTable(ScriptTable* datTable, const TableLinks& tableLinks);
     void setKeyFields(const TableLinks& tableLinks);
     Join* getChildJoin() const;
     Join* getParentJoin() const;
@@ -55,18 +59,18 @@ struct JoinTables
     QList<Join*> joins;
     QList<TableLinks> tableLinksList;
     ~JoinTables();
-    void add(DatTable* datTable, const TableLinks& tableLinks);
+    void add(ScriptTable* datTable, const TableLinks& tableLinks);
     void build();
     JoinTable* tableByName(QString name);
     bool hasJoin(QString parent, QString child);
-    JoinTable *getRoot();
+    JoinTable *getRoot();    
 };
 
 struct JoinListIterator
 {
     JoinListIterator(JoinTable* joinTable, JoinList::iterator first);
     JoinListIterator();
-    JoinListIterator nextChild();
+    JoinListIterator nextChild(); // j
     JoinListIterator& operator=(const JoinListIterator& it);
     JoinList::iterator itChild;
 private:

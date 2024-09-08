@@ -1,22 +1,16 @@
 #ifndef DATTABLE_H
 #define DATTABLE_H
 
-#include "diffcore.h"
-#include "dattableinfo.h"
+#include "difftableinfo.h"
+#include "diffconnection.h"
 
-class DatTable: public DatTableInfo
+class DatTable : public DiffTable
 {
 public:
-    DatRecords records;
     DatTable();
-    void loadData(const ParsedLines& lines);
-    const QStringList& getErrors() const { return _errors; }
-    int errorCount() const { return _errorCount; }
+    bool load(const QString& dir, const QString& tableName, DiffConnection* conn);
 
     bool hasInserts() const;
-private:
-    QStringList _errors; //Ошибки после выполнения функции loadData.
-    int _errorCount; // Ошибки за всё время существования объекта.
 };
 
 #endif // DATTABLE_H

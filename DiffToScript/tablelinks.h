@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include <dattableinfo.h>
+#include <difftableinfo.h>
 
 struct LinkField
 {

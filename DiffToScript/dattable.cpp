@@ -1,40 +1,38 @@
 #include "dattable.h"
-#include "recordparser.h"
 #include "difflogging.h"
+#include "linespareser.h"
+#include "recordparser.h"
+
+#include <QTextStream>
+
 
 DatTable::DatTable()
 {
-    _errorCount = 0;
+
 }
 
-void DatTable::loadData(const ParsedLines& lines)
+bool DatTable::load(const QString& dir, const QString& tableName, DiffConnection* conn)
 {
-    qCInfo(logDatTable) << "Start load records. Parsed lines = " << lines.count();
-    RecordParser recParser(&fields, realFields);
-
-    for (const ParsedLine& line: lines)
+    QString fileName = dir + "/" + tableName.toUpper() + ".DAT";
+    if (!QFile::exists(fileName))
     {
-        if (line.lineType == ltTable)
-        {
-            name = line.value;
-            qCInfo(logDatTable) << "Table name loaded " << name;
-            continue;
-        }
+        qCWarning(logDatTable) << "File " << fileName << "not found";
+        return false;
+    }
 
-        if (recParser.parseRecord(line.value))
-        {
-            records.append({recParser.getValues(), line.lineType, line.lineUpdateType});
-            qCInfo(logDatTable) << "Record added: " << recParser.getValues().join("m");
-        }
-        else
-        {
-            qCWarning(logDatTable) << "Error in line: " << line.value;
-            _errors.append("Error in line: " + line.value);
-            _errors.append(recParser.getErrors());
-            _errorCount++;
-        }
-    }    
-    qCInfo(logDatTable) << "End load records. Record added " << records.count();
+    if (conn->getConnection() == nullptr)
+    {
+        qCWarning(logDatTable) << "There aren't connection for " << tableName;
+        return false;
+    }
+
+    QFile inputFile(fileName);
+    inputFile.open(QFile::WriteOnly);
+    QTextStream os(&inputFile);
+
+    RecordParser recParser();
+
+
 }
 
 bool DatTable::hasInserts() const

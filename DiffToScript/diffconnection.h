@@ -17,6 +17,7 @@ public:
 
 private:
     void open();
+    void openSqlite();
     bool _connected;
     ConnectionInfo* _conn;
     QString _user;

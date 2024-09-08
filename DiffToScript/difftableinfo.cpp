@@ -1,4 +1,4 @@
-#include "dattableinfo.h"
+#include "difftableinfo.h"
 #include "fmtcore.h"
 #include "toolsruntime.h"
 #include "fmtfield.h"
@@ -7,12 +7,30 @@
 #include "fmtsegment.h"
 #include <QtSql>
 
-DatTableInfo::DatTableInfo()
+DiffTableInfo::DiffTableInfo()
 {
 
 }
 
-DiffField DatTableInfo::field(const QString &name) const
+QString BlobTypeToString(int type)
+{
+    switch (type)
+    {
+    case 0:
+        return "BT_BLOB_NO";
+    case 1:
+        return "BT_BLOB_VAR";
+    case 2:
+        return "BT_BLOB_STREAM";
+    case 3:
+        return "BT_CLOB";
+    }
+
+    throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")
+                             .arg(type).toLocal8Bit().data());
+}
+
+DiffField DiffTableInfo::field(const QString &name) const
 {
     DiffFields::const_iterator iter = std::find_if(fields.cbegin(), fields.cend(), [=](const DiffField &fld) -> bool
     {
@@ -25,7 +43,7 @@ DiffField DatTableInfo::field(const QString &name) const
     return DiffField();
 }
 
-DiffFields DatTableInfo::missingFldInDat() const
+DiffFields DiffTableInfo::missingFldInDat() const
 {
     DiffFields missing;
 
@@ -39,7 +57,7 @@ DiffFields DatTableInfo::missingFldInDat() const
     return missing;
 }
 
-bool DatTableInfo::firstUniq(DatIndex &idx, bool skipAutoInc) const
+bool DiffTableInfo::firstUniq(DatIndex &idx, bool skipAutoInc) const
 {
     bool found = false;
 
@@ -60,12 +78,13 @@ bool DatTableInfo::firstUniq(DatIndex &idx, bool skipAutoInc) const
     return found;
 }
 
-void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
-{   
+
+void DiffTableInfo::loadFromFmt(FmtTable *fmtTable)
+{
     FmtInit();
     fields.clear();
     name = fmtTable->name().toUpper();
-    qCInfo(logDatTable) << "Start load from fmt. Table name = " << name;
+    qCInfo(logScriptTable) << "Start load from fmt. Table name = " << name;
     for (int i = 0; i < fmtTable->fieldsCount(); ++i)
     {
         FmtField* fld = fmtTable->field(i);
@@ -81,13 +100,13 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
 
         fields.append(df);
         realFields.append(df.name.toUpper());
-        qCInfo(logDatTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
+        qCInfo(logScriptTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
     }
     if (fmtTable->blobLen() > 0)
     {
         DiffField df = { BlobFieldString(fmtTable->blobType()), fmtTable->blobType(), BlobTypeToString(fmtTable->blobType()), false, true};
         fields.append(df);
-        qCInfo(logDatTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
+        qCInfo(logScriptTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
     }
 
     for (int i = 0; i < fmtTable->indecesCount(); ++i)
@@ -97,7 +116,7 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
         it->name = indx->name();
         it->isUnique = indx->isUnique();
 
-        qCInfo(logDatTable) << "Loaded FMT index: " << it->name << " isUnique " << it->isUnique;
+        qCInfo(logScriptTable) << "Loaded FMT index: " << it->name << " isUnique " << it->isUnique;
 
         for (int j = 0; j < indx->segmentsCount(); ++j)
         {
@@ -109,10 +128,10 @@ void DatTableInfo::loadFromFmt(FmtTable *fmtTable)
                             sgmt->field()->type(),
                             sgmt->field()->isString()
                         });
-            qCInfo(logDatTable) << "Added field for index: name = " << sgmt->field()->name() << " isAutoInc = " << sgmt->field()->isAutoInc();
+            qCInfo(logScriptTable) << "Added field for index: name = " << sgmt->field()->name() << " isAutoInc = " << sgmt->field()->isAutoInc();
         }
     }
-    qCInfo(logDatTable) << "End load from fmt. Table name = " << name;
+    qCInfo(logScriptTable) << "End load from fmt. Table name = " << name;
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", QUuid::createUuid().toString());
     QString infoFile = toolFullFileNameFromDir("datstruct.info");

@@ -5,7 +5,7 @@
 #include "linespareser.h"
 #include "recordparser.h"
 #include "difffield.h"
-#include "dattable.h"
+#include "scripttable.h"
 #include "dbspellingoracle.h"
 #include "join.h"
 #include "fmttable.h"
@@ -133,7 +133,7 @@ void DiffToScriptTest::caseParseStringField()
 
     QTextStream os(stdout);
 
-    DatTable dt;
+    ScriptTable dt;
     dt.name = "table";
     dt.fields = dfs;
 
@@ -237,15 +237,15 @@ void DiffToScriptTest::caseDoubleInsert()
     mainParser.setDeleteParser(new LinesDeleteParser("-"));
     mainParser.setUpdateParser(new LinesUpdateParser("-"));
 
-    QVector<DatTable> datTables;
+    QVector<ScriptTable> datTables;
     QVector<TableLinks> tableLinks;
 
     while (!is.atEnd())
     {
         mainParser.parseDoc(is);
-        datTables.append(DatTable());
+        datTables.append(ScriptTable());
 
-        DatTable& datTable = datTables.back();
+        ScriptTable& datTable = datTables.back();
 
         FmtTable fmtTable;
         fmtTable.loadFromXml("test\\" + mainParser.getLines({ltTable})[0].toLower() + ".xml");
@@ -283,14 +283,17 @@ void DiffToScriptTest::caseDoubleInsert()
     QCOMPARE(datTables[0].name.toLower(), "dopusymhist_dbt");
     QCOMPARE(datTables[1].name.toLower(), "dopusymb_dbt");
 
-    QCOMPARE(datTables[0].records.count(), 4);
+    QCOMPARE(datTables[0].records[0].values.count(), 3);
+    QCOMPARE(datTables[1].records[0].values.count(), 8);
+
+    QCOMPARE(datTables[0].records.count(), 5);
     QCOMPARE(datTables[1].records.count(), 4);
 
     QCOMPARE(datTables[1].records.getRecords({ltInsert}).count(), 1);
     QCOMPARE(datTables[1].records.getRecords({ltDelete}).count(), 1);
     QCOMPARE(datTables[1].records.getRecords({ltUpdate}).count(), 2);
 
-    QCOMPARE(datTables[0].records.getRecords({ltInsert}).count(), 1);
+    QCOMPARE(datTables[0].records.getRecords({ltInsert}).count(), 2);
     QCOMPARE(datTables[0].records.getRecords({ltDelete}).count(), 1);
     QCOMPARE(datTables[0].records.getRecords({ltUpdate}).count(), 2);
 
@@ -315,6 +318,16 @@ void DiffToScriptTest::caseDoubleInsert()
     QCOMPARE(outFile.open(QFile::WriteOnly), true);
     QTextStream os(&outFile);
     ssm.build(os, joinTables.getRoot());
+
+    int processed = 0;
+    for (bool b: parentJoinTable->processedRecords)
+        processed += b;
+    QCOMPARE(parentJoinTable->scriptTable->records.count(), processed);
+
+    processed = 0;
+    for (bool b: childJoinTable->processedRecords)
+        processed += b;
+    QCOMPARE(childJoinTable->scriptTable->records.count(), processed);
 }
 
 

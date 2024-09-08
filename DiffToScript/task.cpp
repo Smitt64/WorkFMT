@@ -3,7 +3,7 @@
 #include "join.h"
 #include "task.h"
 #include "fmttable.h"
-#include "dattable.h"
+#include "scripttable.h"
 #include "dbspellingoracle.h"
 #include "dbspellingpostgres.h"
 #include "diffconnection.h"
@@ -39,7 +39,7 @@ void Task::showAppInfo(QTextStream& os) {
     os << "App dir: " << QApplication::applicationDirPath() << Qt::endl;
 }
 
-void getFmtInfo(QTextStream& os, const DatTable& datTable)
+void getFmtInfo(QTextStream& os, const ScriptTable& datTable)
 {
     FmtInit();
     os << "-- Table: " << datTable.name << Qt::endl;
@@ -230,7 +230,7 @@ void Task::runTask()
 
     QString curDir = QFileInfo(QCoreApplication::applicationFilePath()).path();
 
-    QVector<DatTable> datTables;
+    QVector<ScriptTable> datTables;
     QVector<TableLinks> tableLinks;
 
     QSharedPointer<DiffConnection> conn;
@@ -264,9 +264,9 @@ void Task::runTask()
             return;
         }
 
-        datTables.append(DatTable());
+        datTables.append(ScriptTable());
 
-        DatTable& datTable= datTables.back();
+        ScriptTable& datTable= datTables.back();
 
         FmtTable fmtTable(conn->getConnection());
         if (!fmtTable.load(linesParser.getLines({ltTable})[0].toLower()))
@@ -283,8 +283,7 @@ void Task::runTask()
         datTable.loadData(linesParser.getParsedLines());
         qCInfo(logTask) << "Records of" << datTable.name << "loaded. Count =" << datTable.records.count();
 
-        parseUpdateRecords(datTable);
-        qCInfo(logTask) << "Parsing update records is done.";
+        datTable.parseUpdateRecords(datTable);
 
         if (optns[ctoTableInfo].isSet)
             getFmtInfo(os, datTable);

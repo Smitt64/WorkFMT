@@ -87,7 +87,7 @@ bool DatIndex::hasAutoinc() const
 
 bool DiffField::isDate() const
 {
-    return (type == fmtt_DATE || type == fmtt_DATETIME);
+    return (type == fmtt_DATE || type == fmtt_DATETIME || type == fmtt_TIME);
 }
 
 bool DiffField::isBlob() const

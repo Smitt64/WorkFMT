@@ -61,9 +61,9 @@ QString findChildTable(QString parentName, const QVector<TableLinks>& tableLinks
     return "";
 }
 
-const DatTable& findTable(QString name, const QVector<DatTable>& datTables)
+const ScriptTable& findTable(QString name, const QVector<ScriptTable>& datTables)
 {
-    for (const DatTable& tab: datTables)
+    for (const ScriptTable& tab: datTables)
         if (tab.name.toLower() == name.toLower())
             return tab;
     Q_ASSERT_X(false, "join.h, findTable. table not found", name.toStdString().c_str());
@@ -76,19 +76,19 @@ Join::Join(JoinTable* parent, JoinTable* child, const TableLinks &parentTableLin
     this->child  = nullptr;
 
     for (const Link& link:  parentTableLinks.links)
-        if (link.tableName.toLower() == child->datTable->name.toLower())
+        if (link.tableName.toLower() == child->scriptTable->name.toLower())
         {
             this->child = child;
             child->joinList.append(this);
-            qCInfo(logJoin) << "Child table =" << child->datTable->name;
+            qCInfo(logJoin) << "Child table =" << child->scriptTable->name;
 
         }
 
-    if (parentTableLinks.tableName.toLower() == parent->datTable->name.toLower())
+    if (parentTableLinks.tableName.toLower() == parent->scriptTable->name.toLower())
     {
         this->parent = parent;
         parent->joinList.append(this);
-        qCInfo(logJoin) << "Parent table =" << parent->datTable->name;
+        qCInfo(logJoin) << "Parent table =" << parent->scriptTable->name;
     }
 
     bool b = (this->parent != nullptr && this->child != nullptr);
@@ -96,12 +96,12 @@ Join::Join(JoinTable* parent, JoinTable* child, const TableLinks &parentTableLin
         qCWarning(logJoin) << "Join::Join", "Parent or child tables are not defined.";
     Q_ASSERT_X(b , "Join::Join", "Parent or child tables are not defined.");
 
-    qCInfo(logJoin) << "Created join " << parent->datTable->name << "-" << child->datTable->name;
+    qCInfo(logJoin) << "Created join " << parent->scriptTable->name << "-" << child->scriptTable->name;
 
-    makeIndex(parent->datTable, child->datTable, parentTableLinks);
+    makeIndex(parent->scriptTable, child->scriptTable, parentTableLinks);
 }
 
-bool Join::makeIndex(DatTable* parent, DatTable* child, const TableLinks &parentTableLinks)
+bool Join::makeIndex(ScriptTable* parent, ScriptTable* child, const TableLinks &parentTableLinks)
 {
     qCInfo(logJoin) << "Creating index for " << parent->name << "-" << child->name;
 
@@ -168,7 +168,7 @@ bool Join::makeIndex(DatTable* parent, DatTable* child, const TableLinks &parent
 JoinTableIterator JoinTableIterator::getChildTable()
 {
     for (Join* join: joinTable->joinList)
-        if (join->parent->datTable->name.toLower() == joinTable->datTable->name.toLower())
+        if (join->parent->scriptTable->name.toLower() == joinTable->scriptTable->name.toLower())
             return JoinTableIterator(join->child);
     return JoinTableIterator();
 }
@@ -184,11 +184,13 @@ bool operator!=(const JoinTableIterator& a, const JoinTableIterator& b)
 }
 
 
-JoinTable::JoinTable(DatTable *datTable, const TableLinks &tableLinks)
+JoinTable::JoinTable(ScriptTable *datTable, const TableLinks &tableLinks)
 {
     setKeyFields(tableLinks);
-    this->datTable = datTable;
-    qCInfo(logJoinTable) << "Created JoinTable " << this->datTable->name;
+    this->scriptTable = datTable;
+    this->processedRecords.resize(this->scriptTable->records.count());
+    this->processedRecords.fill(false);
+    qCInfo(logJoinTable) << "Created JoinTable " << this->scriptTable->name;
 }
 
 void JoinTable::setKeyFields(const TableLinks &tableLinks)
@@ -200,7 +202,7 @@ Join *JoinTable::getChildJoin() const
 {
     for (JoinList::const_iterator it = joinList.begin(); it != joinList.end(); ++it)
     {
-        if ((*it)->parent->datTable->name.toLower() == datTable->name.toLower())
+        if ((*it)->parent->scriptTable->name.toLower() == scriptTable->name.toLower())
             return *it;
     }
     return nullptr;
@@ -210,7 +212,7 @@ Join *JoinTable::getChildJoin() const
 Join *JoinTable::getParentJoin() const
 {
     for (int i = 0; i < joinList.size(); ++i)
-        if (joinList[i]->child->datTable->name.toLower() == datTable->name.toLower())
+        if (joinList[i]->child->scriptTable->name.toLower() == scriptTable->name.toLower())
             return joinList[i];
     return nullptr;
 }
@@ -221,7 +223,7 @@ JoinTables::~JoinTables()
         delete joins[i];
 }
 
-void JoinTables::add(DatTable *datTable, const TableLinks &tableLinks)
+void JoinTables::add(ScriptTable *datTable, const TableLinks &tableLinks)
 {
     joinTableList.append(JoinTable(datTable, tableLinks));
     tableLinksList.append(tableLinks);
@@ -252,7 +254,7 @@ void JoinTables::build()
 JoinTable *JoinTables::tableByName(QString name)
 {
     for (int i = 0; i < joinTableList.count(); ++i)
-        if (joinTableList[i].datTable->name.toLower() == name.toLower())
+        if (joinTableList[i].scriptTable->name.toLower() == name.toLower())
             return &joinTableList[i];
     return nullptr;
 }
@@ -260,7 +262,7 @@ JoinTable *JoinTables::tableByName(QString name)
 bool JoinTables::hasJoin(QString parent, QString child)
 {
     for (Join* join: joins)
-        if (join->child->datTable->name.toLower() == child.toLower() && join->parent->datTable->name.toLower() == parent.toLower())
+        if (join->child->scriptTable->name.toLower() == child.toLower() && join->parent->scriptTable->name.toLower() == parent.toLower())
             return true;
     return false;
 }
@@ -302,7 +304,7 @@ JoinListIterator JoinListIterator::nextChild()
 
     ++itChild;
     for (; itChild != _joinTable->joinList.end(); ++itChild)
-        if ((*itChild)->parent->datTable->name.toLower() == _joinTable->datTable->name.toLower())
+        if ((*itChild)->parent->scriptTable->name.toLower() == _joinTable->scriptTable->name.toLower())
             break;
 
     return JoinListIterator(_joinTable, itChild);
@@ -319,7 +321,7 @@ JoinList::iterator JoinList::firstChild(JoinTable* joinTable)
 {
     JoinList::iterator it = begin();
     for (; it != end(); ++it)
-        if ((*it)->parent->datTable->name.toLower() == joinTable->datTable->name.toLower())
+        if ((*it)->parent->scriptTable->name.toLower() == joinTable->scriptTable->name.toLower())
             break;
     return it;
 }

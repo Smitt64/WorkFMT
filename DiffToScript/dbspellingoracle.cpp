@@ -8,7 +8,7 @@ QString DbSpellingOracle::toDate(const QString& value)
     if (tmp.isEmpty())
         tmp = "01-01-0001";
 
-    return "TO_DATE('" + tmp + "', 'DD-MM-YYY')";
+    return "TO_DATE('" + tmp + "', 'DD-MM-YYYY HH24:MI:SS')";
 }
 
 QStringList DbSpellingOracle::getDeclare()

@@ -31,11 +31,11 @@ public:
     QStringList makeVariables(JoinTable* joinTable);
     QStringList makeInsertFunctions(JoinTable* joinTable);
 
-    QString buildVariableName(const DatTable* datTable);
-    int getAutoincIndex(const DatTable* datTable);
+    QString buildVariableName(const ScriptTable* datTable);
+    int getAutoincIndex(const ScriptTable* datTable);
 
-    QString buildVariable(const DatTable* datTable);
-    QStringList buildInsertFunctions(const DatTable* datTable);
+    QString buildVariable(const ScriptTable* datTable);
+    QStringList buildInsertFunctions(const ScriptTable* datTable);
 
     QVector<int> indexesOfKeyFields(const JoinTable *joinTable);
     QVector<int> indexesOfUniqueIndex(const JoinTable *joinTable);
@@ -48,7 +48,7 @@ public:
     int buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
     int buildDeleteStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
     int buildUpdateStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int recIndex, int newIndex);
-    int buildStatement(QTextStream& os, const JoinTable* joinTable,
+    int buildStatement(QTextStream& os, JoinTable* joinTable,
                        QStringList& sql,
                        int recIndex,
                        Join *childJoin = nullptr,
@@ -61,6 +61,7 @@ public:
 
     void checkDatFldsCount(QStringList& sql, JoinTable *joinTable);
 
+    void toScript(const JoinTable* joinTable, DatRecord& rec);
 private:
     QSharedPointer<DiffConnection> _connection;
     QSharedPointer<DbSpelling> _dbSpelling;

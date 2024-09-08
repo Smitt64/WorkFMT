@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QFileInfo>
 #include <difflogging.h>
+#include <regex>
 
 DiffConnection::DiffConnection()
 {
@@ -31,6 +32,19 @@ DiffConnection::DiffConnection()
 
 DiffConnection::DiffConnection(const QString &connectionString, bool unicode)
 {
+    const std::regex sqlite_regex("Data Source=(.+);");
+    std::smatch match;
+    std::string connStr = connectionString.toStdString();
+
+    if (std::regex_match(connStr, match, sqlite_regex))
+    {
+        std::string m = match[1].str();
+        _dsn = QString::fromStdString(m.c_str());
+        qCInfo(logDiff) << "Dsn = " << _dsn;
+        openSqlite();
+        return;
+    }
+
     qCInfo(logDiff) << "Start connect to FMT";
 
     isUnicode = unicode;
@@ -54,3 +68,12 @@ void DiffConnection::open()
     else
         qCWarning(logDiff) << "Connection " << (_connected?"done":"fail");
 }
+
+void DiffConnection::openSqlite()
+{
+    _conn = new ConnectionInfo();
+    _connected = _conn->openSqlite(_dsn);
+}
+
+
+

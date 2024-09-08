@@ -19,7 +19,6 @@ RC_FILE = res/difftoscript.rc
 SOURCES += \
     cmdparser.cpp \
     dattable.cpp \
-    dattableinfo.cpp \
     dbspelling.cpp \
     dbspellingoracle.cpp \
     dbspellingpostgres.cpp \
@@ -27,6 +26,7 @@ SOURCES += \
     diffconnection.cpp \
     difffield.cpp \
     difflogging.cpp \
+    difftableinfo.cpp \
     difftoscripttest.cpp \
     join.cpp \
     linespareser.cpp \
@@ -34,6 +34,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     recordparser.cpp \
+    scripttable.cpp \
     sqlscriptmain.cpp \
     streamcontrol.cpp \
     tablelinks.cpp \
@@ -59,7 +60,6 @@ HEADERS += \
     cmdparser.h \
     datfield.h \
     dattable.h \
-    dattableinfo.h \
     dbspelling.h \
     dbspellingoracle.h \
     dbspellingpostgres.h \
@@ -68,12 +68,14 @@ HEADERS += \
     diffcore.h \
     difffield.h \
     difflogging.h \
+    difftableinfo.h \
     difftoscripttest.h \
     join.h \
     linespareser.h \
     linesparsermain.h \
     mainwindow.h \
     recordparser.h \
+    scripttable.h \
     sqlscriptmain.h \
     streamcontrol.h \
     tablelinks.h \
