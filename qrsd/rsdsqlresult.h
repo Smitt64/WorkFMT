@@ -67,12 +67,14 @@ private:
     bool checkDrop(const QString &sql) const;
     bool makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd);
 
-    QVariant GetValueFromField(const CRsdField &cfld);
-    QSqlField MakeField(const CRsdField &fld, const bool &isnull);
+    QVariant GetValueFromField(const CRsdField &cfld, const int &loblen);
+    QSqlField MakeField(const CRsdField &fld, const bool &isnull, const int &loblen);
+    void MakeRecord();
 
     RsdDriver *m_Driver;
     QScopedPointer<RsdCommandEx> m_Cmd;
     QScopedPointer<CRsdRecordset> m_RecSet;
+    QScopedPointer<QSqlRecord> m_Record;
     QString m_QueryString;
 };
 

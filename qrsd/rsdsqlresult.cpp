@@ -1,8 +1,11 @@
 #include "rsdsqlresult.h"
 #include "rsddriver.h"
+#include <stdlib.h>
 #include <QSqlField>
 #include <QRegularExpression>
 #include <QDebug>
+
+#define BLOB_MAX_LEN 32768
 
 RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
     QSqlResult(db),
@@ -22,9 +25,8 @@ RsdSqlResult::~RsdSqlResult()
 
 QVariant RsdSqlResult::data(int index)
 {
-    CRsdField &fld = m_RecSet->getFld(index);
-    QVariant value = GetValueFromField(fld);
-    return value;
+    QSqlRecord rec = record();
+    return rec.value(index);
 }
 
 bool RsdSqlResult::isNull(int index)
@@ -56,10 +58,11 @@ bool RsdSqlResult::setCmdText(const QString &sql)
     QSqlResult::BindingSyntax syntax = bindingSyntax();
     m_QueryString = QLatin1String(m_Driver->toOem866(sql));
 
-    if (syntax == QSqlResult::PositionalBinding)
-        m_QueryString = m_QueryString.replace(QRegExp("\\:\\w+"), "?");
+    //if (syntax == QSqlResult::PositionalBinding)
+    //    m_QueryString = m_QueryString.replace(QRegExp("\\:\\w+"), "?");
 
     QSqlResult::setQuery(sql);
+    //return m_Cmd->setCmdText(m_QueryString.toLatin1().data());
     return m_Cmd->setCmdText(m_QueryString.toLatin1().data());
 }
 
@@ -89,7 +92,12 @@ bool RsdSqlResult::fetch(int index)
             return false;
 
         while (ok && index > at())
+        {
             ok = fetchNext();
+
+            if (ok)
+                MakeRecord();
+        }
 
         return ok;
     }
@@ -104,6 +112,9 @@ bool RsdSqlResult::fetch(int index)
             {
                 ok = m_RecSet->move(index, RSDO_RELATIVE);
                 setAt(index);
+
+                if (ok)
+                    MakeRecord();
             }
 
             return ok;
@@ -126,7 +137,10 @@ bool RsdSqlResult::fetch(int index)
                 setAt(pos - 1);
             }
             else
+            {
                 setAt(pos);
+                MakeRecord();
+            }
 
             if (pos != index)
                 return false;
@@ -139,6 +153,7 @@ bool RsdSqlResult::fetch(int index)
             {
                 ok = m_RecSet->move(index, RSDO_RELATIVE);
                 setAt(index);
+                MakeRecord();
             }
 
             return ok;
@@ -158,10 +173,11 @@ bool RsdSqlResult::fetchFirst()
     else
         result = m_RecSet->moveFirst();
 
-    qDebug() << "fetchFirst" << result;
-
     if (result)
+    {
         setAt(0);
+        MakeRecord();
+    }
 
     return result;
 }
@@ -173,7 +189,12 @@ bool RsdSqlResult::fetchLast()
 
     bool result = m_RecSet->moveFirst();
     while(result)
+    {
         result = fetchNext();
+
+        if (result)
+            MakeRecord();
+    }
 
     return result;
 }
@@ -192,7 +213,10 @@ bool RsdSqlResult::fetchNext()
     bool result = m_RecSet->moveNext();
 
     if (result)
+    {
         setAt(currentRow + 1);
+        MakeRecord();
+    }
     else
         setAt(QSql::AfterLastRow);
 
@@ -208,7 +232,10 @@ bool RsdSqlResult::fetchPrevious()
     bool result = m_RecSet->movePrev();
 
     if (result)
+    {
         setAt(currentRow - 1);
+        MakeRecord();
+    }
     else
         setAt(QSql::BeforeFirstRow);
 
@@ -406,12 +433,12 @@ bool RsdSqlResult::exec()
 
         QSqlResult::setQuery(m_QueryString);
         setCmdText(m_QueryString);
-        m_Cmd->execute();
+        result = RSD_SUCCEEDED(m_Cmd->execute());
 
         setActive(true);
         setAt(QSql::BeforeFirstRow);
 
-        if (checkSelect(m_QueryString))
+        if (result && checkSelect(m_QueryString))
             result = makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)
@@ -438,8 +465,8 @@ bool RsdSqlResult::prepare(const QString &query)
         QSqlResult::BindingSyntax syntax = bindingSyntax();
         m_QueryString = query;
 
-        if (syntax == QSqlResult::PositionalBinding)
-            m_QueryString = m_QueryString.replace(QRegExp("\\:\\w+"), "?");
+        /*if (syntax == QSqlResult::PositionalBinding)
+            m_QueryString = m_QueryString.replace(QRegExp("\\:\\w+"), "?");*/
 
         QString str = QLatin1String(m_Driver->toOem866(query));
         m_Cmd->setCmdText(str.toLatin1());
@@ -486,117 +513,206 @@ QVariant RsdSqlResult::rsNumericToVariant(CRsdField &fld)
     return retVal;
 }
 
-QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld)
+QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld, const int &loblen)
 {
     QVariant retVal;
     CRsdField &fld = const_cast<CRsdField&>(cfld);
 
-    if (!fld.isNull())
-    {
-        try
-        {
-            RSDValType_t fldType = fld.getType();
-            //bool isUnicodeField = fld.isUnicodeField();
+    if (fld.isNull() && !loblen)
+        return QVariant();
 
-            switch(fldType)
+    try
+    {
+        RSDValType_t fldType = fld.getType();
+        QString name = fld.getName();
+
+        switch(fldType)
+        {
+        case RSDPT_BYTE:
+            retVal = fld.AsRSDBYTE();
+            break;
+        case RSDPT_SHORT:
+            retVal = fld.AsRSDSHORT();
+            break;
+        case RSDPT_USHORT:
+            retVal.setValue(fld.AsRSDUSHORT());
+            break;
+        case RSDPT_LONG:
+            retVal = static_cast<qint32>(fld.AsRSDLONG());
+            break;
+        case RSDPT_ULONG:
+            retVal.setValue(fld.AsRSDULONG());
+            break;
+        case RSDPT_BIGINT:
+            retVal.setValue(fld.AsRSDBIGINT());
+            break;
+        case RSDPT_UBIGINT:
+            retVal.setValue(fld.AsRSDUBIGINT());
+            break;
+        case RSDPT_FLOAT:
+            retVal = fld.AsRSDFLOAT();
+            break;
+        case RSDPT_DOUBLE:
+            retVal = fld.AsRSDDOUBLE();
+            break;
+        case RSDPT_NUMERIC:
+            retVal = rsNumericToVariant(fld);
+            break;
+        case RSDPT_LPSTR:
+            retVal = m_Driver->fromOem866(QLatin1String(fld.AsRSDLPSTR()));
+            break;
+        case RSDPT_DATE:
+            retVal = rsDateToQDate(fld.AsRSDDATE());
+            break;
+        case RSDPT_TIME:
+            retVal = rsTimeToQTime(fld.AsRSDTIME());
+            break;
+        case RSDPT_TIMESTAMP:
+            retVal = rsTimeStampToQDateTime(fld.AsRSDTIMESTAMP());
+            break;
+        case RSDPT_BINARY:
+            retVal = rsBinaryToVariantQByteArray(fld);
+            break;
+        case RSDPT_CHAR:
+            retVal = rsCharToVariantQChar(fld);
+            break;
+        case RSDPT_CFILE:
+        {
+            if (loblen)
             {
-            case RSDPT_BYTE:
-                retVal = fld.AsRSDBYTE();
-                break;
-            case RSDPT_SHORT:
-                retVal = fld.AsRSDSHORT();
-                break;
-            case RSDPT_USHORT:
-                retVal.setValue(fld.AsRSDUSHORT());
-                break;
-            case RSDPT_LONG:
-                retVal = static_cast<qint32>(fld.AsRSDLONG());
-                break;
-            case RSDPT_ULONG:
-                retVal.setValue(fld.AsRSDULONG());
-                break;
-            case RSDPT_BIGINT:
-                retVal.setValue(fld.AsRSDBIGINT());
-                break;
-            case RSDPT_UBIGINT:
-                retVal.setValue(fld.AsRSDUBIGINT());
-                break;
-            case RSDPT_FLOAT:
-                retVal = fld.AsRSDFLOAT();
-                break;
-            case RSDPT_DOUBLE:
-                retVal = fld.AsRSDDOUBLE();
-                break;
-            case RSDPT_NUMERIC:
-                retVal = rsNumericToVariant(fld);
-                break;
-            case RSDPT_LPSTR:
-                retVal = m_Driver->fromOem866(QLatin1String(fld.AsRSDLPSTR()));
-                break;
-            case RSDPT_DATE:
-                retVal = rsDateToQDate(fld.AsRSDDATE());
-                break;
-            case RSDPT_TIME:
-                retVal = rsTimeToQTime(fld.AsRSDTIME());
-                break;
-            case RSDPT_TIMESTAMP:
-                retVal = rsTimeStampToQDateTime(fld.AsRSDTIMESTAMP());
-                break;
-            case RSDPT_BINARY:
-                retVal = rsBinaryToVariantQByteArray(fld);
-                break;
-            case RSDPT_CHAR:
-                retVal = rsCharToVariantQChar(fld);
-                break;
+                char *buf = (char*)malloc(loblen + 1);
+                memset(buf, 0, loblen + 1);
+                fld.read(buf, loblen);
+
+                QString data = m_Driver->fromOem866(buf);
+                retVal = data;
+
+                free(buf);
             }
         }
-        catch(XRsdError& e)
+            break;
+        case RSDPT_BFILE:
         {
-            setLastRsdError(e, QSqlError::StatementError);
+            if (loblen)
+            {
+                QByteArray data(loblen, '\0');
+                fld.read(data.data(), loblen);
+                retVal = data;
+            }
         }
-        catch(...)
-        {
-            setLastUnforeseenError(QSqlError::StatementError);
+            break;
         }
+    }
+    catch(XRsdError& e)
+    {
+        setLastRsdError(e, QSqlError::StatementError);
+    }
+    catch(...)
+    {
+        setLastUnforeseenError(QSqlError::StatementError);
     }
 
     return retVal;
 }
 
-QSqlField RsdSqlResult::MakeField(const CRsdField &fld, const bool &isnull)
+QSqlField RsdSqlResult::MakeField(const CRsdField &fld, const bool &isnull, const int &loblen)
 {
     QSqlField qfld;
     QString fldname = fld.getName();
     qfld.setName(fldname);
 
-    if (!isnull)
+    if (!isnull || loblen)
     {
-        QVariant value = GetValueFromField(fld);
-        qfld.setValue(value);
+        QVariant value = GetValueFromField(fld, loblen);
+
+        if (value.isValid())
+            qfld.setValue(value);
     }
     return qfld;
 }
 
-QSqlRecord RsdSqlResult::record() const
+void RsdSqlResult::MakeRecord()
 {
-    QSqlRecord rec;
+    m_Record.reset(new QSqlRecord());
 
     if (isSelect() && isActive())
     {
-        RsdSqlResult *pThis = const_cast<RsdSqlResult*>(this);
         long fldcount = m_RecSet->getFldCount();
+//T_PARAMETERS
 
         for (long i = 0; i < fldcount; i++)
         {
             const CRsdField &fld = m_RecSet->getFld(i);
-            rec.append(pThis->MakeField(fld, fld.isNull()));
-            rec.setGenerated(i, true);
+            QString name = fld.getName();
 
-            if (fld.isNull())
-                rec.setNull(i);
+            if(name == "T_PARAMETERS")
+            {
+                int k = fld.getType();
+                k = m_RecSet->getCurPos();
+                k = 1;
+            }
+
+            if (fld.getType() == RSDPT_CFILE || fld.getType() == RSDPT_BFILE)
+            {
+                QString fldName = fld.getName();
+                QString fldNameLen = fldName + "_LOBLEN";
+
+                int pos = -1;
+                for (long k = 0; k < m_RecSet->getFldCount(); k++)
+                {
+                    QString indexedName = m_RecSet->getFld(k).getName();
+                    if (!indexedName.compare(fldNameLen, Qt::CaseInsensitive))
+                    {
+                        pos = k;
+                        break;
+                    }
+                }
+
+                if (pos != -1)
+                {
+                    int len = GetValueFromField(m_RecSet->getFld(pos), 0).toInt();
+
+                    m_Record->append(MakeField(fld, false, len));
+                    m_Record->setGenerated(i, true);
+                }
+                else
+                {
+                    m_Record->append(MakeField(fld, false, BLOB_MAX_LEN));
+                    m_Record->setGenerated(i, true);
+                }
+            }
+            else
+            {
+                m_Record->append(MakeField(fld, fld.isNull(), 0));
+                m_Record->setGenerated(i, true);
+
+                if (fld.isNull())
+                    m_Record->setNull(i);
+            }
         }
     }
+}
 
+QSqlRecord RsdSqlResult::record() const
+{
+    if (m_Record)
+        return *m_Record;
+
+    long fldcount = m_RecSet->getFldCount();
+//T_PARAMETERS
+
+    QSqlRecord rec;
+    for (long i = 0; i < fldcount; i++)
+    {
+        RsdSqlResult *pThis = const_cast<RsdSqlResult*>(this);
+        const CRsdField &fld = m_RecSet->getFld(i);
+
+        rec.append(pThis->MakeField(fld, fld.isNull(), 0));
+        rec.setGenerated(i, true);
+
+        if (fld.isNull())
+            rec.setNull(i);
+    }
     return rec;
 }
 

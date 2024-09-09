@@ -90,15 +90,15 @@ bool RsdDriver::open(const QString &db, const QString &user, const QString &pass
 
         m_Env.reset(new CRsdEnvironment(m_RDDrvO, m_RDDrvODll));
         m_Env->SetOdbcInterface(NULL);
-        //m_Env->setClientEncoding(RSDENC_OEM);
+        m_Env->setClientEncoding(RSDENC_OEM);
 
         qstrcpy(db866, codec866->fromUnicode(db).data());
         qstrcpy(user866, codec866->fromUnicode(user).data());
         qstrcpy(password866, codec866->fromUnicode(password).data());
 
         m_Connection.reset(new CRsdConnection(*m_Env.get(), db866, user866, password866));
-        //m_Connection->setClientEncoding(RSDENC_OEM);
-        //m_Connection->setServerEncoding(RSDENC_OEM);
+        m_Connection->setClientEncoding(RSDENC_OEM);
+        m_Connection->setServerEncoding(RSDENC_OEM);
         m_Connection->open();
     }
     catch (XRsdError& e)
@@ -188,6 +188,11 @@ QString RsdDriver::fromOem866(const QLatin1String &str) const
     return codec866->toUnicode(str.latin1());
 }
 
+QString RsdDriver::fromOem866(const char *str) const
+{
+    return codec866->toUnicode(str);
+}
+
 QByteArray RsdDriver::toOem866(const QString &str) const
 {
     return codec866->fromUnicode(str);
@@ -196,6 +201,11 @@ QByteArray RsdDriver::toOem866(const QString &str) const
 QString RsdDriver::from1251(const QLatin1String &str) const
 {
     return codec1251->toUnicode(str.latin1());
+}
+
+QString RsdDriver::from1251(const char *str) const
+{
+    return codec1251->toUnicode(str);
 }
 
 QByteArray RsdDriver::to1251(const QString &str) const

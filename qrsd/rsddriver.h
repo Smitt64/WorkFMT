@@ -29,9 +29,11 @@ public:
     bool rollbackTransaction() Q_DECL_OVERRIDE;
 
     QString fromOem866(const QLatin1String &str) const;
+    QString fromOem866(const char *str) const;
     QByteArray toOem866(const QString &str) const;
 
     QString from1251(const QLatin1String &str) const;
+    QString from1251(const char *str) const;
     QByteArray to1251(const QString &str) const;
 
     CRsdConnection *connection();
