@@ -113,16 +113,9 @@ void RsExpOperation::run()
         obj->setConnectionInfo(pWizard->field("User").toString(),
                                pWizard->field("Password").toString(),
                                pWizard->field("Service").toString(), false);
-        obj->exportTable(table, dir);
-        /*QStringList arguments = QStringList()
-                                  << pWizard->field("User").toString()
-                                  << pWizard->field("Password").toString()
-                                  << pWizard->field("Service").toString()
-                                  << table;
 
-        emit procMessage("*************** Start unloading ***************");
-        CoreStartProcess(&proc, tmpDir.absoluteFilePath("RSexp.exe"), arguments, true, true,
-                         std::numeric_limits<int>::max());*/
+        obj->setClobMode((ExportObject::ClobMode)ClobMode);
+        obj->exportTable(table, dir);
     }
 
     pParent->m_Complete = true;
@@ -162,6 +155,8 @@ void ExportPage::initializePage()
     else if (field("Action").toInt() == SelectActionPage::ActionExportOra)
     {
         RsExpOperation *pObj = new RsExpOperation(pWizard, this);
+        pObj->ClobMode = field("ClobMode").toInt();
+
         connect(pObj, SIGNAL(procMessage(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
         QThreadPool::globalInstance()->start(pObj);
     }

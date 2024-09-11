@@ -57,9 +57,12 @@ class RsExpOperation : public QObject,  public QRunnable
 
     ExportPage *pParent;
     DbtToolWizard *pWizard;
+
 public:
     RsExpOperation(DbtToolWizard *Wizard, ExportPage *parent);
     virtual void run() Q_DECL_OVERRIDE;
+
+    int ClobMode;
 
 signals:
     void procMessage(const QString &str);

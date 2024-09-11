@@ -8,6 +8,7 @@
 class SelectActionPage;
 class OraConnectionPage;
 class SelectTablesPage;
+class ClobParamsPage;
 class ExportPage;
 class DbtToolWizard : public QWizard
 {
@@ -16,6 +17,7 @@ public:
     enum PagesEnum
     {
         eSelectActionPage,
+        eClobParamsPage,
         eConnectionPage,
         eSelectTablesPage,
         eExportPage,
@@ -36,6 +38,7 @@ private:
     SelectActionPage *m_pActionPage;
     OraConnectionPage *m_pOraConnectionPage;
     SelectTablesPage *m_pSelectTablesPage;
+    ClobParamsPage *m_pClobParamsPage;
     ExportPage *m_pExportPage;
 
     QMap<QString, QVariant> m_Fields;

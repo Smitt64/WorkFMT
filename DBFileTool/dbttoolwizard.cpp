@@ -3,6 +3,7 @@
 #include "oraconnectionpage.h"
 #include "selecttablespage.h"
 #include "exportpage.h"
+#include "clobparamspage.h"
 #include <QVariant>
 #include <QDir>
 #include <QTranslator>
@@ -19,8 +20,10 @@ DbtToolWizard::DbtToolWizard() :
     m_pOraConnectionPage = new OraConnectionPage(this);
     m_pSelectTablesPage = new SelectTablesPage(this);
     m_pExportPage = new ExportPage(this);
+    m_pClobParamsPage = new ClobParamsPage(this);
 
     addPage(m_pActionPage);
+    addPage(m_pClobParamsPage);
     addPage(m_pOraConnectionPage);
     addPage(m_pSelectTablesPage);
     addPage(m_pExportPage);

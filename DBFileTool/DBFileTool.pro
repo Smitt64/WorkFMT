@@ -34,6 +34,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp \
+    clobparamspage.cpp \
     dbfileobject.cpp \
     dbmainwindow.cpp \
     dbttoolwizard.cpp \
@@ -59,6 +60,7 @@ target.path = ../bin
 INSTALLS += target
 
 HEADERS += \
+    clobparamspage.h \
     dbfileobject.h \
     dbmainwindow.h \
     dbttoolwizard.h \
@@ -71,6 +73,7 @@ HEADERS += \
     task.h
 
 FORMS += \
+    clobparamspage.ui \
     dbmainwindow.ui \
     exportpage.ui \
     oraconnectionpage.ui \

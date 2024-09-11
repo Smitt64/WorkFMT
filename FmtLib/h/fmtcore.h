@@ -12,6 +12,7 @@
 
 #define QRSD_DRIVER "qrsd"
 #define RSD_UNICODE "RSD_UNICODE"
+#define RSD_BLOB_MAX_LEN 32768
 
 #define AutoIncType 15
 #define BTNS_OFFSET 25

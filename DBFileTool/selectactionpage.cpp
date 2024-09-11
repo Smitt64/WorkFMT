@@ -38,7 +38,7 @@ int SelectActionPage::nextId() const
     if (field("Action").toInt() == ActionExportOraOld)
         return DbtToolWizard::eConnectionPage;
     if (field("Action").toInt() == ActionExportOra)
-        return DbtToolWizard::eConnectionPage;
+        return DbtToolWizard::eClobParamsPage;
     if (field("Action").toInt() == ActionImportOra)
         return DbtToolWizard::eConnectionPage;
 

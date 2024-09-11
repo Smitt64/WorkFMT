@@ -32,10 +32,13 @@ private:
     QStringList args;
     QCommandLineParser parser;
     QScopedPointer<QCommandLineOption> connectionStringOption;
+    QScopedPointer<QCommandLineOption> connectionUnicode;
     QScopedPointer<QCommandLineOption> exportOption;
     QScopedPointer<QCommandLineOption> importOption;
     QScopedPointer<QCommandLineOption> dirOption;
     QScopedPointer<QCommandLineOption> dbtOption;
+    QScopedPointer<QCommandLineOption> useOld;
+    QScopedPointer<QCommandLineOption> clobMode;
 
     QScopedPointer<QTextStream> sterr;
     QScopedPointer<QTextStream> stout;
