@@ -22,6 +22,8 @@
 #define RsCreateSqlContext "RsCreateSqlDir"
 #define RsDiffToScriptContext "RsDiffToScript"
 
+#define RsExportDatContext "RsExportDat"
+
 #define HEX_COLOR_REGEX QString("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
 
 enum FmtNamesColumn
