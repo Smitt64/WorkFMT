@@ -1,7 +1,7 @@
 #include "fmtimpexpwrp.h"
 #include "fmtapplication.h"
 #include "fmtcore.h"
-#include "fmterrors.h"
+#include <errorsmodel.h>
 #include "loggingcategories.h"
 #include <QProcess>
 #include <QDir>
@@ -150,7 +150,7 @@ void FmtImpExpWrp::setDsn(const QString &dsn)
     m_dsn = dsn;
 }
 
-void FmtImpExpWrp::parseProtocol(FmtErrors *ptr)
+void FmtImpExpWrp::parseProtocol(ErrorsModel *ptr)
 {
     QFile f866(m_Protocol);
     QFile fUtf(m_Protocol);

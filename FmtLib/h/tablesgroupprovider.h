@@ -27,13 +27,13 @@ public:
     QStringList getGroupsList();
     QSqlDatabase &db();
 
-signals:
-
-public slots:
+    bool isGroupExists(const QString &name);
 
 private:
     explicit TablesGroupProvider(QObject *parent = 0);
     bool Init();
+    
+    void createDefaultGroups();
     QString ReadFileContent(const QString &filename);
     void CreateTableGroupsTable();
     void CreateTablesInGroupTable();

@@ -4,6 +4,7 @@
 #include "odbctablemodel.h"
 #include "odbctablemodeldelegate.h"
 #include "errordlg.h"
+#include <errorsmodel.h>
 #include <QPushButton>
 
 DebugConnect::DebugConnect(QWidget *parent) :
@@ -45,8 +46,8 @@ void DebugConnect::on_connectionsTree_clicked(const QModelIndex &index)
 
 void DebugConnect::apply()
 {
-    FmtErrors log;
-    ErrorDlg dlg(ErrorDlg::mode_Information, this);
+    ErrorsModel log;
+    ErrorDlg dlg(ErrorDlg::ModeInformation, this);
     dlg.setErrors(&log);
     dlg.setMessage(QObject::tr("Протокол настройки схемы: "));
     dlg.exec();

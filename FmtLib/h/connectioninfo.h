@@ -16,6 +16,16 @@ class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
     friend class FmtTablesModel;
     /// @private
     friend class OracleAuthDlg;
+    Q_PROPERTY(bool isOpen READ isOpen CONSTANT)
+    Q_PROPERTY(bool isUnicode READ isUnicode CONSTANT)
+    Q_PROPERTY(QString typeName READ typeName CONSTANT)
+    Q_PROPERTY(int type READ type CONSTANT)
+    Q_PROPERTY(QString user READ user CONSTANT)
+    Q_PROPERTY(QString password READ password CONSTANT)
+    Q_PROPERTY(QString dsn READ dsn CONSTANT)
+    Q_PROPERTY(QObject *db READ sqlDatabaseObj CONSTANT)
+
+    Q_PROPERTY(QString connectionName READ connectionName CONSTANT)
 public:
     enum ConnectionType
     {
@@ -32,18 +42,21 @@ public:
         CanSaveToXml,
         CanLoadUnloadDbf
     };
+
+    Q_ENUM(ConnectionType)
+    Q_ENUM(ConnectionFeature)
     /**
      * @brief ConnectionInfo
      * @param dbalias
      */
-    ConnectionInfo(const QString &dbalias = QString());
+    Q_INVOKABLE ConnectionInfo(const QString &dbalias = QString());
     virtual ~ConnectionInfo();
 
     FmtTablesModel *tablesModel();
     QSqlDatabase &db();
     QSqlDriver *driver();
 
-    bool hasFeature(ConnectionInfo::ConnectionFeature feature) const;
+    Q_INVOKABLE bool hasFeature(ConnectionInfo::ConnectionFeature feature) const;
 
     /**
      * @brief Устанавливает имя схемы
@@ -57,13 +70,15 @@ public:
      * @return Имя схемы
      */
     QString schemeName() const { return m_SchemeName; }
-    QString dbAlias() const { return m_Alias; }
+    QString connectionName() const { return m_Alias; }
 
     QString host() const { return m_Host; }
     QString service() const { return m_Service; }
     QString user() const { return m_User; }
     QString password() const { return m_Password; }
     QString dsn() const { return m_DSN; }
+
+    QObject *sqlDatabaseObj() { return m_SqlDatabaseObj; }
 
     QIcon colorIcon(const QSize &size = QSize(32, 32));
     QString color();
@@ -75,11 +90,12 @@ public:
     int type() const;
     QString typeName() const;
 
-    bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn,
+    Q_INVOKABLE bool open(const QString &drv, const QString &user, const QString &password, const QString &dsn,
               const QString &options = QString(), QString *error = nullptr);
-    bool openSqlite(const QString &filename);
-    bool openSqlteMemory();
-    void close();
+
+    Q_INVOKABLE bool openSqlite(const QString &filename);
+    Q_INVOKABLE bool openSqlteMemory();
+    Q_INVOKABLE void close();
 
     FmtTablesModel *addModel();
     FmtTablesModel *getModel(const int &index);
@@ -104,6 +120,8 @@ protected:
     QList<FmtTablesModel*> pModels;
     QList<int> m_Index;
     int Index;
+
+    QObject *m_SqlDatabaseObj;
 };
 
 #endif // CONNECTIONINFO_H

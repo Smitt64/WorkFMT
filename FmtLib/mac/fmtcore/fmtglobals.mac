@@ -1,0 +1,7 @@
+/*
+$Author: Serpkov
+$Description: Макрос с объявлениями глобальных переменных
+*/
+
+var {FmtTable};
+var {CurrentConnection};

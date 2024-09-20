@@ -1,0 +1,47 @@
+/*
+$Author: Serpkov
+$Description: Макрос с объявлениями глобальных переменных
+$ShowReport: true
+$Highlighter: sql
+*/
+
+import "fmtglobals.mac", fmt, StdDialogs, ToolsRuntime;
+
+macro ExecAction()
+    debugbreak;
+
+    var conn = ConnectionInfo();
+    /*var haswindow = fmtAppHasTableWindow("dparty_dbt");
+
+    if (haswindow)
+        msgInformation("информация", "Окно есть");
+    else
+        msgCritical("информация", "Окна нет");
+    end;*/
+
+    /*var haswindow = fmtappOpenTableWindow("dparty_dbt");
+
+    var table = haswindow.table;
+    var selected = fmtSelectTableFieldsDailog(table, "Выбор полей: ");
+
+    println(selected);*/
+
+    //var wnd = fmtappConnectionWindows({CurrentConnection});
+
+    /*var fldlist = fmtSelectTableFieldsDailog({FmtTable});
+    println(fmt.fmtGenModifyColumnScript(fldlist));*/
+
+    /*
+    var user;
+    var pass;
+    var service;
+    var connString = "CONNSTRING = dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031";
+    fmtappParseConnectionString(connString, user, pass, service);*/
+    
+    var selected = fmtSelectTableFieldsDailog({FmtTable}, "Выбор полей: ");
+    println(selected[0].getCommentSql());
+    println(selected[0].getCppDecl(true));
+
+    //fmt.fmtTableSqlText({FmtTable});
+    //fmtappOpenConnection();
+end;

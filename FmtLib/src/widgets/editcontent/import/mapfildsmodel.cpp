@@ -29,7 +29,7 @@ QVariant MapFildsModel::data(const QModelIndex &index, int role) const
     if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
 
-    FmtField *pFld = pTable->field(static_cast<FmtNumber5>(index.row()));
+    FmtField *pFld = pTable->field(static_cast<qint16>(index.row()));
     if (index.column() == 0)
         return pFld->undecorateName();
 

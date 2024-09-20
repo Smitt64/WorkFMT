@@ -53,7 +53,6 @@
         <file>img/CopyHS.png</file>
         <file>img/Properties.png</file>
         <file>img/FormRunHS.png</file>
-        <file>sql_keys.txt</file>
         <file>img/Edit_RedoHS.png</file>
         <file>img/Edit_UndoHS.png</file>
         <file alias="fmt_names">sql/fmt_names.sql</file>
@@ -66,7 +65,7 @@
         <file>img/openconfile.png</file>
         <file>img/remove.png</file>
         <file>img/script.png</file>
-        <file>txt/samplescript.js</file>
+        <file>txt/samplescript.mac</file>
         <file>img/NewDocumentHS.png</file>
         <file>img/rundebug.png</file>
         <file>img/DataContainer_NewRecordHS.png</file>
@@ -102,9 +101,6 @@
         <file>img/InsertClause_10553_32.png</file>
         <file>img/NewTable_5619_32.png</file>
         <file>FmtTypesMap.json</file>
-        <file>cpp_rstypes.txt</file>
-        <file>cpp_rsenums.txt</file>
-        <file>cpp_rsdefines.txt</file>
         <file>img/codewin.png</file>
         <file>img/FontHS.png</file>
         <file>img/PushBackClause_10553_32.png</file>
@@ -114,9 +110,13 @@
         <file>img/filecabinet.png</file>
         <file>img/dpplg.dll_I0095_0409.ico</file>
         <file>img/VCProject.dll_I000d_0409.ico</file>
-        <file>../syntaxhighlighter/Default.json</file>
         <file alias="AboutDlg">../json/AboutDlg.json</file>
         <file>img/DiffToScript.png</file>
         <file>img/book_32.png</file>
+        <file>img/explorer.exe_14_103-6.png</file>
+        <file>img/msgr3en.dll_14_128_0-0.png</file>
+        <file>img/nwprovau.dll_14_604-1.png</file>
+        <file>img/sapi.cpl_14_138-1.png</file>
+        <file alias="TablesGroupProvider">../json/TablesGroupProvider.json</file>
     </qresource>
 </RCC>

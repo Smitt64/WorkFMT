@@ -9,7 +9,7 @@ class FmtGenHotFix : public FmtGenInterface
 public:
     FmtGenHotFix();
     virtual ~FmtGenHotFix();
-    virtual GenType getContentType() const { return FmtGenInterface::GenSql; }
+    virtual int getContentType() const { return HighlighterSql; }
 
 protected:
     virtual QByteArray makeContent(QSharedPointer<FmtTable> pTable);

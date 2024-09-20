@@ -188,7 +188,7 @@ void FmRichTextWidget::ReadConetent(FmtSharedTablePtr &pTable, const FmRichTextR
     }
 }
 
-void FmRichTextWidget::AddToCreateFieldParamList(CreateFieldParamList &list, const FmtFldType &type, const int &size)
+void FmRichTextWidget::AddToCreateFieldParamList(CreateFieldParamList &list, const qint16 &type, const int &size)
 {
     FmRichTextCreateFieldParam param;
     param.type = type;
@@ -211,7 +211,7 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
         AddToCreateFieldParamList(CreateList, fmtt_BIGINT);
     else if (str.contains(QRegularExpression("NUMBER[\\n\\s\\t]*\\((\\d+)\\)", QRegularExpression::CaseInsensitiveOption), &match))
     {
-        FmtFldType type = fmtt_INT;
+        qint16 type = fmtt_INT;
         int size = match.captured(1).toInt();
 
         if (size == 10)
@@ -231,7 +231,7 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
         AddToCreateFieldParamList(CreateList, fmtt_MONEY);
     else if (str.contains(QRegularExpression("(STRING|VARCHAR2|SNR|UCHR)[\\n\\s\\t]*\\((\\d+)\\)", QRegularExpression::CaseInsensitiveOption), &match))
     {
-        FmtFldType type = fmtt_STRING;
+        qint16 type = fmtt_STRING;
         int size = match.captured(2).toInt();
 
         if (match.captured(1).contains("VARCHAR2", Qt::CaseInsensitive))
@@ -242,7 +242,7 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
     else if (str.contains("DATE", Qt::CaseInsensitive) || str.contains("DATA", Qt::CaseInsensitive))
     {
         bool created = false;
-        FmtFldType type = fmtt_DATE;
+        qint16 type = fmtt_DATE;
 
         if (str.contains("Дата", Qt::CaseInsensitive) || comment.contains("Date", Qt::CaseInsensitive) || comment.contains("Дата", Qt::CaseInsensitive) || comment.contains("DATA", Qt::CaseInsensitive))
         {
@@ -265,7 +265,7 @@ CreateFieldParamList FmRichTextWidget::GetFieldsToCreate(const QString &str, con
         AddToCreateFieldParamList(CreateList, fmtt_TIME);
     else if (str.contains(QRegularExpression("(CHR|CHAR)[\\n\\s\\t]*\\((\\d+)\\)*", QRegularExpression::CaseInsensitiveOption), &match))
     {
-        FmtFldType type = fmtt_CHR;
+        qint16 type = fmtt_CHR;
         int size = match.captured(2).toInt();
 
         if (size > 1)

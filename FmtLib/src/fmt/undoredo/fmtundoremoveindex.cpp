@@ -13,7 +13,7 @@ FmtUndoRemoveIndex::~FmtUndoRemoveIndex()
 
 }
 
-void FmtUndoRemoveIndex::setIndexRow(const FmtFldIndex &row)
+void FmtUndoRemoveIndex::setIndexRow(const qint16 &row)
 {
     m_Row = row;
     setText(QObject::tr("Удален индекс _IDX%1")

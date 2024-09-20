@@ -1,0 +1,33 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp",
+        "qtextstream": "cpp",
+        "qsettings": "cpp",
+        "qvboxlayout": "cpp",
+        "iterator": "cpp",
+        "xhash": "cpp",
+        "xtree": "cpp",
+        "xlocale": "cpp",
+        "list": "cpp",
+        "xiosbase": "cpp",
+        "chrono": "cpp",
+        "functional": "cpp",
+        "optional": "cpp",
+        "system_error": "cpp",
+        "type_traits": "cpp",
+        "xlocnum": "cpp",
+        "xtr1common": "cpp",
+        "compare": "cpp",
+        "format": "cpp",
+        "future": "cpp",
+        "memory": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "variant": "cpp",
+        "xmemory": "cpp"
+    }
+}

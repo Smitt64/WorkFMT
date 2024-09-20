@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "fmtapplication.h"
 #include "fmtcore.h"
+#include "toolsruntime.h"
 #include <QDebug>
 #include <QApplication>
 #include <QMessageBox>
@@ -8,12 +9,15 @@
 #include <QCommandLineParser>
 #include <QSettings>
 #include <QDir>
+#include <QStyleFactory>
 
 static void ProcessRsreqOption(MainWindow *w, const QString &constringsdir);
 static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser, QCommandLineOption &logOption, QCommandLineOption &logruleOption);
 
 int main(int argc, char *argv[])
-{    
+{
+    QDir settingsDir = QDir(argv[0]);
+
     FmtApplication a(argc, argv);
 
     QCommandLineParser parser;
@@ -41,11 +45,13 @@ int main(int argc, char *argv[])
     parser.addOption(logOption);
     parser.addOption(logruleOption);
 
+    qDebug() << a.arguments();
     parser.process(a.arguments());
 
     MainWindow *w = (MainWindow*)a.addMainWindow();
     ProcessLoggingOption(&a, &parser, logOption, logruleOption);
     a.init();
+    a.applyStyle();
 
     // строка подключения
     if (parser.isSet(connectionStringOption))
@@ -93,7 +99,9 @@ static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser
     if (parser->isSet(logOption))
     {
         QString rules;
-        if (parser->isSet(logruleOption)) rules = parser->value(logruleOption);
-        app->initLogging(rules);
+        if (parser->isSet(logruleOption))
+            rules = parser->value(logruleOption);
+
+        toolInitLogging("WorkFmt", rules);
     }
 }

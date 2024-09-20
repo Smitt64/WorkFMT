@@ -19,6 +19,7 @@ public:
 
 private:
     QString m_alias;
+    QByteArray m_Params;
 };
 
 template <class C, class Base>

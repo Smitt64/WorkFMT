@@ -1,0 +1,52 @@
+/*
+$Description: Пример генерации кода по таблице
+$Author: Serpkov
+$Highlighter: Plain
+$Title: (Пример) Печать таблицы в текстовом виде
+*/
+import Fmt;
+
+macro Execute(table : FmtTable)
+[+-----------------+-------------+--------+--------------------------+];
+[|   Наименование  |     Тип     | Размер |       Комментарий        |];
+[+-----------------+-------------+--------+--------------------------+];
+    var i = 0;
+    while (i < table.FieldsCount)
+        var fld = table.field(i);
+[| ############### | ########### | ###### | ######################## |]
+(fld.Name, FMT.fmtTypeNameForType(fld.type), STRing(fld.Size), fld.Comment:w);
+[+-----------------+-------------+--------+--------------------------+];
+        i = i + 1;
+    end;
+
+    println();
+    i = 0;
+
+[+------------------------+-----------+--------+------+---------+-----------+------------+-------+------------------------------+];
+[| Имя                    | Тип       | Dup    | NULL | AutoInc | DescOrder | Исключить  | LOCAL | Комментарий                  |];
+[|                        |           |        |      |         |           | из индекса |       |                              |];
+[+------------------------+-----------+--------+------+---------+-----------+------------+-------+------------------------------+];
+    while (i < table.IndecesCount)
+        var index = table.tableIndex(i);
+[| ################################## | ###### | #### | ####### |           |            | ##### |                              |]
+(index.Name, index.isDup, FMT.NullString(index.NullValue), index.isAutoInc, index.isLocal);
+[+------------------------+-----------+--------+------+---------+-----------+------------+-------+------------------------------+];
+        var j = 0;
+
+        while (j < index.SegmentsCount)
+            var segment = index.segment(j);
+            var NullValue = "";
+
+            if (index.NullValue == FmtKeyNullVal.Nullval_Any)
+                NullValue = segment.isNotNull;
+            end;
+[| ###################### | ######### | ###### | #### | ####### | ######### | ########## | ##### | ############################ |]
+(segment.field.Name, FMT.fmtTypeNameForType(segment.field.type), 
+segment.isDup, NullValue, index.isAutoInc, segment.descOrder, segment.isReal, segment.isLocal, segment.comment);
+
+            j = j + 1;
+        end;
+        [+------------------------+-----------+--------+------+---------+-----------+------------+-------+------------------------------+];
+        i = i + 1;
+    end;
+end;

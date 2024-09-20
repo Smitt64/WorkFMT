@@ -10,8 +10,8 @@ public:
     FmtGenCppClassTemplate();
     virtual ~FmtGenCppClassTemplate();
 
-    virtual GenType getContentType() const { return FmtGenInterface::GenCpp; }
-    virtual FmtGenHighlightingRuleList highlightingRuleList() const;
+    virtual int getContentType() const { return HighlighterCpp; }
+    virtual GenHighlightingRuleList highlightingRuleList() const;
 
 protected:
     virtual QByteArray makeContent(FmtSharedTablePtr pTable);
@@ -40,11 +40,11 @@ private:
     QString getRslClassName(const FmtSharedTablePtr &pTable);
     QString FormatName(QString &Mask, const FmtSharedTablePtr &pTable);
     QString normalizeFieldName(const QString &m_Name);
-    QString getUnionKeyName(const FmtSharedTablePtr &pTable, const FmtNumber5 &key);
+    QString getUnionKeyName(const FmtSharedTablePtr &pTable, const qint16 &key);
     GenCppSettingsParams prm;
     QString pkUnionName;
 
-    FmtGenHighlightingRuleList m_HighlightingRuleList;
+    GenHighlightingRuleList m_HighlightingRuleList;
 };
 
 #endif // FMTGENCPPCLASSTEMPLATE_H

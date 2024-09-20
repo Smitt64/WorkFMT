@@ -9,11 +9,7 @@
 #  define FMTLIBSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-typedef qint16  FmtNumber5;
-typedef qint32  FmtNumber10;
-
-typedef qint16  FmtFldType;
-typedef qint16  FmtFldIndex;
-typedef quint64 FmtRecId;
+typedef qint16  qint16;
+typedef quint64 quint64;
 
 #endif // FMTLIzx _GLOBAL_H

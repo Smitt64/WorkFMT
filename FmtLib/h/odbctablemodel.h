@@ -16,7 +16,9 @@ typedef QVector<OdbcElement> OdbcElementVector;
 class FMTLIBSHARED_EXPORT OdbcTableModel : public QAbstractTableModel
 {
     Q_OBJECT
-
+    Q_PROPERTY(int count READ rowCount CONSTANT)
+    Q_PROPERTY(int size READ rowCount CONSTANT)
+    
 #ifdef Q_OS_WIN
     typedef QMap<QString,QString> ODBCDataSources;
 #endif
@@ -37,7 +39,7 @@ public:
         fld_Max
     };
 
-    OdbcTableModel(QObject *parent = nullptr);
+    Q_INVOKABLE OdbcTableModel(QObject *parent = nullptr);
     virtual ~OdbcTableModel();
 
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_FINAL;
@@ -46,6 +48,16 @@ public:
 
     const OdbcElement &element(const QModelIndex &index) const;
     QModelIndex indexOfService(const QString &key) const;
+
+    Q_INVOKABLE int serviceIndex(const QString &key) const;
+
+    Q_INVOKABLE QString name(const int &index) const; 
+    Q_INVOKABLE QString description(const int &index) const;
+    Q_INVOKABLE QString home(const int &index) const;
+    Q_INVOKABLE QString homeDir(const int &index) const;
+    Q_INVOKABLE QString driver(const int &index) const;
+    Q_INVOKABLE quint8 node(const int &index) const;
+    Q_INVOKABLE quint8 db(const int &index) const;
 
 private:
 #ifdef Q_OS_WIN

@@ -1,7 +1,7 @@
 #include "dataselectdialog.h"
 #include "ui_dataselectdialog.h"
-#include "codeeditor.h"
-#include "highlighter.h"
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/codehighlighter.h>
 #include <QtSql>
 
 DataSelectDialog::DataSelectDialog(QWidget *parent) :
@@ -11,7 +11,7 @@ DataSelectDialog::DataSelectDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     pEditor = new CodeEditor(this);
-    pHighlighter = new SqlHighlighter(pEditor->document());
+    ToolApplyHighlighter(pEditor, HighlighterSql);
 
     ui->tabWidget->addTab(pEditor, tr("Запрос"));
 

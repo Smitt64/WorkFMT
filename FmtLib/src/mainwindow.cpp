@@ -6,16 +6,17 @@
 #include "fmtworkwindow.h"
 #include "fmttable.h"
 #include "fmtcore.h"
+#include "options/fmtoptionsdlg.h"
 #include "fmtfromrichtext.h"
 #include "treecombobox.h"
 #include "subwindowsmodel.h"
-#include "impexpparams.h"
 #include "fmtimpexpwrp.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "aboutdlg.h"
 #include "tablesdockwidget.h"
 #include "exporttoxmlwizard.h"
 #include "errordlg.h"
+#include <fmtapplication.h>
 #include "tablesgroupprovider.h"
 #include "windowslistdlg.h"
 #include "tablesgroupsdlg.h"
@@ -23,13 +24,13 @@
 #include "stringlistdlg.h"
 #include "fmttablelistdelegate.h"
 #include "massoperationwizard.h"
-#include "logsettingsdlg.h"
 #include "queryeditor/queryeditor.h"
 #include "selectfolderdlg.h"
 #include "recentconnectionlist.h"
-#include "highlighter.h"
 #include "debugconnect.h"
 #include "updatecheckermessagebox.h"
+#include "windowactionsregistry.h"
+#include "rslexecutors/toolbaractionexecutor.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -111,39 +112,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QDir dir = QApplication::applicationDirPath();
     if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
         dir = QDir::current();
+    if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
+        ui->actionDumpTool->setEnabled(false);
 
-    if (QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
-    {
-        QAction *actionDumpTool = new QAction(this);
-        actionDumpTool->setText(tr("Импорт/экспорт файла дампа"));
-        actionDumpTool->setIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
-        ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDumpTool);
-
-        connect(actionDumpTool, &QAction::triggered, [=]()
-        {
-            QProcess::startDetached(dir.absoluteFilePath("DumpTool.exe"), QStringList());
-        });
-    }
-
-    if (QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
-    {
-        QAction *actionDiffTool = new QAction(this);
-        actionDiffTool->setText(tr("Запустить DiffToScript"));
-        actionDiffTool->setIcon(QIcon(":/img/DiffToScript.png"));
-        ui->menuFile->insertAction(ui->action_FMT_sqlite, actionDiffTool);
-
-        connect(actionDiffTool, &QAction::triggered, [=]()
-        {
-            QProcess::startDetached(dir.absoluteFilePath("DiffToScript.exe"), QStringList());
-        });
-    }
+    if (!QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
+        ui->actionDiffTool->setEnabled(false);
 
     m_ConnectionsGroup = new QActionGroup(this);
-    pLogButton = new QPushButton(this);
-    pLogButton->setToolTip(tr("Параметры трассы"));
-    pLogButton->setIcon(QIcon(":/img/book_notebook.png"));
-    pLogButton->setFlat(true);
-    ui->statusBar->addPermanentWidget(pLogButton);
 
     pUpdateButton = new QPushButton(this);
     pUpdateButton->setToolTip(tr("Обновления"));
@@ -157,6 +132,18 @@ MainWindow::MainWindow(QWidget *parent) :
     CreateSearchToolBar();
     CreateViewMenu();
     CreateCheckUpdateRunnable();
+
+    pActionExecutor = new ToolbarActionExecutor(this);
+    windowActionsRegistry()->setRslExecutor(pActionExecutor);
+
+    windowActionsRegistry()->scanActions(ui->menuFile);
+    windowActionsRegistry()->scanActions(ui->menuService);
+    windowActionsRegistry()->scanActions(ui->menuWindow);
+    windowActionsRegistry()->scanActions(ui->menu);
+
+    QList<QToolBar*> toolBars = windowActionsRegistry()->makeToolBars(((FmtApplication*)qApp)->settings(), "UserCommands", "ToolBars");
+    for (QToolBar *toolbar : toolBars)
+        addToolBar(toolbar);
 
     ui->tabToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     ui->tabToolBar->setIconSize(QSize(20, 20));
@@ -177,7 +164,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionRebuildOffset, SIGNAL(triggered(bool)), SLOT(rebuidOffsets()));
     connect(ui->actionCreateFromText, SIGNAL(triggered(bool)), SLOT(createFromText()));
 
-    connect(ui->actionImpExpPrm, SIGNAL(triggered(bool)), SLOT(ImpExpSettings()));
     connect(ui->actionImportDir, SIGNAL(triggered(bool)), SLOT(ImpDirAction()));
     connect(ui->actionImport, SIGNAL(triggered(bool)), SLOT(ImportAction()));
 
@@ -187,17 +173,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(pMdi, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(subWindowActivated(QMdiSubWindow*)));
     connect(ui->actionAbout, SIGNAL(triggered(bool)), SLOT(about()));
     connect(ui->actionSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
-    connect(ui->actionEditGroups, SIGNAL(triggered(bool)), SLOT(EditGroups()));
     connect(ui->actionCopyTable, SIGNAL(triggered(bool)), SLOT(CopyTable()));
     connect(ui->actionCopyTableAs, SIGNAL(triggered(bool)), SLOT(CopyTableTo()));
     connect(ui->actionCopyTableTmp, SIGNAL(triggered(bool)), SLOT(CopyTableToTmp()));
-    connect(ui->actionRsexpDir, SIGNAL(triggered(bool)), SLOT(RsExpExportDir()));
     connect(ui->actionUnloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadDbf()));
     connect(ui->actionLoadDbf, SIGNAL(triggered(bool)), SLOT(LoadDbf()));
     connect(ui->action_FMT_sqlite, SIGNAL(triggered(bool)), SLOT(UnloadSqlite()));
     connect(ui->actionOpenConnection, SIGNAL(triggered(bool)), SLOT(OpenConnection()));
     connect(actionDeleteTable, SIGNAL(triggered(bool)), SLOT(RemoveFmtTable()));
-    connect(pLogButton, SIGNAL(clicked(bool)), SLOT(LoggingSettings()));
     connect(ui->actionEditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
     connect(ui->actionGenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
     connect(ui->actionGenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
@@ -206,11 +189,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionMassOp, SIGNAL(triggered(bool)), SLOT(OnMassOpAction()));
     connect(ui->actionConfluence, SIGNAL(triggered(bool)), SLOT(OnConfluence()));
     connect(ui->actionCreateXml, SIGNAL(triggered(bool)), SLOT(CreateFromXml()));
-    connect(ui->actionHighlighterTheme, SIGNAL(triggered(bool)), SLOT(HighlighterTheme()));
     connect(ui->action_Diff_to_Script, SIGNAL(triggered(bool)), SLOT(GenDiffToScriptScript()));
+    connect(ui->actionOptions, SIGNAL(triggered(bool)), SLOT(OptionsAction()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
+
+    connect(ui->actionDumpTool, &QAction::triggered, [=]()
+    {
+        QProcess::startDetached(dir.absoluteFilePath("DumpTool.exe"), QStringList());
+    });
+
+    connect(ui->actionDiffTool, &QAction::triggered, [=]()
+    {
+        QProcess::startDetached(dir.absoluteFilePath("DiffToScript.exe"), QStringList());
+    });
 
 #ifdef QT_NO_DEBUG
     connect(ui->actionHotFix, SIGNAL(triggered(bool)), SLOT(HotFixCreate()));
@@ -368,12 +361,6 @@ void MainWindow::UpdateActions()
     }
 }
 
-void MainWindow::ImpExpSettings()
-{
-    ImpExpParams dlg(this);
-    dlg.exec();
-}
-
 void MainWindow::ImpDirAction()
 {
     ConnectionInfo *current = currentConnection();
@@ -404,9 +391,9 @@ void MainWindow::ImpDirAction()
     {
         loop.exec();
 
-        FmtErrors log;
+        ErrorsModel log;
         imp.parseProtocol(&log);
-        ErrorDlg edlg(ErrorDlg::mode_Information, this);
+        ErrorDlg edlg(ErrorDlg::ModeInformation, this);
         edlg.setErrors(&log);
         edlg.setMessage(tr("Протокол загрузки xml файлов: "));
         edlg.exec();
@@ -440,7 +427,7 @@ void MainWindow::ImportAction()
     connect(&dlg, SIGNAL(canceled()), &loop, SLOT(quit()));
 
     int pos = 0;
-    FmtErrors log;
+    ErrorsModel log;
     foreach (const QString &file, files)
     {
         imp.importFile(file);
@@ -456,7 +443,7 @@ void MainWindow::ImportAction()
 
     if (!log.isEmpty())
     {
-        ErrorDlg edlg(ErrorDlg::mode_Information, this);
+        ErrorDlg edlg(ErrorDlg::ModeInformation, this);
         edlg.setErrors(&log);
         edlg.setMessage(tr("Протокол загрузки xml файлов: "));
         edlg.exec();
@@ -485,14 +472,44 @@ void MainWindow::OpenConnection(const QString &connectionString)
 
 void MainWindow::actionConnectTriggered()
 {
+    (void)openConnection();
+}
+
+ConnectionInfo* MainWindow::openConnection()
+{
     OracleAuthDlg dlg(this);
+    ConnectionInfo *info = nullptr;
 
     if (dlg.exec() == QDialog::Accepted)
     {
-        ConnectionInfo *info = dlg.getConnectionInfo();
+        info = dlg.getConnectionInfo();
         CreateConnectionActio(info);
         info->updateFmtList();
     }
+
+    return info;
+}
+
+bool MainWindow::isExistsConnection(ConnectionInfo *connection)
+{
+    for (ConnectionInfo *info : m_pConnections)
+    {
+        if (info->connectionName() == connection->connectionName())
+            return true;
+    }
+
+    return false;
+}
+
+bool MainWindow::addConnection(ConnectionInfo *connection)
+{
+    if (isExistsConnection(connection))
+        return false;
+
+    CreateConnectionActio(connection);
+    connection->updateFmtList();
+
+    return true;
 }
 
 QAction *MainWindow::CreateConnectionActio(ConnectionInfo *info)
@@ -579,6 +596,11 @@ void MainWindow::SetActiveFmtWindow(QMdiSubWindow *wnd)
 {
     wnd->setWindowState(Qt::WindowNoState);
     pMdi->setActiveSubWindow(wnd);
+}
+
+QMdiSubWindow *MainWindow::currentMdiWindow()
+{
+    return pMdi->activeSubWindow();
 }
 
 void MainWindow::OnTableChangeUpdtList()
@@ -783,7 +805,7 @@ void MainWindow::actionInit()
 
         if (table->load(index.data(Qt::UserRole).toString()))
         {
-            InitFmtTable(table, this);
+            InitFmtTable(table.data(), this);
         }
     }
 }
@@ -917,6 +939,7 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
 
 void MainWindow::CreateWindowFunctional()
 {
+    ui->windowToolBar->addAction(ui->actionOptions);
     ui->actionNextWnd->setShortcut(QKeySequence(QKeySequence::NextChild));
     ui->actionPrevWnd->setShortcut(QKeySequence(QKeySequence::PreviousChild));
 
@@ -968,17 +991,6 @@ void MainWindow::showWindowList()
 void MainWindow::about()
 {
     AboutDlg dlg(":/AboutDlg", this);
-    dlg.exec();
-}
-
-void MainWindow::EditGroups()
-{
-    ConnectionInfo *current = currentConnection();
-
-    if (!current)
-        return;
-
-    TablesGroupsDlg dlg(current, this);
     dlg.exec();
 }
 
@@ -1073,16 +1085,6 @@ void MainWindow::CopyTableToTmp()
             table->copyToAsTmp(cTable);
             CreateDocument(cTable)->show();
         }
-    }
-}
-
-void MainWindow::RsExpExportDir()
-{
-    QString path = QFileDialog::getExistingDirectory(this);
-
-    if (!path.isEmpty())
-    {
-        settings()->setValue("RsExpUnlDir", path);
     }
 }
 
@@ -1221,12 +1223,6 @@ void MainWindow::RemoveFmtTable()
     }
 }
 
-void MainWindow::LoggingSettings()
-{
-    LogSettingsDlg dlg(this);
-    dlg.exec();
-}
-
 QMdiSubWindow *MainWindow::hasTableWindow(const QString &tableName)
 {
     QMdiSubWindow *find = Q_NULLPTR;
@@ -1251,7 +1247,7 @@ QMdiSubWindow *MainWindow::hasTableWindow(const QString &tableName)
     return find;
 }
 
-QMdiSubWindow *MainWindow::hasTableWindow(const FmtRecId &tableID)
+QMdiSubWindow *MainWindow::hasTableWindow(const quint64 &tableID)
 {
     QMdiSubWindow *find = Q_NULLPTR;
     QList<QWidget*> lst = m_Windows[currentConnection()];
@@ -1273,6 +1269,16 @@ QMdiSubWindow *MainWindow::hasTableWindow(const FmtRecId &tableID)
     }
 
     return find;
+}
+
+FmtWorkWindow *MainWindow::currentWorkWindow()
+{
+    QMdiSubWindow *wnd = pMdi->activeSubWindow();
+
+    if (wnd)
+        return qobject_cast<FmtWorkWindow*>(wnd->widget());
+
+    return Q_NULLPTR;
 }
 
 void MainWindow::EditContent()
@@ -1489,21 +1495,6 @@ void MainWindow::UpdateCheckStarted()
     pUpdateButton->setIcon(QIcon(":/img/base_globe_updates.png"));
 }
 
-void MainWindow::HighlighterTheme()
-{
-    QStringList lst = HighlighterStyle::inst()->themes();
-
-    int defaultItem = lst.indexOf(HighlighterStyle::inst()->defaultTheme());
-    QString theme = QInputDialog::getItem(this, tr("Выбор темы"),
-                                          tr("Выберите тему подсветки синтаксиса"),
-                                          lst,
-                                          defaultItem,
-                                          false);
-
-    if (!theme.isEmpty())
-        HighlighterStyle::inst()->setDefaultTheme(theme);
-}
-
 /*void MainWindow::OnCreateQuery()
 {
     QueryEditor *editor = new QueryEditor();
@@ -1518,3 +1509,27 @@ void MainWindow::on_actionDebug_triggered()
     dlg.exec();
 }
 
+void MainWindow::OptionsAction()
+{
+    FmtApplication *app = (FmtApplication*)qApp;
+    FmtOptionsDlg dlg(currentConnection(), app->settings(), this);
+    dlg.exec();
+}
+
+const QList<ConnectionInfo*> &MainWindow::connections() const
+{
+    return m_pConnections;
+}
+
+const QMap<ConnectionInfo*, MainWindow::WorkWindowList> &MainWindow::windows() const
+{
+    return m_Windows;
+}
+
+MainWindow::WorkWindowList MainWindow::windows(ConnectionInfo* info) const
+{
+    if (m_Windows.contains(info))
+        return m_Windows[info];
+
+    return MainWindow::WorkWindowList();
+}

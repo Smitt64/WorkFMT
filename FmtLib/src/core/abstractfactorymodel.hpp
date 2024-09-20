@@ -38,6 +38,9 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE
     {
+        if (!index.isValid())
+            return QVariant();
+
         if (role != Qt::DisplayRole && role != Qt::EditRole)
             return QVariant();
 

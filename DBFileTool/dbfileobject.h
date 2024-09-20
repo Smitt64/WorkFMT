@@ -7,7 +7,7 @@
 #include <QApplication>
 #include <QSettings>
 #include <QDir>
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSettings, pSettrings, (QDir(qApp->applicationDirPath()).absoluteFilePath("dbfts.ini"), QSettings::IniFormat))
 

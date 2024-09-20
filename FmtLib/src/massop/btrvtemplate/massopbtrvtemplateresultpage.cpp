@@ -1,12 +1,13 @@
 #include "massopbtrvtemplateresultpage.h"
 #include "ui_massopbtrvtemplateresultpage.h"
 #include "errordlg.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "fmttable.h"
 #include "massoperationwizard.h"
 #include "../btrvtemplate/massopbtrvtemplate.h"
 #include "fmtgencpptemplate.h"
-#include "codeeditor.h"
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/codehighlighter.h>
 #include <QAbstractButton>
 #include <QThreadPool>
 #include <QThread>
@@ -74,34 +75,34 @@ void MassOpBtrvTemplateResultPageRun::run()
         for (int i = 0; i < size; i++)
         {
             gen->createStruct(tables[i], structsStream);
-            structsStream << endl;
+            structsStream << Qt::endl;
 
             gen->createKeysUnion(tables[i], structsStream);
-            structsStream << endl;
+            structsStream << Qt::endl;
 
             gen->createKeysEnum(tables[i], structsStream);
-            structsStream << endl;
+            structsStream << Qt::endl;
 
             gen->createOpenFuncDecl(tables[i], bfCppStream, true);
 
             gen->WriteTableComment(tables[i], skfCppStream);
             gen->createSkfDeclFunctions(tables[i], skfCppStream, FmtGenCppTemplate::SkfMode_Create);
             gen->createSkfFunctions(tables[i], skfCppStream);
-            skfCppStream << endl;
+            skfCppStream << Qt::endl;
 
             gen->WriteTableComment(tables[i], findCppStream);
             gen->createFindFunctions(tables[i], findCppStream);
         }
 
-        bfCppStream << endl;
+        bfCppStream << Qt::endl;
 
         for (int i = 0; i < size; i++)
         {
             gen->createOpenFunc(tables[i], bfCppStream);
-            bfCppStream << endl << endl;
+            bfCppStream << Qt::endl << Qt::endl;
             
             gen->createDeclExtern(tables[i], funcdeclStream);
-            funcdeclStream << endl;
+            funcdeclStream << Qt::endl;
         }
 
     } catch (...) {
@@ -119,8 +120,8 @@ MassOpBtrvTemplateResultPage::MassOpBtrvTemplateResultPage(QWidget *parent) :
     ui->setupUi(this);
 
     setTitle(tr("Результат"));
-    pErrors = new FmtErrors(this);
-    pErrDlg = new ErrorDlg(ErrorDlg::mode_Widget);
+    pErrors = new ErrorsModel(this);
+    pErrDlg = new ErrorDlg(ErrorDlg::ModeWidget);
     pErrDlg->setErrors(pErrors);
 
     qRegisterMetaType<GenDataMap>();
@@ -144,8 +145,6 @@ void MassOpBtrvTemplateResultPage::initializePage()
     MassOpBtrvTemplate *pInterface = qobject_cast<MassOpBtrvTemplate*>(wzrd->getInterface());
     wzrd->button(QWizard::BackButton)->setEnabled(false);
 
-    qDeleteAll(m_Highlighter);
-    m_Highlighter.clear();
     for (int i = ui->tabWidget->count() - 1; i > 1; i--)
     {
         QWidget *w = ui->tabWidget->widget(i);
@@ -171,8 +170,8 @@ void MassOpBtrvTemplateResultPage::addPage(const QString &title, const QString &
     CodeEditor *pEditor = new CodeEditor;
     pEditor->setPlainText(data);
     pEditor->setReadOnly(true);
-    Highlighter *hgltr = new Highlighter(pEditor->document());
-    m_Highlighter.append(hgltr);
+
+    ToolApplyHighlighter(pEditor, HighlighterCpp);
     addPage(pEditor, title);
 }
 

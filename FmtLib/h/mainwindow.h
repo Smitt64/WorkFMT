@@ -19,6 +19,7 @@ class WindowsComboAction;
 class FmtTableListDelegate;
 class MdiSubInterface;
 class SearchActionWidget;
+class ToolbarActionExecutor;
 class FMTLIBSHARED_EXPORT MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -30,8 +31,29 @@ public:
     ConnectionInfo *currentConnection();
     void OpenConnection(const QString &connectionString);
 
-private slots:
+    QMdiSubWindow *hasTableWindow(const QString &tableName);
+    QMdiSubWindow *hasTableWindow(const quint64 &tableID);
+
+    FmtWorkWindow *currentWorkWindow();
+
+    QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
+    QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
+
+    const QList<ConnectionInfo*> &connections() const;
+    const QMap<ConnectionInfo*, WorkWindowList> &windows() const;
+    WorkWindowList windows(ConnectionInfo* info) const;
+
+    ConnectionInfo* openConnection();
+    bool isExistsConnection(ConnectionInfo *connection);
+    bool addConnection(ConnectionInfo *connection);
+
+    void SetActiveFmtWindow(QMdiSubWindow *wnd);
+    QMdiSubWindow *currentMdiWindow();
+
+public slots:
     void actionConnectTriggered();
+
+private slots:
     void actionDisconnectTriggered();
     void actionCreate();
     void tableClicked(const quint32 &id);
@@ -48,23 +70,19 @@ private slots:
     //void setSubWindowIcon(const QIcon &icon);
     void about();
 
-    void ImpExpSettings();
     void ImpDirAction();
     void ImportAction();
     void CreateTableSql();
     void HotFixCreate();
-    void EditGroups();
     void OpenRecentConnection();
     void CopyTable();
     void CopyTableTo();
     void CopyTableToTmp();
-    void RsExpExportDir();
     void UnloadDbf();
     void LoadDbf();
     void UnloadSqlite();
     void OpenConnection();
     void RemoveFmtTable();
-    void LoggingSettings();
     void EditContent();
     void GenCreateTableScript();
     void GenModifyTableFields();
@@ -77,7 +95,7 @@ private slots:
     void CreateFromXml();
     void UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata);
     void UpdateCheckStarted();
-    void HighlighterTheme();
+    void OptionsAction();
 
     void on_actionDebug_triggered();
 
@@ -92,14 +110,11 @@ private:
     void CreateWindowsCombo();
     void CreateViewMenu();
     void CreateSearchToolBar();
-    void SetActiveFmtWindow(QMdiSubWindow *wnd);
+
     void CreateCheckUpdateRunnable();
-    QMdiSubWindow *hasTableWindow(const QString &tableName);
-    QMdiSubWindow *hasTableWindow(const FmtRecId &tableID);
+
     QAction *CreateConnectionActio(ConnectionInfo *info);
     void tablesContextMenu(QContextMenuEvent *event, QListView *view);
-    QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
-    QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
     Ui::MainWindow *ui;
     TablesDock *pTablesDock;
     QMdiArea *pMdi;
@@ -122,10 +137,12 @@ private:
     QMenu *toolConnectMenu;
     QActionGroup *m_ConnectionsGroup;
 
-    QPushButton *pLogButton, *pUpdateButton;
+    QPushButton *pUpdateButton;
 
     SubWindowsModel *pWindowsModel;
     UpdateChecker *pUpdateChecker;
+
+    ToolbarActionExecutor *pActionExecutor;
 };
 
 #endif // MAINWINDOW_H

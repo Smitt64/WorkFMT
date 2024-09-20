@@ -47,7 +47,7 @@
        <item>
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -102,14 +102,14 @@
                  <normaloff>:/img/CopyHS.png</normaloff>:/img/CopyHS.png</iconset>
                </property>
                <property name="popupMode">
-                <enum>QToolButton::MenuButtonPopup</enum>
+                <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
                </property>
               </widget>
              </item>
              <item>
               <spacer name="horizontalSpacer_6">
                <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
@@ -166,7 +166,7 @@
              <item>
               <spacer name="horizontalSpacer">
                <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
@@ -190,7 +190,7 @@
              <item>
               <spacer name="horizontalSpacer_2">
                <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
@@ -227,7 +227,7 @@
        <item>
         <spacer name="horizontalSpacer_4">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -236,16 +236,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="autoCamelCase">
-         <property name="text">
-          <string>Автоматически преобразовывать поля в CamelCase</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -322,7 +312,7 @@
      <item>
       <spacer name="horizontalSpacer_5">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -335,10 +325,10 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+        <set>QDialogButtonBox::StandardButton::Apply|QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
        </property>
       </widget>
      </item>

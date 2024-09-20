@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GeneralOptions</class>
+ <widget class="OptionsPage" name="GeneralOptions">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>573</width>
+    <height>890</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>890</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_5">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Параметры импорта/экспорта в xml </string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Путь до fmtxml:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="fmtXmlPath">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Кодировка выходных файлов:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="fmtXmlEncode">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>rsansi</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>lcansi</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>rsoem</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>lcoem</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>utf8</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>utf16le</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>utf16be</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="fmtXmlXsdCheck">
+        <property name="text">
+         <string>Не использовать для проверки XML-файла схему fmtxml.xsd</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>CamelCase преобразования </string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="leftMargin">
+       <number>9</number>
+      </property>
+      <property name="topMargin">
+       <number>9</number>
+      </property>
+      <property name="rightMargin">
+       <number>9</number>
+      </property>
+      <property name="bottomMargin">
+       <number>9</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="autoCamelCase">
+        <property name="text">
+         <string>Автоматически преобразовывать поля в CamelCase</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>(При вводе наименования колонки, будет проводится попытка приводить его в вид CamelCase)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="pathsGroup">
+     <property name="title">
+      <string>Каталоги выгрузки </string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="StringListEditor" name="pathListWidget" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="pathsGroup_2">
+     <property name="title">
+      <string>Экспорт данных в *.dat</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QCheckBox" name="expOldCheckBox">
+        <property name="text">
+         <string>Использовать RSexp (старый функционал, возможны ошибки при выгрузке CLOB полей)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="expInfoLabel">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Режим выгрузки таблиц с CLOB полями:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Разделение на два файла. В таком варианте сохраняется исходный вид значения (с переносами строк пробелами и прочим...)&lt;/li&gt;&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Один файл, упрощенный текст. Удаляются переносы строк&lt;/li&gt;&lt;/ul&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:6px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Один файл, упрощенный текст c удалением лишних пробелов&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::TextFormat::RichText</enum>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0">
+        <item>
+         <widget class="QLabel" name="expDefaultLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>По умолчанию: </string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="expDefaultClob"/>
+        </item>
+        <item>
+         <widget class="QToolButton" name="newExpTableBtn">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../res/fmt.qrc">
+            <normaloff>:/img/new.png</normaloff>:/img/new.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="removeExpTableBtn">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../res/fmt.qrc">
+            <normaloff>:/img/remove.png</normaloff>:/img/remove.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTreeView" name="exportTableSettingsView">
+        <property name="rootIsDecorated">
+         <bool>false</bool>
+        </property>
+        <property name="uniformRowHeights">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>OptionsPage</class>
+   <extends>QWidget</extends>
+   <header>optionspage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StringListEditor</class>
+   <extends>QWidget</extends>
+   <header location="global">stringlisteditor.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../res/fmt.qrc"/>
+ </resources>
+ <connections/>
+</ui>

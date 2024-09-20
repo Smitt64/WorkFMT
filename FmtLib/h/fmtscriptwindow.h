@@ -2,8 +2,8 @@
 #define FMTSCRIPTWINDOW_H
 
 #include <QtWidgets>
-#include <QtScript>
-#include <QtScriptTools>
+//#include <QtScript>
+//#include <QtScriptTools>
 #include "fmttable.h"
 
 class CodeEditor;
@@ -25,6 +25,7 @@ private slots:
     void OnSave();
 
 private:
+    bool save();
     void ExecuteEx(bool useDebug);
     void CreateActions();
     void CreateMdi();
@@ -32,11 +33,12 @@ private:
     void SetupScriptEngineValues(CodeEditor *pEditor);
     QToolBar *m_pToolBar;
     QAction *pNew, *pOpen, *pSave, *pExecute, *pExecuteDebug, *pClear;
-    QMdiArea *pMdi;
     QSplitter *pSplitter;
-    QTextBrowser *pOutput;
-    QScriptEngine *pEngine;
-    QScriptEngineDebugger dbg;
+    CodeEditor *pOutput;
+
+    CodeEditor *pEditor;
+    //QScriptEngine *pEngine;
+    //QScriptEngineDebugger dbg;
     QSharedPointer<FmtTable> pTable;
 };
 

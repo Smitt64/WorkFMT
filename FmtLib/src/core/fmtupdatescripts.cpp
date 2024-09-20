@@ -1,6 +1,6 @@
 #include "fmtcore.h"
 #include "fmtapplication.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "fmttable.h"
 #include "fmtfield.h"
 #include "errordlg.h"
@@ -137,16 +137,11 @@ QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table)
     return triggers;
 }
 
-QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable)
+QString FmtGenTriggersScrip(ConnectionInfo *connection, const QString &table, bool disable)
 {
     QString str;
     QTextStream stream(&str, QIODevice::WriteOnly);
-
-    if (flds.isEmpty())
-        return QString();
-
-    QStringList triggers = FmtGenGetTriggers(flds.first()->table()->connection(),
-                                             flds.first()->table()->name());
+    QStringList triggers = FmtGenGetTriggers(connection, table);
 
     if (triggers.isEmpty())
         return QString();
@@ -187,6 +182,19 @@ QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable)
     stream << "/" << Qt::endl;
 
     return str;
+}
+
+QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disable)
+{
+    QString str;
+    QTextStream stream(&str, QIODevice::WriteOnly);
+
+    if (flds.isEmpty())
+        return QString();
+
+    return FmtGenTriggersScrip(flds.first()->table()->connection(),
+                                             flds.first()->table()->name(),
+                                             disable);
 }
 
 QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds)
@@ -258,7 +266,11 @@ QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds)
     stream << "END;" << endl;
     stream << "/" << endl;
 
-    stream << Qt::endl << FmtGenTriggersScrip(flds, false) << Qt::endl;
+    QString triggers = FmtGenTriggersScrip(flds, false);
+
+    if (!triggers.isEmpty())
+        stream << Qt::endl << FmtGenTriggersScrip(flds, false) << Qt::endl;
+        
     return str;
 }
 
@@ -312,7 +324,7 @@ QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable)
     QTextStream stream(&str, QIODevice::WriteOnly);
 
     QList<FmtField*> flds;
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
         flds.append(pTable->field(i));
 
     WrapSqlBlockObjectExists(stream, pTable->generateCreateTableSql(), flds, pTable);

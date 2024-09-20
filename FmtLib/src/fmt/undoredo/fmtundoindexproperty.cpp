@@ -24,7 +24,7 @@ void FmtUndoIndexProperty::setValueToRedo(const QVariant &value)
     m_RedoValue = value;
 }
 
-void FmtUndoIndexProperty::setProperty(const FmtFldIndex &index, const FmtFldIndex &property)
+void FmtUndoIndexProperty::setProperty(const qint16 &index, const qint16 &property)
 {
     m_Index = index;
     FmtIndex *pIndex = pTable->tableIndex(m_Index);

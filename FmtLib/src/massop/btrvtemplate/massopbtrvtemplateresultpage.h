@@ -44,7 +44,7 @@ private:
 };
 
 class ErrorDlg;
-class FmtErrors;
+class ErrorsModel;
 class Highlighter;
 class MassOpBtrvTemplateResultPage : public QWizardPage
 {
@@ -63,8 +63,7 @@ private:
     void addPage(QWidget *widget, const QString &title);
     void addPage(const QString &title, const QString &data);
     Ui::MassOpBtrvTemplateResultPage *ui;
-    QList<Highlighter*> m_Highlighter;
-    FmtErrors *pErrors;
+    ErrorsModel *pErrors;
     ErrorDlg *pErrDlg;
     bool fIsComplete;
 };

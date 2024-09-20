@@ -1,7 +1,7 @@
 #include "fmtcore.h"
 #include "fmtapplication.h"
 #include "fmtimpexpwrp.h"
-#include "fmterrors.h"
+#include <errorsmodel.h>
 #include "fmttable.h"
 #include "fmtfield.h"
 #include "errordlg.h"
@@ -51,7 +51,7 @@ static QStringList FmtTypesList/* = QStringList()
 /*typedef struct tagFmtTypeInfoT : public
         DataStructure
         <
-        FmtFldType, // type;
+        qint16, // type;
         quint16,    // size;
         quint16,    // indexType;
         QString,    // oraType;
@@ -67,7 +67,7 @@ static QStringList FmtTypesList/* = QStringList()
 
 typedef struct tagFmtTypeInfo
 {
-    FmtFldType _type;
+    qint16 _type;
     quint16 _size;
     quint16 _indexType;
     QString _oraType;
@@ -127,6 +127,9 @@ static fmtTypesMap fmtTypesStrMap, indexTypesStrMap;
 
 void FmtInit()
 {
+    if (!indexTypesStrMap.isEmpty())
+        return;
+
     AddFmtTypesMap(fmtt_DATETIME);
     AddFmtTypesMap(fmtt_INT);
     AddFmtTypesMap(fmtt_LONG);
@@ -224,7 +227,7 @@ void FmtInit()
     }
 }
 
-bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)
+bool fmtTypeCanHaveCustomSize(const qint16 &Type)
 {
     bool hr = false;
     switch(Type)
@@ -240,19 +243,24 @@ bool fmtTypeCanHaveCustomSize(const FmtFldType &Type)
     return hr;
 }
 
-bool hasTemporaryFlag(const FmtNumber10 &flag)
+bool hasTemporaryFlag(const qint32 &flag)
 {
     return (flag & fmtnf_Temp) == fmtnf_Temp;
 }
 
-bool hasRecordFlag(const FmtNumber10 &flag)
+bool hasRecordFlag(const qint32 &flag)
 {
     return (flag & fmtnf_Rec) == fmtnf_Rec;
 }
 
 QSettings *settings()
 {
-    return ((FmtApplication*)qApp)->settings();
+    FmtApplication *FmtApp = qobject_cast<FmtApplication*>(qApp);
+
+    if (!FmtApp)
+        return nullptr;
+
+    return FmtApp->settings();
 }
 
 QStringList fmtTypes()
@@ -260,7 +268,7 @@ QStringList fmtTypes()
     return QStringList(FmtTypesList);
 }
 
-QString fmtTypeForId(const FmtFldType &id)
+QString fmtTypeForId(const qint16 &id)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -273,9 +281,9 @@ QString fmtTypeForId(const FmtFldType &id)
     return QString::number(id);
 }
 
-quint16 fmtTypeSize(const FmtFldType &Type)
+quint16 fmtTypeSize(const qint16 &Type)
 {
-    FmtFldType type = Type;
+    qint16 type = Type;
     if (type == fmtt_DATETIME)
         type = fmtt_DATE;
 
@@ -289,41 +297,41 @@ quint16 fmtTypeSize(const FmtFldType &Type)
     return 0;
 }
 
-QString fmtOracleDecl(const FmtFldType &Type)
+QString fmtOracleDecl(const qint16 &Type)
 {
     return FmtTypesMap[fmtTypeForId(Type)]._oraType;
 }
 
-QString fmtPostgresDecl(const FmtFldType &Type)
+QString fmtPostgresDecl(const qint16 &Type)
 {
     return FmtTypesMap[fmtTypeForId(Type)]._pgType;
 }
 
-QString fmtCppStructTypeName(const FmtFldType &Type)
+QString fmtCppStructTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._cppType;
 }
 
-QString fmtCppStructDbTypeName(const FmtFldType &Type)
+QString fmtCppStructDbTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._cppDbType;
 }
 
-QString fmtRslTypeName(const FmtFldType &Type)
+QString fmtRslTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._rslType;
 }
 
-QString fmtRslValueName(const FmtFldType &Type)
+QString fmtRslValueName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._rslValueName;
 }
 
-QString fmtCppStructDbBaseTypeName(const FmtFldType &Type)
+QString fmtCppStructDbBaseTypeName(const qint16 &Type)
 {
     QString fldType = fmtTypeForId(Type);
     return FmtTypesMap[fldType]._cppDbBaseType;
@@ -342,7 +350,7 @@ quint32 fmtTypeIndexForId(const quint32 &id)
     return 0;
 }
 
-FmtFldIndex fmtIndexForType(const FmtFldType &id)
+qint16 fmtIndexForType(const qint16 &id)
 {
    /*QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
 
@@ -358,7 +366,7 @@ FmtFldIndex fmtIndexForType(const FmtFldType &id)
         }
     }
 
-    return static_cast<FmtFldIndex>(indx);*/
+    return static_cast<qint16>(indx);*/
     //return id;
 
     const QVector<int> ids =
@@ -381,7 +389,7 @@ FmtFldIndex fmtIndexForType(const FmtFldType &id)
     return ids.indexOf(id);
 }
 
-QString fmtTypeNameForType(const FmtFldType &type)
+QString fmtTypeNameForType(const qint16 &type)
 {
     int index = static_cast<int>(fmtIndexForType(type));
     if (index < 0 || index >= FmtTypesList.size())
@@ -389,7 +397,7 @@ QString fmtTypeNameForType(const FmtFldType &type)
     return FmtTypesList[fmtIndexForType(type)];
 }
 
-FmtFldType fmtTypeFromXmlType(const QString &type)
+qint16 fmtTypeFromXmlType(const QString &type)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -402,7 +410,7 @@ FmtFldType fmtTypeFromXmlType(const QString &type)
     return fmtt_INT;
 }
 
-FmtFldType fmtTypeFromIndex(const FmtFldIndex &id)
+qint16 fmtTypeFromIndex(const qint16 &id)
 {
     /*int index = static_cast<int>(fmtIndexForType(id));
     if (index < 0 || index >= FmtTypesList.size())
@@ -410,7 +418,7 @@ FmtFldType fmtTypeFromIndex(const FmtFldIndex &id)
     return FmtTypesMap[FmtTypesList[id]]._type;
 }
 
-quint16 fmtTypeIndexSize(const FmtFldType &id)
+quint16 fmtTypeIndexSize(const qint16 &id)
 {
     /*int index = fmtIndexForType(id);
     if (index < 0 || index >= FmtTypesList.size())
@@ -418,7 +426,7 @@ quint16 fmtTypeIndexSize(const FmtFldType &id)
     return FmtTypesMap[FmtTypesList[id]]._size;
 }
 
-QString fmtRsdType(const FmtFldType &Type)
+QString fmtRsdType(const qint16 &Type)
 {
     int index = fmtIndexForType(Type);
     if (index < 0 || index >= FmtTypesList.size())
@@ -427,7 +435,7 @@ QString fmtRsdType(const FmtFldType &Type)
     return FmtTypesMap[FmtTypesList[index]]._rsdType;
 }
 
-QString fmtRsdConstant(const FmtFldType &Type)
+QString fmtRsdConstant(const qint16 &Type)
 {
     int index = fmtIndexForType(Type);
     if (index < 0 || index >= FmtTypesList.size())
@@ -436,7 +444,7 @@ QString fmtRsdConstant(const FmtFldType &Type)
     return FmtTypesMap[FmtTypesList[index]]._rsdConst;
 }
 
-QString fmtZeroConstant(const FmtFldType &Type)
+QString fmtZeroConstant(const qint16 &Type)
 {
     int index = fmtIndexForType(Type);
     if (index < 0 || index >= FmtTypesList.size())
@@ -445,7 +453,7 @@ QString fmtZeroConstant(const FmtFldType &Type)
     return FmtTypesMap[FmtTypesList[index]]._zeroConstant;
 }
 
-FmtFldType fmtIndexFromFmtType(const FmtFldType &id)
+qint16 fmtIndexFromFmtType(const qint16 &id)
 {
     QMapIterator<QString, FmtTypeInfo> iterator(FmtTypesMap);
     while(iterator.hasNext())
@@ -458,7 +466,7 @@ FmtFldType fmtIndexFromFmtType(const FmtFldType &id)
     return 0;
 }
 
-bool fmtIsStringType(const FmtFldType &Type, const int &size)
+bool fmtIsStringType(const qint16 &Type, const int &size)
 {
     bool hr = false;
     if (Type == fmtt_STRING || Type == fmtt_SNR)
@@ -471,7 +479,7 @@ bool fmtIsStringType(const FmtFldType &Type, const int &size)
     return hr;
 }
 
-QString fmtGetOraDefaultVal(const FmtFldType &Type, const int &size)
+QString fmtGetOraDefaultVal(const qint16 &Type, const int &size)
 {
     QString t;
     if (fmtIsStringType(Type, size) && Type != fmtt_UCHR)
@@ -509,7 +517,7 @@ QString fmtGetOraDefaultVal(const FmtFldType &Type, const int &size)
     return t;
 }
 
-QString fmtGetPgDefaultVal(const FmtFldType &Type, const int &size)
+QString fmtGetPgDefaultVal(const qint16 &Type, const int &size)
 {
     QString t;
     if (fmtIsStringType(Type, size) && Type != fmtt_UCHR)
@@ -593,29 +601,7 @@ QString NullString(const int &index)
 
 int ExecuteQuery(QSqlQuery *query, QString *err)
 {
-    int stat = 0;
-
-    QMap<QString, QVariant> values = query->boundValues();
-    QMapIterator<QString, QVariant> i(values);
-    while(i.hasNext())
-    {
-        i.next();
-        qCInfo(logSql()) << i.key() << ": " << i.value();
-    }
-
-    bool result = query->exec();
-    if (!result)
-    {
-        stat = 1;
-        qCCritical(logSql()) << query->lastError().text();
-
-        if (err != Q_NULLPTR)
-            *err = query->lastError().text();
-    }
-    qCInfo(logSql()) << query->executedQuery();
-    qCInfo(logSql()) << "Result:" << result;
-
-    return stat;
+    return toolExecuteQuery(query, err);
 }
 
 int ExecuteQuery(const QString &query, QSqlDatabase db, QString *err)
@@ -857,7 +843,7 @@ QColor GenerateColor()
     return QColor::fromHsvF(hc, 0.5, 0.95, 1);
 }
 
-QString FmtTableSqlText(QSharedPointer<FmtTable> pTable)
+QString FmtTableSqlText(FmtTable *pTable)
 {
     QString str = QString("-- Таблица %1\n").arg(pTable->name().toUpper());
     str += pTable->generateCreateTableSql() + ";\n\n";
@@ -889,7 +875,7 @@ void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent)
                 QFileInfo info(fileName);
                 QTextStream stream(&file);
                 stream.setCodec("IBM 866");
-                stream << FmtTableSqlText(pTable);
+                stream << FmtTableSqlText(pTable.data());
                 file.close();
             }
         }
@@ -926,9 +912,9 @@ void ExportFmtToXml(ConnectionInfo *connection, const QStringList &files, const 
 
         if (ShowReport)
         {
-            FmtErrors log;
+            ErrorsModel log;
             imp.parseProtocol(&log);
-            ErrorDlg edlg(ErrorDlg::mode_Information, parent);
+            ErrorDlg edlg(ErrorDlg::ModeInformation, parent);
             edlg.setErrors(&log);
             edlg.setMessage(QObject::tr("Протокол выгрузки в xml файл: "));
             edlg.exec();
@@ -954,7 +940,7 @@ qint16 InitFmtTableExec(FmtTable *pTable, QString *err)
     return stat;
 }
 
-void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
+void InitFmtTable(FmtTable *pTable, QWidget *parent)
 {
     DbInitDlg dlg(pTable, parent);
 
@@ -983,7 +969,7 @@ void InitFmtTable(QSharedPointer<FmtTable> pTable, QWidget *parent)
         if (!stat && dlg.getCreteIndexFlag())
         {
             QString err;
-            stat = InitFmtTableExec(pTable.data(), &err);
+            stat = InitFmtTableExec(pTable, &err);
             QApplication::processEvents();
 
             QMessageBox msg(parent);
@@ -1460,12 +1446,12 @@ QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force)
 
 void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
 {
-    ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
+    ErrorDlg dlg(ErrorDlg::ModeWidget, parent);
     dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
     dlg.setWindowModality(Qt::WindowModal);
 
     FmtDbfToolWrp wrp(current, parent);
-    dlg.setErrors(wrp.fmterrors());
+    dlg.setErrors(wrp.errorsModel());
     wrp.setDsn(current->dsn());
 
     QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
@@ -1479,12 +1465,12 @@ void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *pare
 
 void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
 {
-    ErrorDlg dlg(ErrorDlg::mode_Widget, parent);
+    ErrorDlg dlg(ErrorDlg::ModeWidget, parent);
     dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
     dlg.setWindowModality(Qt::WindowModal);
 
     FmtDbfToolWrp wrp(current, parent);
-    dlg.setErrors(wrp.fmterrors());
+    dlg.setErrors(wrp.errorsModel());
     wrp.setDsn(current->dsn());
 
     QObject::connect(&dlg, SIGNAL(canceled()), &wrp, SLOT(stop()));
@@ -1508,11 +1494,11 @@ void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidg
     }
 }
 
-int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
+int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
 {
     int stat = 0;
 
-    SelectFieldsModel selFldModel(pTable.data(), parent);
+    SelectFieldsModel selFldModel(pTable, parent);
     SelectFilteredDlg dlg(parent);
     dlg.setWindowTitle(title);
     dlg.setFilteredModel(&selFldModel);
@@ -1543,6 +1529,11 @@ int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, 
         *pFldList = selFldModel.checkedFields();
 
     return stat;
+}
+
+int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
+{
+    return SelectTableFieldsDlg(pTable.data(), title, pFldList, parent);
 }
 
 void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote)

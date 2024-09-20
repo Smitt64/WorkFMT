@@ -33,7 +33,7 @@ private:
     QStandardItemModel *pTableModel;
     TableMapToFmtWidget *pTableWidget;
     FmtSharedTablePtr pTable;
-    QMap<FmtNumber5, FmtNumber10> fieldsMap;
+    QMap<qint16, qint32> fieldsMap;
     Ui::TextEditPage *ui;
 };
 

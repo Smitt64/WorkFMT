@@ -2,18 +2,21 @@
 #include "fmttablesmodel.h"
 #include "fmtcore.h"
 #include "loggingcategories.h"
+#include "toolsruntime.h"
 #include <QPainter>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QImage>
 #include <QRegion>
 #include <QBitmap>
+#include <QUuid>
 
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     QObject(Q_NULLPTR),
     pModel(Q_NULLPTR),
     Index(0)
 {
+    m_SqlDatabaseObj = Q_NULLPTR;
     m_Alias = dbalias;
     if (!dbalias.isEmpty())
         _db = QSqlDatabase::database(m_Alias);
@@ -82,6 +85,8 @@ QString ConnectionInfo::typeName() const
         break;
     case CON_SQLITE:
         name = "Sqlite";
+        break;
+    case CON_NON:
         break;
     }
 
@@ -210,7 +215,8 @@ void ConnectionInfo::close()
 bool ConnectionInfo::open(const QString &drv, const QString &user, const QString &password, const QString &dsn, const QString &options, QString *error)
 {
     bool hr = false;
-    m_Alias = QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    m_Alias = QUuid::createUuid().toString();
+        //QString("%1@%2#%3").arg(user, dsn, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
     m_SchemeName = QString("%1@%2").arg(user, dsn);
     m_DSN = dsn;
 
@@ -224,6 +230,11 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
 
     if (hr)
     {
+        if (m_SqlDatabaseObj)
+            delete m_SqlDatabaseObj;
+
+        toolMakeSqlDatabaseObj(_db, &m_SqlDatabaseObj);
+
         m_User = user;
         m_Password = password;
 
@@ -260,7 +271,7 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
 bool ConnectionInfo::openSqlite(const QString &filename)
 {
     QFileInfo fi(filename);
-    m_Alias = QString("%1%2").arg(filename, QDateTime::currentDateTime().toString(Qt::RFC2822Date));
+    m_Alias = QUuid::createUuid().toString();
     _db = QSqlDatabase::addDatabase("QSQLITE", m_Alias);
     _db.setDatabaseName(filename);
     m_SchemeName = fi.fileName();
@@ -333,8 +344,9 @@ ConnectionInfo::operator int() const
 
 bool ConnectionInfo::hasFeature(ConnectionInfo::ConnectionFeature feature) const
 {
-    if (m_Type == CON_ORA)
+    /*if (m_Type == CON_ORA)
         return true;
 
-    return false;
+    return false;*/
+    return true;
 }

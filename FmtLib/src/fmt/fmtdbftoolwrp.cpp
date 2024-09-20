@@ -1,6 +1,6 @@
 #include "fmtdbftoolwrp.h"
 #include "connectioninfo.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "fmtcore.h"
 #include <QTextStream>
 
@@ -10,7 +10,7 @@ FmtDbfToolWrp::FmtDbfToolWrp(ConnectionInfo *info, QObject *parent) :
 {
     codec = QTextCodec::codecForName("IBM 866");
     pInfo = info;
-    err = new FmtErrors(this);
+    err = new ErrorsModel(this);
     QDir d = QDir::current();
             //(qApp->applicationDirPath());
     proc->setProgram(d.absoluteFilePath("DBFileTool.exe"));
@@ -25,7 +25,7 @@ FmtDbfToolWrp::~FmtDbfToolWrp()
     disconnect(&proc, SIGNAL(readyReadStandardOutput()), Q_NULLPTR, Q_NULLPTR);*/
 }
 
-FmtErrors *FmtDbfToolWrp::fmterrors()
+ErrorsModel *FmtDbfToolWrp::errorsModel()
 {
     return err;
 }

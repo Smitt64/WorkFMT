@@ -146,8 +146,22 @@ QModelIndex OdbcTableModel::indexOfService(const QString &key) const
     return QModelIndex();
 }
 
+int OdbcTableModel::serviceIndex(const QString &key) const
+{
+    for (int i = 0; i < m_List.size(); i++)
+    {
+        if (m_List[i]._name == key)
+            return i;
+    }
+    
+    return -1;
+}
+
 QVariant OdbcTableModel::data(const QModelIndex &index, int role) const
 {
+    if (!index.isValid())
+        return QVariant();
+
     OdbcTableModel *pThis = const_cast<OdbcTableModel*>(this);
 
     if (role == Qt::DisplayRole || role == Qt::EditRole)
@@ -183,4 +197,60 @@ QVariant OdbcTableModel::data(const QModelIndex &index, int role) const
         }
     }
     return QVariant();
+}
+
+QString OdbcTableModel::name(const int &index) const
+{
+    if (index < m_List.size())
+        return m_List[index]._name;
+
+    return QString();
+}
+
+QString OdbcTableModel::description(const int &index) const
+{
+    if (index < m_List.size())
+        return m_List[index]._Description;
+
+    return QString();
+}
+
+QString OdbcTableModel::home(const int &index) const
+{
+    if (index < m_List.size())
+        return m_List[index]._home;
+
+    return QString();
+}
+
+QString OdbcTableModel::homeDir(const int &index) const
+{
+    if (index < m_List.size())
+        return m_List[index]._homeDir;
+
+    return QString();
+}
+
+QString OdbcTableModel::driver(const int &index) const
+{
+    if (index < m_List.size())
+        return m_List[index]._Driver;
+
+    return QString();
+}
+
+quint8 OdbcTableModel::node(const int &index) const
+{
+    if (index < m_List.size())
+        return m_List[index]._node;
+
+    return 0;
+}
+
+quint8 OdbcTableModel::db(const int &index) const
+{
+    if (index < m_List.size())
+        return m_List[index]._db;
+
+    return 0;
 }

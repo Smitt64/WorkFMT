@@ -11,7 +11,7 @@ FmtUndoTableAddField::FmtUndoTableAddField(FmtTable *table, QUndoCommand *parent
     m_Row = 0;
 }
 
-void FmtUndoTableAddField::setNameAndType(const QString &name, const FmtFldType &type)
+void FmtUndoTableAddField::setNameAndType(const QString &name, const qint16 &type)
 {
     m_Name = name;
     m_Type = type;
@@ -25,7 +25,7 @@ void FmtUndoTableAddField::setNameAndType(const QString &name, const FmtFldType 
             .arg(mtypename));
 }
 
-void FmtUndoTableAddField::setInsertBefor(const FmtFldIndex &befor)
+void FmtUndoTableAddField::setInsertBefor(const qint16 &befor)
 {
     m_Befor = befor;
 }

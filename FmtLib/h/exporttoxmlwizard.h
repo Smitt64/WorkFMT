@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QtWidgets>
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "fmtlib_global.h"
 
 class ConnectionInfo;
@@ -40,7 +40,7 @@ private:
     QToolButton *openFolderButton;
     QPushButton *cancelButton;
 
-    FmtErrors m_Errors;
+    ErrorsModel m_Errors;
 };
 
 #endif // EXPORTTOXMLWIZARD_H

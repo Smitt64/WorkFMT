@@ -1,0 +1,12 @@
+#ifndef FMTRSLMODULE_GLOBAL_H
+#define FMTRSLMODULE_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(FMTRSLMODULE_LIBRARY)
+#  define FMTRSLMODULE_EXPORT Q_DECL_EXPORT
+#else
+#  define FMTRSLMODULE_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // FMTRSLMODULE_GLOBAL_H

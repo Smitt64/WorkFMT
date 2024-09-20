@@ -11,7 +11,7 @@ ExpResultPage::ExpResultPage(ExportToXmlWizard *parent) :
     verticalLayout = new QVBoxLayout(this);
     verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
 
-    logTableView = new ErrorDlg(ErrorDlg::mode_Information);
+    logTableView = new ErrorDlg(ErrorDlg::ModeInformation);
     logTableView->setObjectName(QStringLiteral("logTableView"));
     logTableView->setErrors(&parent->m_Errors);
     logTableView->setMessage(tr("Протокол экспорта записей FMT словаря"));

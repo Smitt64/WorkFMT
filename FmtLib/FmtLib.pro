@@ -33,6 +33,12 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    options/fmtoptionsdlg.cpp \
+    options/generaloptions.cpp \
+    options/tablegroupoptions.cpp \
+    rslexecutors/checksaveexecutor.cpp \
+    rslexecutors/generatorrslexecutor.cpp \
+    rslexecutors/toolbaractionexecutor.cpp \
     src/debugconnect.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
@@ -41,11 +47,9 @@ SOURCES += \
     src/datfile.cpp \
     src/dbinitdlg.cpp \
     src/documentwindow.cpp \
-    src/errordlg.cpp \
     src/fmtapplication.cpp \
     src/fmtfielddlg.cpp \
     src/fmtworkwindow.cpp \
-    src/impexpparams.cpp \
     src/mainwindow.cpp \
     src/massop/destribcreate/massdestribprogress.cpp \
     src/models/odbctablemodel.cpp \
@@ -60,7 +64,6 @@ SOURCES += \
     src/core/fmtlib.cpp \
     src/core/hotfixhelp.cpp \
     src/core/tablesgroupprovider.cpp \
-    src/fmt/fmterrors.cpp \
     src/fmt/fmtfield.cpp \
     src/fmt/fmtimpexpwrp.cpp \
     src/fmt/fmtindex.cpp \
@@ -86,8 +89,6 @@ SOURCES += \
     src/fmt/fmtgeninterface.cpp \
     src/fmtgentablessql.cpp \
     src/fmtworkwndgen.cpp \
-    src/widgets/codeeditor.cpp \
-    src/highlighter.cpp \
     src/fmtgencpptemplate.cpp \
     src/gencppsettings.cpp \
     src/fmt/undoredo/fmtundotableproperty.cpp \
@@ -103,7 +104,6 @@ SOURCES += \
     src/fmt/undoredo/fmtundoindexproperty.cpp \
     src/fmt/undoredo/fmtundoindexsegmentproperty.cpp \
     src/widgets/undolistpopup.cpp \
-    src/models/fmterrorfiltermodel.cpp \
     src/fmt/fmtdbftoolwrp.cpp \
     src/widgets/tablecomboaction.cpp \
     src/widgets/toolbtncombo.cpp \
@@ -114,7 +114,6 @@ SOURCES += \
     src/models/selectfieldsmodel.cpp \
     src/widgets/selectfiltereddlg.cpp \
     src/core/fmtupdatescripts.cpp \
-    src/core/showcodedialog.cpp \
     h/lineeditaction.cpp \
     src/models/fmttablelistdelegate.cpp \
     src/fmt/fmtfile.cpp \
@@ -123,7 +122,6 @@ SOURCES += \
     src/models/fmteditcontentmodel.cpp \
     src/widgets/editcontent/fmteditcontentwindow.cpp \
     src/widgets/editcontent/fmteditcontentdialog.cpp \
-    src/logsettingsdlg.cpp \
     src/widgets/datelineedit.cpp \
     src/widgets/editcontent/fmteditcontentfilter.cpp \
     src/widgets/dataselectdialog.cpp \
@@ -164,6 +162,8 @@ unix {
 }
 
 FORMS += \
+    options/generaloptions.ui \
+    options/tablegroupoptions.ui \
     src/debugconnect.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
@@ -174,7 +174,6 @@ FORMS += \
     ui/errordlg.ui \
     ui/fmtfielddlg.ui \
     ui/fmtworkwindow.ui \
-    ui/impexpparams.ui \
     ui/mainwindow.ui \
     ui/oracleauthdlg.ui \
     ui/tablesgroupsdlg.ui \
@@ -184,7 +183,6 @@ FORMS += \
     ui/selectconnectiondlg.ui \
     ui/stringlistdlg.ui \
     ui/selectfiltereddlg.ui \
-    ui/logsettingsdlg.ui \
     ui/fmteditcontentfilter.ui \
     ui/dataselectdialog.ui \
     src/widgets/editcontent/import/selecttypepage.ui \
@@ -208,13 +206,11 @@ HEADERS += \
     h/connectioninfo.h \
     h/dbinitdlg.h \
     h/documentwindow.h \
-    h/errordlg.h \
     h/exporttoxmlwizard.h \
     h/expresultpage.h \
     h/expsettingspage.h \
     h/fmtapplication.h \
     h/fmtcore.h \
-    h/fmterrors.h \
     h/fmtfield.h \
     h/fmtfielddlg.h \
     h/fmtfieldsdelegate.h \
@@ -232,7 +228,6 @@ HEADERS += \
     h/fmttable.h \
     h/fmttablesmodel.h \
     h/fmtworkwindow.h \
-    h/impexpparams.h \
     h/mainwindow.h \
     h/oracleauthdlg.h \
     h/oracletnslistmodel.h \
@@ -249,8 +244,6 @@ HEADERS += \
     h/fmtgentablessql.h \
     h/fmtlibfactory.h \
     h/fmtworkwndgen.h \
-    h/codeeditor.h \
-    h/highlighter.h \
     h/fmtgencpptemplate.h \
     h/gencppsettings.h \
     h/fmtundotableproperty.h \
@@ -267,7 +260,6 @@ HEADERS += \
     h/fmtundoindexproperty.h \
     h/fmtundoindexsegmentproperty.h \
     h/undolistpopup.h \
-    h/fmterrorfiltermodel.h \
     h/fmtdbftoolwrp.h \
     h/tablecomboaction.h \
     h/toolbtncombo.h \
@@ -285,11 +277,16 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    options/fmtoptionsdlg.h \
+    options/generaloptions.h \
+    options/tablegroupoptions.h \
+    rslexecutors/checksaveexecutor.h \
+    rslexecutors/generatorrslexecutor.h \
+    rslexecutors/toolbaractionexecutor.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
-    h/logsettingsdlg.h \
     h/datelineedit.h \
     src/widgets/editcontent/fmteditcontentfilter.h \
     h/dataselectdialog.h \
@@ -336,9 +333,30 @@ INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin
 INSTALLS += target
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/release/ -lToolsRuntime
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/debug/ -lToolsRuntime
-else:unix: LIBS += -L$$OUT_PWD/../RsWorkTools/ToolsRuntime/ -lToolsRuntime
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
 
-INCLUDEPATH += $$PWD/../RsWorkTools/ToolsRuntime
-DEPENDPATH += $$PWD/../RsWorkTools/ToolsRuntime
+INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime $$PWD/../ToolsRuntimeProj/ToolsRuntime/optionsdlg $$PWD/../ToolsRuntimeProj/ToolsRuntime/widgets
+DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+
+OTHER_FILES += \
+    $$PWD/mac
+
+defineTest(copyToDestDir) {
+    files = $$1
+    dir = $$2
+    # replace slashes in destination path for Windows
+    win32:dir ~= s,/,\\,g
+
+    for(file, files) {
+        # replace slashes in source path for Windows
+        win32:file ~= s,/,\\,g
+        QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$shell_quote($$file) $$shell_quote($$dir) $$escape_expand(\\n\\t)
+    }
+
+    export(QMAKE_POST_LINK)
+}
+
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../WorkFMT/debug/mac)

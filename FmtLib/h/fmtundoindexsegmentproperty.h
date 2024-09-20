@@ -14,7 +14,7 @@ public:
 
     void setValueToUndo(const QVariant &value);
     void setValueToRedo(const QVariant &value);
-    void setProperty(const FmtFldIndex &index, const FmtFldIndex &segment, const quint16 &property);
+    void setProperty(const qint16 &index, const qint16 &segment, const quint16 &property);
 
     virtual void undo();
     virtual void redo();
@@ -23,7 +23,7 @@ private:
     FmtTable *pTable;
 
     QString m_PropertyDisplayName;
-    FmtFldIndex m_Index, m_Segment;
+    qint16 m_Index, m_Segment;
     quint16 m_Property;
     QVariant m_UndoValue, m_RedoValue;
 };

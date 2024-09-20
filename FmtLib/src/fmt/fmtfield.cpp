@@ -8,7 +8,7 @@
 #include <QDataStream>
 #include <QUndoStack>
 
-QString FmtFieldPropertyTextById(const FmtFldIndex &fld)
+QString FmtFieldPropertyTextById(const qint16 &fld)
 {
     QString name;
 
@@ -129,14 +129,14 @@ QString FmtField::name() const
     return m_Name;
 }
 
-FmtRecId FmtField::tableId() const
+quint64 FmtField::tableId() const
 {
     return pTable->id();
 }
 
-FmtFldIndex FmtField::index() const
+qint16 FmtField::index() const
 {
-    return static_cast<FmtFldIndex>(pTable->m_pFields.indexOf(const_cast<FmtField *const>(this)));
+    return static_cast<qint16>(pTable->m_pFields.indexOf(const_cast<FmtField *const>(this)));
 }
 
 void FmtField::setName(const QString &v)
@@ -171,7 +171,7 @@ void FmtField::setName(const QString &v)
         m_Name = value;
 }
 
-void FmtField::setSize(const FmtNumber10 &v)
+void FmtField::setSize(const qint32 &v)
 {
     if (m_Size == v)
         return;
@@ -194,7 +194,7 @@ void FmtField::setSize(const FmtNumber10 &v)
         pTable->rebuildOffsets(pLastCommand);
 
         if (m_Type == fmtt_STRING || m_Type == fmtt_CHR || m_Type == fmtt_UCHR || m_Type == fmtt_SNR)
-            setDecpoint(static_cast<FmtNumber5>(v));
+            setDecpoint(static_cast<qint16>(v));
         else
             setDecpoint(0);
 
@@ -218,7 +218,7 @@ void FmtField::setSize(const FmtNumber10 &v)
     }
 }
 
-void FmtField::setType(const FmtFldType &v)
+void FmtField::setType(const qint16 &v)
 {
     if (m_Type == v)
         return;
@@ -264,10 +264,10 @@ void FmtField::load(const QSqlRecord &rec)
 {
     m_Id = static_cast<quint32>(rec.value(FmtField::fld_Id).toInt());
     m_Size = rec.value(FmtField::fld_Size).toInt();
-    m_Type = static_cast<FmtFldType>(rec.value(FmtField::fld_Type).toInt());
+    m_Type = static_cast<qint16>(rec.value(FmtField::fld_Type).toInt());
     m_Offset = rec.value(FmtField::fld_Offset).toInt();
-    m_Outlen = static_cast<FmtNumber5>(rec.value(FmtField::fld_Outlen).toInt());
-    m_Decpoint = static_cast<FmtNumber5>(rec.value(FmtField::fld_DecPoint).toInt());
+    m_Outlen = static_cast<qint16>(rec.value(FmtField::fld_Outlen).toInt());
+    m_Decpoint = static_cast<qint16>(rec.value(FmtField::fld_DecPoint).toInt());
     m_isHidden = rec.value(FmtField::fld_Hidden).toBool();
 
     m_Name = rec.value(FmtField::fld_Name).toString();
@@ -283,12 +283,12 @@ QString FmtField::undecorateName() const
     return str;
 }
 
-FmtNumber10 FmtField::offset() const
+qint32 FmtField::offset() const
 {
     return m_Offset;
 }
 
-void FmtField::setOffset(const FmtNumber10 &v)
+void FmtField::setOffset(const qint32 &v)
 {
     if (m_Offset == v)
         return;
@@ -313,12 +313,12 @@ void FmtField::setOffset(const FmtNumber10 &v)
         m_Offset = v;
 }
 
-FmtNumber5 FmtField::outlen() const
+qint16 FmtField::outlen() const
 {
     return m_Outlen;
 }
 
-void FmtField::setOutlen(const FmtNumber5 &v)
+void FmtField::setOutlen(const qint16 &v)
 {
     if (m_Outlen == v)
         return;
@@ -343,12 +343,12 @@ void FmtField::setOutlen(const FmtNumber5 &v)
         m_Outlen = v;
 }
 
-FmtNumber5 FmtField::decpoint() const
+qint16 FmtField::decpoint() const
 {
     return m_Decpoint;
 }
 
-void FmtField::setDecpoint(const FmtNumber5 &v)
+void FmtField::setDecpoint(const qint16 &v)
 {
     if (m_Decpoint == v)
         return;
@@ -403,7 +403,7 @@ void FmtField::setHidden(const bool &v)
         m_isHidden = v;
 }
 
-FmtRecId FmtField::FindFirstEmptyID()
+quint64 FmtField::FindFirstEmptyID()
 {
     int id = 1;
     QSqlQuery q(pTable->db);
@@ -411,7 +411,7 @@ FmtRecId FmtField::FindFirstEmptyID()
     if (q.exec() && q.next())
         id = q.value(0).toInt();
 
-    return static_cast<FmtRecId>(id);
+    return static_cast<quint64>(id);
 }
 
 int FmtField::save()
@@ -447,7 +447,7 @@ bool FmtField::isAutoInc() const
 {
     bool hr = false;
     FmtField *pThis = const_cast<FmtField*>(this);
-    for (FmtNumber5 i = 0; i < pThis->table()->indecesCount(); i++)
+    for (qint16 i = 0; i < pThis->table()->indecesCount(); i++)
     {
         FmtIndex *indx = pThis->table()->tableIndex(i);
         if (indx->isAutoInc() && indx->hasField(pThis))
@@ -622,7 +622,7 @@ qint32 FmtField::typeIndex() const
     return fmtIndexForType(m_Type);
 }
 
-void FmtField::setTypeIndex(const FmtFldIndex &v)
+void FmtField::setTypeIndex(const qint16 &v)
 {
     setType(fmtTypeFromIndex(v));
     emit typeChanged(m_Type);
@@ -641,7 +641,7 @@ bool FmtField::isStringType() const
     return hr;
 }
 
-bool FmtField::setDataPrivate(const FmtFldIndex &fld, const QVariant &value)
+bool FmtField::setDataPrivate(const qint16 &fld, const QVariant &value)
 {
     switch(fld)
     {
@@ -653,7 +653,7 @@ bool FmtField::setDataPrivate(const FmtFldIndex &fld, const QVariant &value)
         m_Name = value.toString();
         break;
     case fld_Type:
-        m_Type = static_cast<FmtFldType>(value.toInt());
+        m_Type = static_cast<qint16>(value.toInt());
         break;
     case fld_Size:
         m_Size = value.toInt();
@@ -662,10 +662,10 @@ bool FmtField::setDataPrivate(const FmtFldIndex &fld, const QVariant &value)
         m_Offset = value.toInt();
         break;
     case fld_Outlen:
-        m_Outlen = static_cast<FmtNumber5>(value.toInt());
+        m_Outlen = static_cast<qint16>(value.toInt());
         break;
     case fld_DecPoint:
-        m_Decpoint = static_cast<FmtNumber5>(value.toInt());
+        m_Decpoint = static_cast<qint16>(value.toInt());
         break;
     case fld_Hidden:
         m_isHidden = value.toBool();
@@ -729,11 +729,11 @@ void FmtField::stroreData(QByteArray *data)
 
 void FmtField::restoreData(QByteArray *data)
 {
-    QMap<FmtFldIndex,QVariant> fldDataMap;
+    QMap<qint16,QVariant> fldDataMap;
     QDataStream stream(data, QIODevice::ReadOnly);
     stream >> fldDataMap;
 
-    QMapIterator<FmtFldIndex,QVariant> iterator(fldDataMap);
+    QMapIterator<qint16,QVariant> iterator(fldDataMap);
     while(iterator.hasNext())
     {
         iterator.next();

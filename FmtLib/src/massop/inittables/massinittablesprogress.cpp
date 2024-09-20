@@ -1,7 +1,7 @@
 #include "massinittablesprogress.h"
 #include "ui_massinittablesprogress.h"
 #include "errordlg.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "fmttable.h"
 #include "massoperationwizard.h"
 #include "massinittablesparammodel.h"
@@ -86,8 +86,8 @@ MassInitTablesProgress::MassInitTablesProgress(QWidget *parent) :
 {
     ui->setupUi(this);
     setTitle(tr("Инициализация"));
-    pErrors = new FmtErrors(this);
-    pErrDlg = new ErrorDlg(ErrorDlg::mode_Widget);
+    pErrors = new ErrorsModel(this);
+    pErrDlg = new ErrorDlg(ErrorDlg::ModeWidget);
     pErrDlg->setErrors(pErrors);
     ui->verticalLayout->insertWidget(0, pErrDlg);
 }

@@ -31,7 +31,7 @@ private:
 };
 
 class ErrorDlg;
-class FmtErrors;
+class ErrorsModel;
 class MassInitTablesProgress : public QWizardPage
 {
     Q_OBJECT
@@ -46,7 +46,7 @@ public:
 
 private:
     Ui::MassInitTablesProgress *ui;
-    FmtErrors *pErrors;
+    ErrorsModel *pErrors;
     ErrorDlg *pErrDlg;
     bool fIsComplete;
 };

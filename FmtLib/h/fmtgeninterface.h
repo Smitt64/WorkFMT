@@ -6,7 +6,8 @@
 #include "fmttable.h"
 #include "fmtlibfactory.h"
 #include "loggingcategories.h"
-#include "highlighter.h"
+#include <codeeditor/codehighlighter.h>
+#include <codeeditor/highlighterstyle.h>
 #include <QTextCharFormat>
 
 class FmtGenFinishEvent : public QEvent
@@ -28,23 +29,16 @@ class FmtGenInterface : public QObject
     friend class FmtGenInterfaceRunnable;
     friend void registerFmtGenInterface(const QString &alias);
 public:
-    enum GenType
-    {
-        GenText,
-        GenSql,
-        GenCpp
-    };
-
     FmtGenInterface();
 
-    virtual GenType getContentType() const { return GenText; }
+    virtual int getContentType() const { return 0; }
     void start(QSharedPointer<FmtTable> pTable);
     virtual bool event(QEvent *e);
 
     virtual void propertyEditor(QWidget *parent) { Q_UNUSED(parent) }
     virtual bool hasPropertes() const { return false; }
 
-    virtual FmtGenHighlightingRuleList highlightingRuleList() const;
+    virtual GenHighlightingRuleList highlightingRuleList() const;
 
 signals:
     void finish(const QByteArray&);

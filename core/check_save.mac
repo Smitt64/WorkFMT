@@ -1,0 +1,13 @@
+import ToolsRuntime;
+
+macro CheckSave(table : FmtTable, errors : ErrorsModel)
+    /*var err = ErrorsModel();
+    err.appendError("Пример предупреждения", err.TypeWarning);
+    err.appendError("Пример ошибки", err.TypeError);
+    err.appendError("Пример сообщения", err.TypeInfo);
+
+    var dlg = ErrorDlg(ErrorModeInformation);
+    dlg.setMessage("Описание назначения окна:");
+    dlg.setErrors(err);
+    var result = dlg.exec();*/
+end;

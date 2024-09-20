@@ -4,7 +4,7 @@
 #include "dbfileobject.h"
 #include "loghighlighter.h"
 #include <QMainWindow>
-#include <fmterrors.h>
+#include <ErrorsModel.h>
 #include <errordlg.h>
 #include <connectioninfo.h>
 #include <QStringListModel>

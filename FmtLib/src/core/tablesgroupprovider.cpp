@@ -1,12 +1,16 @@
 #include "tablesgroupprovider.h"
 #include "fmtcore.h"
 #include "loggingcategories.h"
+#include "toolsruntime.h"
 #include <QDebug>
 #include <QtXml>
 #include <QDebug>
 #include <QCoreApplication>
 #include <QFile>
 #include <QUuid>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 TablesGroupProvider *TablesGroupProvider::m_pInstance = NULL;
 TablesGroupProvider::TablesGroupProvider(QObject *parent) : QObject(parent)
@@ -42,11 +46,51 @@ bool TablesGroupProvider::Init()
 
         if (!m_pGroupsModel->select())
             qCWarning(logCore()) << "Can't select groups:" << _db.lastError().text();
+
+        createDefaultGroups();
     }
     else
         qCWarning(logCore()) << "Can't load tables groups:" << _db.lastError().text();
 
     return result;
+}
+
+bool TablesGroupProvider::isGroupExists(const QString &name)
+{
+    QSqlQuery q(_db);
+    q.prepare("SELECT count(1) FROM table_groups WHERE name = :name");
+    q.bindValue(":name", name);
+
+    if (ExecuteQuery(&q))
+        qCWarning(logCore()) << "Can't select groups:" << _db.lastError().text();
+
+    return q.next() && q.value(0).toInt() != 0;
+}
+
+void TablesGroupProvider::createDefaultGroups()
+{
+    QByteArray data = toolReadTextFileContent(":/TablesGroupProvider", "UTF-8").toUtf8();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonObject obj = doc.object();
+
+    for (QJsonValue v : obj.value("groups").toArray()) 
+    {
+        QJsonObject group = v.toObject();
+        QString name = group.value("name").toString();
+
+        QString groupUID;
+        if (!isGroupExists(name))
+            addGroup(name, &groupUID);
+        else
+            groupUID = selectGroupUid(name);
+
+        QJsonArray tables = group.value("tables").toArray();
+        for (QJsonValue v : tables)
+        {
+            QString table = v.toString();
+            addTable(groupUID, table);
+        }
+    }
 }
 
 QString TablesGroupProvider::ReadFileContent(const QString &filename)

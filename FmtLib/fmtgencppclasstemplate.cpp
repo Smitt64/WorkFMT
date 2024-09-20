@@ -14,7 +14,7 @@ FmtGenCppClassTemplate::~FmtGenCppClassTemplate()
 
 }
 
-FmtGenHighlightingRuleList FmtGenCppClassTemplate::highlightingRuleList() const
+GenHighlightingRuleList FmtGenCppClassTemplate::highlightingRuleList() const
 {
     return m_HighlightingRuleList;
 }
@@ -29,8 +29,8 @@ QByteArray FmtGenCppClassTemplate::makeContent(FmtSharedTablePtr pTable)
         pkUnionName = getUnionKeyName(pTable, pTable->pkIDx());
 
     QString className = getClassName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatType});
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(FmtTableStructName(pTable->name()))), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatElemType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(FmtTableStructName(pTable->name()))), FormatElemType});
 
     stream << "// RsbParty.hpp" << Qt::endl;
     createClassDeclaration(pTable, stream);
@@ -71,7 +71,7 @@ void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTa
 
         foreach (const QString &str, indexes) {
             bool ok = false;
-            FmtNumber5 id = static_cast<FmtNumber5>(str.toInt(&ok));
+            qint16 id = static_cast<qint16>(str.toInt(&ok));
 
             if (ok)
             {
@@ -93,7 +93,7 @@ void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTa
     stream << Qt::endl;
 
     stream << tab << "int Add(";
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         if (i != 0)
@@ -113,7 +113,7 @@ void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTa
 
     QString PrimaryKey = FormatName(prm.GenUnion.sNameMask, pTable);
     stream << tab << PrimaryKey << " m_PrimaryKey;" << Qt::endl;
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(PrimaryKey)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(PrimaryKey)), FormatElemType});
     stream << "};";
 }
 
@@ -370,7 +370,7 @@ void FmtGenCppClassTemplate::createUpdateDefenition(const FmtSharedTablePtr &pTa
     stream << tab << "int stat = 0;" << Qt::endl;
 
     QString CachePtr = FmtGenInputServiceCppTemplate::getCacheWrapperName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(CachePtr)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(CachePtr)), FormatElemType});
 
     stream << tab << QString("%1 CachePtr;").arg(CachePtr) << Qt::endl;
     stream << tab << QString("%1 ZeroKey;").arg(FormatName(prm.GenUnion.sNameMask, pTable)) << Qt::endl;
@@ -410,7 +410,7 @@ void FmtGenCppClassTemplate::createGetDefenition(const FmtSharedTablePtr &pTable
 
         foreach (const QString &str, indexes) {
             bool ok = false;
-            FmtNumber5 id = static_cast<FmtNumber5>(str.toInt(&ok));
+            qint16 id = static_cast<qint16>(str.toInt(&ok));
 
             if (ok)
             {
@@ -496,7 +496,7 @@ void FmtGenCppClassTemplate::createAddDefenition(const FmtSharedTablePtr &pTable
     QString className = getClassName(pTable);
     QString structName = FmtTableStructName(pTable->name());
     stream << QString("int %1::Add(").arg(className);
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         if (i != 0)
@@ -509,7 +509,7 @@ void FmtGenCppClassTemplate::createAddDefenition(const FmtSharedTablePtr &pTable
     stream << tab << QString("%1 buf;").arg(structName) << Qt::endl;
     stream << tab << QString("memset(&buf, 0, sizeof(%1));").arg(structName) << Qt::endl;
 
-    for (FmtNumber5 j = 0; j < pTable->fieldsCount(); j++)
+    for (qint16 j = 0; j < pTable->fieldsCount(); j++)
     {
         FmtField *fld = pTable->field(j);
         QString fldName = fld->undecorateName();
@@ -550,8 +550,8 @@ void FmtGenCppClassTemplate::createRslClassDeclaration(const FmtSharedTablePtr &
 {
     QString className = getClassName(pTable);
     QString rslClassName = getRslClassName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(rslClassName)), FormatType});
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(rslClassName)), FormatElemType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatElemType});
 
     stream << "class _BANKKERNELEXP " << rslClassName << " : " << className << Qt::endl;
     stream << "{" << Qt::endl;
@@ -560,14 +560,14 @@ void FmtGenCppClassTemplate::createRslClassDeclaration(const FmtSharedTablePtr &
     stream << tab << QString("virtual ~%1();").arg(rslClassName) << Qt::endl;
 
     QString pThisSrv = FmtGenInputServiceCppTemplate::getInputServiceClassName(pTable);
-    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(pThisSrv)), FormatType});
+    m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(pThisSrv)), FormatElemType});
 
     stream << tab << QString("void Attach(int32 PartyID, %1 *pThisSrv);").arg(pThisSrv) << Qt::endl;
     stream << tab << QString("operator TGenObject* () const { return m_pRslObj; }") << Qt::endl;
     stream << Qt::endl;
 
     stream << tab << QString("RSL_CLASS(%1)").arg(rslClassName) << Qt::endl;
-    for (FmtFldIndex i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         stream << tab << QString("RSL_GETPROP_DECL(%1);").arg(pFld->undecorateName()) << Qt::endl;
@@ -625,7 +625,7 @@ void FmtGenCppClassTemplate::createRslClassDefenition(const FmtSharedTablePtr &p
     stream << tab << "END_RSBEXCEPTION_HANDLER_INSTAT(stat);" << Qt::endl;
     stream << "}" << Qt::endl << Qt::endl;
 
-    for (FmtFldIndex i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         createRslFldPropertyDefenition(pTable, pFld, stream);
@@ -834,14 +834,14 @@ void FmtGenCppClassTemplate::createRslAddDefenition(const FmtSharedTablePtr &pTa
 
     stream << tab << "enum" << Qt::endl;
     stream << tab << "{" << Qt::endl;
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         stream << tab << tab << QString("prm_%1%2,").arg(pFld->undecorateName(), i == 0 ? QString(" = 1") : QString()) << Qt::endl;
     }
     stream << tab << "};" << Qt::endl << Qt::endl;
 
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
 
@@ -870,7 +870,7 @@ void FmtGenCppClassTemplate::createRslAddDefenition(const FmtSharedTablePtr &pTa
     stream << tab << "if (!stat)" << Qt::endl << tab << "{" << Qt::endl;
     stream << tab << tab << QString("stat = %1::Add(").arg(className);
 
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
 
@@ -902,7 +902,7 @@ void FmtGenCppClassTemplate::createRslClassDefines(const FmtSharedTablePtr &pTab
     stream <<  QString("RSL_METH(Delete)") << Qt::endl;
     stream <<  QString("RSL_METH(Get)") << Qt::endl << Qt::endl;
 
-    for (FmtNumber5 i = 0; i < pTable->fieldsCount(); i++)
+    for (qint16 i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *pFld = pTable->field(i);
         stream << QString("RSL_PROP_METH2(%1)").arg(pFld->undecorateName()) << Qt::endl;
@@ -933,7 +933,7 @@ QString FmtGenCppClassTemplate::normalizeFieldName(const QString &m_Name)
     return name;
 }
 
-QString FmtGenCppClassTemplate::getUnionKeyName(const FmtSharedTablePtr &pTable, const FmtNumber5 &key)
+QString FmtGenCppClassTemplate::getUnionKeyName(const FmtSharedTablePtr &pTable, const qint16 &key)
 {
     QString keyName;
     FmtIndex *pIndex = pTable->tableIndex(key);

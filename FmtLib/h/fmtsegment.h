@@ -20,7 +20,7 @@ class FMTLIBSHARED_EXPORT FmtSegment : public FmtIndecesModelItem
     Q_PROPERTY(bool isDup READ isDup)
     Q_PROPERTY(bool isAutoInc READ isAutoInc)
     Q_PROPERTY(bool isLocal READ isLocal)
-    Q_PROPERTY(FmtFldType type READ type)
+    Q_PROPERTY(qint16 type READ type)
     Q_PROPERTY(quint32 segmentFlags READ segmentFlags)
 
     friend class FmtIndex;
@@ -43,27 +43,27 @@ public:
     bool isAutoInc() const;
     bool isLocal() const;
     bool isDup() const;
-    FmtFldType type() const;
-    FmtNumber10 flags() const;
+    qint16 type() const;
+    qint32 flags() const;
     quint32 segmentFlags() const;
 
     void setNotNull(bool use);
     void setComment(const QString &val);
     void setDescOrder(bool use);
     void setIsReal(bool use);
-    void setFlags(const FmtNumber10 &value);
+    void setFlags(const qint32 &value);
 
     void copyTo(FmtSegment *other);
 
 public slots:
     FmtField *field();
     void setField(FmtField *fld);
-    void setField(const FmtFldIndex &fld);
-    FmtFldIndex fieldIndex();
+    void setField(const qint16 &fld);
+    qint16 fieldIndex();
 
     FmtIndex *index();
     FmtTable *table();
-    FmtFldIndex segmentNumber();
+    qint16 segmentNumber();
 
 signals:
     void isRealChanged(bool);
@@ -79,7 +79,7 @@ private:
     void setDataPrivate(const QVariant &value, const quint16 &column);
     FmtField *pFld;
     bool m_fSetIgnoreUndoStack;
-    FmtNumber10 m_Flags;
+    qint32 m_Flags;
     bool m_IsReal;
     int m_ExcludeNull;
     QString m_Comment;

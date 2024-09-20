@@ -9,7 +9,7 @@
 #include "dbinitdlg.h"
 #include "fmtfielddlg.h"
 #include "fmtcore.h"
-#include "fmterrors.h"
+#include "ErrorsModel.h"
 #include "errordlg.h"
 #include "fmtimpexpwrp.h"
 #include "fmtfield.h"
@@ -17,7 +17,9 @@
 #include "undolistpopup.h"
 #include "selectfieldsmodel.h"
 #include "selectfiltereddlg.h"
-#include "codeeditor.h"
+#include <codeeditor/codeeditor.h>
+#include <codeeditor/highlighterstyle.h>
+#include <codeeditor/codehighlighter.h>
 #include "lineeditaction.h"
 #include "fmtscriptwindow.h"
 #include "fmrichtextwidget.h"
@@ -114,8 +116,6 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
         }
     }
 
-    ui->autoCamelCase->setChecked(settings()->value("AutoCamelCase", true).toBool());
-
     pCopyMenu = new QMenu(this);
     ui->copyTool->setMenu(pCopyMenu);
 
@@ -139,8 +139,6 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     connect(ui->checkButton, SIGNAL(clicked(bool)), SLOT(CheckTable()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(TabCloseRequested(int)));
     connect(ui->scriptButton, SIGNAL(clicked(bool)), SLOT(OpenScriptEditorWindow()));
-
-    connect(ui->autoCamelCase, SIGNAL(toggled(bool)), this, SLOT(AutoCamelCase(bool)));
 }
 
 FmtWorkWindow::~FmtWorkWindow()
@@ -176,6 +174,7 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu->addSeparator();*/
     m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
     m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
+    m_CheckAction = pActionsMenu->addAction(tr("Проверить таблицу на ошибки"));
     pActionsMenu->addSeparator();
     pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты SQL"));
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
@@ -203,6 +202,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
     connect(m_CamelCaseAction, SIGNAL(triggered(bool)), SLOT(CamelCaseAction()));
     connect(m_GenDiffToScript, SIGNAL(triggered(bool)), SLOT(DiffToScript()));
+    connect(m_CheckAction, SIGNAL(triggered(bool)), SLOT(CheckAction()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
@@ -306,7 +306,6 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
         ui->nameEdit->setReadOnly(true);
         ui->commentEdit->setReadOnly(true);
 
-        ui->autoCamelCase->setEnabled(false);
         ui->isTemp->setEnabled(false);
         ui->isRec->setEnabled(false);
         ui->keyComboBox->setEnabled(false);
@@ -443,7 +442,7 @@ void FmtWorkWindow::OnIndexChanged(FmtIndex *index)
 
 int FmtWorkWindow::CheckAppy()
 {
-    FmtErrors err;
+    ErrorsModel err;
     pTable->checkErrors(&err);
 
     int stat = 0;
@@ -454,7 +453,7 @@ int FmtWorkWindow::CheckAppy()
             msg = tr("Сохранение не возможно, т.к имеются ошибки наполнения Fmt словаря.");
         else
             msg = tr("Имеются предупреждения по структуре Fmt словаря. Сохранить изменения не смотря на сообщения?");
-        ErrorDlg dlg(ErrorDlg::mode_MessageBox, this);
+        ErrorDlg dlg(ErrorDlg::ModeMessageBox, this);
         dlg.setErrors(&err);
         dlg.setWindowTitle(tr("Сохранение структуры"));
         dlg.setMessage(msg);
@@ -545,15 +544,15 @@ void FmtWorkWindow::FieldAdded(FmtField *fld)
 
 void FmtWorkWindow::InitDB()
 {
-    InitFmtTable(pTable, this);
+    InitFmtTable(pTable.data(), this);
 }
 
 void FmtWorkWindow::CheckTable()
 {
-    FmtErrors e;
+    ErrorsModel e;
     if (!pTable->checkErrors(&e))
     {
-        ErrorDlg dlg(ErrorDlg::mode_Information, this);
+        ErrorDlg dlg(ErrorDlg::ModeInformation, this);
         dlg.setErrors(&e);
         dlg.setMessage(tr("Результат проверки: "));
         dlg.exec();
@@ -692,11 +691,11 @@ int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*
 
 void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
 {
-    Highlighter *pCurrentHighlighter = Q_NULLPTR;
     CodeEditor *editor = new CodeEditor();
-    pCurrentHighlighter = new Highlighter(Highlighter::HC_SQL, editor->document());
-    pCurrentHighlighter->addRsType(pTable->name());
-    pCurrentHighlighter->addRsType(pTable->name().toUpper());
+    ToolApplyHighlighter(editor, HighlighterSql);
+
+    editor->highlighter()->addType(pTable->name());
+    editor->highlighter()->addType(pTable->name().toUpper());
     editor->setReadOnly(true);
     editor->setPlainText(code);
 
@@ -709,10 +708,10 @@ void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, boo
 
 void FmtWorkWindow::AddCppCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
 {
-    Highlighter *pCurrentHighlighter = Q_NULLPTR;
     CodeEditor *editor = new CodeEditor();
-    pCurrentHighlighter = new Highlighter(Highlighter::HC_CPP,editor->document());
-    pCurrentHighlighter->addRsType(FmtTableStructName(pTable->name()));
+    ToolApplyHighlighter(editor, HighlighterCpp);
+
+    editor->highlighter()->addType(FmtTableStructName(pTable->name()));
     editor->setReadOnly(true);
     editor->setPlainText(code);
 
@@ -945,12 +944,6 @@ void FmtWorkWindow::GenInsertTemplateSql()
     }
 }
 
-void FmtWorkWindow::AutoCamelCase(bool checked)
-{
-    settings()->setValue("AutoCamelCase", checked);
-    settings()->sync();
-}
-
 void FmtWorkWindow::CamelCaseAction()
 {
     QList<FmtField*> FldList;
@@ -1033,5 +1026,25 @@ void FmtWorkWindow::DiffToScript()
     {
         if (!result.isEmpty())
             AddSqlCodeTab(tr("Diff To Script"), result);
+    }
+}
+
+void FmtWorkWindow::CheckAction()
+{
+    ErrorsModel err;
+    pTable->checkErrors(&err);
+
+    if (!err.isEmpty())
+    {
+        QString msg = tr("Имеются предупреждения по структуре Fmt словаря");
+        ErrorDlg dlg(ErrorDlg::ModeInformation, this);
+        dlg.setErrors(&err);
+        dlg.setWindowTitle(tr("Результаты проверки"));
+        dlg.setMessage(msg);
+        dlg.exec();
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Результат"), tr("Проверка ошибок не обнаружила"));
     }
 }
