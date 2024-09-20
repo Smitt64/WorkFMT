@@ -2,6 +2,7 @@
 #include <QSettings>
 #include "generaloptions.h"
 #include "tablegroupoptions.h"
+#include "fmtcommandspage.h"
 #include <QIcon>
 
 FmtOptionsDlg::FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QWidget *parent) :
@@ -16,7 +17,7 @@ FmtOptionsDlg::FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QW
     if (connection)
         addPage(tr("Группы таблиц"), QIcon(":/img/sapi.cpl_14_138-1.png"), new TableGroupOptions(connection));
 
-    addCommandsPage();
+    addCommandsPage((CommandsOptions*)new FmtCommandsPage());
     addLogPage("WorkFmt");
 }
 

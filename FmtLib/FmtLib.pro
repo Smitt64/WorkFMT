@@ -33,9 +33,11 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    options/fmtcommandspage.cpp \
     options/fmtoptionsdlg.cpp \
     options/generaloptions.cpp \
     options/tablegroupoptions.cpp \
+    options/usercommandsgroup.cpp \
     rslexecutors/checksaveexecutor.cpp \
     rslexecutors/generatorrslexecutor.cpp \
     rslexecutors/toolbaractionexecutor.cpp \
@@ -164,6 +166,7 @@ unix {
 FORMS += \
     options/generaloptions.ui \
     options/tablegroupoptions.ui \
+    options/usercommandsgroup.ui \
     src/debugconnect.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
@@ -277,9 +280,11 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    options/fmtcommandspage.h \
     options/fmtoptionsdlg.h \
     options/generaloptions.h \
     options/tablegroupoptions.h \
+    options/usercommandsgroup.h \
     rslexecutors/checksaveexecutor.h \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
