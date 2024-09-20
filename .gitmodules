@@ -1,4 +1,0 @@
-[submodule "RsWorkTools"]
-	path = ToolsRuntimeProj
-	url = https://github.com/Smitt64/RsWorkTools.git
-	branch = master
