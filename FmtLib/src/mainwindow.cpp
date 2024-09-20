@@ -598,6 +598,11 @@ void MainWindow::SetActiveFmtWindow(QMdiSubWindow *wnd)
     pMdi->setActiveSubWindow(wnd);
 }
 
+QMdiSubWindow *MainWindow::currentMdiWindow()
+{
+    return pMdi->activeSubWindow();
+}
+
 void MainWindow::OnTableChangeUpdtList()
 {
     TablesDockWidget *list = pTablesDock->tablesWidget();

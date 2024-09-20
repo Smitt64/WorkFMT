@@ -45,7 +45,10 @@ public:
 
     ConnectionInfo* openConnection();
     bool isExistsConnection(ConnectionInfo *connection);
-    bool addConnection(ConnectionInfo *connection); 
+    bool addConnection(ConnectionInfo *connection);
+
+    void SetActiveFmtWindow(QMdiSubWindow *wnd);
+    QMdiSubWindow *currentMdiWindow();
 
 public slots:
     void actionConnectTriggered();
@@ -107,7 +110,7 @@ private:
     void CreateWindowsCombo();
     void CreateViewMenu();
     void CreateSearchToolBar();
-    void SetActiveFmtWindow(QMdiSubWindow *wnd);
+
     void CreateCheckUpdateRunnable();
 
     QAction *CreateConnectionActio(ConnectionInfo *info);

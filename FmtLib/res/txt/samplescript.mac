@@ -1,0 +1,9 @@
+import "fmtglobals.mac", fmt;
+
+macro ExecAction()
+    var i = 0;
+    while (i < {FmtTable}.FieldsCount)
+        println({FmtTable}.field(i).UndecorateName);
+        i = i + 1;
+    end;
+end;

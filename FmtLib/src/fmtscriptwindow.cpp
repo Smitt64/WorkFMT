@@ -2,41 +2,19 @@
 #include <codeeditor/codeeditor.h>
 #include <codeeditor/codehighlighter.h>
 #include "fmtcore.h"
+#include "toolsruntime.h"
+#include "rslexecutors/toolbaractionexecutor.h"
+#include "mainwindow.h"
 #include <QFileDialog>
-
-QScriptValue myPrintFunction(QScriptContext *context, QScriptEngine *engine)
-{
-    QScriptValue calleeData = context->callee().data();
-    QTextBrowser *edit = qobject_cast<QTextBrowser*>(calleeData.toQObject());
-    QString result;
-    for (int i = 0; i < context->argumentCount(); ++i) {
-        result.append(context->argument(i).toString());
-    }
-    edit->append(result);
-
-    return engine->undefinedValue();
-}
-
-QScriptValue myImportFunction(QScriptContext *context, QScriptEngine *engine)
-{
-    //QScriptValue calleeData = context->callee().data();
-    //QTextBrowser *edit = qobject_cast<QTextBrowser*>(calleeData.toQObject());
-    QString result;
-    for (int i = 0; i < context->argumentCount(); ++i) {
-        engine->importExtension(context->argument(i).toString());
-    }
-
-    return engine->undefinedValue();
-}
-
-// =================================================================================
+#include <errorsmodel.h>
+#include <errordlg.h>
 
 FmtScriptWindow::FmtScriptWindow(QSharedPointer<FmtTable> &table, QWidget *parent) :
     QMainWindow(parent)
 {
     CreateMdi();
     CreateActions();
-    CreateScriptEngine();
+    //CreateScriptEngine();
 
     pTable = table;
     OnNew();
@@ -73,22 +51,22 @@ void FmtScriptWindow::CreateActions()
 
 void FmtScriptWindow::CreateMdi()
 {
-    pMdi = new QMdiArea(this);
-    pOutput = new QTextBrowser(this);
+    pOutput = new CodeEditor(this);
     pSplitter = new QSplitter(Qt::Vertical, this);
-    pSplitter->addWidget(pMdi);
+
+    pEditor = new CodeEditor(this);
+    ToolApplyHighlighter(pEditor, HighlighterRsl);
+    pSplitter->addWidget(pEditor);
     pSplitter->addWidget(pOutput);
     setCentralWidget(pSplitter);
 
-    pMdi->setDocumentMode(true);
-    pMdi->setViewMode(QMdiArea::TabbedView);
-    pMdi->setTabsClosable(true);
-    pMdi->setTabShape(QTabWidget::Triangular);
+    pOutput->setReadOnly(true);
+    ToolApplyHighlighter(pOutput, HighlighterPlain);
 }
 
 void FmtScriptWindow::CreateScriptEngine()
 {
-    pEngine = new QScriptEngine(this);
+    /*pEngine = new QScriptEngine(this);
     QScriptValue result = pEngine->importExtension("fmt");
     if (!result.isUndefined())
         qDebug() << "Uncaught exception: " << pEngine->uncaughtException().toString();
@@ -98,37 +76,27 @@ void FmtScriptWindow::CreateScriptEngine()
     pEngine->globalObject().setProperty("Print", fun);
 
     QScriptValue impfun = pEngine->newFunction(myImportFunction);
-    pEngine->globalObject().setProperty("ImportExt", impfun);
+    pEngine->globalObject().setProperty("ImportExt", impfun);*/
 }
 
 void FmtScriptWindow::OnNew()
 {
-    QString sample = ReadTextFileContent(":/txt/samplescript.js");
-    CodeEditor *pEditor = new CodeEditor(this);
-    QMdiSubWindow *wnd = pMdi->addSubWindow(pEditor);
-    wnd->showMaximized();
+    QString sample = toolReadTextFileContent(":/txt/samplescript.mac", "IBM 866");
 
-    //Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pEditor->document());
-    //Q_UNUSED(pHighlighter)
     pEditor->setPlainText(sample);
+    pEditor->setWindowFilePath(QString());
 }
 
 void FmtScriptWindow::OnOpen()
 {
-    QString file = QFileDialog::getOpenFileName(this, QString(), QDir::currentPath(), tr("JavaScript files (*.js)"));
+    QString file = QFileDialog::getOpenFileName(this, QString(), QDir::currentPath(), tr("Макро файлы (*.mac)"));
 
     if (!file.isEmpty())
     {
         QFileInfo fi(file);
-        QString sample = ReadTextFileContent(file);
-        CodeEditor *pEditor = new CodeEditor(this);
-        pEditor->setWindowFilePath(file);
-        QMdiSubWindow *wnd = pMdi->addSubWindow(pEditor);
-        wnd->showMaximized();
-
-        //Highlighter *pHighlighter = new Highlighter(Highlighter::HC_JS, pEditor->document());
-        //Q_UNUSED(pHighlighter)
+        QString sample = toolReadTextFileContent(file, "IBM 866");
         pEditor->setPlainText(sample);
+        pEditor->setWindowFilePath(file);
     }
 }
 
@@ -142,18 +110,8 @@ void FmtScriptWindow::OnExecuteDebug()
     ExecuteEx(true);
 }
 
-void FmtScriptWindow::OnSave()
+bool FmtScriptWindow::save()
 {
-    QWidget *fw = qApp->focusWidget();
-    CodeEditor *pEditor = NULL;
-
-    if (!fw)
-        return;
-
-    pEditor = qobject_cast<CodeEditor*>(fw);
-    if (!pEditor)
-        return;
-
     QString filename;
     QString macroFile = pEditor->windowFilePath();
 
@@ -161,27 +119,35 @@ void FmtScriptWindow::OnSave()
     {
         QDir d = qApp->applicationDirPath();
         d.cd("mac");
-        filename = QFileDialog::getSaveFileName(this, QString(), d.absolutePath(), tr("JavaScript files (*.js)"));
+        filename = QFileDialog::getSaveFileName(this, QString(), d.absolutePath(), tr("Макро файлы (*.mac)"));
     }
     else
         filename = macroFile;
 
     if (filename.isEmpty())
-        return;
+        return false;
 
     QFile f(filename);
     if (f.open(QIODevice::WriteOnly))
     {
         QTextStream stream(&f);
-        stream.setCodec("UTF-8");
+        stream.setCodec("IBM 866");
         stream << pEditor->toPlainText();
+        pEditor->setWindowFilePath(filename);
         f.close();
     }
+
+    return true;
+}
+
+void FmtScriptWindow::OnSave()
+{
+    save();
 }
 
 void FmtScriptWindow::SetupScriptEngineValues(CodeEditor *pEditor)
 {
-    QScriptValue global = pEngine->globalObject();
+    /*QScriptValue global = pEngine->globalObject();
     QScriptValue obj = global.property("FmtTablePtr").construct();
     global.setProperty("pTable", pEngine->newVariant(obj, QVariant::fromValue(pTable)));
 
@@ -202,37 +168,32 @@ void FmtScriptWindow::SetupScriptEngineValues(CodeEditor *pEditor)
         macroFile = fi.path();
     }
 
-    global.setProperty("$macroDirPath", macroFile, QScriptValue::ReadOnly | QScriptValue::Undeletable);
+    global.setProperty("$macroDirPath", macroFile, QScriptValue::ReadOnly | QScriptValue::Undeletable);*/
 }
 
 void FmtScriptWindow::ExecuteEx(bool useDebug)
 {
-    QWidget *fw = qApp->focusWidget();
+    MainWindow *pMainWindow = qobject_cast<MainWindow*>(qApp->activeWindow());
 
-    if (fw)
+    if (!pMainWindow)
+        return;
+
+    QMdiSubWindow *old = pMainWindow->currentMdiWindow();
+    QString macroFile = pEditor->windowFilePath();
+    QScopedPointer<ToolbarActionExecutor> executor(new ToolbarActionExecutor(pMainWindow));
+
+    if (!save())
+        return;
+
+    pMainWindow->SetActiveFmtWindow(old);
+    macroFile = pEditor->windowFilePath();
+    connect(executor.data(), &ToolbarActionExecutor::WriteOut, [=](const QString &out)
     {
-        CodeEditor *pEditor = qobject_cast<CodeEditor*>(fw);
-        if (pEditor)
-        {
-            if (useDebug)
-                dbg.attachTo(pEngine);
-
-            pEngine->pushContext();
-            SetupScriptEngineValues(pEditor);
-            pEngine->evaluate(pEditor->toPlainText());
-
-            if (pEngine->hasUncaughtException())
-            {
-                QScriptValue error = pEngine->uncaughtException();
-                QMessageBox::critical(this, tr("Ошибка выполнения скрипта"), tr("Строка %0: %1")
-                                      .arg(error.property("lineNumber").toInt32())
-                                      .arg(error.toString()));
-            }
-            pEngine->popContext();
-
-            if (useDebug)
-                dbg.detach();
-        }
-    }
+        QTextCursor cursor = pOutput->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        cursor.insertText(out);
+        //pOutput->ad
+    });
+    executor->playRep(macroFile);
 }
 
