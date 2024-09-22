@@ -914,7 +914,10 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.addAction(ui->action_Diff_to_Script);
     menu.addSeparator();
     menu.addMenu(ui->menuUpdateScripts);
-    menu.addMenu(pUserActionsMenu);
+
+    if (pUserActionsMenu)
+        menu.addMenu(pUserActionsMenu);
+
     menu.addSeparator();
 
     menu.addSeparator();

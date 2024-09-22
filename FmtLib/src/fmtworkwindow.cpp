@@ -182,7 +182,10 @@ void FmtWorkWindow::SetupActionsMenu()
     m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
     m_CheckAction = pActionsMenu->addAction(tr("Проверить таблицу на ошибки"));
     pActionsMenu->addSeparator();
-    pActionsMenu->addMenu(pUserActionsMenu);
+
+    if (pUserActionsMenu)
+        pActionsMenu->addMenu(pUserActionsMenu);
+
     pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты SQL"));
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
     m_GenAddScript = pCodeGenMenu->addAction(tr("Добавление полей"));
