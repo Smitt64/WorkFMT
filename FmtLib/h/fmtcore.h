@@ -145,6 +145,7 @@ enum DataBaseType
     PostgreSQL
 };
 
+class QMenu;
 class FmtTable;
 class FmtField;
 class ConnectionInfo;
@@ -266,6 +267,8 @@ FMTLIBSHARED_EXPORT QString FmtCapitalizeField(const QString &undecoratedfield, 
 FMTLIBSHARED_EXPORT QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force = false);
 
 FMTLIBSHARED_EXPORT QString FmtGenDiffToScript(const QString &filename, const QString &connectionString, bool IsUnicodeDb, QString *err);
+FMTLIBSHARED_EXPORT void CreateUserCommandsMenu(QMenu **menu, const QString &title,
+                            QObject *receiver, const char *slot);
 
 template<class T> std::string ContainerToString(const T &container)
 {

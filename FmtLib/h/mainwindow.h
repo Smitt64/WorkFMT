@@ -96,6 +96,7 @@ private slots:
     void UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata);
     void UpdateCheckStarted();
     void OptionsAction();
+    void onUserActionTriggered();
 
     void on_actionDebug_triggered();
 
@@ -134,7 +135,7 @@ private:
 
     QAction *actionEdit, *actionExport, *actionDeleteTable;
     QToolButton *toolConnect;
-    QMenu *toolConnectMenu;
+    QMenu *toolConnectMenu, *pUserActionsMenu;
     QActionGroup *m_ConnectionsGroup;
 
     QPushButton *pUpdateButton;

@@ -66,6 +66,8 @@ public:
 
     QObject* tableProp() const { return pTable.data(); }
 
+    void execUserAction(const QString &macro);
+
 signals:
 
 public slots:
@@ -81,6 +83,9 @@ public slots:
     void LoadFromDbf();
     void InitDB();
     void CreateTableSql();
+    void OpenCodeTab(const QString &title, int syntax,
+                     const QString &code,
+                     bool OpenTab = true, bool WordWrap = false);
 
 private slots:
     void indexModelReseted();
@@ -117,6 +122,8 @@ private slots:
     void CamelCaseAction();
     void CheckAction();
 
+    void onUserActionTriggered();
+
 protected:
     void paintEvent(QPaintEvent *paintEvent);
 
@@ -146,7 +153,7 @@ private:
     QSpacerItem *pHorizontalSpacer;
     QPushButton *pAddIndex;
 
-    QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu;
+    QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu, *pUserActionsMenu;
     QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_MassRemoveFields;
     QAction *m_unloadDbf, *m_loadDbf, *m_ImportData;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;

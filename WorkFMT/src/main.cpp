@@ -14,7 +14,7 @@
 static void ProcessRsreqOption(MainWindow *w, const QString &constringsdir);
 static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser, QCommandLineOption &logOption, QCommandLineOption &logruleOption);
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
     QDir settingsDir = QDir(argv[0]);
 

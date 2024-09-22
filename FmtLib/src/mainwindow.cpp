@@ -156,6 +156,10 @@ MainWindow::MainWindow(QWidget *parent) :
     actionExport = new QAction(QIcon(":/img/savexml.png"), tr("Экспорт в xml файл"), this);
     actionDeleteTable = new QAction(QIcon(":/img/removetable.png"), tr("Удалить запись"), this);
 
+    pUserActionsMenu = nullptr;
+    CreateUserCommandsMenu(&pUserActionsMenu, tr("Пользовательские действия"),
+                           this, SLOT(onUserActionTriggered()));
+
     connect(ui->actionConnect, SIGNAL(triggered(bool)), SLOT(actionConnectTriggered()));
     connect(ui->actionDisconnect, SIGNAL(triggered(bool)), SLOT(actionDisconnectTriggered()));
     connect(pTablesDock, SIGNAL(tableDbClicked(quint32)), SLOT(tableClicked(quint32)));
@@ -635,7 +639,6 @@ QMdiSubWindow *MainWindow::CreateDocument(QSharedPointer<FmtTable> &table, FmtWo
     QMdiSubWindow *wnd = CreateMdiWindow(window, table->connection());
     wnd->setWindowIcon(QIcon(":/table"));
 
-
     connect(window, SIGNAL(accepted()), wnd, SLOT(deleteLater()));
     connect(window, SIGNAL(rejected()), wnd, SLOT(deleteLater()));
     connect(window, SIGNAL(needUpdateTableList()), SLOT(OnTableChangeUpdtList()));
@@ -908,8 +911,11 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.addSeparator();
     menu.setDefaultAction(actionEdit);
     menu.addAction(ui->actionSql);
-    menu.addMenu(ui->menuUpdateScripts);
     menu.addAction(ui->action_Diff_to_Script);
+    menu.addSeparator();
+    menu.addMenu(ui->menuUpdateScripts);
+    menu.addMenu(pUserActionsMenu);
+    menu.addSeparator();
 
     menu.addSeparator();
     menu.addAction(ui->actionCreate);
@@ -1514,6 +1520,32 @@ void MainWindow::OptionsAction()
     FmtApplication *app = (FmtApplication*)qApp;
     FmtOptionsDlg dlg(currentConnection(), app->settings(), this);
     dlg.exec();
+}
+
+void MainWindow::onUserActionTriggered()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    ConnectionInfo *current = currentConnection();
+
+    if (!current || !action)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            QMdiSubWindow *sub = CreateDocument(table);
+            sub->show();
+
+            FmtWorkWindow *wnd = qobject_cast<FmtWorkWindow*>(sub->widget());
+            wnd->execUserAction(action->data().toString());
+        }
+    }
 }
 
 const QList<ConnectionInfo*> &MainWindow::connections() const

@@ -1,4 +1,5 @@
 #include "fmtcore.h"
+#include "commandsstorage.h"
 #include "fmtapplication.h"
 #include "fmtimpexpwrp.h"
 #include <errorsmodel.h>
@@ -31,6 +32,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonParseError>
+#include <QMenu>
 #include "DataStructure.hpp"
 
 static QStringList FmtTypesList/* = QStringList()
@@ -1673,4 +1675,44 @@ QString FmtGenDiffToScript(const QString &filename,
     }
 
     return result;
+}
+
+void CreateUserCommandsMenu(QMenu **menu, const QString &title,
+                            QObject *receiver, const char *slot)
+{
+    FmtApplication *app = qobject_cast<FmtApplication*>(qApp);
+
+    if (!app)
+        return;
+
+    QSettings *settings = app->settings();
+
+    QScopedPointer<ToolBarsStorage> pStorage(new ToolBarsStorage());
+    settings->beginGroup("UserCommands");
+    QByteArray data = QByteArray::fromBase64(settings->value("UserActions").toString().toLocal8Bit());
+    settings->endGroup();
+
+    if (!data.isEmpty())
+    {
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        QJsonObject root = doc.object();
+
+        QJsonArray actions = root["UserActions"].toArray();
+        pStorage->load(actions);
+
+        if (pStorage->count())
+        {
+            *menu = new QMenu(title);
+            for (int i = 0; i < pStorage->count(); i++)
+            {
+                ToolBarsAction *info = pStorage->action(i);
+
+                QAction *action = (*menu)->addAction(QIcon(info->icon), info->title);
+                action->setData(info->macrofile);
+                action->setToolTip(info->title);
+
+                QObject::connect(action, SIGNAL(triggered()), receiver, slot);
+            }
+        }
+    }
 }

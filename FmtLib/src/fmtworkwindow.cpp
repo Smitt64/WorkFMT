@@ -29,8 +29,10 @@
 #include "fmtsegment.h"
 #include "widgets/filteredtablewidget.h"
 #include "widgets/editcontent/import/importwizard.h"
+#include "rslexecutors/toolbaractionexecutor.h"
 #include "selectfolderdlg.h"
 #include "gensqltemplatedlg.h"
+#include "mainwindow.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -151,6 +153,10 @@ FmtWorkWindow::~FmtWorkWindow()
 
 void FmtWorkWindow::SetupActionsMenu()
 {
+    pUserActionsMenu = nullptr;
+    CreateUserCommandsMenu(&pUserActionsMenu, tr("Пользовательские действия"),
+                           this, SLOT(onUserActionTriggered()));
+
     pActionsMenu = new QMenu(this);
     m_AddFieldsToEnd = pActionsMenu->addAction(QIcon(":/img/PushBackClause_10553_32.png"), tr("Добавить поля в конец"));
     m_InsertFields = pActionsMenu->addAction(QIcon(":/img/InsertClause_10553_32.png"), tr("Добавить поля перед..."));
@@ -176,6 +182,7 @@ void FmtWorkWindow::SetupActionsMenu()
     m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
     m_CheckAction = pActionsMenu->addAction(tr("Проверить таблицу на ошибки"));
     pActionsMenu->addSeparator();
+    pActionsMenu->addMenu(pUserActionsMenu);
     pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты SQL"));
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
     m_GenAddScript = pCodeGenMenu->addAction(tr("Добавление полей"));
@@ -183,7 +190,7 @@ void FmtWorkWindow::SetupActionsMenu()
     m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
     pCodeGenMenu->addSeparator();
     m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
-    ui->pushActions->setMenu(pActionsMenu);
+    ui->pushActions->setMenu(pActionsMenu);//pUserActionsMenu
 
     connect(m_saveToXml, SIGNAL(triggered(bool)), SLOT(ExportXml()));
     connect(m_createTableSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
@@ -1047,4 +1054,41 @@ void FmtWorkWindow::CheckAction()
     {
         QMessageBox::information(this, tr("Результат"), tr("Проверка ошибок не обнаружила"));
     }
+}
+
+void FmtWorkWindow::OpenCodeTab(const QString &title, int syntax, const QString &code, bool OpenTab, bool WordWrap)
+{
+    CodeEditor *editor = new CodeEditor();
+    ToolApplyHighlighter(editor, syntax);
+
+    editor->highlighter()->addType(FmtTableStructName(pTable->name()));
+    editor->setReadOnly(true);
+    editor->setPlainText(code);
+
+    if (WordWrap)
+        editor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+
+    int tab = ui->tabWidget->addTab(editor, title);
+    if (OpenTab) ui->tabWidget->setCurrentIndex(tab);
+}
+
+void FmtWorkWindow::execUserAction(const QString &macro)
+{
+    MainWindow *window = qobject_cast<MainWindow*>(qApp->activeWindow());
+
+    if (!window)
+        return;
+
+    QScopedPointer<ToolbarActionExecutor> executor(new ToolbarActionExecutor(window));
+    executor->playRep(macro);
+}
+
+void FmtWorkWindow::onUserActionTriggered()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+
+    if (!action)
+        return;
+
+    execUserAction(action->data().toString());
 }
