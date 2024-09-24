@@ -248,6 +248,7 @@ _TOOLEXP int CorrectPath(char *buff);
 // Корректировка пути. Дописывает в конец строки при необходимости символ '\'
 _TOOLEXP void CorrectPath2(char *buff);
 
+_TOOLEXP int GetRemoteTempPath(char *buffer);
 
 #ifdef __cplusplus
 }

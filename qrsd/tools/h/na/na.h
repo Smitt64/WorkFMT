@@ -169,6 +169,7 @@ enum
    {
     eRR_ToExcel = 0,  // Excel (MS Office)
     eRR_ToSCalc,      // SCalc (OpenOffice)
+    eRR_ToR7Office,
     // -------------------------------------------
     eRR_End           // Терминатор. Следующие идентификаторы добавлять только перед ним !
    };
@@ -184,6 +185,9 @@ _NALGFUNC int SetReportRedirect(int to);
 // [in]  isPrg - true  - вернуть имя файла программы
 //               false - вернуть название программы
 const char *GetReportXmlViewer(bool isPrg = true);
+
+// -----------------------------------------------------------------------------
+int __SetReportRedirect();
 
 // Печать шапки в файл
 int PrintHead        (FILE *fpr, PANEL *pm, int *ind_array, int *len_array, int isHeader);

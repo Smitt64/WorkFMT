@@ -108,8 +108,8 @@ class WorkFmtUpdate:
                                'rdrset.dll', 'RsBtr.dll', 'rsdc.dll',
                                'dbinit.exe', 'fmtxml.exe', 'fmtxml.xsd']
 
-        self.__ToolsLibToCopy = ['rsrtlwm.lib']
-        self.__ToolsdDllToCopy = ['rsrtlwm.dll', 'RSScript.dll']
+        self.__ToolsLibToCopy = ['rsrtlwm.lib', 'rsldlmms.lib', 'RSScript.lib']
+        self.__ToolsdDllToCopy = ['rsrtlwm.dll', 'RSScript.dll', 'fs32cm.dll']
 
     def __copyFileList(self, src: str, dst: str, files: list):
         for file in files:

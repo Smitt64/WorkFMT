@@ -1,5 +1,5 @@
 [Version]
-BuilDate=15.05.2023
-Tools=6.57.714.6
+BuilDate=06.09.2024
+Tools=6.57.714.7
 Rsd=3.02.039.2
-QRsdAddVersion=13
+QRsdAddVersion=14

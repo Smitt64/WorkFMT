@@ -9,8 +9,9 @@ import "fmtglobals.mac", fmt, StdDialogs, ToolsRuntime;
 
 macro ExecAction()
     debugbreak;
-
-    var conn = ConnectionInfo();
+    var value = GenGetProp ({FmtTable}, "Name");
+    println(value);
+    //var conn = ConnectionInfo();
     /*var haswindow = fmtAppHasTableWindow("dparty_dbt");
 
     if (haswindow)
@@ -38,9 +39,9 @@ macro ExecAction()
     var connString = "CONNSTRING = dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031";
     fmtappParseConnectionString(connString, user, pass, service);*/
     
-    var selected = fmtSelectTableFieldsDailog({FmtTable}, "Выбор полей: ");
-    println(selected[0].getCommentSql());
-    println(selected[0].getCppDecl(true));
+    //var selected = fmtSelectTableFieldsDailog({FmtTable}, "Выбор полей: ");
+    //println(selected[0].getCommentSql());
+    //println(selected[0].getCppDecl(true));
 
     //fmt.fmtTableSqlText({FmtTable});
     //fmtappOpenConnection();
