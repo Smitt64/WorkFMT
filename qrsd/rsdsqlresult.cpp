@@ -695,6 +695,9 @@ void RsdSqlResult::MakeRecord()
 
 QSqlRecord RsdSqlResult::record() const
 {
+    if (!m_RecSet)
+        return QSqlRecord();
+
     if (m_Record)
         return *m_Record;
 
