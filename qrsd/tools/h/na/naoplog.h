@@ -466,7 +466,6 @@ struct TOpLogFiltr
 
             // Номер ключа для сортировки
             int      keyNum;
-            int      saveKeyNum;
 
             // Текущая дата
             bdate    curdate;

@@ -186,9 +186,6 @@ _NALGFUNC int SetReportRedirect(int to);
 //               false - вернуть название программы
 const char *GetReportXmlViewer(bool isPrg = true);
 
-// -----------------------------------------------------------------------------
-int __SetReportRedirect();
-
 // Печать шапки в файл
 int PrintHead        (FILE *fpr, PANEL *pm, int *ind_array, int *len_array, int isHeader);
 

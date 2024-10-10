@@ -22,7 +22,7 @@ public:
 	{
 		if( !bLoad ) return;
 		
-		m_hTrnLib = LoadLibrary("rstrnmgr.dll");
+		m_hTrnLib = LoadLibraryA("rstrnmgr.dll");
 		if( m_hTrnLib )
 		{
 			GetTrnMgr_t Get = (GetTrnMgr_t)GetProcAddress(m_hTrnLib, "GetTrnMgr");
@@ -36,7 +36,7 @@ public:
 	{
         if(m_Mgr)
 			return true;
-		m_hTrnLib = GetModuleHandle("rstrnmgr.dll");
+		m_hTrnLib = GetModuleHandleA("rstrnmgr.dll");
 		if( !m_hTrnLib )
 			return false;
 
@@ -45,8 +45,8 @@ public:
 		// как прекратим пользоваться
 		
 		CHAR modulename[MAX_PATH];
-		if (!GetModuleFileName(m_hTrnLib, modulename, MAX_PATH)
-			|| !LoadLibrary(modulename) )
+		if (!GetModuleFileNameA(m_hTrnLib, modulename, MAX_PATH)
+			|| !LoadLibraryA(modulename) )
 		{
 			m_hTrnLib = 0;
 			return false;

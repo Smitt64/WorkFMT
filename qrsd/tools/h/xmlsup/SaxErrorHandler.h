@@ -13,7 +13,7 @@
 // Use MSXML 4.0.
 //#import <msxml4.dll> raw_interfaces_only 
 //using namespace MSXML2;
-#include <msxml2.h>
+#include <msxml6.h>
 
 #include "XmlElementHandler.h"
 
