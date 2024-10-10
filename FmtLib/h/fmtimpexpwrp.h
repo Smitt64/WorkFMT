@@ -55,7 +55,7 @@ private:
     void getArgs(const QString &dir, QStringList &arg);
     QSettings *m_pPrm;
     QString FileContent(const QString &filename) const;
-    QTemporaryDir m_TempDir;
+    QDir m_WorkDir;
     QProcess *pFmtXml;
     QString m_Protocol;
     ConnectionInfo *pConnection;
