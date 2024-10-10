@@ -23,7 +23,8 @@ def recursive_overwrite(src, dest, ignore=None):
 
 class Config:
     def __init__(self):
-        self.ToolsComplectRepo = '\\\\ATOM\\ToolsComplect'
+        #self.ToolsComplectRepo = '\\\\ATOM\\ToolsComplect'
+        self.ToolsComplectRepo = 'd:\\svn\\UranRSBankV6\\Tools_PgSQL'
         self.WorkFmtDir = 'D:\\Work\\WorkFMT'
         self.QRsdDir = os.path.join(self.WorkFmtDir, 'qrsd')
         self.QRsdToolsDir = os.path.join(self.QRsdDir, 'tools')

@@ -76,6 +76,19 @@ bool RsdDriver::hasFeature(QSqlDriver::DriverFeature feature) const
     return result;
 }
 
+bool RsdDriver::isUnicode() const
+{
+    return !qstrcmp(m_RDDrvO, "RDDrvOu");
+}
+
+bool RsdDriver::isPostgres() const
+{
+    if (!m_Connection)
+        return false;
+
+    return m_Connection->isPostgres();
+}
+
 bool RsdDriver::open(const QString &db, const QString &user, const QString &password, const QString &host, int port, const QString &options)
 {
     bool hr = true;
@@ -86,6 +99,7 @@ bool RsdDriver::open(const QString &db, const QString &user, const QString &pass
         {
             qstrcpy(m_RDDrvO, "RDDrvOu");
             qstrcpy(m_RDDrvODll, (QString("%1.dll").arg(m_RDDrvO)).toLocal8Bit().data());
+            setUnicode(true);
         }
 
         m_Env.reset(new CRsdEnvironment(m_RDDrvO, m_RDDrvODll));

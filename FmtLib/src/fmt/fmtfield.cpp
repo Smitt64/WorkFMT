@@ -408,7 +408,7 @@ quint64 FmtField::FindFirstEmptyID()
     int id = 1;
     QSqlQuery q(pTable->db);
     q.prepare(FmtTableFindFirstEmptyIDSql("FMT_FIELDS", "T_ID"));
-    if (q.exec() && q.next())
+    if (!ExecuteQuery(&q) && q.next())
         id = q.value(0).toInt();
 
     return static_cast<quint64>(id);
@@ -594,15 +594,19 @@ QString FmtField::getOraDefaultVal() const
 
 QString FmtField::getCommentSql() const
 {
-    QSqlDriver *driver = pTable->connection()->driver();
-    QSqlField fld;
-    fld.setType(QVariant::String);
-    fld.setValue(m_Comment);
+    QString sql;
+    if (!m_Comment.simplified().trimmed().isEmpty())
+    {
+        QSqlDriver *driver = pTable->connection()->driver();
+        QSqlField fld;
+        fld.setType(QVariant::String);
+        fld.setValue(m_Comment);
 
-    QString sql = QString("COMMENT ON COLUMN %1.%2 IS %3")
-            .arg(pTable->name().toUpper())
-            .arg(m_Name.toUpper())
-            .arg(driver->formatValue(fld, true));
+        sql = QString("COMMENT ON COLUMN %1.%2 IS %3")
+                .arg(pTable->name().toUpper())
+                .arg(m_Name.toUpper())
+                .arg(driver->formatValue(fld, true));
+    }
 
     return sql;
 }

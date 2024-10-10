@@ -186,7 +186,7 @@ bool ConnectionInfo::isOracle()
 bool ConnectionInfo::isPostgre()
 {
     QSqlQuery query(_db);
-    query.prepare("SELECT version()");
+    query.prepare("SELECT version() from dual");
 
     if (ExecuteQuery(&query) || !query.next())
         return false;

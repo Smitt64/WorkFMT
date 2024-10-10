@@ -16,6 +16,7 @@ RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
     m_Cmd.reset(new RsdCommandEx(m_Driver->connection(), m_Driver));
     //m_Cmd->setNullConversion(true);
     m_Driver->addResult(this);
+    setUnicode(m_Driver->isUnicode());
 }
 
 RsdSqlResult::~RsdSqlResult()
@@ -331,6 +332,27 @@ bool RsdSqlResult::checkCreate(const QString &sql) const
     return false;
 }
 
+bool RsdSqlResult::checkGrant(const QString &sql) const
+{
+    static QStringList patterns = QStringList()
+            << "SELECT" << "INSERT" << "UPDATE" << "DELETE"
+            << "TRUNCATE" << "REFERENCES" << "TRIGGER"
+            << "CREATE" << "CONNECT" << "TEMPORARY"
+            << "EXECUTE" << "USAGE" << "SET"
+            << "ALTER SYSTEM" << "MAINTAIN";
+
+    if (checkWord(sql, "GRANT"))
+    {
+        for (const QString &str : qAsConst(patterns))
+        {
+            if (checkWord(sql, str))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool RsdSqlResult::checkDrop(const QString &sql) const
 {
     static QStringList patterns = QStringList()
@@ -366,6 +388,7 @@ bool RsdSqlResult::checkSelect(const QString &sql) const
     if (!hr) hr = checkAlter(sql);
     if (!hr) hr = checkCall(sql);
     if (!hr) hr = checkCreate(sql);
+    if (!hr) hr = checkGrant(sql);
 
     return !hr;
 }
@@ -405,6 +428,86 @@ bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
     return result;
 }
 
+QStringList RsdSqlResult::GetSqlHints(const QString &sql)
+{
+    QStringList hints;
+    QRegularExpression re = QRegularExpression("\\/\\*[@](.*)\\*\\/", QRegularExpression::MultilineOption
+                                               | QRegularExpression::CaseInsensitiveOption);
+
+    QRegularExpressionMatch match = re.match(sql);
+    if (match.hasMatch())
+    {
+        QString matched = match.captured(1);
+        hints = matched.split(';');
+    }
+
+    return hints;
+}
+
+QVariant RsdSqlResult::HintValue(const QString &hintparam)
+{
+    QVariant val;
+    bool isOk = true;
+    int value = hintparam.toInt(&isOk);
+
+    if (isOk)
+        val = value;
+    else
+    {
+        qreal realval = hintparam.toDouble(&isOk);
+
+        if (isOk)
+            val = realval;
+    }
+
+    if (!isOk)
+    {
+        if (!hintparam.compare("true", Qt::CaseInsensitive))
+            val = true;
+        else if (!hintparam.compare("on", Qt::CaseInsensitive))
+            val = true;
+        else if (!hintparam.compare("false", Qt::CaseInsensitive))
+            val = false;
+        else if (!hintparam.compare("off", Qt::CaseInsensitive))
+            val = false;
+    }
+
+    if (!val.isValid())
+        val = hintparam;
+
+    return val;
+}
+
+bool RsdSqlResult::HasHint(const QStringList &hints, const QString &hint, QStringList *params)
+{
+    bool Exists = false;
+    QRegularExpression re = QRegularExpression("(.*)\\((.*)\\)", QRegularExpression::MultilineOption
+                                               | QRegularExpression::CaseInsensitiveOption);
+
+    //QRegularExpressionMatch match = re.match(hint);
+    for(const QString &value : hints)
+    {
+        if (!value.trimmed().compare(hint, Qt::CaseInsensitive))
+        {
+            QRegularExpressionMatch match = re.match(value);
+
+            if (params && !match.captured(2).isEmpty())
+                *params = match.captured(2).split(',');
+
+            Exists = true;
+            break;
+        }
+    }
+
+    if (params)
+    {
+        for (int i = 0; i < params->size(); i++)
+            (*params)[i] = (*params)[i].trimmed();
+    }
+
+    return Exists;
+}
+
 bool RsdSqlResult::exec()
 {
     bool result = true;
@@ -433,6 +536,22 @@ bool RsdSqlResult::exec()
 
         QSqlResult::setQuery(m_QueryString);
         setCmdText(m_QueryString);
+
+        QStringList params;
+        QStringList hints = GetSqlHints(m_QueryString);
+        if (HasHint(hints, "DisConv", &params))
+        {
+            if (params.isEmpty())
+                m_Cmd->setDisableOraToPgConverter(true);
+            else
+            {
+                QVariant val = HintValue(params.front());
+
+                if (val.type() == QVariant::Bool)
+                    m_Cmd->setDisableOraToPgConverter(val.toBool());
+            }
+        }
+
         result = RSD_SUCCEEDED(m_Cmd->execute());
 
         setActive(true);

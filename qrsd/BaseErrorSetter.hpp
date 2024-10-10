@@ -13,6 +13,7 @@ public:
         m_Ptr(ptr)
     {
         codec1251 = QTextCodec::codecForName("Windows-1251");
+        codec866 = QTextCodec::codecForName("IBM 866");
     }
 
     void setLastRsdError(const XRsdError &e, const QSqlError::ErrorType &errorType = QSqlError::UnknownError)
@@ -33,7 +34,12 @@ public:
         for (int i = 0; i < errcount; i++)
         {
             const CRsdError &error = env->getError(i);
-            stream << codec1251->toUnicode(error.getDescr()) << endl;
+            const char *descr = error.getDescr();
+
+            if (m_Unicode)
+                stream << codec866->toUnicode(descr) << Qt::endl;
+            else
+                stream << codec1251->toUnicode(descr) << Qt::endl;
         }
 
         if (!err.isEmpty())
@@ -48,8 +54,15 @@ public:
         m_Ptr->setLastError(QSqlError(err, QString(), errorType));
     }
 
+protected:
+    void setUnicode(bool f)
+    {
+        m_Unicode = f;
+    }
+
 private:
-    QTextCodec *codec1251;
+    bool m_Unicode;
+    QTextCodec *codec1251, *codec866;
     T *m_Ptr;
 };
 
