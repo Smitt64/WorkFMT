@@ -1134,9 +1134,13 @@ bool FmtTable::isExists() const
 bool FmtTable::isExistsInDb() const
 {
     QSqlQuery q(db);
-    q.prepare("SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = UPPER(?);");
-    q.bindValue(0, m_Name);
 
+    if (pConnection->type() == ConnectionInfo::CON_ORA)
+        q.prepare("SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = UPPER(?)");
+    else
+        q.prepare("/*@ DisConv */select count(*) from (select upper(table_name) as table_name from information_schema.tables where table_schema = current_schema) t where table_name = upper(?)");
+
+    q.bindValue(0, m_Name);
     if (!ExecuteQuery(&q))
     {
         if (q.next())
@@ -1478,7 +1482,7 @@ qint16 FmtTable::createDbTable(QString *err)
 {
     qint16 stat = 0;
 
-    if (isExists())
+    if (isExistsInDb())
     {
         QSqlQuery q(QString("DROP TABLE %1 CASCADE CONSTRAINTS").arg(m_Name), db);
         ExecuteQuery(&q);
@@ -1508,7 +1512,7 @@ qint16 FmtTable::createDbTable(QString *err)
     if (!stat && pConnection->type() == ConnectionInfo::CON_POSTGRESQL)
     {
         QString grant = QString("/*@ DisConv */GRANT REFERENCES, UPDATE, INSERT, TRIGGER, DELETE, TRUNCATE, SELECT ON TABLE %2 TO %1")
-                .arg(pConnection->dsn())
+                .arg(pConnection->user())
                 .arg(m_Name);
 
         QSqlQuery q(grant, db);

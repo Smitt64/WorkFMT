@@ -1,6 +1,7 @@
 #include "dbinitdlg.h"
 #include "ui_dbinitdlg.h"
 #include "fmttable.h"
+#include "connectioninfo.h"
 #include <QSharedPointer>
 
 DbInitDlg::DbInitDlg(FmtTable *pTable, QWidget *parent) :
@@ -9,10 +10,27 @@ DbInitDlg::DbInitDlg(FmtTable *pTable, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    if (pTable->isExists())
+    ConnectionInfo *info = pTable->connection();
+
+    if (pTable->isTemporary() && info->type() == ConnectionInfo::CON_POSTGRESQL)
     {
-        ui->createTable->setChecked(false);
-        ui->createTable->setText(tr("Пересоздать таблицу"));
+        ui->createTable->setText(tr("Cоздать запись в create_table_info"));
+        ui->createTable->setChecked(true);
+        ui->createTable->setEnabled(false);
+        ui->createIndex->setEnabled(false);
+        /*if (pTable->isExistsInDb())
+        {
+            ui->createTable->setChecked(false);
+            ui->createTable->setText(tr("Пересоздать таблицу"));
+        }*/
+    }
+    else
+    {
+        if (pTable->isExistsInDb())
+        {
+            ui->createTable->setChecked(false);
+            ui->createTable->setText(tr("Пересоздать таблицу"));
+        }
     }
 }
 
