@@ -5,8 +5,6 @@
 #ifndef XML_PARSER_INCLUDED
 #define XML_PARSER_INCLUDED
 
-#include "tooldef.h"
-
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -16,7 +14,6 @@
 // use the library.
 #include "XmlDataTypes.h"
 #include "XmlElementHandler.h"
-#include "XmlParserBase.h"
 
 // Include STL string.
 #include <string>
@@ -31,27 +28,11 @@
 #endif
 
 // Forward class declarations.
-//class CXmlParserImpl;
-
-class CXmlParserFactory {
-public:
-  static CXmlParserFactory & inst() {
-    static CXmlParserFactory t;
-    return t;
-  }
-  CXmlParserBase* makeParser();
-protected:
-  CXmlParserFactory();
-  ~CXmlParserFactory();
-  CXmlParserBase* makeParserImpl();
-
-  size_t parser_id_;
-  CXmlParserBase *next_parser_;
-};
+class CXmlParserImpl;
 
 // CXmlParser (single-char string version)
 // This is the main wrapper class for SAX2 parsing.
-class _TOOLEXP CXmlParser
+class CXmlParser
 {
 public:
     CXmlParser();
@@ -81,12 +62,12 @@ private:
     // Use the impl technique so we can hide the implementation
     // and not require wrapper clients to import MSXML types.
     // CXmlParserImpl uses wide-char strings natively.
-    CXmlParserBase* m_impl;
+    CXmlParserImpl* m_impl;
 };
 
 // CWXmlParser (wide-char string version)
 // This is the main wrapper class for SAX2 parsing.
-class _TOOLEXP CWXmlParser
+class CWXmlParser
 {
 public:
     CWXmlParser();
@@ -116,7 +97,7 @@ private:
     // Use the impl technique so we can hide the implementation
     // and not require wrapper clients to import MSXML types.
     // CXmlParserImpl uses wide-char strings natively.
-    CXmlParserBase* m_impl;
+    CXmlParserImpl* m_impl;
 };
 
 #endif // XML_PARSER_INCLUDED

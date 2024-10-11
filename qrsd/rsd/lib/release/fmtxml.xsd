@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	    xmlns:xs="http://www.w3.org/2001/XMLSchema" version="0.1" elementFormDefault="qualified"
-      targetNamespace="http://www.softlab.ru">
+	    xmlns:xs="http://www.w3.org/2001/XMLSchema" version="0.1" elementFormDefault="qualified">
 
   <xsd:element name="TableList" id="d2e37">
     <xsd:complexType>

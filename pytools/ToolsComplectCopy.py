@@ -105,12 +105,38 @@ class WorkFmtUpdate:
         self.__ToolsLibDir = os.path.join(self.__config.QRsdToolsDir, 'lib')
 
         self.__RsdLibToCopy = ['rsdc.lib']
-        self.__RsdDLLToCopy = ['rddrvo.dll', 'rddrvou.dll',
-                               'rdrset.dll', 'RsBtr.dll', 'rsdc.dll',
-                               'dbinit.exe', 'fmtxml.exe', 'fmtxml.xsd']
+        self.__RsdDLLToCopy = ['boost_chrono-vc100-mt-x32-1_72.dll',
+            'boost_date_time-vc100-mt-x32-1_72.dll',
+            'boost_filesystem-vc100-mt-x32-1_72.dll',
+            'boost_filesystem-vc140-mt-x32-1_72.dll',
+            'boost_iostreams-vc140-mt-x32-1_72.dll',
+            'boost_locale-vc100-mt-x32-1_72.dll',
+            'boost_locale-vc140-mt-x32-1_72.dll',
+            'boost_regex-vc100-mt-x32-1_72.dll',
+            'boost_regex-vc140-mt-x32-1_72.dll',
+            'boost_serialization-vc100-mt-x32-1_72.dll',
+            'boost_thread-vc100-mt-x32-1_72.dll',
+            'boost_thread-vc140-mt-x32-1_72.dll',
+            'dbinit.exe',
+            'fmtxml.exe',
+            'fmtxml.xsd',
+            'icudt57.dll',
+            'icudt58.dll',
+            'icuin57.dll',
+            'icuin58.dll',
+            'icuuc57.dll',
+            'icuuc58.dll',
+            'QTSysLog.dll',
+            'rddrvou.dll',
+            'rdrset.dll',
+            'RsBtr.dll',
+            'rsdc.dll',
+            'rsdutl.dll',
+            'SqlConverter.dll',
+            'SqlConverterDebugConfig.json']
 
         self.__ToolsLibToCopy = ['rsrtlwm.lib', 'rsldlmms.lib', 'RSScript.lib']
-        self.__ToolsdDllToCopy = ['rsrtlwm.dll', 'RSScript.dll', 'fs32cm.dll']
+        self.__ToolsdDllToCopy = ['rsrtlwm.dll', 'RSScript.dll', 'rslocale.dll', 'fs32cm.dll']
 
     def __copyFileList(self, src: str, dst: str, files: list):
         for file in files:
@@ -128,23 +154,23 @@ class WorkFmtUpdate:
 
         recursive_overwrite(self.__config.RsdHeadersPath, self.__RsdHeaderDir)
 
-        debugdir = os.path.join(self.__RsdLibDir, 'debug')
+        #debugdir = os.path.join(self.__RsdLibDir, 'debug')
         releasedir = os.path.join(self.__RsdLibDir, 'release')
 
-        try:
+        '''try:
             shutil.rmtree(debugdir)
         except BaseException:
-            pass
+            pass'''
 
         try:
             shutil.rmtree(releasedir)
         except BaseException:
             pass
 
-        try:
+        '''try:
             os.mkdir(debugdir)
         except OSError:
-            pass
+            pass'''
 
         try:
             os.mkdir(releasedir)
@@ -152,10 +178,10 @@ class WorkFmtUpdate:
             pass
         
         self.__copyFileList(self.__config.RsdLibPath, releasedir, self.__RsdLibToCopy)
-        self.__copyFileList(self.__config.RsdLibPathDebug, debugdir, self.__RsdLibToCopy)
+        #self.__copyFileList(self.__config.RsdLibPathDebug, debugdir, self.__RsdLibToCopy)
 
         self.__copyFileList(self.__config.RsdBinPath, releasedir, self.__RsdDLLToCopy)
-        self.__copyFileList(self.__config.RsdBinPathdebug, debugdir, self.__RsdDLLToCopy)
+        #self.__copyFileList(self.__config.RsdBinPathdebug, debugdir, self.__RsdDLLToCopy)
 
     def copyTools(self):
         print(self.__ToolsHeaderDir)
@@ -167,27 +193,27 @@ class WorkFmtUpdate:
 
         recursive_overwrite(self.__config.ToolsHeadersPath, self.__ToolsHeaderDir)
 
-        debugdir = os.path.join(self.__ToolsLibDir, 'debug')
+        #debugdir = os.path.join(self.__ToolsLibDir, 'debug')
         releasedir = os.path.join(self.__ToolsLibDir, 'release')
 
-        try:
+        '''try:
             shutil.rmtree(debugdir)
         except BaseException:
-            pass
+            pass'''
 
         try:
             shutil.rmtree(releasedir)
         except BaseException:
             pass
 
-        os.mkdir(debugdir)
+        #os.mkdir(debugdir)
         os.mkdir(releasedir)
 
         self.__copyFileList(self.__config.ToolLibPath, releasedir, self.__ToolsLibToCopy)
-        self.__copyFileList(self.__config.ToolLibPathDebug, debugdir, self.__ToolsLibToCopy)
+        #self.__copyFileList(self.__config.ToolLibPathDebug, debugdir, self.__ToolsLibToCopy)
 
         self.__copyFileList(self.__config.ToolBinPath, releasedir, self.__ToolsdDllToCopy)
-        self.__copyFileList(self.__config.ToolBinPathDebug, debugdir, self.__ToolsdDllToCopy)
+        #self.__copyFileList(self.__config.ToolBinPathDebug, debugdir, self.__ToolsdDllToCopy)
 
     def __readAddVersion(self, version_file_name):
         content = ''
