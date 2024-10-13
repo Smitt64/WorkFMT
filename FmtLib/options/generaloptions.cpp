@@ -192,6 +192,7 @@ int GeneralOptions::save()
 
     setting->beginGroup(RsExportDatContext);
     setting->setValue("UseRSexp", ui->expOldCheckBox->isChecked());
+    setting->setValue("DefaultAction", ui->expDefaultClob->currentIndex());
     setting->endGroup();
 
     setting->beginWriteArray(RsExportDatContext, m_pExpTableModel->rowCount());
@@ -295,6 +296,7 @@ void GeneralOptions::restore()
 
     setting->beginGroup(RsExportDatContext);
     ui->expOldCheckBox->setChecked(setting->value("UseRSexp", false).toBool());
+    ui->expDefaultClob->setCurrentIndex(setting->value("DefaultAction", 0).toInt());
     setting->endGroup();
 
     size = setting->beginReadArray(RsExportDatContext);

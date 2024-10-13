@@ -243,156 +243,6 @@ bool RsdSqlResult::fetchPrevious()
     return result;
 }
 
-bool RsdSqlResult::checkWord(const QString &sql, const QString &word) const
-{
-    QRegularExpression rx(QString("\\b%1\\b").arg(word),  QRegularExpression::CaseInsensitiveOption | QRegularExpression::DotMatchesEverythingOption);
-
-    return sql.contains(rx);
-}
-
-bool RsdSqlResult::checkInsert(const QString &sql) const
-{
-    if (checkWord(sql, "insert") && (checkWord(sql, "into") || checkWord(sql, "all")))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkUpdate(const QString &sql) const
-{
-    if (checkWord(sql, "update") && checkWord(sql, "set"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkDelete(const QString &sql) const
-{
-    if (checkWord(sql, "delete") && checkWord(sql, "from"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkMerge(const QString &sql) const
-{
-    if (checkWord(sql, "merge") && checkWord(sql, "into"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkCOMMENT(const QString &sql) const
-{
-    if (checkWord(sql, "COMMENT") && checkWord(sql, "ON"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkAlter(const QString &sql) const
-{
-    static QStringList patterns = QStringList()
-            << "CLUSTER" << "DATABASE" << "DIMENSION" << "DISKGROUP" << "FLASHBACK"
-            << "FUNCTION" << "INDEX" << "JAVA" << "LIBRARY" << "MATERIALIZED" << "OPERATOR"
-            << "PACKAGE" << "PROCEDURE" << "RESOURCE" << "ROLE" << "ROLLBACK" << "SEQUENCE"
-            << "SESSION" << "SYSTEM" << "TABLE" << "TABLESPACE" << "TRIGGER" << "TYPE"
-            << "USER" << "VIEW";
-
-    if (checkWord(sql, "ALTER"))
-    {
-        for (const QString &str : qAsConst(patterns))
-        {
-            if (checkWord(sql, str))
-                return true;
-        }
-    }
-    return false;
-}
-
-bool RsdSqlResult::checkCall(const QString &sql) const
-{
-    return checkWord(sql.simplified().trimmed(), "CALL");
-}
-
-bool RsdSqlResult::checkCreate(const QString &sql) const
-{
-    static QStringList patterns = QStringList()
-            << "CLUSTER" << "CONTEXT" << "CONTROLFILE" << "DATABASE" << "DIMENSION"
-            << "DIRECTORY" << "DISKGROUP" << "EDITION" << "FLASHBACK" << "FUNCTION"
-            << "index" << "indextype" << "JAVA" << "LIBRARY" << "MATERIALIZED"
-            << "OPERATOR" << "OUTLINE" << "PACKAGE" << "PFILE" << "PROCEDURE"
-            << "PROFILE" << "RESTORE" << "ROLE" << "ROLLBACK" << "SCHEMA"
-            << "SEQUENCE" << "SPFILE" << "SYNONYM" << "TABLE" << "TRIGGER"
-            << "TYPE" << "USER" << "VIEW";
-
-    if (checkWord(sql, "CREATE"))
-    {
-        for (const QString &str : qAsConst(patterns))
-        {
-            if (checkWord(sql, str))
-                return true;
-        }
-    }
-    return false;
-}
-
-bool RsdSqlResult::checkGrant(const QString &sql) const
-{
-    static QStringList patterns = QStringList()
-            << "SELECT" << "INSERT" << "UPDATE" << "DELETE"
-            << "TRUNCATE" << "REFERENCES" << "TRIGGER"
-            << "CREATE" << "CONNECT" << "TEMPORARY"
-            << "EXECUTE" << "USAGE" << "SET"
-            << "ALTER SYSTEM" << "MAINTAIN";
-
-    if (checkWord(sql, "GRANT"))
-    {
-        for (const QString &str : qAsConst(patterns))
-        {
-            if (checkWord(sql, str))
-                return true;
-        }
-    }
-
-    return false;
-}
-
-bool RsdSqlResult::checkDrop(const QString &sql) const
-{
-    static QStringList patterns = QStringList()
-            << "CLUSTER" << "CONTEXT" << "CONTROLFILE" << "DATABASE" << "DIMENSION"
-            << "DIRECTORY" << "DISKGROUP" << "EDITION" << "FLASHBACK" << "FUNCTION"
-            << "index" << "indextype" << "JAVA" << "LIBRARY" << "MATERIALIZED"
-            << "OPERATOR" << "OUTLINE" << "PACKAGE" << "PFILE" << "PROCEDURE"
-            << "PROFILE" << "RESTORE" << "ROLE" << "ROLLBACK" << "SCHEMA"
-            << "SEQUENCE" << "SPFILE" << "SYNONYM" << "TABLE" << "TRIGGER"
-            << "TYPE" << "USER" << "VIEW";
-
-    if (checkWord(sql, "DROP"))
-    {
-        for (const QString &str : qAsConst(patterns))
-        {
-            if (checkWord(sql, str))
-                return true;
-        }
-    }
-    return false;
-}
-
-bool RsdSqlResult::checkSelect(const QString &sql) const
-{
-    bool hr = false;
-
-    hr = checkInsert(sql);
-    if (!hr) hr = checkUpdate(sql);
-    if (!hr) hr = checkDelete(sql);
-    if (!hr) hr = checkMerge(sql);
-    if (!hr) hr = checkDrop(sql);
-    if (!hr) hr = checkCOMMENT(sql);
-    if (!hr) hr = checkAlter(sql);
-    if (!hr) hr = checkCall(sql);
-    if (!hr) hr = checkCreate(sql);
-    if (!hr) hr = checkGrant(sql);
-
-    return !hr;
-}
-
 bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
 {
     bool result = true;
@@ -557,8 +407,8 @@ bool RsdSqlResult::exec()
         setActive(true);
         setAt(QSql::BeforeFirstRow);
 
-        if (result && checkSelect(m_QueryString))
-            result = makeRecordSetFromCmd(m_Cmd);
+        if (result)
+            makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)
     {
@@ -754,7 +604,7 @@ void RsdSqlResult::MakeRecord()
 {
     m_Record.reset(new QSqlRecord());
 
-    if (isSelect() && isActive())
+    if (isSelect() && isActive() && m_RecSet)
     {
         long fldcount = m_RecSet->getFldCount();
 //T_PARAMETERS

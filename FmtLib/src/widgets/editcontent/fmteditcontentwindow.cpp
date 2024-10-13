@@ -47,7 +47,8 @@ FmtEditContentWindow::FmtEditContentWindow(FmtSharedTablePtr table, QWidget *par
         connect(pTableView, SIGNAL(doubleClicked(QModelIndex)), SLOT(OnDoubleClicked(QModelIndex)));
         connect(pSelectColumns, SIGNAL(triggered(bool)), SLOT(OnSelectColumns()));
 
-        if (table->connection()->type() == ConnectionInfo::CON_ORA)
+        int contype = table->connection()->type();
+        if (contype == ConnectionInfo::CON_ORA)
         {
             pModel->select();
             pTableView->setModel(pModel);

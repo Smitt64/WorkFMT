@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
+   <enum>Qt::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
@@ -29,7 +29,7 @@
      <x>0</x>
      <y>0</y>
      <width>1164</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -160,7 +160,7 @@
     <string>Окно</string>
    </property>
    <property name="allowedAreas">
-    <set>Qt::ToolBarArea::BottomToolBarArea|Qt::ToolBarArea::TopToolBarArea</set>
+    <set>Qt::NoToolBarArea</set>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -452,8 +452,9 @@
    </property>
   </action>
   <action name="actionDebug">
-   <property name="enabled">
-    <bool>false</bool>
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/sqldeveloper.png</normaloff>:/img/sqldeveloper.png</iconset>
    </property>
    <property name="text">
     <string>Настроить отлаку на схеме</string>

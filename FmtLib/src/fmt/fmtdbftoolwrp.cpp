@@ -51,7 +51,9 @@ void FmtDbfToolWrp::readyReadStandardOutput()
     err->appendMessage(str);
 }
 
-void FmtDbfToolWrp::unload(const QString &ExportDir, const QString &dbt)
+void FmtDbfToolWrp::unload(const QString &ExportDir, const QString &dbt,
+                           const int &DefaultAction,
+                           const bool &UseOld)
 {
     QString dsn = m_dsn;
     err->clear();
@@ -64,12 +66,15 @@ void FmtDbfToolWrp::unload(const QString &ExportDir, const QString &dbt)
     QStringList args;
     if (!ExportDir.isEmpty())
         args << "--edir" << ExportDir;
+
+    if (UseOld)
+        args << "--old";
+
     args << "--cs" << QString("dsn=%1;user id=%2;password=%3").arg(dsn, pInfo->user(), pInfo->password());
-    args << "--e" << "--dbt" << dbt;
+    args << "--e" << "--dbt" << dbt << "--clob" << QString::number(DefaultAction);
 
     proc->setArguments(args);
     CoreStartProcess(proc.data(), proc->program(), proc->arguments());
-    //proc.start();
 
     if (proc->waitForStarted())
         emit started();
@@ -77,7 +82,7 @@ void FmtDbfToolWrp::unload(const QString &ExportDir, const QString &dbt)
     {
         QByteArray data;
         QTextStream stream(&data, QIODevice::WriteOnly);
-        stream << proc->program() << endl;
+        stream << proc->program() << Qt::endl;
 
         QString errstr = proc->errorString() + "\n" + proc->program() + "\n";
         foreach (const QString &arg, args) {

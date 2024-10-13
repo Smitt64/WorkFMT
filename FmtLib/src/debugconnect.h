@@ -10,6 +10,8 @@ class DebugConnect;
 class RecentConnectionList;
 class OdbcTableModel;
 class OdbcTableModelDelegate;
+class ConnectionInfo;
+class ErrorsModel;
 class DebugConnect : public QDialog
 {
     Q_OBJECT
@@ -23,6 +25,11 @@ private slots:
     void apply();
 
 private:
+    void execQuery(ConnectionInfo *system,
+                   ErrorsModel *log,
+                   const QString &query, const QString &templ,
+                   const QString &beginmsg,
+                   const QString &success);
     Ui::DebugConnect *ui;
 
     QScopedPointer<RecentConnectionList> m_pRecentList;

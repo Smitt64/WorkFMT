@@ -31,6 +31,9 @@ Task::Task(int argc, char *argv[], QObject *parent) : QObject(parent)
     useOld.reset(new QCommandLineOption(QStringList() << "old",
                                    QApplication::translate("main", "Use old algorithm"),
                                    QApplication::translate("main", "old")));
+    clobMode.reset(new QCommandLineOption(QStringList() << "clob",
+                                          QApplication::translate("main", "Clob mode: 0 - Simplified (default), 1 - SimplifiedTrimmed, 2 - SplitFile"),
+                                          QApplication::translate("main", "clob")));
 
     parser.addOption(*connectionUnicode.data());
     parser.addOption(*connectionStringOption.data());
@@ -39,6 +42,7 @@ Task::Task(int argc, char *argv[], QObject *parent) : QObject(parent)
     parser.addOption(*dirOption.data());
     parser.addOption(*dbtOption.data());
     parser.addOption(*useOld.data());
+    parser.addOption(*clobMode.data());
 
     sterr.reset(new QTextStream(stderr, QIODevice::WriteOnly));
     stout.reset(new QTextStream(stdout, QIODevice::WriteOnly));
@@ -79,19 +83,24 @@ void Task::run()
 
     bool fExport = parser.isSet(*exportOption.data());
     bool fImport = parser.isSet(*importOption.data());
+    bool fOld = parser.isSet(*useOld.data());
+
     if (!fExport && !fImport)
     {
-#ifndef _DEBUG
-        w = new DbMainWindow();
-        w->setAttribute(Qt::WA_DeleteOnClose);
-        connect(w, SIGNAL(destroyed(QObject*)), SIGNAL(finished()));
-        w->show();
-#else
-        DbtToolWizard *w = new DbtToolWizard();
-        w->setAttribute(Qt::WA_DeleteOnClose);
-        connect(w, SIGNAL(destroyed(QObject*)), SIGNAL(finished()));
-        w->show();
-#endif
+        if (fOld)
+        {
+            w = new DbMainWindow();
+            w->setAttribute(Qt::WA_DeleteOnClose);
+            connect(w, SIGNAL(destroyed(QObject*)), SIGNAL(finished()));
+            w->show();
+        }
+        else
+        {
+            DbtToolWizard *w = new DbtToolWizard();
+            w->setAttribute(Qt::WA_DeleteOnClose);
+            connect(w, SIGNAL(destroyed(QObject*)), SIGNAL(finished()));
+            w->show();
+        }
     }
     else if (fExport)
     {

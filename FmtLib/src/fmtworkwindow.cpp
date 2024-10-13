@@ -33,6 +33,7 @@
 #include "selectfolderdlg.h"
 #include "gensqltemplatedlg.h"
 #include "mainwindow.h"
+#include "fmtapplication.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -295,6 +296,9 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     ConnectionInfo *info = pTable->connection();
     dcolor = QColor(info->color()).darker();
     color = info->color();
+
+    if (info->type() != ConnectionInfo::CON_ORA)
+        m_EditContent->setEnabled(false);
 
 /*#ifndef QT_DEBUG
     if (info->type() != ConnectionInfo::CON_ORA)
@@ -681,7 +685,8 @@ void FmtWorkWindow::isTemporaryTableChanged(bool value)
 
 void FmtWorkWindow::UnloadToDbf()
 {
-    StartUnloadDbf(pTable->connection(), pTable->name(), this);
+    QSettings *settings = ((FmtApplication*)qApp)->settings();
+    StartUnloadDbf(pTable->connection(), pTable->name(), this, settings);
 }
 
 void FmtWorkWindow::LoadFromDbf()

@@ -305,6 +305,9 @@ void MainWindow::UpdateActions()
     if (!cur)
         return;
 
+    if (cur->type() != ConnectionInfo::CON_ORA)
+        ui->actionEditContent->setEnabled(false);
+
     if (cur->hasFeature(ConnectionInfo::CanCreateTable))
     {
         actionEdit->setText(tr("Редактировать"));
@@ -904,6 +907,7 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.addAction(ui->actionCopyTableTmp);
     menu.addSeparator();
     menu.addAction(actionExport);
+    menu.addSeparator();
 
     menu.addAction(ui->actionEditContent);
     menu.addAction(ui->actionUnloadDbf);
@@ -942,6 +946,7 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
         actionExport->setData("");
     }
 
+    menu.setActiveAction(actionEdit);
     menu.exec(event->globalPos());
 #endif
 }
@@ -1107,10 +1112,11 @@ void MainWindow::UnloadDbf()
     QListView *view = pTablesDock->tablesWidget()->listView();
     if (view->selectionModel()->hasSelection())
     {
+        QSettings *settings = ((FmtApplication*)qApp)->settings();
         QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
         QString table = index.data(Qt::UserRole).toString();
 
-        StartUnloadDbf(current, table, this);
+        StartUnloadDbf(current, table, this, settings);
     }
 }
 
