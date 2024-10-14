@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Sql Developer Debug</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../res/fmt.qrc">
+    <normaloff>:/img/sqldeveloper.png</normaloff>:/img/sqldeveloper.png</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -91,6 +95,20 @@
       <widget class="QLineEdit" name="toUserEdit"/>
      </item>
      <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Имя хоста, на котором ожидает отладчик:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="hostsBox">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -117,7 +135,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../res/fmt.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

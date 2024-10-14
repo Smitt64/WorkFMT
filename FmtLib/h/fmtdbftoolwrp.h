@@ -22,7 +22,9 @@ signals:
     void finished(int exitCode = 0);
 
 public slots:
-    void unload(const QString &ExportDir, const QString &dbt);
+    void unload(const QString &ExportDir, const QString &dbt,
+                const int &DefaultAction = 0,
+                const bool &UseOld = false);
     void load(const QString &dbt);
     void stop();
 

@@ -74,10 +74,13 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
     if (!info->open(QRSD_DRIVER, _user, _pswd, _dsn, options))
         return;
 
-    QSqlQuery alterSession(info->db());
-    alterSession.prepare("alter session set nls_numeric_characters = '. '");
-    if (ExecuteQuery(&alterSession))
-        return;
+    if (info->type() == ConnectionInfo::CON_ORA)
+    {
+        QSqlQuery alterSession(info->db());
+        alterSession.prepare("alter session set nls_numeric_characters = '. '");
+        if (ExecuteQuery(&alterSession))
+            return;
+    }
 
     QSqlQuery checkExists(info->db());
     checkExists.prepare(QString("select * from %1 where rownum < 2").arg(table.toUpper()));

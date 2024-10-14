@@ -1446,11 +1446,36 @@ QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force)
     return result;
 }
 
-void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)
+void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent, QSettings *settings)
 {
     ErrorDlg dlg(ErrorDlg::ModeWidget, parent);
     dlg.setMessage(QObject::tr("Экспорт содержимого таблицы %1").arg(table));
     dlg.setWindowModality(Qt::WindowModal);
+
+    bool UseOld = false;
+    int DefaultAction = 0;
+    if (settings)
+    {
+        settings->beginGroup(RsExportDatContext);
+        UseOld = settings->value("UseRSexp", false).toBool();
+        DefaultAction = settings->value("DefaultAction", 0).toInt();
+        settings->endGroup();
+
+        int size = settings->beginReadArray(RsExportDatContext);
+        for (int i = 0; i < size; i++)
+        {
+            settings->setArrayIndex(i);
+            int action = settings->value("action").toInt();
+            QString settings_table = settings->value("table").toString();
+
+            if (!settings_table.trimmed().compare(table, Qt::CaseInsensitive))
+            {
+                DefaultAction = action;
+                break;
+            }
+        }
+        settings->endArray();
+    }
 
     FmtDbfToolWrp wrp(current, parent);
     dlg.setErrors(wrp.errorsModel());
@@ -1462,7 +1487,7 @@ void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *pare
 
     SelectFolderDlg folder(RsExpUnlDirContext, parent);
     if (folder.exec() == QDialog::Accepted)
-        wrp.unload(folder.selectedPath(), table);
+        wrp.unload(folder.selectedPath(), table, DefaultAction, UseOld);
 }
 
 void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent)

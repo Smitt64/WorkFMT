@@ -43,6 +43,9 @@ public:
     void addResult(RsdSqlResult *result);
     void removeResult(RsdSqlResult *result);
 
+    bool isUnicode() const;
+    bool isPostgres() const;
+
 private:
     QTextCodec *codec866, *codec1251;
     QScopedPointer<CRsdEnvironment> m_Env;

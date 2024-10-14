@@ -16,6 +16,7 @@ RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
     m_Cmd.reset(new RsdCommandEx(m_Driver->connection(), m_Driver));
     //m_Cmd->setNullConversion(true);
     m_Driver->addResult(this);
+    setUnicode(m_Driver->isUnicode());
 }
 
 RsdSqlResult::~RsdSqlResult()
@@ -242,134 +243,6 @@ bool RsdSqlResult::fetchPrevious()
     return result;
 }
 
-bool RsdSqlResult::checkWord(const QString &sql, const QString &word) const
-{
-    QRegularExpression rx(QString("\\b%1\\b").arg(word),  QRegularExpression::CaseInsensitiveOption | QRegularExpression::DotMatchesEverythingOption);
-
-    return sql.contains(rx);
-}
-
-bool RsdSqlResult::checkInsert(const QString &sql) const
-{
-    if (checkWord(sql, "insert") && (checkWord(sql, "into") || checkWord(sql, "all")))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkUpdate(const QString &sql) const
-{
-    if (checkWord(sql, "update") && checkWord(sql, "set"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkDelete(const QString &sql) const
-{
-    if (checkWord(sql, "delete") && checkWord(sql, "from"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkMerge(const QString &sql) const
-{
-    if (checkWord(sql, "merge") && checkWord(sql, "into"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkCOMMENT(const QString &sql) const
-{
-    if (checkWord(sql, "COMMENT") && checkWord(sql, "ON"))
-        return true;
-    return false;
-}
-
-bool RsdSqlResult::checkAlter(const QString &sql) const
-{
-    static QStringList patterns = QStringList()
-            << "CLUSTER" << "DATABASE" << "DIMENSION" << "DISKGROUP" << "FLASHBACK"
-            << "FUNCTION" << "INDEX" << "JAVA" << "LIBRARY" << "MATERIALIZED" << "OPERATOR"
-            << "PACKAGE" << "PROCEDURE" << "RESOURCE" << "ROLE" << "ROLLBACK" << "SEQUENCE"
-            << "SESSION" << "SYSTEM" << "TABLE" << "TABLESPACE" << "TRIGGER" << "TYPE"
-            << "USER" << "VIEW";
-
-    if (checkWord(sql, "ALTER"))
-    {
-        for (const QString &str : qAsConst(patterns))
-        {
-            if (checkWord(sql, str))
-                return true;
-        }
-    }
-    return false;
-}
-
-bool RsdSqlResult::checkCall(const QString &sql) const
-{
-    return checkWord(sql.simplified().trimmed(), "CALL");
-}
-
-bool RsdSqlResult::checkCreate(const QString &sql) const
-{
-    static QStringList patterns = QStringList()
-            << "CLUSTER" << "CONTEXT" << "CONTROLFILE" << "DATABASE" << "DIMENSION"
-            << "DIRECTORY" << "DISKGROUP" << "EDITION" << "FLASHBACK" << "FUNCTION"
-            << "index" << "indextype" << "JAVA" << "LIBRARY" << "MATERIALIZED"
-            << "OPERATOR" << "OUTLINE" << "PACKAGE" << "PFILE" << "PROCEDURE"
-            << "PROFILE" << "RESTORE" << "ROLE" << "ROLLBACK" << "SCHEMA"
-            << "SEQUENCE" << "SPFILE" << "SYNONYM" << "TABLE" << "TRIGGER"
-            << "TYPE" << "USER" << "VIEW";
-
-    if (checkWord(sql, "CREATE"))
-    {
-        for (const QString &str : qAsConst(patterns))
-        {
-            if (checkWord(sql, str))
-                return true;
-        }
-    }
-    return false;
-}
-
-bool RsdSqlResult::checkDrop(const QString &sql) const
-{
-    static QStringList patterns = QStringList()
-            << "CLUSTER" << "CONTEXT" << "CONTROLFILE" << "DATABASE" << "DIMENSION"
-            << "DIRECTORY" << "DISKGROUP" << "EDITION" << "FLASHBACK" << "FUNCTION"
-            << "index" << "indextype" << "JAVA" << "LIBRARY" << "MATERIALIZED"
-            << "OPERATOR" << "OUTLINE" << "PACKAGE" << "PFILE" << "PROCEDURE"
-            << "PROFILE" << "RESTORE" << "ROLE" << "ROLLBACK" << "SCHEMA"
-            << "SEQUENCE" << "SPFILE" << "SYNONYM" << "TABLE" << "TRIGGER"
-            << "TYPE" << "USER" << "VIEW";
-
-    if (checkWord(sql, "DROP"))
-    {
-        for (const QString &str : qAsConst(patterns))
-        {
-            if (checkWord(sql, str))
-                return true;
-        }
-    }
-    return false;
-}
-
-bool RsdSqlResult::checkSelect(const QString &sql) const
-{
-    bool hr = false;
-
-    hr = checkInsert(sql);
-    if (!hr) hr = checkUpdate(sql);
-    if (!hr) hr = checkDelete(sql);
-    if (!hr) hr = checkMerge(sql);
-    if (!hr) hr = checkDrop(sql);
-    if (!hr) hr = checkCOMMENT(sql);
-    if (!hr) hr = checkAlter(sql);
-    if (!hr) hr = checkCall(sql);
-    if (!hr) hr = checkCreate(sql);
-
-    return !hr;
-}
-
 bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
 {
     bool result = true;
@@ -405,6 +278,86 @@ bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
     return result;
 }
 
+QStringList RsdSqlResult::GetSqlHints(const QString &sql)
+{
+    QStringList hints;
+    QRegularExpression re = QRegularExpression("\\/\\*[@](.*)\\*\\/", QRegularExpression::MultilineOption
+                                               | QRegularExpression::CaseInsensitiveOption);
+
+    QRegularExpressionMatch match = re.match(sql);
+    if (match.hasMatch())
+    {
+        QString matched = match.captured(1);
+        hints = matched.split(';');
+    }
+
+    return hints;
+}
+
+QVariant RsdSqlResult::HintValue(const QString &hintparam)
+{
+    QVariant val;
+    bool isOk = true;
+    int value = hintparam.toInt(&isOk);
+
+    if (isOk)
+        val = value;
+    else
+    {
+        qreal realval = hintparam.toDouble(&isOk);
+
+        if (isOk)
+            val = realval;
+    }
+
+    if (!isOk)
+    {
+        if (!hintparam.compare("true", Qt::CaseInsensitive))
+            val = true;
+        else if (!hintparam.compare("on", Qt::CaseInsensitive))
+            val = true;
+        else if (!hintparam.compare("false", Qt::CaseInsensitive))
+            val = false;
+        else if (!hintparam.compare("off", Qt::CaseInsensitive))
+            val = false;
+    }
+
+    if (!val.isValid())
+        val = hintparam;
+
+    return val;
+}
+
+bool RsdSqlResult::HasHint(const QStringList &hints, const QString &hint, QStringList *params)
+{
+    bool Exists = false;
+    QRegularExpression re = QRegularExpression("(.*)\\((.*)\\)", QRegularExpression::MultilineOption
+                                               | QRegularExpression::CaseInsensitiveOption);
+
+    //QRegularExpressionMatch match = re.match(hint);
+    for(const QString &value : hints)
+    {
+        if (!value.trimmed().compare(hint, Qt::CaseInsensitive))
+        {
+            QRegularExpressionMatch match = re.match(value);
+
+            if (params && !match.captured(2).isEmpty())
+                *params = match.captured(2).split(',');
+
+            Exists = true;
+            break;
+        }
+    }
+
+    if (params)
+    {
+        for (int i = 0; i < params->size(); i++)
+            (*params)[i] = (*params)[i].trimmed();
+    }
+
+    return Exists;
+}
+
 bool RsdSqlResult::exec()
 {
     bool result = true;
@@ -433,13 +386,29 @@ bool RsdSqlResult::exec()
 
         QSqlResult::setQuery(m_QueryString);
         setCmdText(m_QueryString);
+
+        QStringList params;
+        QStringList hints = GetSqlHints(m_QueryString);
+        if (HasHint(hints, "DisConv", &params))
+        {
+            if (params.isEmpty())
+                m_Cmd->setDisableOraToPgConverter(true);
+            else
+            {
+                QVariant val = HintValue(params.front());
+
+                if (val.type() == QVariant::Bool)
+                    m_Cmd->setDisableOraToPgConverter(val.toBool());
+            }
+        }
+
         result = RSD_SUCCEEDED(m_Cmd->execute());
 
         setActive(true);
         setAt(QSql::BeforeFirstRow);
 
-        if (result && checkSelect(m_QueryString))
-            result = makeRecordSetFromCmd(m_Cmd);
+        if (result)
+            makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)
     {
@@ -635,7 +604,7 @@ void RsdSqlResult::MakeRecord()
 {
     m_Record.reset(new QSqlRecord());
 
-    if (isSelect() && isActive())
+    if (isSelect() && isActive() && m_RecSet)
     {
         long fldcount = m_RecSet->getFldCount();
 //T_PARAMETERS

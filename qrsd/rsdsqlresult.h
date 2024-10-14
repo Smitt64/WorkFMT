@@ -52,19 +52,12 @@ protected:
     void onBeforeCloseConnection();
 
 private:
-    bool setCmdText(const QString &sql);
+    // /*@ DYNAMIC_SAMPLING(e 3)*/
+    QStringList GetSqlHints(const QString &sql);
+    QVariant HintValue(const QString &hintparam);
+    bool HasHint(const QStringList &hints, const QString &hint, QStringList *params = nullptr);
 
-    bool checkWord(const QString &sql, const QString &word) const;
-    bool checkInsert(const QString &sql) const;
-    bool checkUpdate(const QString &sql) const;
-    bool checkDelete(const QString &sql) const;
-    bool checkMerge(const QString &sql) const;
-    bool checkCOMMENT(const QString &sql) const;
-    bool checkAlter(const QString &sql) const;
-    bool checkSelect(const QString &sql) const;
-    bool checkCall(const QString &sql) const;
-    bool checkCreate(const QString &sql) const;
-    bool checkDrop(const QString &sql) const;
+    bool setCmdText(const QString &sql);
     bool makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd);
 
     QVariant GetValueFromField(const CRsdField &cfld, const int &loblen);

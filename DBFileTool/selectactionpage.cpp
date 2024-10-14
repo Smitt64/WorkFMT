@@ -23,8 +23,11 @@ SelectActionPage::SelectActionPage(QWidget *parent) :
     connect(m_pGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled), [=](int id, bool checked)
     {
         if (checked)
-            setField("Action", id);
+            fakeBtn->setValue(id);
     });
+
+    fakeBtn->setValue(1);
+    ui->radioExp->setChecked(true);
 }
 
 SelectActionPage::~SelectActionPage()

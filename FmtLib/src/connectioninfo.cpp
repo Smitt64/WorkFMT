@@ -186,7 +186,7 @@ bool ConnectionInfo::isOracle()
 bool ConnectionInfo::isPostgre()
 {
     QSqlQuery query(_db);
-    query.prepare("SELECT version()");
+    query.prepare("SELECT version() from dual");
 
     if (ExecuteQuery(&query) || !query.next())
         return false;
@@ -344,9 +344,15 @@ ConnectionInfo::operator int() const
 
 bool ConnectionInfo::hasFeature(ConnectionInfo::ConnectionFeature feature) const
 {
+    bool result = true;
+    if (m_Type == CON_POSTGRESQL)
+    {
+        if (feature == ConnectionInfo::CanLoadUnloadDbf)
+            result = false;
+    }
     /*if (m_Type == CON_ORA)
         return true;
 
     return false;*/
-    return true;
+    return result;
 }

@@ -14,11 +14,7 @@
 #ifndef __RSDC_H
 #define __RSDC_H
 
-#ifdef RSDC_EXPORTS
-#define RSDDLL __declspec (dllexport) 
-#else
-#define RSDDLL __declspec (dllimport) 
-#endif
+#include "RsdCBuildOption.h"
 
 #define NVL( val )  (val != NULL ? val : "" )
 
@@ -40,6 +36,7 @@
 
 #include "RsdErrMsg.h"
 #include "RSDRGlobParms.h"
+#include "IniUtil.h"
 
 #ifndef __RSLOCALE_H
     #include "rslocale.h"
@@ -47,8 +44,31 @@
 
 #include "strmoney.h"
 #include "RSDDefs.h"
+#include <assert.h>
+#include <memory>
 
 #include "traceinit.h"
+//#include <boost/optional.hpp>
+namespace not_boost{
+  template<class T>
+  class optional_referenceable{
+  protected:
+    T val_;
+    bool is_valid_;
+  public:
+    optional_referenceable() : is_valid_(false) {}
+    //~optional_referenceable() { }
+    //optional_referenceable(const optional_referenceable<T> & t) { initFromCopy(t); }
+    //optional_referenceable<T> & operator=(const optional_referenceable<T> & t) { clear(); initFromCopy(t); return *this;}
+
+    T & operator*() { assert(is_valid_); return val_; }
+    const T & operator*() const { assert(is_valid_); return val_; }
+    operator bool() const { return is_valid_; }
+    void emplace(const T & val) { val_ = val; is_valid_ = true; }
+    void clear() { is_valid_ = false; }
+  };
+}
+
 
 #pragma warning ( push )
 
@@ -647,7 +667,7 @@ public:
 
    virtual long getValueLen () const
       {
-      if (m_pLenOrInd)
+      if ( m_pLenOrInd && (m_Type == RSDPT_BFILE || m_Type == RSDPT_CFILE) ) 
          return m_pLenOrInd [m_index];
       return (long)getRsdTypeSize (m_Type, m_dataSize);
       }
@@ -1610,6 +1630,20 @@ public:
    RSDLONG read (RSDVALUEPTR pData, RSDLONG nCount);
    RSDLONG write (RSDVALUEPTR pData, RSDLONG nCount);
 
+   class RsdLpstrReader{
+   public:
+     inline RsdLpstrReader( CRsdField & parent) : parent_(parent), byte_cx_(0), length_(strlen(parent_.AsRSDLPSTR())) {}
+     inline RSDLONG read(RSDVALUEPTR pData, RSDLONG nCount){
+       size_t reading_len = (size_t)nCount < length_ - byte_cx_ ? nCount : length_ - byte_cx_;
+       memcpy(pData, parent_.AsRSDLPSTR() + byte_cx_, reading_len);
+       byte_cx_ += reading_len;
+       return (RSDLONG)reading_len;
+     }
+   protected:
+     CRsdField & parent_;
+     size_t byte_cx_, length_;
+   };
+
    void setBlobFilename (RSDLPSTR Filename);
    void getBlobFilename (RSDLPSTR Filename);
 
@@ -1624,6 +1658,8 @@ protected:
 
    friend class CRsdRecordset;
    friend class CRsdFieldNumber10;
+
+   std::shared_ptr<RsdLpstrReader> rsdlpstr_reader_;
    };
 
 class CRsdRecordset;
@@ -1816,6 +1852,7 @@ public:
    void clearErrors () { m_errors.clear (); };
 
    CRsdError& getError ( long n );
+   inline const CRsdError& getError( long n ) const  { return const_cast<CRsdEnvironment*>(this)->getError(n);  }
    CRsdError& getErrorWithoutDelete ( long n );
    inline const CRsdError& getErrorWithoutDelete ( long n ) const  { return const_cast<CRsdEnvironment*>(this)->getErrorWithoutDelete(n);  }
 
@@ -1920,6 +1957,7 @@ public:
 
    long getState () const { return m_lState; }
    std::string getDbmsName ();
+   bool isPostgres();
 
    bool TestTable (const char* TableName);
    void cancelCurrentQuery ();
@@ -2025,7 +2063,7 @@ public:
       m_lOptions (0), m_lState (0), m_lRecsAffected (0), m_pacc (NULL),
       m_CurType (RSDVAL_FORWARD_ONLY), m_BlockSize (1),
       m_pOrderAcc (NULL), m_pWhereAcc (NULL), m_NullConversion (false),
-      m_pacc_size (1), m_createBindWhenOpen (true)
+      m_pacc_size (1), m_createBindWhenOpen (true), is_disableOraToPgConverter_(false)
    {
       m_strCmdText = "";
       m_params.clear ();
@@ -2040,6 +2078,7 @@ public:
    void close ();
 
    RSDRESULT execute ();
+   RSDRESULT executeDirect ();
 
    void cancel ();
    //---------------------- Работа со свойствами.
@@ -2114,6 +2153,7 @@ public:
       GetEnvironment ()->check ( res, source ); 
    }
 
+   void makeopen (bool isDirect);
    void makeopen ();
 
    void reset ();
@@ -2127,6 +2167,9 @@ public:
 
    void setNullConversion (bool bEnable);
    bool getNullConversion () { return m_NullConversion; }
+
+   void setDisableOraToPgConverter(bool bEnable);
+   bool getDisableOraToPgConverter();
 
    CRsdEnvironment* GetEnvironment () const
    {
@@ -2142,6 +2185,7 @@ protected:
    friend class RsdRecordset;
 
    void createBinding ();
+   RSDRESULT executeImpl(bool isDirect);
 
    std::string m_strCmdText;
    long    m_lTimeout;
@@ -2166,6 +2210,9 @@ protected:
    size_t m_pacc_size;
 
    bool m_NullConversion;
+   RSDBYTE isDirect_;
+   RSDLONG is_disableOraToPgConverter_;
+
 };
 
 class CRsdAccessor;
@@ -2277,8 +2324,8 @@ public:
    long getFldCount () const { return (long)m_fields.size(); }
    long getFldIndex ( const char* name );
 
-   CRsdField &getFld(long n);
-   CRsdField &getFld(const char *name);
+   CRsdField& getFld ( long n );
+   CRsdField& getFld ( const char* name );
 
    void check ( RSDRESULT res, XRsdError::Source source );
 
@@ -2335,6 +2382,9 @@ public:
    void setNullConversion (bool bEnable);
    bool getNullConversion ();
 
+   void setDisableOraToPgConverter(bool bEnable);
+   bool getDisableOraToPgConverter();
+
    void SwitchRecordset (RSDKEY nKey, bool bUnique); //, RSDLONG KeyKind);
    void setTableName (RSDLPSTR TableName);
    void setPrimaryKey (RSDRSNAMEBINDING* primaryKey);
@@ -2367,7 +2417,7 @@ public:
    void setSortString (const char* sort);
    void setToolsWhereCond (const char* toolsWhereCond);
    void applyToolsWhereCond (bool bApply);
-   int  getBlobLimitSize () {return m_blobLimit;}
+   int  getBlobLimitSize () {return blobLimit();}
    void setBlobLimitSize (int maxSize);
    void setLockType (int lockType);
    void setFullShiftMode (int mode);
@@ -2463,6 +2513,11 @@ protected:
    CRsdField* make_CRsdField(CRsdRecordset* Parent, const char* name, const RSDValType_t type,
             void* buf, long len = 0, long* status = NULL, RSDLONG ciPrecision = 0);
 
+   const int& blobLimit();
+   void setBlobLimit(int val);
+   const int& blobMode();
+   void setBlobMode(int val);
+
    long m_lPageSize;
    long m_lMaxPages;
    long m_recSize;
@@ -2535,8 +2590,11 @@ protected:
 
    bool        m_blobField;
    bool        m_blobWriteInMem;
-   int         m_blobLimit;
-   int         m_blobMode;
+   
+   //int         m_blobLimit;
+   //int         m_blobMode;
+   not_boost::optional_referenceable<int>         m_blobLimit;
+   not_boost::optional_referenceable<int>         m_blobMode;
    int         m_lockType;
    bool        m_bAutoRefresh;
    bool        m_NullConversion;
@@ -2548,6 +2606,7 @@ protected:
 
    CRsdCommand* m_userCmds [USERCMDSN];
    bool        checkNumber10_;
+   std::string m_strTableName;
 };
 
 

@@ -159,6 +159,9 @@ extern "C"
 
    typedef RSDCHAR *        RSDBFILE;   // имя файла, в котором "лежит" BLOB
 
+   typedef intptr_t         RSDINTPTR;
+   typedef uintptr_t        RSDUINTPTR;
+
    // stub! FIXME!
    typedef void (*RSDCallBackProc) (); 
 
@@ -341,7 +344,8 @@ extern "C"
       RSDIT_INDEX_COLS_COUNT  = 8,
       RSDIT_INDEX_COLS        = 9,      
       RSDIT_INDEXINFO_DELETE  = 10,
-      RSDIT_TABLE_COLS_COUNT  = 11 
+      RSDIT_TABLE_COLS_COUNT  = 11,
+      RSDIT_IS_CACHE_BLOB_AUTO =12
    };
 
    // RSDRSETBINDING struct, obStatus value
@@ -423,6 +427,7 @@ extern "C"
       RSDULONG     ciOrdinal;   // the number of parameters/columns
       RSDCHAR      ciParamIO;   // input/output parameter type (тут всегда RSDBP_IN :-)
       RSDVALTYPE   ciType;      // Value type  
+      RSDVALTYPE   ciTypeForOut;// Value type for output to user, example: BINARY; but type = BLOB. pgsql
       RSDLONG      ciLength;    // if obType == RSDPT_LPSTR | RSDPT_BINARY 
       RSDRESULT    ciNullable;  // RSDRES_OK || RSDRES_FAIL || RSDRES_UNKNOWN
       RSDLONG      ciPrecision;
@@ -434,27 +439,15 @@ extern "C"
       RSDULONG     obOrdinal;   // the number of parameters/columns
       RSDVALTYPE   obType;      // Value type  
       RSDLONG      obLength;    // if obType == RSDPT_LPSTR 
-
-#ifdef RSL_PL_WIN64
-      RSDBIGINT    obValueOff;  // Value offset
-#else
-      RSDLONG      obValueOff;  // Value offset
-#endif
-
-      RSDLONG      obStatusOff; // Status field offset
+      RSDINTPTR    obValueOff;  // Value offset
+      RSDINTPTR    obStatusOff; // Status field offset
    } RSDRSETBINDING;
 
    typedef struct tagRSDRSNAMEBINDING {
       RSDULONG     obOrdinal;   // the number of parameters/columns
       RSDVALTYPE   obType;      // Value type  
       RSDLONG      obLength;    // if obType == RSDPT_LPSTR 
-
-#ifdef RSL_PL_WIN64
-      RSDBIGINT    obValueOff;  // Value offset
-#else
-      RSDLONG      obValueOff;  // Value offset
-#endif
-
+      RSDINTPTR    obValueOff;  // Value offset
       RSDLONG      obKeyKind;   // Key Kind
       //      RSDULONG*    obSearchCond;   // Search condition
       RSDLONG      obSortOrder; // Sort order
@@ -516,6 +509,7 @@ extern "C"
       RSDRESULT (*pSetProperty) (RSDHCN, RSDULONG dwPropertyID, RSDVALTYPE dwType, RSDVALUEPTR vValue );
       RSDRESULT (*pGetProperty) (RSDHCN, RSDULONG dwPropertyID, RSDVALTYPE dwType, RSDVALUEPTR vValue );
       RSDRESULT (*pTestTable) (RSDHCN, RSDLPSTR TableName, RSDLONG* Ex );
+      RSDRESULT (*isTableColumnRawGetLen)(RSDHCN, RSDLPSTR table_name, RSDLPSTR column_name, RSDULONG *out_len);
 
       RSDRESULT (*pCancelCurrentQuery) (RSDHCN);
    }  IRSCon;
@@ -803,7 +797,10 @@ extern "C"
       RSDPID_AINCFIELD = 34,
       RSDPID_SEQNAME = 35,
       RSDPID_ODBC_HANDLE_ENV = 36,
-      RSDPID_REPAIR_UPDATED_CACHE_FIELDS_NULL_DATA = 37
+      RSDPID_REPAIR_UPDATED_CACHE_FIELDS_NULL_DATA = 37,
+      RSDPID_EXECUTE_DIRECT = 38,
+ //     RSDPID_NATIVE_SQL = 39,
+      RSDPID_DISABLE_ORA_TO_PG_CONVERTER = 40
    };
 
    enum RSDPropValue_ODBC_t {
@@ -831,7 +828,25 @@ extern "C"
 
 #ifdef __cplusplus
 } //extern "C"
+
 #endif
+
+#include <limits>
+
+#ifdef max
+  #pragma push_macro("max")
+  #undef max
+  const size_t const_RSDRecordSet_binder = std::numeric_limits<size_t>::max();
+  const size_t const_CRsdCommand_binder = std::numeric_limits<size_t>::max() - 1;
+#pragma pop_macro("max")
+#else
+  const size_t const_RSDRecordSet_binder = std::numeric_limits<size_t>::max();
+  const size_t const_CRsdCommand_binder = std::numeric_limits<size_t>::max() - 1;
+#endif
+  enum EBinderUID {
+    e_RSDRecordSet_binder = 0xFFFFFFF,
+    e_CRsdCommand_binder = 0xFFFFFFF-1
+  };
 
 #endif // __RSDATADRV_H
 

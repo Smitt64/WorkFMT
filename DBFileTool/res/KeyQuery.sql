@@ -21,4 +21,4 @@ select DECODE(rownum, 1, ' ORDER BY ', ',') ||
                 select min(constraint_type) from user_constraints 
                   where table_name = '%1' and (constraint_type = 'P' or constraint_type = 'U')))) 
         from dual) 
-      order by c.column_position)
+      order by c.column_position) t

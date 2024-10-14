@@ -14,6 +14,7 @@
 FmtImpExpWrp::FmtImpExpWrp(ConnectionInfo *connection, QObject *parent) :
     QObject(parent)
 {
+    m_WorkDir = QApplication::applicationDirPath();
     pConnection = connection;
     pFmtXml = new QProcess(this);
 
@@ -253,18 +254,15 @@ int FmtImpExpWrp::importDir(const QString &impdir)
         return stat;
     }
 
-    if (m_TempDir.isValid())
-    {
-        m_pPrm->beginGroup("FmtXml");
-        m_pPrm->setValue("LastImportDir", impdir);
-        m_pPrm->endGroup();
+    m_pPrm->beginGroup("FmtXml");
+    m_pPrm->setValue("LastImportDir", impdir);
+    m_pPrm->endGroup();
 
-        m_Protocol = impdir + "/protocol.out";
-        pFmtXml->setWorkingDirectory(m_TempDir.path());
-        qCInfo(logCore()) << "FmtXml import dir started: " << exeName << arg;
-        pFmtXml->start(exeName, arg);
-        stat = 0;
-    }
+    m_Protocol = impdir + "/protocol.out";
+    pFmtXml->setWorkingDirectory(m_WorkDir.path());
+    qCInfo(logCore()) << "FmtXml import dir started: " << exeName << arg;
+    pFmtXml->start(exeName, arg);
+    stat = 0;
 
     return stat;
 }
@@ -282,17 +280,14 @@ void FmtImpExpWrp::importFile(const QString &file)
 
     arg << file;
 
-    if (m_TempDir.isValid())
-    {
-        m_pPrm->beginGroup("FmtXml");
-        m_pPrm->setValue("LastImportDir", d.absolutePath());
-        m_pPrm->endGroup();
+    m_pPrm->beginGroup("FmtXml");
+    m_pPrm->setValue("LastImportDir", d.absolutePath());
+    m_pPrm->endGroup();
 
-        m_Protocol = d.absolutePath() + "/protocol.out";
-        pFmtXml->setWorkingDirectory(m_TempDir.path());
-        qCInfo(logCore()) << "FmtXml import file started: " << programName() << arg;
-        CoreStartProcess(pFmtXml, programName(), arg, false);
-    }
+    m_Protocol = d.absolutePath() + "/protocol.out";
+    pFmtXml->setWorkingDirectory(m_WorkDir.path());
+    qCInfo(logCore()) << "FmtXml import file started: " << programName() << arg;
+    CoreStartProcess(pFmtXml, programName(), arg, false);
 }
 
 void FmtImpExpWrp::getArgs(const QString &dir, QStringList &arg)
@@ -316,13 +311,10 @@ void FmtImpExpWrp::exportTable(const QString &dir, bool waitForFinished, bool wa
     QStringList arg;
     getArgs(dir, arg);
 
-    if (m_TempDir.isValid())
-    {
-        m_Protocol = dir + "/protocol.out";
-        pFmtXml->setWorkingDirectory(m_TempDir.path());
-        qCInfo(logCore()) << "FmtXml export table started: " << programName() << arg;
-        CoreStartProcess(pFmtXml, programName(), arg, waitForFinished, waitForStarted);
-    }
+    m_Protocol = dir + "/protocol.out";
+    pFmtXml->setWorkingDirectory(m_WorkDir.path());
+    qCInfo(logCore()) << "FmtXml export table started: " << programName() << arg;
+    CoreStartProcess(pFmtXml, programName(), arg, waitForFinished, waitForStarted);
 }
 
 int FmtImpExpWrp::tablesCount()

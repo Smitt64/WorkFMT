@@ -1134,9 +1134,13 @@ bool FmtTable::isExists() const
 bool FmtTable::isExistsInDb() const
 {
     QSqlQuery q(db);
-    q.prepare("SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = UPPER(?);");
-    q.bindValue(0, m_Name);
 
+    if (pConnection->type() == ConnectionInfo::CON_ORA)
+        q.prepare("SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = UPPER(?)");
+    else
+        q.prepare("/*@ DisConv */select count(*) from (select upper(table_name) as table_name from information_schema.tables where table_schema = current_schema) t where table_name = upper(?)");
+
+    q.bindValue(0, m_Name);
     if (!ExecuteQuery(&q))
     {
         if (q.next())
@@ -1212,9 +1216,15 @@ quint64 FmtTable::FindFirstEmptyID()
 {
     quint64 id = 1;
     QSqlQuery q(db);
-    q.prepare(FmtTableFindFirstEmptyIDSql("FMT_NAMES", "T_ID"));
-    if (q.exec() && q.next())
-        id = static_cast<quint64>(q.value(0).toInt());
+    QString sql = FmtTableFindFirstEmptyIDSql("FMT_NAMES", "T_ID");
+    q.prepare(sql);
+    if (!ExecuteQuery(&q))
+    {
+        qDebug() << "q.at():" << q.at();
+
+        if (q.next())
+            id = static_cast<quint64>(q.value(0).toInt());
+    }
 
     return id;
 }
@@ -1472,7 +1482,7 @@ qint16 FmtTable::createDbTable(QString *err)
 {
     qint16 stat = 0;
 
-    if (isExists())
+    if (isExistsInDb())
     {
         QSqlQuery q(QString("DROP TABLE %1 CASCADE CONSTRAINTS").arg(m_Name), db);
         ExecuteQuery(&q);
@@ -1486,13 +1496,27 @@ qint16 FmtTable::createDbTable(QString *err)
 
         if (!stat)
         {
-            foreach (FmtField *f, m_pFields) {
-                QSqlQuery qf(db);
-                QString sql = f->getCommentSql();
-                qf.prepare(sql);
-                ExecuteQuery(&qf);
+            foreach (FmtField *f, m_pFields)
+            {
+                QString commentSql = f->getCommentSql();
+                if (!commentSql.isEmpty())
+                {
+                    QSqlQuery qf(db);
+                    qf.prepare(commentSql);
+                    ExecuteQuery(&qf);
+                }
             }
         }
+    }
+
+    if (!stat && pConnection->type() == ConnectionInfo::CON_POSTGRESQL)
+    {
+        QString grant = QString("/*@ DisConv */GRANT REFERENCES, UPDATE, INSERT, TRIGGER, DELETE, TRUNCATE, SELECT ON TABLE %2 TO %1")
+                .arg(pConnection->user())
+                .arg(m_Name);
+
+        QSqlQuery q(grant, db);
+        stat = ExecuteQuery(&q, err);
     }
 
     return stat;
@@ -1513,7 +1537,7 @@ int FmtTable::dbInit(const QString &log)
     QProcess exe;
     QStringList arguments;
 
-    QString service = pConnection->service();
+    QString service = pConnection->dsn();
     QString tablelist = dbtName();
 
     arguments << QString("%1:%2@%3")

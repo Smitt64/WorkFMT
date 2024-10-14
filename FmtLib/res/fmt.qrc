@@ -118,5 +118,7 @@
         <file>img/nwprovau.dll_14_604-1.png</file>
         <file>img/sapi.cpl_14_138-1.png</file>
         <file alias="TablesGroupProvider">../json/TablesGroupProvider.json</file>
+        <file>img/sqldeveloper.png</file>
+        <file alias="append_host_ace">sql/append_host_ace.sql</file>
     </qresource>
 </RCC>
