@@ -1,0 +1,12 @@
+<replacers>
+        <e name="sysdate">glob_func.clock_timestamp()</e>
+        <e name="SERIAL#">&quot;SERIAL#&quot;</e>
+        <e name=",9999999999,">,2147483647,</e>
+        <e name="default 9999999999">default 2147483647</e>
+        <e name="systimestamp">localtimestamp</e>
+        <e name="999999999999999999999999999">9223372036854775807</e>
+        <e name="INSERTING">(TG_OP = 'INSERT')</e>
+        <e name="UPDATING">(TG_OP = 'UPDATE')</e>
+        <e name="DELETING">(TG_OP = 'DELETE')</e>
+        <e name="SQLCODE">SQLSTATE</e>
+</replacers>

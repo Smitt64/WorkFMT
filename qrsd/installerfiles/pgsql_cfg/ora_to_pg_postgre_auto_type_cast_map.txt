@@ -1,0 +1,17 @@
+<types>
+	<from name="NUMERIC">
+		<to>INTEGER</to> 
+	</from>
+	<from name="INTEGER">
+		<to>NUMERIC</to> 
+	</from>
+	<from name="CHAR">
+		<to>VARCHAR</to> 
+	</from>
+  <from name="FLOAT">
+    <to>FLOAT8</to> 
+  </from>
+  <from name="FLOAT8">
+    <to>FLOAT</to> 
+  </from>
+</types>

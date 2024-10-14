@@ -1,0 +1,182 @@
+<replacers>
+	<e name="user_indexes">
+	(select upper(inds.indexname) as index_name
+     		, ind.indisunique as uniqueness
+     		, upper(inds.tablespace) as tablespace_name
+     		, upper(inds.tablename) as table_name
+     		, ns.nspname
+     		, CASE WHEN (NOT ns.nspname LIKE 'pg%') THEN 'N'
+              		ELSE 'Y'
+       			END as generated
+   		from pg_indexes inds, pg_index ind, pg_namespace ns
+   			where inds.tablename in (select relname from pg_class where oid = ind.indrelid)
+     		and inds.indexname in (select relname from pg_class where oid = ind.indexrelid)
+     		and ns.oid in (select relnamespace from pg_class where oid = ind.indexrelid))
+	</e>
+
+	<e name="user_constraints">
+	(select upper(pcns.conname) as constraint_name
+       		, upper(cls.relname) as table_name
+       		, CASE WHEN (pcns.contype = 'f') THEN 'R'
+	      		WHEN (pcns.contype = 'p') THEN 'P'
+	      		ELSE ''
+	 	END as constraint_type
+   		from pg_constraint pcns
+        	, pg_class cls
+   		where pcns.conrelid = cls.oid)
+	</e>
+
+	<e name="col">
+	(select upper(clmn.table_name) as tname
+       		, upper(clmn.column_name) as cname
+  	from information_schema.columns clmn
+	where clmn.table_schema = current_schema)
+	</e>
+
+	<e name="user_sequences">
+	(select inf.sequence_schema,
+           upper(inf.sequence_name) as sequence_name,
+	   inf.increment as increment_by,
+	   inf.minimum_value as min_value,
+           inf.maximum_value as max_value,
+	   glob_func.seq_last_value(inf.sequence_name)+1 as last_number
+	  from information_schema.sequences as inf
+  	  where inf.sequence_schema = current_schema)
+	</e>
+
+
+	<e name="GV$SESSION">
+	(select 1          as INST_ID,
+       		glob_func.generateSid( c.pid, c.backend_start )      as SID,
+       		glob_func.generateSerial( c.pid, c.backend_start )   as "SERIAL#",
+          glob_func.generateAudsid( c.pid, c.backend_start )      as AUDSID,
+          current_schema AS USERNAME
+
+	from pg_stat_activity c)
+	</e>
+
+	<e name="V$DATABASE">
+	(SELECT DISTINCT c.datid::int AS dbid
+           FROM pg_stat_activity c
+          WHERE c.datname = current_database())
+	</e>
+
+	<e name="user_tab_columns">
+        (select upper(table_name) as table_name,
+                upper(column_name) as column_name,
+                upper(data_type) as data_type,
+                character_maximum_length as data_length
+           from information_schema.columns
+          where table_schema = current_schema)
+	</e>
+
+	<e name="user_objects">
+        (select upper(routine_name) as object_name, upper(routine_type) as object_type from information_schema.routines where routine_schema = current_schema
+         union
+         select upper(sequence_name) as sequence_name, 'SEQUENCE' from information_schema.sequences where sequence_schema = current_schema
+         union
+         select upper(table_name) as table_name, 'TABLE' from information_schema.tables where table_schema = current_schema
+         union
+         select upper(trigger_name) as trigger_name, 'TRIGGER' from information_schema.triggers where trigger_schema = current_schema
+         union
+         select upper(table_name) as table_name, 'VIEW' from information_schema.views where table_schema = current_schema)
+	</e>
+
+	<e name="user_tab_cols">
+        (select upper(table_name) as table_name,
+                upper(column_name) as column_name,
+                upper(data_type) as data_type
+           from information_schema.columns
+          where table_schema = current_schema)
+	</e>
+
+	<e name="user_triggers">
+        (select distinct upper(tr_.trigger_name) as trigger_name,
+                upper(tr_.event_object_table) as table_name,
+                case when ptr_.tgenabled != 'D' then 'ENABLED' else 'DISABLED' end as status
+           from information_schema.triggers tr_, pg_trigger ptr_
+          where tr_.trigger_name = ptr_.tgname
+         		and tr_.trigger_schema = current_schema)
+
+	</e>
+
+	<e name="user_cons_columns">
+        (select upper(column_name) as column_name,
+                upper(constraint_name) as constraint_name,
+                row_number() over(partition by constraint_name order by column_name) as position
+           from information_schema.constraint_column_usage
+          where table_schema = current_schema)
+	</e>
+
+	<e name="USER_TABLES">
+        (select upper(table_name) as table_name,
+                'N' as temporary,
+                'DISABLED' as row_movement
+           from information_schema.tables
+          where table_schema = current_schema)
+	</e>
+
+	<e name="NLS_DATABASE_PARAMETERS">
+	(select character_set_name as VALUE,
+                'NLS_CHARACTERSET'::text as PARAMETER
+           from information_schema.CHARACTER_SETS)
+	</e>
+
+  <e name="user_ind_columns">
+   (SELECT UPPER(inds.indexname)  AS INDEX_NAME,
+                    UPPER(inds.tablename) AS TABLE_NAME,
+                    UPPER(cols.column_name) AS COLUMN_NAME,
+                    cols.ordinal_position AS COLUMN_POSITION,
+                    0 AS COLUMN_LENGTH,
+                    0 AS CHAR_LENGTH,
+                    CHR(1) AS DESCEND,
+                    0 AS COLLATED_COLUMN_ID
+       FROM pg_indexes inds,
+                     pg_index ind,
+                     information_schema.columns cols
+      WHERE inds.tablename IN (SELECT relname FROM pg_class WHERE oid = ind.indrelid)
+            AND inds.indexname IN (SELECT relname FROM pg_class WHERE oid = ind.indexrelid)
+            AND cols.table_schema = current_schema
+            AND inds.tablename = cols.table_name
+            AND cols.ordinal_position = ANY (ind.indkey))
+  </e>
+
+/*
+	<e name="user_errors">
+	</e>
+	<e name="user_col_comments">
+	</e>
+	<e name="USER_TAB_MODIFICATIONS">
+	</e>
+	<e name="ALL_USERS">
+	</e>
+	<e name="all_scheduler_jobs">
+	</e>
+	<e name="all_directories">
+	</e>
+	<e name="all_objects">
+	</e>
+	<e name="dba_objects">
+	</e>
+	<e name="dba_tables">
+	</e>
+	<e name="dba_directories">
+	</e>
+	<e name="DBA_SEQUENCES">
+	</e>
+	<e name="dba_constraints">
+	</e>
+	<e name="dba_users">
+	</e>
+	<e name="dba_indexes">
+	</e>
+	<e name="DBA_QUEUE_TABLES">
+	</e>
+	<e name="dba_tablespaces">
+	</e>
+	<e name="DBA_LIBRARIES">
+	</e>
+	<e name="DBA_REGISTRY_DATABASE">
+	</e>
+*/
+</replacers>

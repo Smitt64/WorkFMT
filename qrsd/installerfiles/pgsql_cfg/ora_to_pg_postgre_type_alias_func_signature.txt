@@ -1,0 +1,16 @@
+<replacers>
+  <e name="NUMERIC">N</e>
+  <e name="INTEGER">I</e>
+  <e name="Char">C</e>
+  <e name="varchar">V</e>
+  <e name="Timestamp">S</e>
+  <e name="Bigint">Q</e>
+  <e name="Text">T</e>
+  <e name="Bytea">L</e>
+  <e name="XML">X</e>
+  <e name="OID">O</e>
+  <e name="interval">D</e>
+  <e name="float">F</e>
+  <e name="boolean">B</e>
+  <e name="RECORD">R</e>
+</replacers>

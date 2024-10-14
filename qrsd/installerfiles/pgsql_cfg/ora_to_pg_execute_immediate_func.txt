@@ -1,0 +1,8 @@
+<func>
+	<f fname="ExecuteSQL">
+		<arg>0</arg> 
+	</f>
+	<f fname="CreateIndexUpgrade">
+		<arg>0</arg> 
+	</f>
+</func>

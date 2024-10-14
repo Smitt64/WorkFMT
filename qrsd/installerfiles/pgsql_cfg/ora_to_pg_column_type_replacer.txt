@@ -1,0 +1,5 @@
+<replacers>
+	<e name="user_indexes.index_name%TYPE">name</e>	
+	<e name="user_constraints.constraint_name%type">name</e>
+	<e name="user_constraints.table_name%type">name</e>
+</replacers>

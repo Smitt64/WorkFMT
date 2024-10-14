@@ -1,0 +1,9 @@
+<member_func_to_func_call_set>
+  <e>EXISTSNODE</e>
+  <e>EXTRACT</e>
+  <e>ExtractValue</e>
+  <e>DELETEXML</e>
+  <e>getClobVal</e>
+  <e>getStringVal</e>
+  <e>getRootElement</e>
+</member_func_to_func_call_set>

@@ -1,0 +1,5 @@
+<replacers>
+	<e name="dbms_utility.IS_CLUSTER_DATABASE">dbms_utility.IS_CLUSTER_DATABASE()</e>
+	<e name="dbms_utility.current_instance">dbms_utility.current_instance()</e>
+	<e name="DBMS_LOB.LOB_ReadWrite">DBMS_LOB.LOB_ReadWrite()</e>
+</replacers>
