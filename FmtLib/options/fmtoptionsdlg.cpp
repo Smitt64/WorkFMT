@@ -19,6 +19,7 @@ FmtOptionsDlg::FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QW
 
     addCommandsPage((CommandsOptions*)new FmtCommandsPage());
     addLogPage("WorkFmt");
+    addUpdatePage();
 }
 
 FmtOptionsDlg::~FmtOptionsDlg()

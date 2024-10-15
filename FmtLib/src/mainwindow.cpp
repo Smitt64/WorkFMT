@@ -1481,10 +1481,12 @@ void MainWindow::CreateFromXml()
 
 void MainWindow::CreateCheckUpdateRunnable()
 {
+    FmtApplication *app = (FmtApplication*)qApp;
+
     pUpdateChecker = new UpdateChecker();
     pUpdateChecker->setProgramName("RsWorkMaintenanceTool.exe");
+    pUpdateChecker->setSettings(app->settings());
 
-    pUpdateChecker->setInterval(120000);
     pUpdateChecker->setAutoDelete(false);
     QThreadPool::globalInstance()->start(pUpdateChecker);
 
