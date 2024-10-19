@@ -120,5 +120,7 @@
         <file alias="TablesGroupProvider">../json/TablesGroupProvider.json</file>
         <file>img/sqldeveloper.png</file>
         <file alias="append_host_ace">sql/append_host_ace.sql</file>
+        <file>img/main.cpl_14_500-4.png</file>
+        <file>img/SychronizeListHS.png</file>
     </qresource>
 </RCC>

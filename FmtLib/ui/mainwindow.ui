@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonIconOnly</enum>
+   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
@@ -29,7 +29,7 @@
      <x>0</x>
      <y>0</y>
      <width>1164</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -52,6 +52,7 @@
     <addaction name="separator"/>
     <addaction name="actionDumpTool"/>
     <addaction name="actionDiffTool"/>
+    <addaction name="action_GuiConverter"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
@@ -160,7 +161,7 @@
     <string>Окно</string>
    </property>
    <property name="allowedAreas">
-    <set>Qt::NoToolBarArea</set>
+    <set>Qt::ToolBarArea::NoToolBarArea</set>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -494,6 +495,15 @@
    </property>
    <property name="text">
     <string>Запустить Diff to Script</string>
+   </property>
+  </action>
+  <action name="action_GuiConverter">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/SychronizeListHS.png</normaloff>:/img/SychronizeListHS.png</iconset>
+   </property>
+   <property name="text">
+    <string>Запустить GuiConverter</string>
    </property>
   </action>
  </widget>

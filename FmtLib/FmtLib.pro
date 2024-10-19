@@ -33,6 +33,7 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    options/externaltoolspage.cpp \
     options/fmtcommandspage.cpp \
     options/fmtoptionsdlg.cpp \
     options/generaloptions.cpp \
@@ -164,6 +165,7 @@ unix {
 }
 
 FORMS += \
+    options/externaltoolspage.ui \
     options/generaloptions.ui \
     options/tablegroupoptions.ui \
     options/usercommandsgroup.ui \
@@ -280,6 +282,7 @@ HEADERS += \
     h/fmrichtextwidget.h \
     h/fmteditcontentmodel.h \
     h/fmteditcontentwindow.h \
+    options/externaltoolspage.h \
     options/fmtcommandspage.h \
     options/fmtoptionsdlg.h \
     options/generaloptions.h \

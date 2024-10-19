@@ -96,8 +96,8 @@ private slots:
     void UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata);
     void UpdateCheckStarted();
     void OptionsAction();
+    void StartGuiConverter();
     void onUserActionTriggered();
-
     void on_actionDebug_triggered();
 
 protected:

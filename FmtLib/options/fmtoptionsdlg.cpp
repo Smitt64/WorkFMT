@@ -3,6 +3,7 @@
 #include "generaloptions.h"
 #include "tablegroupoptions.h"
 #include "fmtcommandspage.h"
+#include "externaltoolspage.h"
 #include <QIcon>
 
 FmtOptionsDlg::FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QWidget *parent) :
@@ -18,7 +19,9 @@ FmtOptionsDlg::FmtOptionsDlg(ConnectionInfo *connection, QSettings *settings, QW
         addPage(tr("Группы таблиц"), QIcon(":/img/sapi.cpl_14_138-1.png"), new TableGroupOptions(connection));
 
     addCommandsPage((CommandsOptions*)new FmtCommandsPage());
+    addPage(tr("Внешние утилиты"), QIcon(":/img/main.cpl_14_500-4.png"), new ExternalToolsPage());
     addLogPage("WorkFmt");
+
     addUpdatePage();
 }
 

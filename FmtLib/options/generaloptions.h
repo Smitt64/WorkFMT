@@ -27,13 +27,12 @@ public:
     GeneralOptions(QWidget *parent = nullptr);
     ~GeneralOptions();
 
+    virtual void restore() Q_DECL_OVERRIDE;
+    virtual int save() Q_DECL_OVERRIDE;
+
 private slots:
     void newExpTableBtnClicked();
     void removeExpTableBtnClicked();
-
-protected:
-    virtual void restore() Q_DECL_OVERRIDE;
-    virtual int save() Q_DECL_OVERRIDE;
 
 private:
     void setupExpTableModel();

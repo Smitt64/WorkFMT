@@ -7,6 +7,7 @@
 #include "fmttable.h"
 #include "fmtcore.h"
 #include "options/fmtoptionsdlg.h"
+#include "options/externaltoolspage.h"
 #include "fmtfromrichtext.h"
 #include "treecombobox.h"
 #include "subwindowsmodel.h"
@@ -195,6 +196,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionCreateXml, SIGNAL(triggered(bool)), SLOT(CreateFromXml()));
     connect(ui->action_Diff_to_Script, SIGNAL(triggered(bool)), SLOT(GenDiffToScriptScript()));
     connect(ui->actionOptions, SIGNAL(triggered(bool)), SLOT(OptionsAction()));
+    connect(ui->action_GuiConverter,SIGNAL(triggered(bool)), SLOT(StartGuiConverter()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
@@ -1575,4 +1577,32 @@ MainWindow::WorkWindowList MainWindow::windows(ConnectionInfo* info) const
         return m_Windows[info];
 
     return MainWindow::WorkWindowList();
+}
+
+void MainWindow::StartGuiConverter()
+{
+    QSettings *setting = settings();
+    setting->beginGroup("GuiConverter");
+    QString path = setting->value("path").toString();
+    setting->endGroup();
+
+    if (path.isEmpty())
+    {
+        FmtOptionsDlg dlg(currentConnection(), setting, this);
+        OptionsPage *page = dlg.findPage<ExternalToolsPage*>();
+
+        if (page)
+        {
+            int index = dlg.pageIndex(page);
+            if (dlg.execPage(index) == QDialog::Accepted)
+            {
+                setting->beginGroup("GuiConverter");
+                path = setting->value("path").toString();
+                setting->endGroup();
+            }
+        }
+    }
+
+    if (path.isEmpty())
+        return;
 }
