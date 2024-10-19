@@ -39,7 +39,7 @@ private macro TestItemsDialog()
 end;
 
 var result;
-result = TestString();
+result = TestStringDialog();
 //result = TestMulyLineDialog();
 //result = TestNumberDialog();
 //result = TestNumberDialog(true);
