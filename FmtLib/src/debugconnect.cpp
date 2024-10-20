@@ -54,7 +54,9 @@ void DebugConnect::on_connectionsTree_clicked(const QModelIndex &index)
     ui->toUserEdit->setText(m_pRecentList->data(idx).toString());
 
     int found = ui->comboBox_Dsn->findText(m_pRecentList->data(idxdsn).toString());
-    ui->comboBox_Dsn->setCurrentIndex(found);
+
+    if (found >= 0)
+        ui->comboBox_Dsn->setCurrentIndex(found);
 }
 
 void DebugConnect::execQuery(ConnectionInfo *system,

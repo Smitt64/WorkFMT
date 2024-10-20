@@ -7,6 +7,8 @@
 #include <QIcon>
 #include "fmtcore.h"
 
+#define PswdRole (Qt::UserRole + 1)
+
 typedef struct tagRecentListOld
 {
     QString dsn;
@@ -71,6 +73,23 @@ private:
     QIcon m_Oracle, m_PostgreSQL;
 
     RecentListType m_List;
+};
+
+class FilterRecentConnectionList : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    FilterRecentConnectionList(QObject *parent = nullptr);
+    virtual ~FilterRecentConnectionList() = default;
+
+    void setAcceptOracle(const bool &value);
+    void setAcceptPostgre(const bool &value);
+
+protected:
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const Q_DECL_OVERRIDE;
+
+private:
+    bool m_AcceptOracle, m_AcceptPostgre;
 };
 
 Q_DECLARE_METATYPE(RecentListOld)

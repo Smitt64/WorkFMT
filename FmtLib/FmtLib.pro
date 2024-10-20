@@ -62,6 +62,7 @@ SOURCES += \
     src/tablesgroupsdlg.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
+    src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
     src/windowslistdlg.cpp \
     src/core/fmtlib.cpp \
@@ -170,6 +171,7 @@ FORMS += \
     options/tablegroupoptions.ui \
     options/usercommandsgroup.ui \
     src/debugconnect.ui \
+    src/widgets/guiconverterdlg.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
     src/widgets/fmtsegmentflagsdlg.ui \
@@ -335,7 +337,8 @@ HEADERS += \
     h/odbctablemodel.h \
     h/odbctablemodeldelegate.h \
     h/recentconnectionlist.h \
-    h/tnsnames.h
+    h/tnsnames.h \
+    src/widgets/guiconverterdlg.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin

@@ -32,6 +32,7 @@
 #include "updatecheckermessagebox.h"
 #include "windowactionsregistry.h"
 #include "rslexecutors/toolbaractionexecutor.h"
+#include "widgets/guiconverterdlg.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -1586,7 +1587,7 @@ void MainWindow::StartGuiConverter()
     QString path = setting->value("path").toString();
     setting->endGroup();
 
-    if (path.isEmpty())
+    /*if (path.isEmpty())
     {
         FmtOptionsDlg dlg(currentConnection(), setting, this);
         OptionsPage *page = dlg.findPage<ExternalToolsPage*>();
@@ -1604,5 +1605,7 @@ void MainWindow::StartGuiConverter()
     }
 
     if (path.isEmpty())
-        return;
+        return;*/
+    GuiConverterDlg dlg(setting, this);
+    dlg.exec();
 }

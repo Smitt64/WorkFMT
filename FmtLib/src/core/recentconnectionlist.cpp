@@ -295,6 +295,13 @@ QVariant RecentConnectionList::data(const QModelIndex &index, int role) const
         if (index.column() == 1)
             return item.dsn;
     }
+    else if (role == PswdRole)
+    {
+        const RecentList &item = m_List[index.row()];
+
+        if (index.column() == 0)
+            return item.pass;
+    }
     else if (role == Qt::DecorationRole)
     {
         if (index.column() == 0)
@@ -368,4 +375,40 @@ QString RecentConnectionList::connectionToolTip(const RecentList &rec)
 bool RecentConnectionList::isEmpty() const
 {
     return m_List.isEmpty();
+}
+
+// ==============================================================================
+
+FilterRecentConnectionList::FilterRecentConnectionList(QObject *parent) :
+    QSortFilterProxyModel(parent),
+    m_AcceptOracle(true),
+    m_AcceptPostgre(true)
+{
+
+}
+
+void FilterRecentConnectionList::setAcceptOracle(const bool &value)
+{
+    m_AcceptOracle = value;
+    invalidate();
+}
+
+void FilterRecentConnectionList::setAcceptPostgre(const bool &value)
+{
+    m_AcceptPostgre = value;
+    invalidate();
+}
+
+bool FilterRecentConnectionList::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    RecentConnectionList *src = qobject_cast<RecentConnectionList*>(sourceModel());
+    const RecentList &item = src->record(source_row);
+
+    if (item.connectionType == RecentConnectionList::Oracle && m_AcceptOracle)
+        return true;
+
+    if (item.connectionType == RecentConnectionList::PostgreSQL && m_AcceptPostgre)
+        return true;
+
+    return false;
 }
