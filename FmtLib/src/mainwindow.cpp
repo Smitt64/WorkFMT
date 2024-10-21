@@ -1587,7 +1587,7 @@ void MainWindow::StartGuiConverter()
     QString path = setting->value("path").toString();
     setting->endGroup();
 
-    /*if (path.isEmpty())
+    if (path.isEmpty())
     {
         FmtOptionsDlg dlg(currentConnection(), setting, this);
         OptionsPage *page = dlg.findPage<ExternalToolsPage*>();
@@ -1605,7 +1605,27 @@ void MainWindow::StartGuiConverter()
     }
 
     if (path.isEmpty())
-        return;*/
+    {
+        QMessageBox::critical(this, tr("GuiConverter"), tr("Не задан путь к GuiConverter.exe"));
+        return;
+    }
+
     GuiConverterDlg dlg(setting, this);
-    dlg.exec();
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        QString err;
+        if (StartGuiconverter(dlg.userScheme(),
+                              dlg.userPwd(),
+                              dlg.dbName(),
+                              dlg.dsn(),
+                              dlg.userNs(),
+                              dlg.indxNs(),
+                              dlg.sysScheme(),
+                              dlg.sysPwd(),
+                              dlg.ipAddr(),
+                              &err))
+        {
+            QMessageBox::critical(this, tr("GuiConverter"), err);
+        }
+    }
 }

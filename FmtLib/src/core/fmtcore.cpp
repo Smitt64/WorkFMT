@@ -1741,3 +1741,142 @@ void CreateUserCommandsMenu(QMenu **menu, const QString &title,
         }
     }
 }
+
+// ------------------------------------------------------------
+class StartGuiconverterRestoreProperty : public QRunnable
+{
+public:
+    StartGuiconverterRestoreProperty(const QByteArray &data, const QString &filename)
+    {
+        _data = data;
+        _filename = filename;
+
+        setAutoDelete(true);
+    }
+
+    void run() Q_DECL_OVERRIDE
+    {
+        QThread::sleep(5);
+
+        QFile Property(_filename);
+        if (Property.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            Property.write(_data);
+            Property.close();
+        }
+    }
+
+private:
+    QByteArray _data;
+    QString _filename;
+};
+
+int StartGuiconverter(const QString &userScheme,
+                      const QString &userPwd,
+                      const QString &dbName,
+                      const QString &dsn,
+                      const QString &userNs,
+                      const QString &indxNs,
+                      const QString &sysScheme,
+                      const QString &sysPwd,
+                      const QString &ipAddr,
+                      QString *err)
+{
+    FmtApplication *app = qobject_cast<FmtApplication*>(qApp);
+    QSettings *settings = app->settings();
+
+    settings->beginGroup("GuiConverter");
+    QString path = settings->value("path").toString();
+    settings->endGroup();
+
+    if (path.isEmpty())
+    {
+        if (err)
+            *err = QObject::tr("Не задан путь к GuiConverter.exe");
+
+        return -1;
+    }
+
+    QByteArray backup;
+    QDir dir(path);
+
+    QFile PropertyBackup(dir.absoluteFilePath("Property.json"));
+    if (PropertyBackup.open(QIODevice::ReadOnly))
+    {
+        backup = PropertyBackup.readAll();
+        PropertyBackup.close();
+    }
+    else
+    {
+        if (err)
+            *err = QObject::tr("Не найден <b>Property.json</b>");
+
+        return -1;
+    }
+
+    QJsonObject prop;
+    QJsonObject root;
+    prop.insert("userNs", userNs);
+    prop.insert("indxNs", indxNs);
+    prop.insert("ipAddr", ipAddr);
+    prop.insert("sysScheme", sysScheme);
+    prop.insert("sysPwd", sysPwd);
+    prop.insert("funcArgOutType", "function");
+    prop.insert("isEnableSessionGttCreation", "ON");
+    prop.insert("userScheme", userScheme);
+    prop.insert("userPwd", userPwd);
+    prop.insert("dsn", dsn);
+    prop.insert("dbName", dbName);
+    prop.insert("rootUpgDir", "..");
+    //prop.insert("dstrScheme", "");
+    //prop.insert("myExternalIpAddr", "");
+    //prop.insert("listenPort", "");
+    //prop.insert("oraTns", "");
+    //prop.insert("jdkBinPath", "C:/Program Files/Java/jdk-10.0.2/bin");
+
+    root.insert("prop", prop);
+
+    QJsonDocument doc;
+    doc.setObject(root);
+
+    QFile Property(dir.absoluteFilePath("Property.json"));
+    if (Property.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        QByteArray json = doc.toJson();
+        Property.write(json);
+        Property.close();
+    }
+
+    QProcess::startDetached(dir.absoluteFilePath("GuiConverter.exe"),
+                            {}, dir.absolutePath());
+
+    StartGuiconverterRestoreProperty *restore = new StartGuiconverterRestoreProperty(backup,                                                                      dir.absoluteFilePath("Property.json"));
+    QThreadPool::globalInstance()->start(restore);
+
+    return 0;
+}
+
+/*
+{
+    "prop": {
+        "userNs": "users",--
+        "indxNs": "indx",--
+        "ipAddr": "10.97.24.207:5432",
+        "dbName": "rsc_at_90_00_pg",
+        "dsn": "rsc_at_90_00_pg",--
+        "oraTns": "",
+        "sysScheme": "postgres",
+        "sysPwd": "system",
+        "userScheme": "rsc_at_90_00_pg",
+        "userPwd": "rsc_at_90_00_pg",
+        "dstrScheme": "",
+        "rootUpgDir": "..",
+        "jdkBinPath": "C:/Program Files/Java/jdk-10.0.2/bin",
+        "distrVer": "6.20.031.087",
+        "myExternalIpAddr": "",
+        "listenPort": "",
+        "funcArgOutType": "function",
+        "isEnableSessionGttCreation": "ON"--
+    }
+}
+*/

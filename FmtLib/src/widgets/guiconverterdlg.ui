@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>631</width>
-    <height>494</height>
+    <width>561</width>
+    <height>514</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,11 +19,11 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
      <item>
       <widget class="QTreeView" name="connectionsTree">
        <property name="editTriggers">
-        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+        <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="iconSize">
         <size>
@@ -41,7 +41,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Имя пользователя:</string>
+          <string>Имя пользователя (userScheme):</string>
          </property>
         </widget>
        </item>
@@ -55,7 +55,7 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Пароль пользователя:</string>
+          <string>Пароль пользователя (userPwd):</string>
          </property>
         </widget>
        </item>
@@ -67,9 +67,19 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Схема (dbName):</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="dbName"/>
+       </item>
+       <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>База данных:</string>
+          <string>База данных (dsn):</string>
          </property>
         </widget>
        </item>
@@ -79,7 +89,7 @@
        <item>
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Ip адрес сервера:</string>
+          <string>Ip адрес сервера (ipAddr):</string>
          </property>
         </widget>
        </item>
@@ -87,19 +97,16 @@
         <widget class="QLineEdit" name="ipAddr"/>
        </item>
        <item>
-        <widget class="QFrame" name="frame">
-         <property name="frameShape">
-          <enum>QFrame::Shape::HLine</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Shadow::Raised</enum>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Табличное пространство:</string>
+          <string>Табличное пространство (userNs):</string>
          </property>
         </widget>
        </item>
@@ -113,7 +120,7 @@
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Индексное пространство:</string>
+          <string>Индексное пространство (indxNs):</string>
          </property>
         </widget>
        </item>
@@ -125,19 +132,16 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="frame_2">
-         <property name="frameShape">
-          <enum>QFrame::Shape::HLine</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Shadow::Raised</enum>
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Системная схема:</string>
+          <string>Системная схема (sysScheme):</string>
          </property>
         </widget>
        </item>
@@ -151,7 +155,7 @@
        <item>
         <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Пароль системной схемы:</string>
+          <string>Пароль системной схемы (sysPwd):</string>
          </property>
         </widget>
        </item>
@@ -164,9 +168,6 @@
        </item>
        <item>
         <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
-         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
@@ -181,11 +182,8 @@
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
