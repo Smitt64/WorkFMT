@@ -53,6 +53,7 @@ void FmtRslModule::Proc()
     RegisterObjList::inst()->AddObject<FmtTypesNamespace>(false);
     RegisterObjList::inst()->AddObject<FmtKeyFlagsNamespace>(false);
     RegisterObjList::inst()->AddObject<FmtKeyNullValNamespace>(false);
+    RegisterObjList::inst()->AddObject<FmtWorkWindow>(false);
 
     RegisterObjList::inst()->AddObject<OdbcTableModel>();
 
