@@ -1,5 +1,10 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Rsd Driver">
+    <version ver="3.02.039.2.17">
+        <add>Поддержка подключения к PostgreSQL с возможностью конвертирования запросов;</add>
+        <add>Поддержка blob и clob полей</add>
+        <add>Прочие оптимизации</add>
+    </version>
     <version ver="3.02.039.2.13">
         <add>Доработки, связанные с подключением к базе данных PostgreSQL;</add>
 		<add>Добавлена поддержка подключения к Unicode базам (RDDrvOu.dll);</add>

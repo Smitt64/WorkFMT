@@ -1,9 +1,13 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
-    <version ver="1.0.6.3">
+    <version ver="1.0.7.1">
         <add>Добавлена полноценная поддержка PostgreSQL;</add>
         <add>Добавлен импорт/экспорт таблицы в xml на PostgreSQL схемах;</add>
         <add>Добавлена возможность создания тиблицы в бд (в т.ч и временных в create_table_info) для PostgreSQL схем;</add>
+        <add>Добавлен механизм настроек;</add>
+        <add>Добавлена поддержка RSL;</add>
+        <add>Добавлен функционал для настройки отладки на oracle схемах через Sql Developer;</add>
+        <add>Добавлена возможность быстрого запуска GuiConverter;</add>
         <fix>Исправлено формирование запроса на комментарий к таблице и ее полям, если это свойство не заполнено в fmt;</fix>
     </version>
     <version ver="1.0.6.2">

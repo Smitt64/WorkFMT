@@ -57,7 +57,7 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "CompanyName"
             VALUE "FileDescription", "DBFileTool 1,0,0,14"
-            VALUE "FileVersion", "1,0,0,13"
+            VALUE "FileVersion", "1,0,0,14"
             VALUE "InternalName", "winfmt.rc"
             VALUE "LegalCopyright", "Copyright (C) 2017"
             VALUE "OriginalFilename", "dbftool.rc"
