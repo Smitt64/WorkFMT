@@ -128,6 +128,7 @@ class WorkFmtUpdate:
             'icuuc58.dll',
             'QTSysLog.dll',
             'rddrvou.dll',
+            'rddrvo.dll', 
             'rdrset.dll',
             'RsBtr.dll',
             'rsdc.dll',

@@ -456,19 +456,20 @@ void FmtWorkWindow::OnIndexChanged(FmtIndex *index)
 
 int FmtWorkWindow::CheckAppy()
 {
-    ErrorsModel err;
-    pTable->checkErrors(&err);
+    QScopedPointer<ErrorsModel> err(new ErrorsModel());
+    pTable->checkErrors(err.data());
 
-    int stat = 0;
-    if (!err.isEmpty())
+    int stat = 1;
+    if (!err->isEmpty())
     {
         QString msg;
-        if (err.hasErrors())
+        if (err->hasErrors())
             msg = tr("Сохранение не возможно, т.к имеются ошибки наполнения Fmt словаря.");
         else
             msg = tr("Имеются предупреждения по структуре Fmt словаря. Сохранить изменения не смотря на сообщения?");
+
         ErrorDlg dlg(ErrorDlg::ModeMessageBox, this);
-        dlg.setErrors(&err);
+        dlg.setErrors(err.data());
         dlg.setWindowTitle(tr("Сохранение структуры"));
         dlg.setMessage(msg);
 

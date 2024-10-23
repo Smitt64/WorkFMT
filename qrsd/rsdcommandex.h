@@ -1,6 +1,7 @@
 #ifndef RSDCOMMANDEX_H
 #define RSDCOMMANDEX_H
 
+#include <fdecimal.h>
 #include <RsdC.h>
 #include <QtSql>
 #include <QVector>

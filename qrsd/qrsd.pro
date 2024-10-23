@@ -5,7 +5,7 @@ QT += sql
 TEMPLATE = lib
 CONFIG += plugin
 
-CONFIG += c++11
+CONFIG += c++98
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -42,16 +42,16 @@ DISTFILES += \
 #_MBCS
 INCLUDEPATH += $$PWD/rsd/include $$PWD/tools/h
 
-DEFINES +=  SQLBUILD NUMERIC_AS_MONEY USE_NUMERIC USE_FDECIMAL
-DEFINES += _MBCS
+DEFINES +=  SQLBUILD NUMERIC_AS_MONEY USE_NUMERIC NUMERIC_OVER_DOUBLE MDB_USE_INDEX_MAPS USE_FDECIMAL BMKASCLASS NO_OLD_FIELD_TYPES
+#DEFINES += _MBCS
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/rsd/lib/release -lrsdc
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/rsd/lib/debug -lrsdc
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/rsd/lib/release -lrsdc
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/tools/lib/release -lrsrtlwm
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/tools/lib/debug -lrsrtlwm
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/tools/lib/release -lrsrtlwm
+LIBS += -L$$PWD/rsd/lib/release -lrsdc
+LIBS += -L$$PWD/tools/lib/release -lrsrtlwm
+#-O2
+QMAKE_CXXFLAGS_RELEASE -=  -MD
+QMAKE_CXXFLAGS_RELEASE += -MDd
+#QMAKE_LFLAGS_RELEASE -= /INCREMENTAL:NO /OPT:REF
+#QMAKE_LFLAGS_RELEASE += /INCREMENTAL /OPT:NOREF /DEBUG
 
 target.path = ../bin/sqldrivers
 INSTALLS += target

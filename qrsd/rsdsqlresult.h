@@ -1,6 +1,7 @@
 #ifndef RSDSQLRESULT_H
 #define RSDSQLRESULT_H
 
+#include <fdecimal.h>
 #include <QSqlResult>
 #include <QScopedPointer>
 #include <QSqlRecord>

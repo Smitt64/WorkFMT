@@ -1,6 +1,7 @@
 #ifndef RSDDRIVER_H
 #define RSDDRIVER_H
 
+#include <fdecimal.h>
 #include <QVariant>
 #include <QSqlDriver>
 #include <QScopedPointer>
