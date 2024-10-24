@@ -459,7 +459,7 @@ int FmtWorkWindow::CheckAppy()
     QScopedPointer<ErrorsModel> err(new ErrorsModel());
     pTable->checkErrors(err.data());
 
-    int stat = 1;
+    int stat = 0;
     if (!err->isEmpty())
     {
         QString msg;

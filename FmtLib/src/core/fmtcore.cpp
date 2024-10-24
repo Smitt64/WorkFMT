@@ -951,7 +951,7 @@ void InitFmtTable(FmtTable *pTable, QWidget *parent)
     {
         QProgressDialog progress(QObject::tr("Инициализация таблицы"), QObject::tr("Отмена"), 0, 0, parent);
         progress.open();
-        if (dlg.getCreateTableFlag())
+        if (dlg.getCreateTableFlag() && !pTable->isTemporary() && !pTable->isRecord())
         {
             QString err;
             stat = pTable->createDbTable(&err);

@@ -36,9 +36,10 @@ public:
             const CRsdError &error = env->getError(i);
             const char *descr = error.getDescr();
 
-            if (m_Unicode)
-                stream << codec866->toUnicode(descr) << Qt::endl;
-            else
+            QTextCodec::ConverterState state;
+            stream << codec866->toUnicode(descr, qstrlen(descr), &state) << Qt::endl;
+
+            if (state.invalidChars > 0)
                 stream << codec1251->toUnicode(descr) << Qt::endl;
         }
 
