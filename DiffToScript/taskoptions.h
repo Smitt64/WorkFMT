@@ -33,7 +33,7 @@ struct TaskOption
 };
 
 // Храняться параметры вызова из cmd
-using TaskOptions = std::array<TaskOption, toLast>;
+typedef std::array<TaskOption, toLast> TaskOptions;
 
 
 #endif // TASKOPTIONS_H

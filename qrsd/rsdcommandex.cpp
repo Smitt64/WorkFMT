@@ -1,4 +1,5 @@
 #include "rsdcommandex.h"
+#include "rsdcore.h"
 
 RsdCommandEx::BindParam::BindParam(const QVariant &value, QSql::ParamType paramType, const QString &pname, RsdCommandEx *parent) :
     m_pParent(parent)
@@ -135,35 +136,53 @@ int RsdCommandEx::BindParam::typeSize(const QVariant::Type &type)
     return size;
 }
 
-RsdCommandEx::RsdCommandEx(CRsdConnection *con, RsdDriver *driver) :
-    CRsdCommand(*con),
+RsdCommandEx::RsdCommandEx(Qt::HANDLE Connection, RsdDriver *driver) :
+    m_Cmd(nullptr),
     m_pDriver(driver)
 {
-
+    coreCmdInit(&m_Cmd, Connection);
 }
 
 RsdCommandEx::~RsdCommandEx()
 {
-
+    coreFreeHandle(&m_Cmd);
 }
 
 void RsdCommandEx::bindValue(const QString &placeholder, const QVariant &val, QSql::ParamType paramType)
 {
     RsdCommandEx::BindParam *prm = new RsdCommandEx::BindParam(val, paramType, placeholder, this);
-    addParam(prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
-
+    coreCmdAddParam(m_Cmd, prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir, false);
     m_Params.append(prm);
 }
 
 void RsdCommandEx::bindValue(int index, const QVariant &val, QSql::ParamType paramType)
 {
     RsdCommandEx::BindParam *prm = new RsdCommandEx::BindParam(val, paramType, "", this);
-    insertParam(index, prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
-
+    coreCmdInsertParam(m_Cmd, index, prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir, false);
     m_Params.append(prm);
+}
+
+Qt::HANDLE RsdCommandEx::handle()
+{
+    return m_Cmd;
 }
 
 RsdDriver *RsdCommandEx::driver()
 {
     return m_pDriver;
+}
+
+void RsdCommandEx::clearParams()
+{
+    coreCmdClearParams(m_Cmd);
+}
+
+bool RsdCommandEx::setCmdText(const char *str)
+{
+    return coreCmdSetCmdText(m_Cmd, str);
+}
+
+int RsdCommandEx::execute()
+{
+    return coreCmdExecute(m_Cmd);
 }

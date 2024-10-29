@@ -16,18 +16,19 @@
 #include "fmtsegment.h"
 #include "sqlscriptmain.h"
 #include <QTemporaryFile>
-
+#include <QMutex>
 #include <QTextStream>
 #include <QFile>
 #include <QApplication>
 #include "qloggingcategory.h"
 
-Task::Task(QObject *parent) :
+Task::Task(QMutex *mutex, QObject *parent) :
     QObject(parent),
     m_Result(0)
 {
     //снятие всех опций
     std::fill(optns.begin(), optns.end() - 1, TaskOption{ false, "" } );
+    pMutex = mutex;
 }
 
 void Task::showAppInfo(QTextStream& os) {
@@ -164,15 +165,19 @@ int Task::result() const
 {
     return m_Result;
 }
-
+// --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031" --input diff.txt
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
 void Task::runTask()
 {
+
     QString rules = getRules(optns);
-    QLoggingCategory::setFilterRules(rules);
+
+    //QLoggingCategory::setFilterRules(rules);
 
     // Определение потоков вывода
     StreamControl sc;
+
+
     QTextStream os(sc.makeOutputDevice(optns[ctoOutput].value));
     QTextStream *is = sc.getInput(optns[ctoInput].value);
     is->setCodec("IBM 866");
@@ -235,6 +240,7 @@ void Task::runTask()
 
     QSharedPointer<DiffConnection> conn;
 
+    pMutex->lock();
     if (optns[ctoConnectionString].isSet)
     {
         conn.reset(new DiffConnection(optns[ctoConnectionString].value,
@@ -242,6 +248,8 @@ void Task::runTask()
     }
     else
         conn.reset(new DiffConnection());
+
+    pMutex->unlock();
 
     if (!conn->isConnected())
         return;

@@ -1,10 +1,9 @@
-QT       += core gui sql testlib xml
+QT += core gui sql testlib xml svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+TEMPLATE = app
 CONFIG   += console
-CONFIG   += force_debug_info
 
 UI_DIR = build
 MOC_DIR = build
@@ -113,9 +112,10 @@ DEPENDPATH += $$PWD/../FmtLib
 INCLUDEPATH += $$PWD/../FmtLib/h
 DEPENDPATH += $$PWD/../FmtLib/h
 
-
 QMAKE_CFLAGS += -FS
 QMAKE_CXXFLAGS += -FS
+#QMAKE_CXXFLAGS_RELEASE -=  -MD
+#QMAKE_CXXFLAGS_RELEASE += -MDd
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime

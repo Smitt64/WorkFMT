@@ -10,8 +10,6 @@ class SqlDriverPlugin : public QSqlDriverPlugin
 
 public:
     explicit SqlDriverPlugin(QObject *parent = nullptr);
-
-private:
     QSqlDriver *create(const QString &key) override;
 };
 

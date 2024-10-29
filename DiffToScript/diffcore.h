@@ -32,14 +32,14 @@ struct ParsedLine
 };
 using ParsedLines = QVector<ParsedLine>;
 
-struct DatRecord
+typedef struct DatRecord
 {
     QStringList values;
     LineType lineType;
     QString lineTypeStr() const;
     QString lineUpdateTypeStr() const;
     LineUpdateType lineUpdateType = lutNone;
-};
+} DatRecord;
 
 inline QString DatRecord::lineTypeStr() const
 {

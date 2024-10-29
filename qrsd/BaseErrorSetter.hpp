@@ -5,6 +5,7 @@
 #include <QTextStream>
 #include <RsdC.h>
 #include <QTextCodec>
+#include <rsdcore.h>
 
 template<class T>class BaseErrorSetter
 {
@@ -16,37 +17,42 @@ public:
         codec866 = QTextCodec::codecForName("IBM 866");
     }
 
-    void setLastRsdError(const XRsdError &e, const QSqlError::ErrorType &errorType = QSqlError::UnknownError)
+    void setLastRsdError(Qt::HANDLE handle)
     {
-        XRsdError &cError = const_cast<XRsdError&>(e);
-        CRsdEnvironment *env = const_cast<CRsdEnvironment*>(cError.getEnv());
+        Qt::HANDLE err = nullptr;
 
-        if (!env)
+        char msg[ERR_LEN] = {'\0'};
+        coreGetLastError(handle, msg, ERR_LEN);
+
+        if (msg[0] == '\0')
         {
-            m_Ptr->setLastError(QSqlError(e.what(), QString(), errorType));
+            coreGetErrorHandle(handle, &err);
 
-            return;
+            if (err)
+            {
+                int count = coreGetErrorCount(err);
+
+                QString ErrorString;
+                QTextStream stream(&ErrorString);
+
+                for (int i = 0; i < count; i++)
+                {
+                    coreGetErrorText(err, i, msg, ERR_LEN);
+
+                    QTextCodec::ConverterState state;
+                    QString value = codec1251->toUnicode(msg, qstrlen(msg), &state);
+
+                    if (state.invalidChars > 0)
+                        value = codec866->toUnicode(msg, qstrlen(msg), &state);
+
+                    stream << value << Qt::endl;
+                }
+
+                m_Ptr->setLastError(QSqlError(ErrorString,
+                                       QString(),
+                                       QSqlError::ConnectionError));
+            };
         }
-
-        QString err;
-        QTextStream stream(&err);
-        int errcount = env->getErrorCount();
-        for (int i = 0; i < errcount; i++)
-        {
-            const CRsdError &error = env->getError(i);
-            const char *descr = error.getDescr();
-
-            QTextCodec::ConverterState state;
-            stream << codec866->toUnicode(descr, qstrlen(descr), &state) << Qt::endl;
-
-            if (state.invalidChars > 0)
-                stream << codec1251->toUnicode(descr) << Qt::endl;
-        }
-
-        if (!err.isEmpty())
-            m_Ptr->setLastError(QSqlError(err, QString(), errorType));
-        else
-            m_Ptr->setLastError(QSqlError(e.what(), QString(), errorType));
     }
 
     void setLastUnforeseenError(const QSqlError::ErrorType &errorType = QSqlError::UnknownError)

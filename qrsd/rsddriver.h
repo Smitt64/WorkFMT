@@ -37,7 +37,7 @@ public:
     QString from1251(const char *str) const;
     QByteArray to1251(const QString &str) const;
 
-    CRsdConnection *connection();
+    Qt::HANDLE connection();
 
     QTextCodec *getCodec866();
 
@@ -49,12 +49,8 @@ public:
 
 private:
     QTextCodec *codec866, *codec1251;
-    QScopedPointer<CRsdEnvironment> m_Env;
-    QScopedPointer<CRsdConnection> m_Connection;
 
-    char m_RDDrvO[256], m_RDDrvODll[256];
-
-    char db866[256], user866[256], password866[256];
+    Qt::HANDLE m_Connection;
     QList<RsdSqlResult*> m_ResultsList;
 };
 

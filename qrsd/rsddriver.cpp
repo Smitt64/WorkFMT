@@ -2,14 +2,15 @@
 #include "rsdsqlresult.h"
 #include <QSqlError>
 #include <QVariant>
+#include <Windows.h>
+#include <rsdcore.h>
+#include <QTextStream>
 
 RsdDriver::RsdDriver(QObject *parent) :
     QSqlDriver(parent),
     BaseErrorSetter<RsdDriver>(this),
-    m_RDDrvO("RDDrvO"),
-    m_RDDrvODll("RDDrvO.dll")
+    m_Connection(nullptr)
 {
-    qputenv("NLS_LANG", "AMERICAN_CIS.RU8PC866");
     codec866 = QTextCodec::codecForName("IBM 866");
     codec1251 = QTextCodec::codecForName("Windows-1251");
 }
@@ -21,30 +22,21 @@ RsdDriver::~RsdDriver()
 
 void RsdDriver::close()
 {
-    try
+    if (m_Connection)
     {
-        if (m_Connection)
-        {
-            for (auto item : qAsConst(m_ResultsList))
-                item->onBeforeCloseConnection();
+        for (auto item : qAsConst(m_ResultsList))
+            item->onBeforeCloseConnection();
 
-            m_Connection->close();
-        }
-    }
-    catch (XRsdError& e)
-    {
-        setLastRsdError(e);
-    }
-    catch(...)
-    {
-        QString err = "Непредусмотренное исключение";
-        setLastError(QSqlError(err, QString(), QSqlError::TransactionError));
+        coreConnClose(m_Connection);
     }
 }
 
 bool RsdDriver::isOpen() const
 {
-    return !m_Connection.isNull();
+    if (!m_Connection)
+        return false;
+
+    return coreConnIsOpen(m_Connection);
 }
 
 QSqlResult *RsdDriver::createResult() const
@@ -78,7 +70,10 @@ bool RsdDriver::hasFeature(QSqlDriver::DriverFeature feature) const
 
 bool RsdDriver::isUnicode() const
 {
-    return !qstrcmp(m_RDDrvO, "RDDrvOu");
+    if (!m_Connection)
+        return false;
+
+    return coreConnIsUnicode(m_Connection);
 }
 
 bool RsdDriver::isPostgres() const
@@ -86,46 +81,21 @@ bool RsdDriver::isPostgres() const
     if (!m_Connection)
         return false;
 
-    return m_Connection->isPostgres();
+    return coreConnIsPostgres(m_Connection);
 }
 
 bool RsdDriver::open(const QString &db, const QString &user, const QString &password, const QString &host, int port, const QString &options)
 {
-    bool hr = true;
+    bool hr = coreConnOpen(db.toLocal8Bit().constData(),
+                           user.toLocal8Bit().constData(),
+                           password.toLocal8Bit().constData(),
+                           options.toLocal8Bit().constData(),
+                           (void**)&m_Connection);
 
-    try
+    if (!hr)
     {
-        if (options.contains("RSD_UNICODE"))
-        {
-            qstrcpy(m_RDDrvO, "RDDrvOu");
-            qstrcpy(m_RDDrvODll, (QString("%1.dll").arg(m_RDDrvO)).toLocal8Bit().data());
-            setUnicode(true);
-        }
-
-        m_Env.reset(new CRsdEnvironment(m_RDDrvO, m_RDDrvODll));
-        m_Env->SetOdbcInterface(NULL);
-        m_Env->setClientEncoding(RSDENC_OEM);
-
-        qstrcpy(db866, codec866->fromUnicode(db).data());
-        qstrcpy(user866, codec866->fromUnicode(user).data());
-        qstrcpy(password866, codec866->fromUnicode(password).data());
-
-        m_Connection.reset(new CRsdConnection(*m_Env.get(), db866, user866, password866));
-        m_Connection->setClientEncoding(RSDENC_OEM);
-        m_Connection->setServerEncoding(RSDENC_OEM);
-        m_Connection->open();
-    }
-    catch (XRsdError& e)
-    {
-        m_Connection.reset();
-        setLastRsdError(e, QSqlError::ConnectionError);
-        hr = false;
-    }
-    catch(...)
-    {
-        m_Connection.reset();
-        setLastUnforeseenError(QSqlError::ConnectionError);
-        hr = false;
+        setLastRsdError(m_Connection);
+        coreFreeHandle(&m_Connection);
     }
 
     return hr;
@@ -133,68 +103,26 @@ bool RsdDriver::open(const QString &db, const QString &user, const QString &pass
 
 bool RsdDriver::beginTransaction()
 {
-    bool result = true;
+    if (!m_Connection)
+        return false;
 
-    try
-    {
-        m_Connection->beginTrans();
-    }
-    catch (XRsdError& e)
-    {
-        setLastRsdError(e, QSqlError::TransactionError);
-        result = false;
-    }
-    catch(...)
-    {
-        setLastUnforeseenError(QSqlError::TransactionError);
-        result = false;
-    }
-
-    return result;
+    return coreConnBeginTrn(m_Connection);
 }
 
 bool RsdDriver::commitTransaction()
 {
-    bool result = true;
+    if (!m_Connection)
+        return false;
 
-    try
-    {
-        m_Connection->commitTrans();
-    }
-    catch (XRsdError& e)
-    {
-        setLastRsdError(e, QSqlError::TransactionError);
-        result = false;
-    }
-    catch(...)
-    {
-        setLastUnforeseenError(QSqlError::TransactionError);
-        result = false;
-    }
-
-    return result;
+    return coreConnCommitTrn(m_Connection);
 }
 
 bool RsdDriver::rollbackTransaction()
 {
-    bool result = true;
+    if (!m_Connection)
+        return false;
 
-    try
-    {
-        m_Connection->rollbackTrans();
-    }
-    catch (XRsdError& e)
-    {
-        setLastRsdError(e, QSqlError::TransactionError);
-        result = false;
-    }
-    catch(...)
-    {
-        setLastUnforeseenError(QSqlError::TransactionError);
-        result = false;
-    }
-
-    return result;
+    return coreConnRollbackTrn(m_Connection);
 }
 
 QString RsdDriver::fromOem866(const QLatin1String &str) const
@@ -227,9 +155,9 @@ QByteArray RsdDriver::to1251(const QString &str) const
     return codec1251->fromUnicode(str);
 }
 
-CRsdConnection *RsdDriver::connection()
+Qt::HANDLE RsdDriver::connection()
 {
-    return m_Connection.data();
+    return m_Connection;
 }
 
 QTextCodec *RsdDriver::getCodec866()

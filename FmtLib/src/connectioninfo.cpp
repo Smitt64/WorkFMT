@@ -10,6 +10,7 @@
 #include <QRegion>
 #include <QBitmap>
 #include <QUuid>
+#include <QMutex>
 
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     QObject(Q_NULLPTR),
@@ -220,12 +221,15 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
     m_SchemeName = QString("%1@%2").arg(user, dsn);
     m_DSN = dsn;
 
+    qDebug()<< "begin addDatabase" ;
     _db = QSqlDatabase::addDatabase(drv, m_Alias);
+    qDebug()<< "end addDatabase" ;
     _db.setUserName(user);
     _db.setPassword(password);
     _db.setDatabaseName(dsn);
     _db.setConnectOptions(options);
 
+    qDebug()<< "begin open" ;
     hr = _db.open();
 
     if (hr)

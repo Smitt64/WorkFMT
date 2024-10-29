@@ -439,7 +439,6 @@ QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecor
 int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex)
 {
     DatRecord rec = joinTable->scriptTable->records[recIndex];
-
     //Определение полей для замены
 
     //Определение автоинкрементного поля и замена на ноль
@@ -458,7 +457,9 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
 
     replaceForeignAutoinc(joinTable, rec);
 
+
     dateSpelling(joinTable, rec);
+
 
     //Проверка индекса на автоинкрементное поле
     QString variable = buildVariableName(joinTable->scriptTable);
@@ -598,6 +599,7 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
     toScript(joinTable, rec);
     if (rec.lineType == ltInsert)
     {
+        qDebug() << "dateSpelling" << joinTable->datTable->fields;
         qCInfo(logSqlScriptMain) << "Build script for insert. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
 
         QStringList childsql;
@@ -836,6 +838,7 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
 void SqlScriptMain::dateSpelling(const JoinTable *joinTable, DatRecord &rec)
 {
+    qDebug() << joinTable->datTable->name;
     for (int i = 0; i < joinTable->datTable->realFields.count(); ++i)
     {
         DiffField fld = joinTable->datTable->field(joinTable->datTable->realFields[i]);

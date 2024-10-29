@@ -15,7 +15,8 @@
 #include <QCommandLineParser>
 #include <QTest>
 #include <qloggingcategory.h>
-
+#include <QMutex>
+#include <QSqlDatabase>
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +28,8 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules(QStringLiteral("Fmt=false\nSql=false\nCore=false\n*.info=true"));
     return 0;
 #endif*/
-
+    QMutex mutex;
+    QLoggingCategory::setFilterRules(QStringLiteral("*=true"));
     if (argc > 1)
     {
         QFileInfo current(QCoreApplication::applicationFilePath());
@@ -38,10 +40,10 @@ int main(int argc, char *argv[])
         CmdParser cmdParser(&app);
         CommandLineParseResult result = cmdParser.parse();
 
-        Task *pTask = new Task();
+        Task *pTask = new Task(&mutex);
         if (result.statusCode == CommandLineParseResult::Status::Error)
         {
-            QTextStream(stdout) << result.errorString <<Qt::endl;
+            //QTextStream(stdout) << result.errorString <<Qt::endl;
             return 1;
         }
         QObject::connect(pTask, &Task::finished, &app, [&app, &pTask]()
@@ -52,7 +54,6 @@ int main(int argc, char *argv[])
         pTask->optns = cmdParser.opts;
 
         QTimer::singleShot(0, pTask, SLOT(run()));
-        return app.exec();
     }
     else
     {
@@ -77,8 +78,7 @@ int main(int argc, char *argv[])
 
         DiffWizard wzrd;
         wzrd.show();
-        return app.exec();
     }
 
-    return 0;
+    return app.exec();
 }

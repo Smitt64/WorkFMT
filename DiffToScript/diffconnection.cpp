@@ -5,7 +5,7 @@
 #include <QSettings>
 #include <QFileInfo>
 #include <difflogging.h>
-#include <regex>
+#include <QRegularExpression>
 
 DiffConnection::DiffConnection()
 {
@@ -32,25 +32,33 @@ DiffConnection::DiffConnection()
 
 DiffConnection::DiffConnection(const QString &connectionString, bool unicode)
 {
-    const std::regex sqlite_regex("Data Source=(.+);");
-    std::smatch match;
-    std::string connStr = connectionString.toStdString();
+    QRegularExpression sqlite_regex("Data Source=(.+);");
+    //const std::regex sqlite_regex("Data Source=(.+);");
+    //std::smatch match;
+    //std::string connStr = connectionString.toStdString();
+//qDebug() << "!!!DiffConnection" << connStr.c_str();
 
-    if (std::regex_match(connStr, match, sqlite_regex))
+    QRegularExpressionMatch match = sqlite_regex.match(connectionString);
+    //if (std::regex_match(connStr, match, sqlite_regex))
+    if (match.hasMatch())
     {
-        std::string m = match[1].str();
-        _dsn = QString::fromStdString(m.c_str());
+        //std::string m = match[1].str();
+        _dsn = match.captured(1);
+                //QString::fromStdString(m.c_str());
         qCInfo(logDiff) << "Dsn = " << _dsn;
         openSqlite();
         return;
     }
 
-    qCInfo(logDiff) << "Start connect to FMT";
+
+    qDebug() << "Start connect to FMT";
 
     isUnicode = unicode;
     ParseConnectionString(connectionString, _user, _pass, _dsn);
 
+    qDebug() << "Start connect to FMT";
     open();
+    qDebug() << "End connect to FMT";
 }
 
 void DiffConnection::open()

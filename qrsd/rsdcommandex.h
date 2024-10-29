@@ -7,7 +7,7 @@
 #include <QVector>
 #include "rsddriver.h"
 
-class RsdCommandEx : public CRsdCommand
+class RsdCommandEx //: public CRsdCommand
 {
 public:
     class BindParam Q_DECL_FINAL
@@ -51,15 +51,21 @@ public:
         void setBuffer(const QDateTime &qdatetime);
     };
 
-    RsdCommandEx(CRsdConnection *con, RsdDriver *driver);
+    RsdCommandEx(Qt::HANDLE Connection, RsdDriver *driver);
     virtual ~RsdCommandEx();
 
     void bindValue(const QString &placeholder, const QVariant &val, QSql::ParamType paramType);
     void bindValue(int index, const QVariant &val, QSql::ParamType paramType);
 
     RsdDriver *driver();
+    void clearParams();
+    bool setCmdText(const char *str);
+    int execute();
+
+    Qt::HANDLE handle();
 
 private:
+    Qt::HANDLE m_Cmd;
     QVector<BindParam*> m_Params;
     RsdDriver *m_pDriver;
 };

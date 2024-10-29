@@ -132,3 +132,17 @@ FmtRslModule/debug/
 WorkFMT.pro.user.a3c1743
 
 FmtRslModule/release/
+
+qrsd/qrsdcore/qrsdcore/Debug/
+
+qrsd/qrsdcore/qrsdcore/Release/
+
+qrsd/qrsdcore/.vs/qrsdcore/v16/
+
+qrsd/qrsdcore/Debug/
+
+*.ipch
+
+*.opensdf
+
+*.filters

@@ -9,12 +9,13 @@
 
 #include "taskoptions.h"
 
+class QMutex;
 class Task : public QObject
 {
     Q_OBJECT
 public:
     TaskOptions optns;
-    explicit Task(QObject *parent = nullptr);
+    explicit Task(QMutex *mutex, QObject *parent = nullptr);
 //    void setOption(TaskOption opt, bool val) {optns[opt] = val;}
 //    bool getOption(TaskOption opt) const { return optns[opt];}
     void runTask();
@@ -33,6 +34,7 @@ private:
     void makeInputBuff(QString& buff, const TaskOptions& optns);
     void makeOutputStream(QTextStream& os, const TaskOptions& optns);
 
+    QMutex *pMutex;
     int m_Result;
 };
 
