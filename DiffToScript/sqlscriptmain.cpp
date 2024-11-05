@@ -678,7 +678,7 @@ int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJ
 
         qCInfo(logSqlScriptMain) << "There are child records" << childJoin->parent->scriptTable->name  << childJoin->child->scriptTable->name;
 
-        QStringList ParentValuesByIndex = childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->datTable->records[recIndex]);
+        QStringList ParentValuesByIndex = childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->scriptTable->records[recIndex]);
         //Обрадотка дочерних записей
         qCInfo(logSqlScriptMain)
                 << "Parent primary keys =" << childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->scriptTable->records[recIndex])
@@ -836,10 +836,10 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
 void SqlScriptMain::dateSpelling(const JoinTable *joinTable, DatRecord &rec)
 {
-    for (int i = 0; i < joinTable->datTable->realFields.count(); ++i)
+    for (int i = 0; i < joinTable->scriptTable->realFields.count(); ++i)
     {
-        DiffField fld = joinTable->datTable->field(joinTable->datTable->realFields[i]);
-        qCInfo(logSqlScriptMain) << fld.name << joinTable->datTable->fields[i].typeName;
+        DiffField fld = joinTable->scriptTable->field(joinTable->scriptTable->realFields[i]);
+        qCInfo(logSqlScriptMain) << fld.name << joinTable->scriptTable->fields[i].typeName;
 
         if (fld.isDate())
             rec.values[i] = _dbSpelling->toDate(rec.values[i]);

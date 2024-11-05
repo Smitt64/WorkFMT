@@ -44,7 +44,7 @@ struct JoinTable
 {
     ScriptTable* scriptTable;
     QVector<bool> processedRecords;
-    DatTable* datTable;
+    //DatTable* datTable;
     JoinList joinList;
     QStringList keyFields;
     JoinTable(ScriptTable* datTable, const TableLinks& tableLinks);
@@ -55,7 +55,7 @@ struct JoinTable
 
 struct JoinTables
 {
-    QList<JoinTable> joinTableList;
+    QList<JoinTable*> joinTableList;
     QList<Join*> joins;
     QList<TableLinks> tableLinksList;
     ~JoinTables();

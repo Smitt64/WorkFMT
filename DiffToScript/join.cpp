@@ -225,7 +225,7 @@ JoinTables::~JoinTables()
 
 void JoinTables::add(ScriptTable *datTable, const TableLinks &tableLinks)
 {
-    joinTableList.append(JoinTable(datTable, tableLinks));
+    joinTableList.append(new JoinTable(datTable, tableLinks));
     tableLinksList.append(tableLinks);
     qCInfo(logJoinTables) << "Added table" << datTable->name;
     build();
@@ -254,8 +254,11 @@ void JoinTables::build()
 JoinTable *JoinTables::tableByName(QString name)
 {
     for (int i = 0; i < joinTableList.count(); ++i)
-        if (joinTableList[i].scriptTable->name.toLower() == name.toLower())
-            return &joinTableList[i];
+    {
+        if (joinTableList[i]->scriptTable->name.toLower() == name.toLower())
+            return joinTableList[i];
+    }
+
     return nullptr;
 }
 
@@ -275,8 +278,9 @@ JoinTable *JoinTables::getRoot()
     if (!joinTableList.count())
         return nullptr;
 
-    table = &joinTableList[0];
+    table = joinTableList[0];
     parentJoin = table->getParentJoin();
+
     while (table->getParentJoin() != nullptr)
         table = table->getParentJoin()->parent;
 
