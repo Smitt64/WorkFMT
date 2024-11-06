@@ -313,10 +313,11 @@ QString FmtTable::dbtName() const
         str =  m_Name.mid(1).toLower();
 
     int pos = -1;
-    if ((pos = str.lastIndexOf(isTemporary() ? "_tmp" : "_dbt")) != -1)
+    if ((pos = str.lastIndexOf("_")) != -1)
     {
+        QString type = str.mid(pos + 1);
         str = str.remove(pos, 4);
-        str += isTemporary() ? ".tmp" : ".dbt";
+        str += QString(".%1").arg(type);
     }
 
     return str;

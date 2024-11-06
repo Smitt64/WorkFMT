@@ -1,0 +1,21 @@
+{
+    "dbgout": {
+        "e_prsOther": false,
+        "e_prsBoolean": false,
+        "e_prsArithmetic": false,
+        "e_prsSelect": false,
+        "e_prsInsert": false,
+        "e_prsSQMultiStr": false,
+        "e_prsFuncCall": false,
+        "e_prsCaseWhen": false,
+        "e_prsException": false,
+        "e_prsExecute": false,
+	      "e_prsToRule": false,
+        "e_prsXmlElement": false,
+        "e_prsXmlTable": false,
+        "e_prsAnalytic": false
+    },
+    "dbgCommentOut": {
+        "e_outOvlFuncMatch": true
+    }
+}
