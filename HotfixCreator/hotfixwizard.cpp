@@ -2,7 +2,6 @@
 #include "seldirspage.h"
 #include "filelistpage.h"
 #include "filetypespage.h"
-#include <datfile.h>
 #include "fmtcore.h"
 #include <connectioninfo.h>
 
@@ -21,9 +20,6 @@ HotfixWizard::HotfixWizard()
     addPage(m_pSelDirsPage);
     addPage(m_FileListPage);
     addPage(m_FileTypesPage);
-
-    DatFile file;
-    file.read("D:/svn/UranRSBankV6/Main/Distrib/DBFile/Data/DPDNKIND_DBT.dat");
 }
 
 HotfixWizard::~HotfixWizard()

@@ -47,7 +47,6 @@ SOURCES += \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
     src/core/recentconnectionlist.cpp \
-    src/datfile.cpp \
     src/dbinitdlg.cpp \
     src/documentwindow.cpp \
     src/fmtapplication.cpp \
@@ -333,7 +332,6 @@ HEADERS += \
     src/widgets/filteredtablewidget.h \
     h/fmtsegmentflagsdlg.h \
     h/selectfolderdlg.h \
-    h/datfile.h \
     h/odbctablemodel.h \
     h/odbctablemodeldelegate.h \
     h/recentconnectionlist.h \
