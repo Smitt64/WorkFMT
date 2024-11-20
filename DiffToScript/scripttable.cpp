@@ -48,7 +48,8 @@ DatRecords::iterator ScriptTable::parseUpdateBlock(int indexPrimaryKey, DatRecor
 {
     DatRecords::iterator it = first;
 
-    for(;it != last && it->lineType == ltUpdate; ++it);
+    for(;it != last && it->lineType == ltUpdate && it->lineUpdateType == lutOld; ++it);
+    for(;it != last && it->lineType == ltUpdate && it->lineUpdateType == lutNew; ++it);
     last = it;
 
     DatRecords::iterator mid = first + (last - first) / 2;
@@ -84,7 +85,8 @@ void ScriptTable::parseUpdateRecords(ScriptTable& datTable)
     {
         if (it->lineType != ltUpdate)
             ++it;
-        it = parseUpdateBlock(indexPrimaryKey, it, datTable.records.end());
+        else
+            it = parseUpdateBlock(indexPrimaryKey, it, datTable.records.end());
     }
     qCInfo(logScriptTable) << "Parsing update records is done.";
 }
