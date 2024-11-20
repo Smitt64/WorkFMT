@@ -150,6 +150,8 @@ void ImportOperation::CopyDumpFile(const QString &PathToDump,
                                    const QString &DumpFile,
                                    const QString &ImportPath)
 {
+    const qint64 chunkSize = 131072;
+
     emit stageChanged(QString("Копирование дампа"));
     QDir src(PathToDump);
     QDir dst(ImportPath);
@@ -168,6 +170,9 @@ void ImportOperation::CopyDumpFile(const QString &PathToDump,
         if (!QFile::remove(dstFile))
             throw QString("Ошибка удаления файла %1\n")
                 .arg(dstFile);
+
+        emit message(QString("Файл %1 удален\n")
+                     .arg(DumpFile));
     }
 
     QFile in(srcFile);
@@ -190,7 +195,7 @@ void ImportOperation::CopyDumpFile(const QString &PathToDump,
 
         while (!in.atEnd())
         {
-            QByteArray line = in.readLine();
+            QByteArray line = in.read(chunkSize);
             out.write(line);
 
             newSize += line.size() * coefficient;
