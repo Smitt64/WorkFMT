@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Rsd Driver">
+    <version ver="3.02.039.2.20">
+        <fix>Если результат запроса вернулся RSDRES_NODATA, то теперь считается, что запрос выполнен успешно;</fix>
+    </version>
     <version ver="3.02.039.2.17">
         <add>Поддержка подключения к PostgreSQL с возможностью конвертирования запросов;</add>
         <add>Поддержка blob и clob полей</add>

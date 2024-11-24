@@ -402,7 +402,11 @@ bool RsdSqlResult::exec()
             }
         }
 
-        result = RSD_SUCCEEDED(m_Cmd->execute());
+        int slqstat = m_Cmd->execute();
+        if (slqstat == RSDRES_NODATA)
+            slqstat = RSDRES_OK;
+
+        result = RSD_SUCCEEDED(slqstat);
 
         setActive(true);
         setAt(QSql::BeforeFirstRow);

@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.7.2">
+        <fix>Исправлена ошибка обновления записи словаря у которой нет индексов;</fix>
+    </version>
     <version ver="1.0.7.1">
         <add>Добавлена полноценная поддержка PostgreSQL;</add>
         <add>Добавлен импорт/экспорт таблицы в xml на PostgreSQL схемах;</add>
