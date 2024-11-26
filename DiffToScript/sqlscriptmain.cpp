@@ -459,6 +459,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     replaceForeignAutoinc(joinTable, rec);
 
     dateSpelling(joinTable, rec);
+    stringSpelling(joinTable, rec);
 
     //Проверка индекса на автоинкрементное поле
     QString variable = buildVariableName(joinTable->scriptTable);
@@ -541,6 +542,7 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
     qCInfo(logSqlScriptMain) << "Modifed fields count =" << modifiedValues.count();
 
     replaceForeignAutoinc(joinTable, newRec);
+    dateSpelling(joinTable, newRec);
     stringSpelling(joinTable, newRec);
 
     for (int i: modifiedValues)
