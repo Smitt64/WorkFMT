@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
+    <version ver="1.0.0.6">
+        <fix>Обертка HEXTORAW вернулась на свое место</fix>
+    </version>
     <version ver="1.0.0.5">
         <fix>Исправлен не верный формат дат</fix>
         <fix>Исправлено неправильное определение строк при обновлении записи в dat файле, поэтому в where условия не соответствовали обновляемой строке</fix>
