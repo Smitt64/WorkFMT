@@ -1,5 +1,6 @@
 #include "dbspellingoracle.h"
 #include "fmtcore.h"
+#include "sqlscriptmain.h"
 
 QString DbSpellingOracle::toDate(const QString& value)
 {
@@ -82,6 +83,12 @@ void DbSpellingOracle::functionChunks(QStringList &BeginCreateReplace,
 
     BeginCreateReplace.append(declaration);
     BeginCreateReplace.append("AS");
+    BeginCreateReplace.append("-- #conv-Oracle");
+    BeginCreateReplace.append(QString("%1 ErrorText VARCHAR2(2000) := CHR(1);").arg(Padding()));
+    BeginCreateReplace.append("-- #conv-PG");
+    BeginCreateReplace.append("-- DECLARE");
+    BeginCreateReplace.append("-- ErrorText varchar(2000);");
+    BeginCreateReplace.append("-- #conv-end ");
 
     EndCreateReplace.append("END;");
 }
@@ -91,4 +98,15 @@ QString DbSpellingOracle::getDefaultValueForType(const qint16 &Type, const int &
     QString val = fmtGetOraDefaultVal(Type, size);
 
     return val.replace("''", "'");
+}
+
+QStringList DbSpellingOracle::getExceptionInfo(const QString &varname)
+{
+    QStringList lst;
+    lst.append(Padding() + "-- #conv-Oracle");
+    lst.append(Padding() + QString("%1 := Substr(sqlerrm, 11);").arg(varname));
+    lst.append(Padding() + "-- #conv-PG");
+    lst.append(Padding() + QString("-- %1 := sqlerrm;").arg(varname));
+    lst.append(Padding() + "-- #conv-end ");
+    return lst;
 }

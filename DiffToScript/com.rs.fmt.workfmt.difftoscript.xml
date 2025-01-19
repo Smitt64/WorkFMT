@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
+    <version ver="1.0.0.7">
+        <add>Убран код ошибки для скриптов Oracle, приводивший к отвалу апгрейдора пр  повторном выполнении</add>
+    </version>
     <version ver="1.0.0.6">
         <fix>Обертка HEXTORAW вернулась на свое место</fix>
     </version>

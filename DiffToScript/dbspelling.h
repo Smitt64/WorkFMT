@@ -44,6 +44,7 @@ public:
                                 const QString &returnType) = 0;
 
     virtual QString getDefaultValueForType(const qint16 &Type, const int &size) = 0;
+    virtual QStringList getExceptionInfo(const QString &varname) = 0;
 
 protected:
     virtual QString funcDeclType(const QString& decl);

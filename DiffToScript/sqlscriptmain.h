@@ -22,6 +22,8 @@ enum SqlScriptBuildErrors
     SqlBuildError_FieldComposition = 1000,
 };
 
+QString Padding(int depth = 1);
+
 class SqlScriptMain
 {
 public:

@@ -31,6 +31,7 @@ public:
                         const QString &returnType) override;
 
     QString getDefaultValueForType(const qint16 &Type, const int &size) override;
+    QStringList getExceptionInfo(const QString &varname) override;
 };
 
 #endif // DBSPELLINGPOSTGRES_H

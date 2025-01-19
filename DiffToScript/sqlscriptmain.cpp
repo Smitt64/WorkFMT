@@ -8,7 +8,7 @@
 
 const QString PADDING = "  ";
 
-static QString Padding(int depth = 1)
+QString Padding(int depth)
 {
     return PADDING.repeated(depth);
 }
@@ -164,17 +164,17 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
         QString values = rec.values.join(", ");
         function.append(QString(Padding(1) + "INSERT INTO %1(%3) VALUES (%2);")
-                   .arg(datTable->name,
-                        values + missingFldInDatValues,
-                        InsertFieldList));
+                        .arg(datTable->name,
+                             values + missingFldInDatValues,
+                             InsertFieldList));
     }
     else
     {
         QString values = rec.values.join(", ");
         function.append(QString(Padding(2) + "INSERT INTO %1(%3) VALUES (%2);")
-                   .arg(datTable->name.toUpper(),
-                        values + missingFldInDatValues,
-                        InsertFieldList));
+                        .arg(datTable->name.toUpper(),
+                             values + missingFldInDatValues,
+                             InsertFieldList));
     }
 
     if (autoIncIndex != -1)
@@ -188,9 +188,9 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
     //QStringList ParentValuesByIndex = childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->datTable->records[recIndex]);
     function.append(QString("EXCEPTION "));
-    QString tmpException = QString("dbms_output.put_line('%WARNING%: Ошибка вставки в таблицу %1: ' || sqlerrm)")
+    QString tmpException = QString("dbms_output.put_line('%WARNING%: Ошибка вставки в таблицу %1: ' || ErrorText)")
             .arg(datTable->name.toUpper());
-    QString rusException = tmpException;//code->toUnicode(tmpException.toLocal8Bit());
+    QString rusException = tmpException;//sqlerrm
     QString exceptionInfo;
 
     DatIndex Unique;
@@ -200,7 +200,7 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     {
         QString fldNames, fldValues;
 
-        for (const IndexField &fld : Unique.fields)
+        for (const IndexField &fld : qAsConst(Unique.fields))
         {
             if (!fldNames.isEmpty())
             {
@@ -222,13 +222,16 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     if (autoIncIndex == -1)
     {
         function.append(QString("WHEN %1 THEN")
-                           .arg(exception));
+                        .arg(exception));
+
+        function.append(_dbSpelling->getExceptionInfo("ErrorText"));
         function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
 
         if (!exceptionInfo.isEmpty())
             function.append(Padding(1) + _dbSpelling->callProcedure(exceptionInfo));
 
-        function.append( QString("WHEN OTHERS THEN"));
+        function.append(QString("WHEN OTHERS THEN"));
+        function.append(_dbSpelling->getExceptionInfo("ErrorText"));
         function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
 
         if (!exceptionInfo.isEmpty())
@@ -237,7 +240,9 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     else
     {
         function.append(QString("WHEN %1 THEN ")
-                           .arg(exception));
+                        .arg(exception));
+
+        function.append(_dbSpelling->getExceptionInfo("ErrorText"));
         function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
 
         if (!exceptionInfo.isEmpty())
@@ -246,6 +251,7 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
         function.append(Padding(1) + "RETURN -1;");
 
         function.append(QString("WHEN OTHERS THEN"));
+        function.append(_dbSpelling->getExceptionInfo("ErrorText"));
         function.append(Padding(1) + _dbSpelling->callProcedure(rusException));
 
         if (!exceptionInfo.isEmpty())
@@ -475,7 +481,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
         int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
         QString autoIncField = joinTable->scriptTable->fields[autoIncIndex].name;
         //sql.append(QString(PADDING + "INSERT INTO %1 (%2) VALUES (%3) RETURNING %4 INTO %5;").arg(joinTable->scriptTable->name, names, values, autoIncField, variable));
-                QString call = QString("%1 := %2 (%3);")
+        QString call = QString("%1 := %2 (%3);")
                 .arg(variable)
                 .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()].name)
                 .arg(values);
@@ -576,7 +582,7 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
                             setList.join(", "),
                             where.join(" AND ")));
         }
-            //sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3;").arg(joinTable->scriptTable->name, setList.join(", "), where.join(" AND ")));        
+        //sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3;").arg(joinTable->scriptTable->name, setList.join(", "), where.join(" AND ")));
     }
     return ++oldIndex;
 }
@@ -633,8 +639,8 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
         // определение последней записи для обновления
         int newIndex = recIndex;
         for (; newIndex < joinTable->scriptTable->records.count(); ++newIndex)
-             if (joinTable->scriptTable->records[newIndex].lineType != ltUpdate || joinTable->scriptTable->records[newIndex].lineUpdateType != lutOld)
-                 break;
+            if (joinTable->scriptTable->records[newIndex].lineType != ltUpdate || joinTable->scriptTable->records[newIndex].lineUpdateType != lutOld)
+                break;
 
         int updCnt = (newIndex - recIndex);
 
@@ -767,7 +773,7 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
     auto DisEnableAutoIncTrigger = [=](ScriptTable* datTable, QStringList &sql, bool enable = false)
     {
-        for (const DatIndex &idx : datTable->indexes)
+        for (const DatIndex &idx : qAsConst(datTable->indexes))
         {
             if (idx.hasAutoinc())
             {
@@ -803,13 +809,13 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
     }
 
 
-        for (int recno = 0; recno < joinTable->scriptTable->records.count(); )
-        {
+    for (int recno = 0; recno < joinTable->scriptTable->records.count(); )
+    {
         int oldSize = sql.size();
-            recno = buildStatement(os, joinTable, sql, recno);
+        recno = buildStatement(os, joinTable, sql, recno);
         if (sql.size() != oldSize)
             sql.append(QString());
-        }
+    }
 
     DisEnableAutoIncTrigger(joinTable->scriptTable, sql, true);
 

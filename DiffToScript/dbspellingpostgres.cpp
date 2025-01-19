@@ -1,5 +1,6 @@
 #include "dbspellingpostgres.h"
 #include "fmtcore.h"
+#include "sqlscriptmain.h"
 
 DbSpellingPostgres::DbSpellingPostgres()
 {
@@ -115,6 +116,7 @@ void DbSpellingPostgres::functionChunks(QStringList &BeginCreateReplace,
     BeginCreateReplace.append(declaration);
     BeginCreateReplace.append(QString("AS $%1$").arg(name));
     BeginCreateReplace.append("DECLARE");
+    BeginCreateReplace.append(QString("%1 ErrorText varchar(2000);").arg(Padding()));
 
     EndCreateReplace.append("END;");
     EndCreateReplace.append(QString("$%1$ LANGUAGE PLPGSQL;").arg(name));
@@ -143,4 +145,11 @@ QString DbSpellingPostgres::dropFunction(const QString &proc,
     int pos = normal.indexOf("RETURNS");
     normal = normal.mid(0, pos).simplified();
     return QString("DROP FUNCTION IF EXISTS %1;").arg(normal);
+}
+
+QStringList DbSpellingPostgres::getExceptionInfo(const QString &varname)
+{
+    QStringList lst;
+    lst.append(Padding() + QString("%1 := sqlerrm;").arg(varname));
+    return lst;
 }
