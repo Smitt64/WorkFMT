@@ -18,14 +18,17 @@ public:
     SelectTablesPage(QWidget *parent = nullptr);
     virtual ~SelectTablesPage();
 
-    virtual void initializePage();
+    virtual void initializePage() override;
 
     bool AddFunc(const QString &str);
     bool RemoveFunc(const QString &str);
 
-    virtual bool isComplete() const;
-    virtual bool validatePage();
-    virtual int nextId() const;
+    virtual bool isComplete() const override;
+    virtual bool validatePage() override;
+    virtual int nextId() const override;
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     QVBoxLayout *pLayout;

@@ -147,3 +147,11 @@ int SelectTablesPage::nextId() const
 {
     return DbtToolWizard::eExportPage;
 }
+
+void SelectTablesPage::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        return;
+
+    return QWizardPage::keyPressEvent(event);
+}

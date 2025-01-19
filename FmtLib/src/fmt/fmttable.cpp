@@ -745,9 +745,11 @@ void FmtTable::FillIndex()
                 indx->setFlags(q.value(fkc_Flags).toInt());
 
                 indx->setFlag(0);
+                indx->setKeyNum(q.value(fkc_KeyNum).toInt());
+
                 indx->setName(QString("%1_IDX%2")
                               .arg(m_Name.toUpper())
-                              .arg(QString::number(i++, 16).toUpper()));
+                              .arg(QString::number(q.value(fkc_KeyNum).toInt(), 16).toUpper()));
                 indx->setType(static_cast<qint16>(q.value(fkc_Type).toInt()));
                 ptr = indx;
                 lastkeynum = q.value(fkc_KeyNum).toInt();
@@ -1257,12 +1259,17 @@ FmtIndex *FmtTable::addIndexPrivate(const qint16 &row)
     else
         pIndecesModel->beginResetModel();
 
+    qint16 LastKeyNum = 0;
+    for (FmtIndex *_indx : qAsConst(m_pIndeces))
+        LastKeyNum = qMax(LastKeyNum, _indx->keyNum());
+
     FmtIndex *indx = new FmtIndex(this);
     indx->pParentItem = pIndecesModel->rootItem;
     indx->setFlags(0);
-    indx->setName(FmtTableMakeIndexName(this, iRow));
+    indx->setName(FmtTableMakeIndexName(this, LastKeyNum + 1));
     indx->setType(0);
-    //m_pIndeces.append(indx);
+    indx->setKeyNum(LastKeyNum + 1);
+
     m_pIndeces.insert(iRow, indx);
 
     if (iRow == 0)

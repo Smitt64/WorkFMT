@@ -44,6 +44,7 @@ DumpToolWizard::DumpToolWizard() :
     setWindowIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
 
     m_HelpButton = button(QWizard::HelpButton);
+    setOption(QWizard::HelpButtonOnRight, false);
 
     connect(m_HelpButton, &QPushButton::clicked, []
     {

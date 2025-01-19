@@ -1,4 +1,5 @@
 #include "externaltoolspage.h"
+#include "toolsruntime.h"
 #include "ui_externaltoolspage.h"
 #include <QFileDialog>
 #include <QFileInfo>
@@ -9,6 +10,9 @@ ExternalToolsPage::ExternalToolsPage(QWidget *parent)
     , ui(new Ui::ExternalToolsPage)
 {
     ui->setupUi(this);
+
+    QStringList javas = toolGetJavaHomes(JavaAllHomes);
+    ui->jdkPath->addItems(javas);
 }
 
 ExternalToolsPage::~ExternalToolsPage()
@@ -40,6 +44,7 @@ int ExternalToolsPage::save()
     setting->setValue("indxNs", ui->indxNs->text());
     setting->setValue("sysScheme", ui->sysScheme->text());
     setting->setValue("sysPwd", ui->sysPwd->text());
+    setting->setValue("jdkBinPath", ui->jdkPath->currentText());
     setting->endGroup();
 
     return 0;
@@ -55,5 +60,6 @@ void ExternalToolsPage::restore()
     ui->indxNs->setText(setting->value("indxNs", "indx").toString());
     ui->sysScheme->setText(setting->value("sysScheme", "postgres").toString());
     ui->sysPwd->setText(setting->value("sysPwd", "system").toString());
+    ui->jdkPath->setCurrentText(setting->value("jdkBinPath", "").toString());
     setting->endGroup();
 }

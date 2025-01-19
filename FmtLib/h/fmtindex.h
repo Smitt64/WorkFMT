@@ -43,6 +43,7 @@ public:
     void setFlags(const qint32 &flags);
     void setName(const QString &n);
     void setType(const qint16 &n);
+    void setKeyNum(const qint16 &n);
 
     bool isAutoInc() const;
     bool isUnique() const;
@@ -50,6 +51,7 @@ public:
     bool isLocal() const;
     bool isPrimary() const;
     FmtKeyNullVal nullType() const;
+    qint16 keyNum() const;
 
     virtual QVariant data(int column, int role = Qt::DisplayRole) const;
     virtual bool setData(int column, const QVariant &value);
@@ -73,8 +75,8 @@ private slots:
     void UpdateIndexName(const QString &value);
 
 protected:
-    virtual void storeData(QByteArray *data);
-    virtual void restoreData(QByteArray *data);
+    virtual void storeData(QByteArray *data) override;
+    virtual void restoreData(QByteArray *data) override;
 
 private:
     void EmitIndexPropertyChange(const quint16 &prop);
@@ -83,8 +85,9 @@ private:
     FmtSegment *addSegmentPrivate(const qint16 &row);
     void removeSegmentPrivate(const qint16 &index, bool AutoDelete);
     int save();
+
     qint32 m_Flags;
-    qint16 m_Type;
+    qint16 m_Type, m_KeyNum;
     bool m_fDup, m_fAutoInc;
     bool m_fIgnoreStack;
     int m_NullValue;

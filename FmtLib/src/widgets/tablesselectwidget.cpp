@@ -15,6 +15,7 @@ TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *pare
     sourceList->setObjectName(QStringLiteral("sourceList"));
     sourceList->setModel(pSourceModel);
     sourceList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    sourceList->listView()->installEventFilter(this);
 
     horizontalLayout = new QHBoxLayout();
     horizontalLayout->addWidget(sourceList);
@@ -60,6 +61,7 @@ TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *pare
     dstListView->setObjectName(QStringLiteral("dstListView"));
     dstListView->setModel(pDstModel);
     dstListView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    dstListView->installEventFilter(this);
 
     horizontalLayout->addWidget(dstListView);
     pUserAddDlg = Q_NULLPTR;
@@ -70,11 +72,18 @@ TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *pare
     connect(removeButton, SIGNAL(clicked(bool)), SLOT(removeButtonPressed()));
     connect(addAllButton, SIGNAL(clicked(bool)), SLOT(addAllButtonPressed()));
     connect(removeAllButton, SIGNAL(clicked(bool)), SLOT(removeAllButtonPressed()));
+
+    connect(sourceList->listView(), &QListView::doubleClicked, this, &TablesSelectWidget::doubleAddClicked);
+    connect(dstListView, &QListView::doubleClicked, this, &TablesSelectWidget::doubleRemoveClicked);
 }
 
 void TablesSelectWidget::addButtonPressed()
 {
     QItemSelectionModel *m = sourceList->selection();
+
+    if (!m->hasSelection())
+        return;
+
     QModelIndexList indexList = m->selectedIndexes();
 
     QProgressDialog dlg(tr("Добавление записей"), tr("Отмена"), 0, indexList.size(), this);
@@ -103,6 +112,10 @@ void TablesSelectWidget::addButtonPressed()
 void TablesSelectWidget::removeButtonPressed()
 {
     QItemSelectionModel *m = dstListView->selectionModel();
+
+    if (!m->hasSelection())
+        return;
+
     QModelIndexList indexList = m->selectedIndexes();
 
     QProgressDialog dlg(tr("Удаление записей"), tr("Отмена"), 0, 0, this);
@@ -270,4 +283,33 @@ int TablesSelectWidget::tablesCount() const
 QString TablesSelectWidget::tableName(const int &index) const
 {
     return pDstModel->item(index)->text();
+}
+
+bool TablesSelectWidget::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == sourceList->listView() && event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *key = dynamic_cast<QKeyEvent*>(event);
+
+        if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Space)
+            addButtonPressed();
+    }
+    else if (obj == dstListView && event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *key = dynamic_cast<QKeyEvent*>(event);
+
+        if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Space)
+            removeButtonPressed();
+    }
+    return QWidget::eventFilter(obj, event);
+}
+
+void TablesSelectWidget::doubleAddClicked(const QModelIndex &index)
+{
+    addButtonPressed();
+}
+
+void TablesSelectWidget::doubleRemoveClicked(const QModelIndex &index)
+{
+    removeButtonPressed();
 }

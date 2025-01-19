@@ -126,6 +126,7 @@ private slots:
 
 protected:
     void paintEvent(QPaintEvent *paintEvent);
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     int CheckAppy();

@@ -54,6 +54,9 @@ void ExportObject::setClobMode(const ClobMode &mode)
 
 void ExportObject::exportTable(const QString &table, const QDir &outdir)
 {
+    QTextStream StdOutput(stdout);
+    StdOutput.setCodec("IBM 866");
+
     QString datfile = QString("%1.dat").arg(table.toUpper());
     QString linesfile = QString("%1.rec").arg(table.toUpper());
     QFile datFile(outdir.absoluteFilePath(datfile));
@@ -83,11 +86,14 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
     }
 
     QSqlQuery checkExists(info->db());
+    StdOutput << QString("Start unloading...") << Qt::endl;
+    StdOutput << QString("Checking exists table...") << Qt::endl;
     checkExists.prepare(QString("select * from %1 where rownum < 2").arg(table.toUpper()));
     if (ExecuteQuery(&checkExists))
         return;
 
     // Search primary or unique key or unique index for ORDER BY clause
+    StdOutput << QString("Query table information...") << Qt::endl;
     QString KeyQueryStr = toolReadTextFileContent(":/res/KeyQuery.sql").arg(table.toUpper());
     QSqlQuery KeyQuery(info->db());
     KeyQuery.setForwardOnly(true);
@@ -263,8 +269,7 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
     }
 
     int i = 1;
-    QTextStream StdOutput(stdout);
-    StdOutput.setCodec("IBM 866");
+    StdOutput << QString("Select table data...") << Qt::endl;
     while(query.next())
     {
         stream << query.value(0).toString();
@@ -297,6 +302,8 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
         StdOutput << QString("Processing... %1 rows").arg(i) << Qt::endl;
         i ++;
     }//dss_sheduler_dbt
+
+    StdOutput << QString("Finish unloading...") << Qt::endl;
 
     if (linesFile.isOpen())
     {

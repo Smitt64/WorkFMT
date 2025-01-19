@@ -63,6 +63,11 @@ void FmtIndex::setType(const qint16 &n)
     m_Type = n;
 }
 
+void FmtIndex::setKeyNum(const qint16 &n)
+{
+    m_KeyNum = n;
+}
+
 QVariant FmtIndex::data(int column, int role) const
 {
     if (role == Qt::DisplayRole || role == Qt::EditRole)
@@ -416,7 +421,7 @@ FmtSegment *FmtIndex::addSegmentPrivate(const qint16 &row)
 
 qint16 FmtIndex::indexNumber() const
 {
-    return static_cast<qint16>(pTable->m_pIndeces.indexOf(const_cast<FmtIndex*>(this)));
+    return keyNum();
 }
 
 qint32 FmtIndex::segmentsCount() const
@@ -683,4 +688,9 @@ FmtKeyNullVal FmtIndex::nullType() const
         value = keynullval_Any;
 
     return value;
+}
+
+qint16 FmtIndex::keyNum() const
+{
+    return m_KeyNum;
 }

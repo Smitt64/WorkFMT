@@ -37,6 +37,11 @@ private slots:
     void addAllButtonPressed();
     void removeButtonPressed();
     void removeAllButtonPressed();
+    void doubleAddClicked(const QModelIndex &index);
+    void doubleRemoveClicked(const QModelIndex &index);
+
+protected:
+    virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     void CopyToDstList(const QModelIndex &index);

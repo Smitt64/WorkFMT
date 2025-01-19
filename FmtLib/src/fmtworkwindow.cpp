@@ -438,14 +438,20 @@ void FmtWorkWindow::indexModelInserted(const QModelIndex &parent, const int &fir
 void FmtWorkWindow::AddIndex()
 {
     pTable->addIndex();
+    pTreeView->scrollToBottom();
 }
 
 void FmtWorkWindow::FillIndecesList()
 {
+    QString saveindex = ui->keyComboBox->currentText();
+
     QStringList lst = pTable->uniqueIndeces();
     lst.prepend("-1");
     ui->keyComboBox->clear();
     ui->keyComboBox->insertItems(0, lst);
+
+    if (lst.contains(saveindex))
+        ui->keyComboBox->setCurrentIndex(lst.indexOf(saveindex));
 }
 
 void FmtWorkWindow::OnIndexChanged(FmtIndex *index)
@@ -627,6 +633,14 @@ void FmtWorkWindow::CopyAction()
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(action->text());
     QToolTip::showText(mapToGlobal(ui->copyTool->pos()), tr("Текст скопирован: %1").arg(action->text()), this, QRect(), 1000);
+}
+
+void FmtWorkWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        return;
+
+    return MdiSubInterface::keyPressEvent(event);
 }
 
 void FmtWorkWindow::paintEvent(QPaintEvent *paintEvent)

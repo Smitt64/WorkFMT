@@ -270,8 +270,7 @@ FMTLIBSHARED_EXPORT QString FmtGenDiffToScript(const QString &filename, const QS
 FMTLIBSHARED_EXPORT void CreateUserCommandsMenu(QMenu **menu, const QString &title,
                             QObject *receiver, const char *slot);
 
-FMTLIBSHARED_EXPORT int StartGuiconverter(
-        const QString &userScheme,
+FMTLIBSHARED_EXPORT int StartGuiconverter(const QString &userScheme,
         const QString &userPwd,
         const QString &dbName,
         const QString &dsn,

@@ -1786,6 +1786,7 @@ int StartGuiconverter(const QString &userScheme,
 
     settings->beginGroup("GuiConverter");
     QString path = settings->value("path").toString();
+    QString jdkBinPath = settings->value("jdkBinPath").toString();
     settings->endGroup();
 
     if (path.isEmpty())
@@ -1831,7 +1832,10 @@ int StartGuiconverter(const QString &userScheme,
     //prop.insert("myExternalIpAddr", "");
     //prop.insert("listenPort", "");
     //prop.insert("oraTns", "");
-    //prop.insert("jdkBinPath", "C:/Program Files/Java/jdk-10.0.2/bin");
+
+    QDir jdkbin(jdkBinPath);
+    if (jdkbin.cd("bin"))
+        prop.insert("jdkBinPath", QDir::toNativeSeparators(jdkbin.absolutePath()));
 
     root.insert("prop", prop);
 
