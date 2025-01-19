@@ -6,6 +6,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlField>
+#include <QThread>
 
 ExportObject::ExportObject(QObject *parent) :
     QObject(parent)
@@ -85,15 +86,19 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
             return;
     }
 
+    StdOutput.flush();
     QSqlQuery checkExists(info->db());
     StdOutput << QString("Start unloading...") << Qt::endl;
+    StdOutput.flush();
     StdOutput << QString("Checking exists table...") << Qt::endl;
+    StdOutput.flush();
     checkExists.prepare(QString("select * from %1 where rownum < 2").arg(table.toUpper()));
     if (ExecuteQuery(&checkExists))
         return;
 
     // Search primary or unique key or unique index for ORDER BY clause
     StdOutput << QString("Query table information...") << Qt::endl;
+    StdOutput.flush();
     QString KeyQueryStr = toolReadTextFileContent(":/res/KeyQuery.sql").arg(table.toUpper());
     QSqlQuery KeyQuery(info->db());
     KeyQuery.setForwardOnly(true);
@@ -270,6 +275,7 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
 
     int i = 1;
     StdOutput << QString("Select table data...") << Qt::endl;
+    StdOutput.flush();
     while(query.next())
     {
         stream << query.value(0).toString();
@@ -303,7 +309,9 @@ void ExportObject::exportTable(const QString &table, const QDir &outdir)
         i ++;
     }//dss_sheduler_dbt
 
-    StdOutput << QString("Finish unloading...") << Qt::endl;
+    StdOutput.flush();
+    QThread::sleep(2);
+    StdOutput << QString("Unloading finished ...") << Qt::endl;
 
     if (linesFile.isOpen())
     {
