@@ -3,13 +3,12 @@
 
 #include <QWizard>
 #include <fmtlibfactory.h>
-#include "fileeditorpageinterface.h"
 
 class SelDirsPage;
-class FileListPage;
-class FileTypesPage;
+class StructSettingsPage;
 class ConnectionInfo;
-class HotfixWizard : public QWizard
+class QSettings;
+class HotfixWizard Q_DECL_FINAL : public QWizard
 {
     Q_OBJECT
 public:
@@ -23,7 +22,7 @@ public:
         ContentCreateTables,
     };
     HotfixWizard();
-    ~HotfixWizard() Q_DECL_FINAL;
+    virtual ~HotfixWizard();
 
     void setFileListText(const QString &text);
     QString fileListText() const;
@@ -31,18 +30,18 @@ public:
     bool isSetContentFlag(const ContentFlag &flag);
 
     ConnectionInfo *connection();
+    QSettings *settings();
 
 private:
     void setContentFlag(const QString &filename);
     SelDirsPage *m_pSelDirsPage;
-    FileListPage *m_FileListPage;
-    FileTypesPage *m_FileTypesPage;
+    StructSettingsPage *m_pStructPage;
 
     ConnectionInfo *pConnetion;
-    FmtLibFactory<FileEditorPageInterface, QString> m_PageFactory;
     QStringList m_FileList;
 
     QSet<ContentFlag> m_Contents;
+    QScopedPointer<QSettings> m_pSettings;
 };
 
 inline uint qHash(const HotfixWizard::ContentFlag &key, uint seed)

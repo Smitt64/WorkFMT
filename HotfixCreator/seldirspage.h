@@ -6,6 +6,8 @@
 #include <QFileDialog>
 #include <QToolButton>
 #include <QScopedPointer>
+#include <QSettings>
+#include <selectfolderdlg.h>
 
 namespace Ui {
 class SelDirsPage;
@@ -15,9 +17,11 @@ class SelectDirWrp Q_DECL_FINAL: public QObject
 {
     Q_OBJECT
 public:
-    SelectDirWrp(QLineEdit *edit, QWidget *parent = nullptr) :
+    SelectDirWrp(QLineEdit *edit, QSettings *settings, const QString &context, QWidget *parent = nullptr) :
         QObject(parent)
     {
+        m_pSettings = settings;
+        m_Context = context;
         m_widget = edit;
     }
 
@@ -25,16 +29,23 @@ public slots:
     void selectDirSlot()
     {
         QWizardPage *page = qobject_cast<QWizardPage*>(parent());
-        QString dir = QFileDialog::getExistingDirectory(page, m_widget->toolTip(), m_widget->text());
 
-        if (!dir.isEmpty())
+        SelectFolderDlg dlg(m_pSettings, m_Context, m_widget);
+        if (dlg.exec() == QDialog::Accepted)
         {
-            m_widget->setText(dir);
-            page->completeChanged();
+            QString dir = dlg.selectedPath();
+
+            if (!dir.isEmpty())
+            {
+                m_widget->setText(dir);
+                emit page->completeChanged();
+            }
         }
     }
 
 private:
+    QString m_Context;
+    QSettings *m_pSettings;
     QLineEdit *m_widget;
 };
 

@@ -22,20 +22,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    fileeditorpageinterface.cpp \
-    filelistpage.cpp \
-    filetypespage.cpp \
+    hotfixcontentmodel.cpp \
     hotfixwizard.cpp \
     main.cpp \
-    seldirspage.cpp
+    model/contenttreeitem.cpp \
+    model/filecontenttreeitem.cpp \
+    model/fmtcontenttreeitem.cpp \
+    model/foldercontenttreeitem.cpp \
+    seldirspage.cpp \
+    structsettingspage.cpp
 
 HEADERS += \
-    fileeditorpageinterface.h \
-    filelistpage.h \
-    filetypespage.h \
+    hotfixcontentmodel.h \
     hotfixwizard.h \
-    mainwindow.h \
-    seldirspage.h
+    model/contenttreeitem.h \
+    model/filecontenttreeitem.h \
+    model/fmtcontenttreeitem.h \
+    model/foldercontenttreeitem.h \
+    seldirspage.h \
+    structsettingspage.h
 
 # Default rules for deployment.
 target.path = $$PWD/../bin
@@ -43,9 +48,8 @@ INSTALLS += target
 
 FORMS += \
     datpage.ui \
-    filelistpage.ui \
-    filetypespage.ui \
-    seldirspage.ui
+    seldirspage.ui \
+    structsettingspage.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib
@@ -56,3 +60,10 @@ DEPENDPATH += $$PWD/../FmtLib
 
 RESOURCES += \
     hfcres.qrc
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime

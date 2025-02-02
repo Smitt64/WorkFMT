@@ -2,5 +2,19 @@
     <qresource prefix="/">
         <file>img/complete.png</file>
         <file>img/fail.png</file>
+        <file>img/ext_c.png</file>
+        <file>img/ext_cpp.png</file>
+        <file>img/ext_h.png</file>
+        <file>img/ext_hpp.png</file>
+        <file>img/ext_vcproj.png</file>
+        <file>img/ext_txt.png</file>
+        <file>img/ext_def.png</file>
+        <file>img/ext_xml.png</file>
+        <file>img/ext_mac.png</file>
+        <file>img/ext_xls.png</file>
+        <file>img/ext_doc.png</file>
+        <file>img/ext_dot.png</file>
+        <file>img/fmtable.png</file>
+        <file>img/index.png</file>
     </qresource>
 </RCC>

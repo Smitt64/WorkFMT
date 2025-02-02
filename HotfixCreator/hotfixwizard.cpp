@@ -1,30 +1,35 @@
 #include "hotfixwizard.h"
 #include "seldirspage.h"
-#include "filelistpage.h"
-#include "filetypespage.h"
+#include "structsettingspage.h"
 #include "fmtcore.h"
+#include <QSettings>
 #include <connectioninfo.h>
 
-HotfixWizard::HotfixWizard()
+HotfixWizard::HotfixWizard() :
+    QWizard()
 {
-    FmtInit();
     setWindowTitle(tr("Мастер создания хотфиксов"));
+    setWindowIcon(QIcon(":/img/DiffToScript.png"));
+    setFixedSize(800, 600);
 
-    pConnetion = new ConnectionInfo();
-    pConnetion->openSqlteMemory();
+    QDir settingsDir = QDir(qApp->applicationDirPath());
+    m_pSettings.reset(new QSettings(settingsDir.absoluteFilePath("hfcreator.ini"), QSettings::IniFormat));
 
     m_pSelDirsPage = new SelDirsPage(this);
-    m_FileListPage = new FileListPage(this);
-    m_FileTypesPage = new FileTypesPage(this);
+    m_pStructPage = new StructSettingsPage(this);
 
     addPage(m_pSelDirsPage);
-    addPage(m_FileListPage);
-    addPage(m_FileTypesPage);
+    addPage(m_pStructPage);
 }
 
 HotfixWizard::~HotfixWizard()
 {
 
+}
+
+QSettings *HotfixWizard::settings()
+{
+    return m_pSettings.data();
 }
 
 void HotfixWizard::setFileListText(const QString &text)
@@ -54,7 +59,7 @@ void HotfixWizard::setFileListText(const QString &text)
                 line = line.mid(1);
             }
 
-            if (line.mid(0, 6).contains("Source", Qt::CaseInsensitive))
+            if (line.midRef(0, 6).contains("Source", Qt::CaseInsensitive))
                 m_Contents.insert(ContentFlag::ContentSource);
             else
             {

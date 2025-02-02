@@ -140,3 +140,5 @@ qrsd/rsd/lib/debug/
 qrsd/rsd/lib/release/
 
 WorkFMT.pro.user.488e2ad
+
+DiffToScript/DiffToScript.ini
