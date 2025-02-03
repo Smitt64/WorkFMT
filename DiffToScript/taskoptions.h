@@ -22,6 +22,7 @@ enum CmdTaskOption
     ctoPostgres,
     ctoConnectionString,
     ctoConnectionUnicode,
+    ctoDiffInfoMode,
 
     toLast
 };

@@ -1,6 +1,7 @@
 #ifndef DIFFCORE_H
 #define DIFFCORE_H
 
+#include <QObject>
 #include <QString>
 #include <QPair>
 #include <QVector>
@@ -22,7 +23,6 @@ enum LineUpdateType
     lutNew,
     lutLast
 };
-
 
 struct ParsedLine
 {

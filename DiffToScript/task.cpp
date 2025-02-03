@@ -156,7 +156,11 @@ void parseUpdateRecords(DatTable& datTable)
 
 void Task::run()
 {
-    runTask();
+    if (!optns[ctoDiffInfoMode].isSet)
+        runScriptTask();
+    else
+        runDiffTask();
+
     emit finished();
 }
 
@@ -165,8 +169,86 @@ int Task::result() const
     return m_Result;
 }
 
+void Task::runDiffTask()
+{
+    QString rules = getRules(optns);
+    QLoggingCategory::setFilterRules(rules);
+
+    // Определение потоков вывода
+    StreamControl sc;
+    QTextStream os(sc.makeOutputDevice(optns[ctoOutput].value));
+    QTextStream *is = sc.getInput(optns[ctoInput].value);
+    is->setCodec("IBM 866");
+    os.setCodec("IBM 866");
+
+    // normalize input for new files
+    QTemporaryFile tmp;
+    if (tmp.open())
+    {
+        const QString end_pattern = "+BEGINDATA";
+        QTextStream tmpStream(&tmp);
+        tmpStream.setCodec("IBM 866");
+
+        QString lines = is->readAll();
+
+        int begin_pos = lines.indexOf("+LOAD DATA");
+        int end_pos = lines.indexOf(end_pattern);
+
+        if (begin_pos != -1 && end_pos != -1)
+        {
+            lines = lines.remove(begin_pos, (end_pos - begin_pos) + end_pattern.size());
+            tmpStream.seek(0);
+            tmpStream << lines;
+            qDebug() << tmp.fileName();
+            tmp.close();
+
+            is = sc.getInput(tmp.fileName());
+            is->setCodec("IBM 866");
+        }
+        else
+        {
+            is->seek(0);
+            tmp.close();
+        }
+    }
+
+    //Распознование типа строк в исходном файле
+    LinesParserMain linesParser;
+    linesParser.setTableParser(new LinesTablePareser("Index: "));
+    if (optns[ctoInsert].isSet)
+    {
+        linesParser.setInsertParser(new LinesInsertParser("+"));
+        qCInfo(logTask) << "Include insert parser.";
+    }
+    if (optns[ctoDelete].isSet)
+    {
+        linesParser.setDeleteParser(new LinesDeleteParser("-"));
+        qCInfo(logTask) << "Include delete parser.";
+    }
+    if (optns[ctoUpdate].isSet)
+    {
+        linesParser.setUpdateParser(new LinesUpdateParser("-"));
+        qCInfo(logTask) << "Include update parser.";
+    }
+
+    is->device()->waitForReadyRead(-1);
+    while (!is->atEnd())
+    {
+        linesParser.parseDoc(*is);
+
+        qCInfo(logTask) << "Diff parsed. Lines:"
+                        << "insert -" << linesParser.linesCount({ltInsert})
+                        << "delete -" << linesParser.linesCount({ltDelete})
+                        << "update -" << linesParser.linesCount({ltUpdate});
+
+        is->device()->waitForReadyRead(-1);
+    }
+
+    linesParser.serializeLines(os, "json");
+}
+
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
-void Task::runTask()
+void Task::runScriptTask()
 {
     QString rules = getRules(optns);
     QLoggingCategory::setFilterRules(rules);

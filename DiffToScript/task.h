@@ -17,7 +17,8 @@ public:
     explicit Task(QObject *parent = nullptr);
 //    void setOption(TaskOption opt, bool val) {optns[opt] = val;}
 //    bool getOption(TaskOption opt) const { return optns[opt];}
-    void runTask();
+    void runScriptTask();
+    void runDiffTask();
     void setInput(QString fileName);
 
     int result() const;

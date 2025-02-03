@@ -10,6 +10,7 @@ CommandLineParseResult CmdParser::parse()
 {
     const QString oracleParm = "ora";
     const QString postgresParm = "pg";
+    const QString diffParm = "diff";
 
     using Status = CommandLineParseResult::Status;
 
@@ -67,6 +68,9 @@ CommandLineParseResult CmdParser::parse()
     QCommandLineOption postgresOption(postgresParm, "Sql скрипт для БД postgres");
     parser.addOption(postgresOption);
 
+    QCommandLineOption diffOption(diffParm, "Данные различий svn diff");
+    parser.addOption(diffOption);
+
     const QCommandLineOption helpOption = parser.addHelpOption();
 
     parser.process(*_app);
@@ -94,6 +98,7 @@ CommandLineParseResult CmdParser::parse()
     opts[ctoPostgres].isSet = parser.isSet(postgresOption);
     opts[ctoConnectionString].isSet = parser.isSet(connectionStringOption);
     opts[ctoConnectionUnicode].isSet = parser.isSet(unicodeConnectionOption);
+    opts[ctoDiffInfoMode].isSet = parser.isSet(diffOption);
 
     if (opts[ctoOracle].isSet & opts[ctoPostgres].isSet)
     {

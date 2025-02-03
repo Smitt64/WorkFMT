@@ -20,6 +20,11 @@ public:
     const ParsedLines &getParsedLines() const {return _lines;};
     int linesCount(std::initializer_list<LineType> types) const;
     ParsedLines getParsedLines(std::initializer_list<LineType> types) const;
+
+    void serializeLines(QTextStream& stream, const QString& format) const;
+    void serializeToJson(QTextStream& stream) const;
+    void serializeToXml(QTextStream& stream) const;
+
 private:
     ParsedLines _lines;
     QString _tableName;
