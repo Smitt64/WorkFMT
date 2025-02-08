@@ -31,9 +31,14 @@ public:
 
     void setCheckable(const bool &checkable);
     void setTristate(const bool &state);
+    void setEnable(const bool &state);
+
+    void setOrder(const qint16 &v);
+    const qint16 &order() const;
 
     const bool &checkable() const;
     const bool &tristate() const;
+    const bool &isEnable() const;
 
     Qt::CheckState checkState();
 
@@ -52,7 +57,8 @@ private:
     std::vector<std::unique_ptr<ContentTreeItem>> m_childItems;
 
     Qt::CheckState m_Check;
-    bool m_Chackable, m_Tristate;
+    bool m_Chackable, m_Tristate, m_fEnabled;
+    qint16 m_Order;
 };
 
 #endif // CONTENTTREEITEM_H

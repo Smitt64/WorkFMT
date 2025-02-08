@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <memory>
+#include <QSet>
 
 class ContentTreeItem;
 class FolderContentTreeItem;
@@ -30,6 +31,8 @@ public:
     int rowCount(const QModelIndex &parent = {}) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent = {}) const Q_DECL_OVERRIDE;
 
+    void sort(int column, Qt::SortOrder order) Q_DECL_OVERRIDE;
+
     void makeModel(const QString &source, const QString &dst, const QString &hfname, const bool &NewFormat);
 
 public slots:
@@ -37,14 +40,16 @@ public slots:
 
 private:
     typedef QMap<QString, FolderContentTreeItem*> FolderParents;
-    typedef std::function<ContentTreeItem*(FolderContentTreeItem *parent, const QString &name)> PathMaker;
+    typedef std::function<ContentTreeItem*(FolderContentTreeItem *parent, const QString &name, const QString &fullname)> PathMaker;
 
+    bool getTFStructValue(const QString &fileName, bool &tfStruct);
     ContentTreeItem *makePath(FolderParents &Parents, const QString &path, Qt::HANDLE element, FolderContentTreeItem *parent);
     ContentTreeItem *makePathEx(FolderParents &Parents, const QString &path, Qt::HANDLE elem, FolderContentTreeItem *parent, PathMaker maker);
     void makeAddFiles(FolderParents &Parents, const QString &path, Qt::HANDLE elem, FolderContentTreeItem *AddFiles);
     bool isFile(const QString &name);
     bool isExcludeElement(const QString &name);
 
+    QSet<QString> m_Projects;
     std::unique_ptr<ContentTreeItem> rootItem;
 };
 

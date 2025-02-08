@@ -1,6 +1,7 @@
 #include "fmtcontenttreeitem.h"
 #include "hotfixcontentmodel.h"
 #include <QIcon>
+#include <QFileInfo>
 
 FmtContentTreeItem::FmtContentTreeItem(const QString &file, ContentTreeItem *parentItem) :
     FileContentTreeItem(file, parentItem),
@@ -11,6 +12,11 @@ FmtContentTreeItem::FmtContentTreeItem(const QString &file, ContentTreeItem *par
 FmtContentTreeItem::~FmtContentTreeItem()
 {
 
+}
+
+void FmtContentTreeItem::setElementType(const FmtElement &type)
+{
+    m_Elem = type;
 }
 
 QVariant FmtContentTreeItem::data(const int &column, const int &role) const
@@ -24,11 +30,29 @@ QVariant FmtContentTreeItem::data(const int &column, const int &role) const
             else
                 return QIcon("://img/index.png");
         }
+        else if (role == Qt::DisplayRole)
+        {
+            if (m_Elem == ElementTable)
+            {
+                QFileInfo fi(fileName());
+                return fi.baseName().toUpper();
+            }
+        }
     }
     else if (column == HotfixContentModel::ColumnAction)
     {
         if (role == Qt::DisplayRole)
-            return QObject::tr("create index");
+        {
+            if (m_Elem == ElementIndex)
+                return QObject::tr("create index");
+            else
+            {
+                if (svnAction() == "modified")
+                    return "alter table";
+                else
+                    return "create table";
+            }
+        }
     }
 
     return FileContentTreeItem::data(column, role);

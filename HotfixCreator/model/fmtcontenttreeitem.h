@@ -16,6 +16,8 @@ public:
 
     virtual QVariant data(const int &column, const int &role) const;
 
+    void setElementType(const FmtElement &type);
+
 private:
     FmtElement m_Elem;
 };

@@ -14,6 +14,8 @@ public:
     virtual QVariant data(const int &column, const int &role) const Q_DECL_OVERRIDE;
 
     static QIcon getIconForExtension(const QString &ext);
+    const QString &fileName() const;
+    const QString &svnAction() const;
 
 private:
     QString m_FileName, m_SvnAction, m_FullFileName;

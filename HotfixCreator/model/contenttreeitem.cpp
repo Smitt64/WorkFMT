@@ -8,11 +8,13 @@ Q_GLOBAL_STATIC(QFileIconProvider, pIconProvider)
 
 ContentTreeItem::ContentTreeItem(ContentTreeItem *parentItem) :
     QObject(),
+    m_fSkipSetDataChild(false),
     m_parentItem(parentItem),
     m_Check(Qt::Unchecked),
     m_Chackable(false),
     m_Tristate(false),
-    m_fSkipSetDataChild(false)
+    m_fEnabled(true),
+    m_Order(0)
 {
 
 }
@@ -63,6 +65,9 @@ bool ContentTreeItem::setData(const QVariant &value, const int &column, int role
 
         for (int i = 0; i < m_childItems.size(); i++)
         {
+            if (!m_childItems[i]->isEnable())
+                continue;
+
             m_childItems[i]->setData(value, column, role);
             emit m_childItems[i]->itemChanged(column, {role});
         }
@@ -76,6 +81,9 @@ bool ContentTreeItem::setData(const QVariant &value, const int &column, int role
                 firstcheck = prnt->m_childItems[i]->m_Check;
             else
             {
+                if (!prnt->m_childItems[i]->isEnable())
+                    continue;
+
                 if (prnt->m_childItems[i]->m_Check != firstcheck)
                 {
                     if (prnt->m_Tristate)
@@ -135,6 +143,11 @@ void ContentTreeItem::setTristate(const bool &state)
     m_Tristate = state;
 }
 
+void ContentTreeItem::setEnable(const bool &state)
+{
+    m_fEnabled = state;
+}
+
 Qt::CheckState ContentTreeItem::checkState()
 {
     return m_Check;
@@ -158,4 +171,19 @@ void ContentTreeItem::setModel(HotfixContentModel *model)
 HotfixContentModel *ContentTreeItem::model()
 {
     return m_pModel;
+}
+
+const bool &ContentTreeItem::isEnable() const
+{
+    return m_fEnabled;
+}
+
+void ContentTreeItem::setOrder(const qint16 &v)
+{
+    m_Order = v;
+}
+
+const qint16 &ContentTreeItem::order() const
+{
+    return m_Order;
 }

@@ -2,6 +2,7 @@
 #include "hotfixcontentmodel.h"
 #include "filecontenttreeitem.h"
 #include "fmtcontenttreeitem.h"
+#include "datfilecontenttreeitem.h"
 #include <QFileIconProvider>
 #include <QDebug>
 
@@ -54,4 +55,10 @@ FmtContentTreeItem *FolderContentTreeItem::appendFmtItem(const QString &name)
 {
     QString path = m_Folder + "\\" + name;
     return (FmtContentTreeItem*)appendChild(std::make_unique<FmtContentTreeItem>(QDir::toNativeSeparators(path)));
+}
+
+DatFileContentTreeItem *FolderContentTreeItem::appendDatItem(const QString &name)
+{
+    QString path = m_Folder + "\\" + name;
+    return (DatFileContentTreeItem*)appendChild(std::make_unique<DatFileContentTreeItem>(QDir::toNativeSeparators(path)));
 }

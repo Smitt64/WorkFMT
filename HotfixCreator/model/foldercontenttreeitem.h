@@ -8,6 +8,7 @@
 class QFileIconProvider;
 class FileContentTreeItem;
 class FmtContentTreeItem;
+class DatFileContentTreeItem;
 class FolderContentTreeItem : public ContentTreeItem
 {
 public:
@@ -20,6 +21,7 @@ public:
     FolderContentTreeItem *appendFolder(const QString &name);
     FileContentTreeItem *appendFile(const QString &name);
     FmtContentTreeItem *appendFmtItem(const QString &name);
+    DatFileContentTreeItem *appendDatItem(const QString &name);
 
 private:
     QString m_Folder;

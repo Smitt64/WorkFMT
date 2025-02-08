@@ -26,6 +26,7 @@ SOURCES += \
     hotfixwizard.cpp \
     main.cpp \
     model/contenttreeitem.cpp \
+    model/datfilecontenttreeitem.cpp \
     model/filecontenttreeitem.cpp \
     model/fmtcontenttreeitem.cpp \
     model/foldercontenttreeitem.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     hotfixcontentmodel.h \
     hotfixwizard.h \
     model/contenttreeitem.h \
+    model/datfilecontenttreeitem.h \
     model/filecontenttreeitem.h \
     model/fmtcontenttreeitem.h \
     model/foldercontenttreeitem.h \

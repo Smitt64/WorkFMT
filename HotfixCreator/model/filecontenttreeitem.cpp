@@ -2,6 +2,7 @@
 #include "hotfixcontentmodel.h"
 #include <QFileIconProvider>
 #include <QFileInfo>
+#include <QDir>
 #include <QDebug>
 
 FileContentTreeItem::FileContentTreeItem(const QString &file, ContentTreeItem *parentItem) :
@@ -37,6 +38,8 @@ QVariant FileContentTreeItem::data(const int &column, const int &role) const
             else
                 return iconProvider()->icon(QFileIconProvider::File);
         }
+        else if (role == Qt::ToolTipRole)
+            return QDir::toNativeSeparators(m_FullFileName);
     }
     else if (column == HotfixContentModel::ColumnAction)
     {
@@ -55,6 +58,16 @@ void FileContentTreeItem::setSvnAction(const QString &action)
 void FileContentTreeItem::setFullFileName(const QString &action)
 {
     m_FullFileName = action;
+}
+
+const QString &FileContentTreeItem::fileName() const
+{
+    return m_FileName;
+}
+
+const QString &FileContentTreeItem::svnAction() const
+{
+    return m_SvnAction;
 }
 
 QIcon FileContentTreeItem::getIconForExtension(const QString &ext)
@@ -77,6 +90,11 @@ QIcon FileContentTreeItem::getIconForExtension(const QString &ext)
         {"doc", QIcon("://img/ext_doc.png")},
         {"docx", QIcon("://img/ext_doc.png")},
         {"dot", QIcon("://img/ext_dot.png")},
+        {"sql", QIcon("://img/ext_sql.png")},
+        {"pks", QIcon("://img/ext_sql.png")},
+        {"pkb", QIcon("://img/ext_sql.png")},
+        {"trg", QIcon("://img/ext_sql.png")},
+        {"trn", QIcon("://img/ext_sql.png")},
     };
 
     if (icons.contains(ext))

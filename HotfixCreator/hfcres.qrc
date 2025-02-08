@@ -16,5 +16,6 @@
         <file>img/ext_dot.png</file>
         <file>img/fmtable.png</file>
         <file>img/index.png</file>
+        <file>img/ext_sql.png</file>
     </qresource>
 </RCC>
