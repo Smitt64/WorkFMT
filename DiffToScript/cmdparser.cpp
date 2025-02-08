@@ -39,6 +39,9 @@ CommandLineParseResult CmdParser::parse()
     QCommandLineOption targetOutputOption("output", "Файл, в который нужно сохранить результат", "output_file");
     parser.addOption(targetOutputOption);
 
+    QCommandLineOption datfileOption("dat", "Dat файл, который содержит исходный данные.", "dat_file");
+    parser.addOption(datfileOption);
+
     QCommandLineOption connectionStringOption(QStringList() << "cs" << "con-str",
                                               QApplication::translate("main", "Подключиться к базе данных использую строку подключения <constring>"),
                                               QApplication::translate("main", "constring"));
@@ -88,6 +91,7 @@ CommandLineParseResult CmdParser::parse()
     opts[ctoInsert].isSet = parser.isSet(insertScriptOption);
     opts[ctoUpdate].isSet = parser.isSet(updateScriptOption);
     opts[ctoInput].isSet = parser.isSet(targetInputOption);
+    opts[ctoDatFile].isSet = parser.isSet(datfileOption);
     opts[ctoOutput].isSet = parser.isSet(targetOutputOption);
 //    opts[ctoAutoInc].isSet = parser.isSet(autoIncOption);
 //    opts[ctoTableInfo].isSet = parser.isSet(tableInfoOption);
@@ -108,8 +112,12 @@ CommandLineParseResult CmdParser::parse()
 
     if (opts[ctoInput].isSet)
         opts[ctoInput].value = parser.value(targetInputOption);
+
     if (opts[ctoOutput].isSet)
         opts[ctoOutput].value = parser.value(targetOutputOption);
+
+    if (opts[ctoDatFile].isSet)
+        opts[ctoDatFile].value = parser.value(datfileOption);
 //    if (opts[ctoAutoInc].isSet)
 //        opts[ctoAutoInc].value = parser.value(autoIncOption);
 //    if (opts[ctoIndex].isSet)

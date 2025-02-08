@@ -13,10 +13,12 @@ public:
     int errorCount() const { return _errorCount; }
     void parseUpdateRecords(ScriptTable& datTable);
     bool hasInserts() const;
+
 private:
-    QStringList _errors; //РћС€РёР±РєРё РїРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ С„СѓРЅРєС†РёРё loadData.
-    int _errorCount; // РћС€РёР±РєРё Р·Р° РІСЃС‘ РІСЂРµРјСЏ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ РѕР±СЉРµРєС‚Р°.
+    QStringList _errors; // Ошибки после выполнения функции loadData.
+    int _errorCount; // Ошибки за всё время существования объекта.
     QString getPrimaryKey(const DatIndexes& indexes);
+    bool containsAny(const QString& str, const QStringList& stringList);
     DatRecords::iterator parseUpdateBlock(int indexPrimaryKey, DatRecords::iterator first, DatRecords::iterator last);
 };
 

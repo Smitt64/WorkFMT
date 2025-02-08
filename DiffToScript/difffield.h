@@ -4,7 +4,7 @@
 #include <QString>
 #include <QList>
 #include <QException>
-
+#include <limits>
 
 class ExceptionOutOfRange: public QException
 {
@@ -40,9 +40,18 @@ struct DiffField: IndexField
     bool isString;
     bool isDate() const;
     bool isBlob() const;
-    DiffField(){}
+    DiffField()
+    {
+        type = std::numeric_limits<qint16>::infinity();
+    }
+
     DiffField(const QString& name, qint16 type, const QString& typeName, bool isAutoinc = false, bool isString = false)
         : IndexField{name, isAutoinc}, type(type), typeName(typeName), isString(isString){}
+
+    bool isValid() const
+    {
+        return type != std::numeric_limits<qint16>::infinity();
+    }
 };
 
 struct DiffFields: public QList<DiffField>

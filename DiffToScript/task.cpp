@@ -16,7 +16,7 @@
 #include "fmtsegment.h"
 #include "sqlscriptmain.h"
 #include <QTemporaryFile>
-
+#include <QInputDialog>
 #include <QTextStream>
 #include <QFile>
 #include <QApplication>
@@ -248,6 +248,8 @@ void Task::runDiffTask()
 }
 
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
+// --delete --insert --update --input diff.txt --ora --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031"
+// --delete --insert --update --input diff.txt --ora --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031" --dat D:\svn\UranRSBankV6\Main\Distrib\DBFile\Data\DPURPLE_DBT.dat
 void Task::runScriptTask()
 {
     QString rules = getRules(optns);
@@ -359,7 +361,15 @@ void Task::runScriptTask()
         }
         qCInfo(logTask) << "FMT loaded.";
 
-        datTable.loadFromFmt(&fmtTable);
+        QString datfilepath;
+
+        if (optns[ctoDatFile].isSet)
+            datfilepath = optns[ctoDatFile].value;
+
+        // for debug pause, can attach
+        //QInputDialog::getMultiLineText(nullptr, "", "", "");
+
+        datTable.loadFromFmt(&fmtTable, datfilepath);
         qCInfo(logTask) << "Fields of" << datTable.name << "loaded. Count =" << datTable.fields.count();
 
         datTable.loadData(linesParser.getParsedLines());

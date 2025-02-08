@@ -14,10 +14,13 @@ public:
     DiffFields fields;
     DatIndexes indexes;    
     QStringList realFields;
-    void loadFromFmt(FmtTable* fmtTable); //TODO replace FmtTable to QString
+    void loadFromFmt(FmtTable* fmtTable, const QString &datfilename = QString()); //TODO replace FmtTable to QString
     bool firstUniq(DatIndex &idx, bool skipAutoInc) const;
     DiffField field(const QString &name) const;
     DiffFields missingFldInDat() const;
+
+private:
+    QStringList readColumnsFromFile(const QString& filePath);
 };
 
 class DiffTable: public DiffTableInfo

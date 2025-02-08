@@ -648,13 +648,19 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
         for (int i = 0; i < updCnt; ++i)
         {
             qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
-            toScript(joinTable, joinTable->scriptTable->records[newIndex]);
-            buildUpdateStatement(os, joinTable, sql, oldIndex, newIndex);
-            buildChildStatement(os, joinTable, sql, newIndex);
-            joinTable->processedRecords[oldIndex] = true;
-            joinTable->processedRecords[newIndex] = true;
-            ++oldIndex;
-            ++newIndex;
+
+            if (newIndex >= 0 && newIndex < joinTable->scriptTable->records.size())
+            {
+                toScript(joinTable, joinTable->scriptTable->records[newIndex]);
+                buildUpdateStatement(os, joinTable, sql, oldIndex, newIndex);
+                buildChildStatement(os, joinTable, sql, newIndex);
+                joinTable->processedRecords[oldIndex] = true;
+                joinTable->processedRecords[newIndex] = true;
+                ++oldIndex;
+                ++newIndex;
+            }
+            else
+                qCWarning(logSqlScriptMain) << "Record index" << recIndex << ". Record not processed: " << rec.values.join(", ");
         }
         nextRecIndex = newIndex;
     }
@@ -699,7 +705,7 @@ int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJ
 
 const JoinTable* getParent(JoinTable* joinTable)
 {
-    for (const Join* join: joinTable->joinList)
+    for (const Join* join: qAsConst(joinTable->joinList))
         if (join->child->scriptTable->name.toLower() == joinTable->scriptTable->name.toLower())
             return join->parent;
 }

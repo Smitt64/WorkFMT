@@ -20,20 +20,35 @@ void ScriptTable::loadData(const ParsedLines& lines)
             qCInfo(logScriptTable) << "Table name loaded " << name;
             continue;
         }
-        if (recParser.parseRecord(line.value))
+
+        if (!containsAny(line.value, realFields))
         {
-            records.append({recParser.getValues(), line.lineType, line.lineUpdateType});
-            qCInfo(logScriptTable) << "Record added: " << recParser.getValues().join("m");
-        }
-        else
-        {
-            qCWarning(logScriptTable) << "Error in line: " << line.value;
-            _errors.append("Error in line: " + line.value);
-            _errors.append(recParser.getErrors());
-            _errorCount++;
+            if (recParser.parseRecord(line.value))
+            {
+                records.append({recParser.getValues(), line.lineType, line.lineUpdateType});
+                qCInfo(logScriptTable) << "Record added: " << recParser.getValues().join("m");
+            }
+            else
+            {
+                qCWarning(logScriptTable) << "Error in line: " << line.value;
+                _errors.append("Error in line: " + line.value);
+                _errors.append(recParser.getErrors());
+                _errorCount++;
+            }
         }
     }    
     qCInfo(logScriptTable) << "End load records. Record added " << records.count();
+}
+
+bool ScriptTable::containsAny(const QString& str, const QStringList& stringList)
+{
+    for (const QString& item : stringList)
+    {
+        if (str.contains(item))
+            return true;
+    }
+
+    return false;
 }
 
 QString ScriptTable::getPrimaryKey(const DatIndexes& indexes)

@@ -23,7 +23,10 @@ DiffField RecordParser::field(const QString &name)
         return false;
     });
 
-    return *iter;
+    if (iter != _diffFields->cend())
+        return *iter;
+
+    return DiffField();
 }
 
 bool RecordParser::parseRecord(QString line)
@@ -37,31 +40,43 @@ bool RecordParser::parseRecord(QString line)
     for (int i = 0; i < _realFields.count(); ++i)
     {
         DiffField fld = field(_realFields[i]);
-        QString value;
-        bool success = true;
-        if (fld.isString)
+
+        if (fld.isValid())
         {
-            if ((success = parseString(is, value)))
-                _values.push_back(value);
+            QString value;
+            bool success = true;
+            if (fld.isString)
+            {
+                if ((success = parseString(is, value)))
+                    _values.push_back(value);
+            }
+            else
+            {
+                if ((success = parseValue(is, value)))
+                    _values.push_back(value);
+            }
+
+            c = getToken(is);
+            if (!is.atEnd() && getToken(is) != ",")
+                success = false;
+
+            if (success == false)
+            {
+                _errors.append("\tError. Field number = " + QString::number(i + 1) + ", name = " + fld.name);
+            }
+
+            is.read(1);
+            readCnt++;
         }
         else
         {
-            if ((success = parseValue(is, value)))
-                _values.push_back(value);
+            if (fld.isDate())
+                _values.push_back(QString("TO_DATE('01.01.0001', 'dd.mm.yyyy')"));
+            else if (fld.isString)
+                _values.push_back(QString("CHR(1)"));
+            else
+                _values.push_back(QString("0"));
         }
-
-        c = getToken(is);
-        if (!is.atEnd() && getToken(is) != ",")
-            success = false;
-
-        if (success == false)
-        {
-            _errors.append("\tError. Field number = " + QString::number(i + 1) + ", name = " + fld.name);
-        }
-
-        is.read(1);
-
-        readCnt++;
     }
 
     if (!is.atEnd())

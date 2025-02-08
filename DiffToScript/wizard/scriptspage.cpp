@@ -18,6 +18,7 @@
 #include <QSplitter>
 #include <QScrollBar>
 #include <QTabWidget>
+#include <limits>
 
 enum
 {
@@ -59,7 +60,7 @@ void GenerateOperation::run()
     QStringList filesCleared = files;
     QList<TableLinks> tableLinks;
 
-    for (const QString &file : files)
+    for (const QString &file : qAsConst(files))
     {
         QFileInfo fi(file);
         QString fileName = toolFullFileNameFromDir(QString("relations/%1.json").arg(fi.baseName().toLower()));
@@ -70,7 +71,7 @@ void GenerateOperation::run()
             TableLinks& tableLink = tableLinks.back();
             tableLink.loadLinks(fileName);
 
-            for (const Link &childlnk : tableLink.links)
+            for (const Link &childlnk : qAsConst(tableLink.links))
             {
                 QStringList::iterator pos = std::find_if(files.begin(), files.end(), [=](const QString &f)
                 {
@@ -109,7 +110,7 @@ void GenerateOperation::run()
                 args.append(QString("%1/%2").arg(info["url"], *file));
         }
 
-        for (const Link &childlnk : tableLink.links)
+        for (const Link &childlnk : qAsConst(tableLink.links))
         {
             file = std::find_if(files.begin(), files.end(), [=](const QString &f)
             {
@@ -194,7 +195,7 @@ void GenerateOperation::run()
         return result;
     };
 
-    auto ExecDiff = [this, GetResult, argtmpl](const QByteArray &data, const QString &mode) -> QString
+    auto ExecDiff = [this, GetResult, argtmpl](const QByteArray &data, const QString &mode, const QString &datfilename) -> QString
     {
         QString resultStr;
         QScopedPointer<QProcess> proc(new QProcess);
@@ -213,9 +214,11 @@ void GenerateOperation::run()
             <<tmp.fileName()
            << "--output"
            << result.fileName()
-           << mode;
+           << mode
+           << "--dat"
+           << QDir::toNativeSeparators(datfilename);
 
-        int ExitCode = CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true);
+        int ExitCode = CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true, std::numeric_limits<int>::max());
 
         if (ExitCode)
         {
@@ -265,10 +268,13 @@ void GenerateOperation::run()
     {
         iter.next();
 
-        QString result = ExecDiff(iter.value(), "--ora");
+        QDir svnpath(Path);
+        QString filename = svnpath.absoluteFilePath(iter.key());
+
+        QString result = ExecDiff(iter.value(), "--ora", filename);
         emit oracleScriptReady(result);
 
-        result = ExecDiff(iter.value(), "--pg");
+        result = ExecDiff(iter.value(), "--pg", filename);
         emit postgresScriptReady(result);
     }
 

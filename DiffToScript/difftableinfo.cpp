@@ -6,6 +6,7 @@
 #include "fmtindex.h"
 #include "fmtsegment.h"
 #include <QtSql>
+#include <QInputDialog>
 
 DiffTableInfo::DiffTableInfo()
 {
@@ -78,8 +79,82 @@ bool DiffTableInfo::firstUniq(DatIndex &idx, bool skipAutoInc) const
     return found;
 }
 
+QStringList DiffTableInfo::readColumnsFromFile(const QString& filePath)
+{
+    QStringList columns;
+    QFile file(filePath);
 
-void DiffTableInfo::loadFromFmt(FmtTable *fmtTable)
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qWarning() << "Не удалось открыть файл:" << filePath;
+        return columns;
+    }
+
+    QTextStream in(&file);
+    in.setCodec("IBM 866"); // Устанавливаем кодировку (866 для кириллицы)
+
+    QString fileContent = in.readAll(); // Читаем весь файл в строку
+        file.close();
+
+        // 1. Ищем первое вхождение "("
+        int startPos = fileContent.indexOf('(');
+        if (startPos == -1)
+        {
+            qWarning() << "Секция с колонками не найдена.";
+            return columns;
+        }
+
+        // 2. Ищем вхождение "BEGINDATA"
+        int begindataPos = fileContent.indexOf("BEGINDATA", startPos);
+        if (begindataPos == -1)
+        {
+            qWarning() << "Секция BEGINDATA не найдена.";
+            return columns;
+        }
+
+        // 3. Отрезаем секцию с колонками: от "(" до "BEGINDATA"
+        QString columnsSection = fileContent.mid(startPos + 1, begindataPos - startPos - 1);
+
+        // 4. Разделяем на строки по символу новой строки
+        QStringList lines = columnsSection.split('\n', Qt::SkipEmptyParts);
+
+        // 5. Обрабатываем каждую строку
+        for (const QString& line : qAsConst(lines))
+        {
+            QString trimmedLine = line.trimmed(); // Убираем пробелы в начале и конце
+
+            // Убираем закрывающую скобку, если она есть
+            if (trimmedLine.endsWith(')'))
+                trimmedLine.chop(1); // Удаляем последний символ
+
+            // Берем только первое слово (до первого пробела или запятой)
+            int spacePos = trimmedLine.indexOf(' ');
+            int commaPos = trimmedLine.indexOf(',');
+
+            // Определяем, какой символ встречается раньше: пробел или запятая
+            int endOfWordPos = -1;
+            if (spacePos != -1 && commaPos != -1)
+                endOfWordPos = qMin(spacePos, commaPos);
+            else if (spacePos != -1)
+                endOfWordPos = spacePos;
+            else if (commaPos != -1)
+                endOfWordPos = commaPos;
+
+            // Извлекаем первое слово
+            QString column;
+            if (endOfWordPos != -1)
+                column = trimmedLine.left(endOfWordPos).trimmed();
+            else
+                column = trimmedLine; // Если нет пробелов или запятых, берем всю строку
+
+            if (!column.isEmpty())
+                columns.append(column.toUpper());
+        }
+
+        return columns;
+}
+
+void DiffTableInfo::loadFromFmt(FmtTable *fmtTable, const QString &datfilename)
 {
     FmtInit();
     fields.clear();
@@ -102,6 +177,7 @@ void DiffTableInfo::loadFromFmt(FmtTable *fmtTable)
         realFields.append(df.name.toUpper());
         qCInfo(logScriptTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
     }
+
     if (fmtTable->blobLen() > 0)
     {
         DiffField df = { BlobFieldString(fmtTable->blobType()), fmtTable->blobType(), BlobTypeToString(fmtTable->blobType()), false, true};
@@ -133,32 +209,47 @@ void DiffTableInfo::loadFromFmt(FmtTable *fmtTable)
     }
     qCInfo(logScriptTable) << "End load from fmt. Table name = " << name;
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", QUuid::createUuid().toString());
-    QString infoFile = toolFullFileNameFromDir("datstruct.info");
-    db.setDatabaseName(infoFile);
+    QStringList tmpFields;
 
-    if (db.open())
+    if (!datfilename.isEmpty())
+        tmpFields = readColumnsFromFile(datfilename);
+
+    if (!tmpFields.isEmpty())
+        realFields = tmpFields;
+    else
     {
-        QSqlQuery q(db);
-        if (q.prepare("SELECT column FROM DAT_FIELDS where upper(NAME) = :val order by id"))
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", QUuid::createUuid().toString());
+        QString infoFile = toolFullFileNameFromDir("datstruct.info");
+        db.setDatabaseName(infoFile);
+
+        if (db.open())
         {
-            q.bindValue(":val", name);
-
-            if (q.exec())
+            QSqlQuery q(db);
+            if (q.prepare("SELECT column FROM DAT_FIELDS where upper(NAME) = :val order by id"))
             {
-                bool isFirst = true;
-                while(q.next())
+                q.bindValue(":val", name);
+
+                if (q.exec())
                 {
-                    if (isFirst)
+                    bool isFirst = true;
+                    while(q.next())
                     {
-                        realFields.clear();
-                        isFirst = false;
+                        if (isFirst)
+                        {
+                            realFields.clear();
+                            isFirst = false;
+                        }
+
+                        QString fld = q.value(0).toString();
+                        qCInfo(logDatTable) << "Loaded dat struct field" << fld;
+
+                        realFields.append(fld.toUpper());
                     }
-
-                    QString fld = q.value(0).toString();
-                    qCInfo(logDatTable) << "Loaded dat struct field" << fld;
-
-                    realFields.append(fld.toUpper());
+                }
+                else
+                {
+                    QString err = q.lastError().text();
+                    qCWarning(logDatTable) << "Can't find dat struct info for table" << name << q.lastError().text();
                 }
             }
             else
@@ -166,15 +257,10 @@ void DiffTableInfo::loadFromFmt(FmtTable *fmtTable)
                 QString err = q.lastError().text();
                 qCWarning(logDatTable) << "Can't find dat struct info for table" << name << q.lastError().text();
             }
+
+            db.close();
         }
         else
-        {
-            QString err = q.lastError().text();
-            qCWarning(logDatTable) << "Can't find dat struct info for table" << name << q.lastError().text();
-        }
-
-        db.close();
+            qCWarning(logDatTable) << "Can't open dat struct info file: datstruct.info";
     }
-    else
-        qCWarning(logDatTable) << "Can't open dat struct info file: datstruct.info";
 }

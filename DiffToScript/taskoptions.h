@@ -23,6 +23,7 @@ enum CmdTaskOption
     ctoConnectionString,
     ctoConnectionUnicode,
     ctoDiffInfoMode,
+    ctoDatFile,
 
     toLast
 };
