@@ -1051,7 +1051,7 @@ void FmtWorkWindow::DiffToScript()
                                         &err);
 
     if (!err.isEmpty())
-        ShowErrMsg(err);\
+        ShowErrMsg(err);
     else
     {
         if (!result.isEmpty())

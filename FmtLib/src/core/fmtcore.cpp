@@ -33,7 +33,10 @@
 #include <QJsonArray>
 #include <QJsonParseError>
 #include <QMenu>
+#include <limits>
 #include "DataStructure.hpp"
+
+#undef max
 
 static QStringList FmtTypesList/* = QStringList()
         << "INT"
@@ -1673,12 +1676,15 @@ QString FmtGenDiffToScript(const QString &filename,
         QTemporaryFile resultfile;
         tmp.open();
         resultfile.open();
-        tmp.write(process.readAllStandardOutput());
+
+        QByteArray diff = process.readAllStandardOutput();
+        tmp.write(diff);
         tmp.close();
         resultfile.close();
 
         args = QStringList
         {
+            "--ora",
             "--input",
             tmp.fileName(),
             "--output",
@@ -1687,7 +1693,9 @@ QString FmtGenDiffToScript(const QString &filename,
             "--insert",
             "--update",
             "--cs",
-            connectionString
+            connectionString,
+            "--dat",
+            QDir::toNativeSeparators(filename)
         };
 
         if (IsUnicodeDb)

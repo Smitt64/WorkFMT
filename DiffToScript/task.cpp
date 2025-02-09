@@ -252,6 +252,9 @@ void Task::runDiffTask()
 // --delete --insert --update --input diff.txt --ora --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031" --dat D:\svn\UranRSBankV6\Main\Distrib\DBFile\Data\DPURPLE_DBT.dat
 void Task::runScriptTask()
 {
+    // for debug pause, can attach
+    //QInputDialog::getMultiLineText(nullptr, "", "", "");
+
     QString rules = getRules(optns);
     QLoggingCategory::setFilterRules(rules);
 
@@ -365,9 +368,6 @@ void Task::runScriptTask()
 
         if (optns[ctoDatFile].isSet)
             datfilepath = optns[ctoDatFile].value;
-
-        // for debug pause, can attach
-        //QInputDialog::getMultiLineText(nullptr, "", "", "");
 
         datTable.loadFromFmt(&fmtTable, datfilepath);
         qCInfo(logTask) << "Fields of" << datTable.name << "loaded. Count =" << datTable.fields.count();

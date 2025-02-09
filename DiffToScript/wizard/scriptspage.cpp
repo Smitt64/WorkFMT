@@ -222,7 +222,11 @@ void GenerateOperation::run()
            << "--dat"
            << QDir::toNativeSeparators(datfilename);
 
-        int ExitCode = CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true, std::numeric_limits<int>::max());
+        int ExitCode = CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true,
+#ifdef _DEBUG
+                                        std::numeric_limits<int>::max()
+#endif
+                                        );
 
         if (ExitCode)
         {
