@@ -109,6 +109,9 @@ ActionPage::ActionPage(QWidget *parent) :
     registerField("Path", ui->pathEdit);
     registerField("Revision", ui->revisionEdit);
 
+    registerField("OraScript", ui->oraCheck);
+    registerField("PgScript", ui->pgCheck);
+
     connect(m_pGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled), [=](int id, bool checked)
     {
         if (checked)
@@ -130,7 +133,10 @@ ActionPage::ActionPage(QWidget *parent) :
         m_pModel->setPath(ui->pathEdit->text(), ui->revisionEdit->text());
         emit completeChanged();
     });
+
     connect(m_pStatusModel, &DatSatatusModel::checkChanged, this, &ActionPage::completeChanged);
+    connect(ui->oraCheck, &QCheckBox::toggled, this, &ActionPage::completeChanged);
+    connect(ui->pgCheck, &QCheckBox::toggled, this, &ActionPage::completeChanged);
 }
 
 ActionPage::~ActionPage()
@@ -155,6 +161,9 @@ void ActionPage::on_selFolderBtn_clicked()
 bool ActionPage::isComplete() const
 {
     if (ui->pathEdit->text().isEmpty())
+        return false;
+
+    if (ui->oraCheck->isChecked() == ui->pgCheck->isChecked() && !ui->oraCheck->isChecked())
         return false;
 
     QStringList lst = m_pStatusModel->files();

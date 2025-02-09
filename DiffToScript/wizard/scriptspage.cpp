@@ -8,7 +8,8 @@
 #include "tablelinks.h"
 #include "task.h"
 #include "svnlogmodel.h"
-#include "ErrorsModel.h"
+#include "errorsmodel.h"
+#include <QTabBar>
 #include "errordlg.h"
 #include <QProcess>
 #include <QThreadPool>
@@ -46,12 +47,15 @@ void GenerateOperation::setErrorsBuf(ErrorsModel *err)
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
 void GenerateOperation::run()
 {
-    int Action = m_pWzrd->field("Action").toInt();
+    //int Action = m_pWzrd->field("Action").toInt();
     QString Path = m_pWzrd->field("Path").toString();
     QString User = m_pWzrd->field("User").toString();
     QString Password = m_pWzrd->field("Password").toString();
     QString Service = m_pWzrd->field("Service").toString();
     QString Revision = m_pWzrd->field("Revision").toString();
+
+    bool OraScript = m_pWzrd->field("OraScript").toBool();
+    bool PgScript = m_pWzrd->field("PgScript").toBool();
 
     SvnInfoMap info = SvnGetRepoInfo(Path);
 
@@ -269,13 +273,20 @@ void GenerateOperation::run()
         iter.next();
 
         QDir svnpath(Path);
+        QString result;
         QString filename = svnpath.absoluteFilePath(iter.key());
 
-        QString result = ExecDiff(iter.value(), "--ora", filename);
-        emit oracleScriptReady(result);
+        if (OraScript)
+        {
+            result = ExecDiff(iter.value(), "--ora", filename);
+            emit oracleScriptReady(result);
+        }
 
-        result = ExecDiff(iter.value(), "--pg", filename);
-        emit postgresScriptReady(result);
+        if (PgScript)
+        {
+            result = ExecDiff(iter.value(), "--pg", filename);
+            emit postgresScriptReady(result);
+        }
     }
 
     emit finished();
@@ -295,14 +306,10 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
     m_pPostgres = new CodeEditor(this);
 
     m_pTabWidget = new QTabWidget(this);
-    //m_pSplitter = new QSplitter(Qt::Vertical, this);
-    //layout()->addWidget(m_pSplitter);
     layout()->addWidget(m_pTabWidget);
 
     m_pTabWidget->addTab(m_pOracle, "Oracle");
     m_pTabWidget->addTab(m_pPostgres, "Postgres");
-    //m_pSplitter->addWidget(m_pOracle);
-    //m_pSplitter->addWidget(m_pPostgres);
 
     m_pOracle->setReadOnly(true);
     m_pPostgres->setReadOnly(true);
@@ -345,6 +352,22 @@ void ScriptsPage::finished()
 void ScriptsPage::initializePage()
 {
     DiffWizard *wzrd = qobject_cast<DiffWizard*>(wizard());
+
+    bool OraScript = wzrd->field("OraScript").toBool();
+    bool PgScript = wzrd->field("PgScript").toBool();
+
+    if (PgScript != OraScript)
+    {
+        m_pTabWidget->tabBar()->setVisible(false);
+
+        if (PgScript)
+            m_pTabWidget->setCurrentIndex(1);
+    }
+    else
+    {
+        m_pTabWidget->setCurrentIndex(0);
+        m_pTabWidget->tabBar()->setVisible(true);
+    }
 
     m_pOracle->clear();
     m_pPostgres->clear();

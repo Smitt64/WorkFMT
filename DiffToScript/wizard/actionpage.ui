@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>660</width>
-    <height>447</height>
+    <width>697</width>
+    <height>496</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
@@ -34,7 +34,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Каталог сборки:</string>
+          <string>Каталог svn репозитория:</string>
          </property>
         </widget>
        </item>
@@ -129,6 +129,45 @@
        </item>
        <item>
         <widget class="QListView" name="listView"/>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::HLine</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QCheckBox" name="oraCheck">
+           <property name="text">
+            <string>Oracle script</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../FmtLib/res/fmt.qrc">
+             <normaloff>:/dblogo/Oracle.png</normaloff>:/dblogo/Oracle.png</iconset>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="pgCheck">
+           <property name="text">
+            <string>Postgres script</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../FmtLib/res/fmt.qrc">
+             <normaloff>:/dblogo/PostgreSQL.png</normaloff>:/dblogo/PostgreSQL.png</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
