@@ -21,9 +21,7 @@ public:
 
 private:
     Ui::StructSettingsPage *ui;
-
-    QScopedPointer<QSortFilterProxyModel> m_pSortModel;
-    QScopedPointer<HotfixContentModel> m_pModel;
+    HotfixContentModel *m_pModel;
 };
 
 #endif // STRUCTSETTINGSPAGE_H

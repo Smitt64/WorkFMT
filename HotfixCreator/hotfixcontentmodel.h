@@ -7,6 +7,7 @@
 
 class ContentTreeItem;
 class FolderContentTreeItem;
+class ProjectLoader;
 class HotfixContentModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -35,6 +36,9 @@ public:
 
     void makeModel(const QString &source, const QString &dst, const QString &hfname, const bool &NewFormat);
 
+    QStringList projects() const;
+    ProjectLoader *projectLoader();
+
 public slots:
     void contentItemChanged(const int &column, const QVector<int> &roles);
 
@@ -51,6 +55,7 @@ private:
 
     QSet<QString> m_Projects;
     std::unique_ptr<ContentTreeItem> rootItem;
+    QScopedPointer<ProjectLoader> m_pLoader;
 };
 
 #endif // HOTFIXCONTENTMODEL_H

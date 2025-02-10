@@ -2,6 +2,8 @@
 #include "seldirspage.h"
 #include "structsettingspage.h"
 #include "fmtcore.h"
+#include "hotfixcontentmodel.h"
+#include "projectswizardpage.h"
 #include <QSettings>
 #include <connectioninfo.h>
 
@@ -12,14 +14,18 @@ HotfixWizard::HotfixWizard() :
     setWindowIcon(QIcon(":/img/DiffToScript.png"));
     setFixedSize(800, 600);
 
+    m_pStrucModel.reset(new HotfixContentModel());
+
     QDir settingsDir = QDir(qApp->applicationDirPath());
     m_pSettings.reset(new QSettings(settingsDir.absoluteFilePath("hfcreator.ini"), QSettings::IniFormat));
 
     m_pSelDirsPage = new SelDirsPage(this);
     m_pStructPage = new StructSettingsPage(this);
+    m_pProjects = new ProjectsWizardPage(this);
 
     addPage(m_pSelDirsPage);
     addPage(m_pStructPage);
+    addPage(m_pProjects);
 }
 
 HotfixWizard::~HotfixWizard()
@@ -30,6 +36,11 @@ HotfixWizard::~HotfixWizard()
 QSettings *HotfixWizard::settings()
 {
     return m_pSettings.data();
+}
+
+HotfixContentModel *HotfixWizard::structModel()
+{
+    return m_pStrucModel.data();
 }
 
 void HotfixWizard::setFileListText(const QString &text)

@@ -4,6 +4,7 @@
 #include "model/filecontenttreeitem.h"
 #include "model/fmtcontenttreeitem.h"
 #include "model/datfilecontenttreeitem.h"
+#include "projectloader.h"
 #include <svn/svnstatusmodel.h>
 #include <QXmlStreamReader>
 #include <QDebug>
@@ -14,6 +15,8 @@ HotfixContentModel::HotfixContentModel(QObject *parent) :
 {
     rootItem.reset(new FolderContentTreeItem(""));
     rootItem->setModel(this);
+
+    m_pLoader.reset(new ProjectLoader("://res/projects.json"));
 }
 
 HotfixContentModel::~HotfixContentModel()
@@ -88,9 +91,6 @@ void HotfixContentModel::sort(int column, Qt::SortOrder order)
 
 int HotfixContentModel::columnCount(const QModelIndex &parent) const
 {
-    /*if (parent.isValid())
-        return static_cast<TreeItem*>(parent.internalPointer())->columnCount();
-    return rootItem->columnCount();*/
     return 2;
 }
 
@@ -201,6 +201,16 @@ void HotfixContentModel::contentItemChanged(const int &column, const QVector<int
 
     QModelIndex index = createIndex(item->row(), column, item);
     emit dataChanged(index, index, roles);
+}
+
+QStringList HotfixContentModel::projects() const
+{
+    return m_Projects.values();
+}
+
+ProjectLoader *HotfixContentModel::projectLoader()
+{
+    return m_pLoader.data();
 }
 
 bool HotfixContentModel::isFile(const QString &name)

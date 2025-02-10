@@ -8,6 +8,8 @@ class SelDirsPage;
 class StructSettingsPage;
 class ConnectionInfo;
 class QSettings;
+class HotfixContentModel;
+class ProjectsWizardPage;
 class HotfixWizard Q_DECL_FINAL : public QWizard
 {
     Q_OBJECT
@@ -32,16 +34,21 @@ public:
     ConnectionInfo *connection();
     QSettings *settings();
 
+    HotfixContentModel *structModel();
+
 private:
     void setContentFlag(const QString &filename);
     SelDirsPage *m_pSelDirsPage;
     StructSettingsPage *m_pStructPage;
+    ProjectsWizardPage *m_pProjects;
 
     ConnectionInfo *pConnetion;
     QStringList m_FileList;
 
     QSet<ContentFlag> m_Contents;
     QScopedPointer<QSettings> m_pSettings;
+
+    QScopedPointer<HotfixContentModel> m_pStrucModel;
 };
 
 inline uint qHash(const HotfixWizard::ContentFlag &key, uint seed)

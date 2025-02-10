@@ -30,6 +30,9 @@ SOURCES += \
     model/filecontenttreeitem.cpp \
     model/fmtcontenttreeitem.cpp \
     model/foldercontenttreeitem.cpp \
+    modulelistmodel.cpp \
+    projectloader.cpp \
+    projectswizardpage.cpp \
     seldirspage.cpp \
     structsettingspage.cpp
 
@@ -41,6 +44,9 @@ HEADERS += \
     model/filecontenttreeitem.h \
     model/fmtcontenttreeitem.h \
     model/foldercontenttreeitem.h \
+    modulelistmodel.h \
+    projectloader.h \
+    projectswizardpage.h \
     seldirspage.h \
     structsettingspage.h
 
@@ -50,6 +56,7 @@ INSTALLS += target
 
 FORMS += \
     datpage.ui \
+    projectswizardpage.ui \
     seldirspage.ui \
     structsettingspage.ui
 
@@ -61,7 +68,8 @@ INCLUDEPATH += $$PWD/../FmtLib/h
 DEPENDPATH += $$PWD/../FmtLib
 
 RESOURCES += \
-    hfcres.qrc
+    hfcres.qrc \
+    res.qrc
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
