@@ -26,6 +26,7 @@ SOURCES += \
     diffconnection.cpp \
     difffield.cpp \
     difflogging.cpp \
+    diffmodeparser.cpp \
     difftableinfo.cpp \
     difftoscripttest.cpp \
     join.cpp \
@@ -68,6 +69,7 @@ HEADERS += \
     diffcore.h \
     difffield.h \
     difflogging.h \
+    diffmodeparser.h \
     difftableinfo.h \
     difftoscripttest.h \
     join.h \

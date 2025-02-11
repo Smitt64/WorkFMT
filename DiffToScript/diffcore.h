@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QPair>
-#include <QVector>
+#include <QMap>
 #include <QStringList>
 
 enum LineType
@@ -30,7 +30,8 @@ struct ParsedLine
     LineType lineType;
     LineUpdateType lineUpdateType = lutNone;
 };
-using ParsedLines = QVector<ParsedLine>;
+
+using ParsedLines = QMap<QStringList, ParsedLine>;
 
 struct DatRecord
 {

@@ -11,6 +11,7 @@ CommandLineParseResult CmdParser::parse()
     const QString oracleParm = "ora";
     const QString postgresParm = "pg";
     const QString diffParm = "diff";
+    const QString xmlParm = "xml";
 
     using Status = CommandLineParseResult::Status;
 
@@ -74,6 +75,9 @@ CommandLineParseResult CmdParser::parse()
     QCommandLineOption diffOption(diffParm, "Данные различий svn diff");
     parser.addOption(diffOption);
 
+    QCommandLineOption xmlOption(xmlParm, "Возвращать результат в формате xml");
+    parser.addOption(xmlOption);
+
     const QCommandLineOption helpOption = parser.addHelpOption();
 
     parser.process(*_app);
@@ -103,12 +107,12 @@ CommandLineParseResult CmdParser::parse()
     opts[ctoConnectionString].isSet = parser.isSet(connectionStringOption);
     opts[ctoConnectionUnicode].isSet = parser.isSet(unicodeConnectionOption);
     opts[ctoDiffInfoMode].isSet = parser.isSet(diffOption);
+    opts[ctoXml].isSet = parser.isSet(xmlOption);
 
     if (opts[ctoOracle].isSet & opts[ctoPostgres].isSet)
     {
         return { Status::Error, QString("Ошибка! Выбраны две взаимоисключающие опции: --%1, --%2").arg(oracleParm, postgresParm) };
     }
-
 
     if (opts[ctoInput].isSet)
         opts[ctoInput].value = parser.value(targetInputOption);

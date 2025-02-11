@@ -82,17 +82,21 @@ QString LinesParserMain::lookToken(QTextStream& is)
     return "";
 }
 
-
-bool LinesParserMain::parseDoc(QTextStream &is)
+bool LinesParserMain::parseTableName(QTextStream &is)
 {
-    int cnt = 0;
-    QString line;
-
     _lines.clear();
 
     if (!_linesTableParser.isNull() && lookToken(is, _linesTableParser->getToken()))
         _linesTableParser->parseLines(is, _lines);
 
+
+    return true;
+}
+
+bool LinesParserMain::parseDoc(QTextStream &is, ScriptTable &dt)
+{
+    int cnt = 0;
+    QString line;
     QString token;
     while (!is.atEnd())
     {
@@ -102,27 +106,16 @@ bool LinesParserMain::parseDoc(QTextStream &is)
         {
             is.readLineInto(&line); // skip line
             qCInfo(logLinesParserMain()) << "Parse line skipped";
-
-            /*if (line == "\\ No newline at end of file")
-            {
-                int k = 0;
-                k = 1;
-            }*/
-        }
-        else if (!_linesUpdateParser.isNull() && token == _linesUpdateParser->getToken())
-        {
-            qCInfo(logLinesParserMain) << "Start parse lines for update";
-            _linesUpdateParser->parseLines(is, _lines);
         }
         else if (!_linesInsertParser.isNull() && token == _linesInsertParser->getToken())
         {
             qCInfo(logLinesParserMain) << "Start parse lines for insert";
-            _linesInsertParser->parseLines(is, _lines);
+            _linesInsertParser->parseLines(is, _lines, &dt);
         }
         else if (!_linesDeleteParser.isNull() && token == _linesDeleteParser->getToken())
         {
             qCInfo(logLinesParserMain) << "Start parse lines for delete";
-            _linesDeleteParser->parseLines(is, _lines);
+            _linesDeleteParser->parseLines(is, _lines, &dt);
         }
         else if (token == "Index: ") // Началась следующая таблица
         {
@@ -182,14 +175,10 @@ int LinesParserMain::linesCount(std::initializer_list<LineType> types) const
 ParsedLines LinesParserMain::getParsedLines(std::initializer_list<LineType> types) const
 {
     ParsedLines lines;
-    for (const ParsedLine& line: _lines)
-    {
+    for (auto it = _lines.cbegin(), end = _lines.cend(); it != end; ++it)
         for (const LineType& t: types)
-        {
-            if (line.lineType == t)
-                lines.append(line);
-        }
-    }
+            if (it.value().lineType == t)
+                lines.insert(it.key(), it.value());
     return lines;
 }
 

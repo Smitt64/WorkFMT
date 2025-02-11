@@ -21,6 +21,7 @@
 #include <QFile>
 #include <QApplication>
 #include "qloggingcategory.h"
+#include "diffmodeparser.h"
 
 Task::Task(QObject *parent) :
     QObject(parent),
@@ -181,70 +182,9 @@ void Task::runDiffTask()
     is->setCodec("IBM 866");
     os.setCodec("IBM 866");
 
-    // normalize input for new files
-    QTemporaryFile tmp;
-    if (tmp.open())
-    {
-        const QString end_pattern = "+BEGINDATA";
-        QTextStream tmpStream(&tmp);
-        tmpStream.setCodec("IBM 866");
-
-        QString lines = is->readAll();
-
-        int begin_pos = lines.indexOf("+LOAD DATA");
-        int end_pos = lines.indexOf(end_pattern);
-
-        if (begin_pos != -1 && end_pos != -1)
-        {
-            lines = lines.remove(begin_pos, (end_pos - begin_pos) + end_pattern.size());
-            tmpStream.seek(0);
-            tmpStream << lines;
-            qDebug() << tmp.fileName();
-            tmp.close();
-
-            is = sc.getInput(tmp.fileName());
-            is->setCodec("IBM 866");
-        }
-        else
-        {
-            is->seek(0);
-            tmp.close();
-        }
-    }
-
-    //Распознование типа строк в исходном файле
-    LinesParserMain linesParser;
-    linesParser.setTableParser(new LinesTablePareser("Index: "));
-    if (optns[ctoInsert].isSet)
-    {
-        linesParser.setInsertParser(new LinesInsertParser("+"));
-        qCInfo(logTask) << "Include insert parser.";
-    }
-    if (optns[ctoDelete].isSet)
-    {
-        linesParser.setDeleteParser(new LinesDeleteParser("-"));
-        qCInfo(logTask) << "Include delete parser.";
-    }
-    if (optns[ctoUpdate].isSet)
-    {
-        linesParser.setUpdateParser(new LinesUpdateParser("-"));
-        qCInfo(logTask) << "Include update parser.";
-    }
-
-    is->device()->waitForReadyRead(-1);
-    while (!is->atEnd())
-    {
-        linesParser.parseDoc(*is);
-
-        qCInfo(logTask) << "Diff parsed. Lines:"
-                        << "insert -" << linesParser.linesCount({ltInsert})
-                        << "delete -" << linesParser.linesCount({ltDelete})
-                        << "update -" << linesParser.linesCount({ltUpdate});
-
-        is->device()->waitForReadyRead(-1);
-    }
-
-    linesParser.serializeLines(os, "json");
+    DiffModeParser parser(*is);
+    QVector<DiffLine> lines = parser.getResult();
+    parser.serialize(os, optns[ctoXml].isSet ? "xml" : "json");
 }
 
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
@@ -338,17 +278,27 @@ void Task::runScriptTask()
     is->device()->waitForReadyRead(-1);
     while (!is->atEnd())
     {
-        linesParser.parseDoc(*is);
-        qCInfo(logTask) << "Diff parsed. Lines:"
-                        << "insert -" << linesParser.linesCount({ltInsert})
-                        << "delete -" << linesParser.linesCount({ltDelete})
-                        << "update -" << linesParser.linesCount({ltUpdate})
-                           ;
-
+        linesParser.parseTableName(*is);
         if (linesParser.getLines({ltTable}).count() != 1)
         {
             qWarning(logTask) << "Error. Table name was not parsed.";
             return;
+        }
+
+        tableLinks.append(TableLinks());
+        TableLinks& tableLink = tableLinks.back();
+        QString fileName = toolFullFileNameFromDir(QString("relations/%1.json")
+                                                       .arg(linesParser.getLines({ltTable})[0].toLower()));
+
+        if (QFile::exists(fileName))
+        {
+            tableLink.loadLinks(fileName);
+            qCInfo(logTask) << "Json from" << fileName << "loaded";
+        }
+        else
+        {
+            qCWarning(logTask) << "File not exist: " << fileName;
+            tableLink.tableName = linesParser.getLines({ltTable})[0].toLower();
         }
 
         datTables.append(ScriptTable());
@@ -370,12 +320,9 @@ void Task::runScriptTask()
             datfilepath = optns[ctoDatFile].value;
 
         datTable.loadFromFmt(&fmtTable, datfilepath);
+        datTable.InitUniqFields(&tableLink);
         qCInfo(logTask) << "Fields of" << datTable.name << "loaded. Count =" << datTable.fields.count();
 
-        datTable.loadData(linesParser.getParsedLines());
-        qCInfo(logTask) << "Records of" << datTable.name << "loaded. Count =" << datTable.records.count();
-
-        datTable.parseUpdateRecords(datTable);
 
         if (optns[ctoTableInfo].isSet)
             getFmtInfo(os, datTable);
@@ -388,21 +335,16 @@ void Task::runScriptTask()
                 os << err << Qt::endl;
         }
 
-        tableLinks.append(TableLinks());
-        TableLinks& tableLink = tableLinks.back();
-        QString fileName = toolFullFileNameFromDir(QString("relations/%1.json")
-                                                   .arg(datTable.name.toLower()));
+        linesParser.parseDoc(*is, datTable);
+        qCInfo(logTask) << "Diff parsed. Lines:"
+                        << "insert -" << linesParser.linesCount({ltInsert})
+                        << "delete -" << linesParser.linesCount({ltDelete})
+                        << "update -" << linesParser.linesCount({ltUpdate})
+            ;
 
-        if (QFile::exists(fileName))
-        {
-            tableLink.loadLinks(fileName);
-            qCInfo(logTask) << "Json from" << fileName << "loaded";
-        }
-        else
-        {
-            qCWarning(logTask) << "File not exist: " << fileName;
-            tableLink.tableName = datTable.name.toLower();
-        }
+        datTable.loadData(linesParser.getParsedLines());
+        qCInfo(logTask) << "Records of" << datTable.name << "loaded. Count =" << datTable.records.count();
+
         is->device()->waitForReadyRead(-1);
     }
 

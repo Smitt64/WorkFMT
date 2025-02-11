@@ -426,18 +426,10 @@ QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecor
     DatRecord rec = oldRec;
 
     //В where пойдут только ключевые поля.
-    QVector<int> keyFieldIndexes = indexesOfKeyFields(joinTable);
-
-    replaceForeignAutoinc(joinTable, rec);
-
-    dateSpelling(joinTable, rec);
-    stringSpelling(joinTable, rec);
-
-    if (keyFieldIndexes.count() == 0)
-        keyFieldIndexes = indexesOfUniqueIndex(joinTable);
-
-    for (int i = 0; i < keyFieldIndexes.count(); ++i)
-        where.append(joinTable->scriptTable->fields[keyFieldIndexes[i]].name + " = " + rec.values[keyFieldIndexes[i]]);
+    foreach(const DiffField &uf, joinTable->scriptTable->uniqFields)
+    {
+        where.append(uf.name + " = " + rec.values[joinTable->scriptTable->fields.indexByFieldName(uf.name)]);
+    }
 
     return where;
 }
@@ -637,32 +629,25 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
     else if (rec.lineType == ltUpdate)
     {
         // определение последней записи для обновления
-        int newIndex = recIndex;
-        for (; newIndex < joinTable->scriptTable->records.count(); ++newIndex)
-            if (joinTable->scriptTable->records[newIndex].lineType != ltUpdate || joinTable->scriptTable->records[newIndex].lineUpdateType != lutOld)
-                break;
-
-        int updCnt = (newIndex - recIndex);
-
-        int oldIndex = recIndex;
-        for (int i = 0; i < updCnt; ++i)
+        int newIndex, oldIndex;
+        if(joinTable->scriptTable->records[recIndex].lineUpdateType == lutOld)
         {
+            oldIndex = recIndex;
+            newIndex = nextRecIndex;
+        }
+        else
+        {
+            oldIndex = nextRecIndex;
+            newIndex = recIndex;
+        }
             qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
-
-            if (newIndex >= 0 && newIndex < joinTable->scriptTable->records.size())
-            {
                 toScript(joinTable, joinTable->scriptTable->records[newIndex]);
                 buildUpdateStatement(os, joinTable, sql, oldIndex, newIndex);
                 buildChildStatement(os, joinTable, sql, newIndex);
                 joinTable->processedRecords[oldIndex] = true;
                 joinTable->processedRecords[newIndex] = true;
-                ++oldIndex;
-                ++newIndex;
-            }
-            else
-                qCWarning(logSqlScriptMain) << "Record index" << recIndex << ". Record not processed: " << rec.values.join(", ");
-        }
-        nextRecIndex = newIndex;
+
+        nextRecIndex++;
     }
     else
     {

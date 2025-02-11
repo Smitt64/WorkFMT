@@ -2,8 +2,10 @@
 #define TABLELINKS_H
 
 #include <QObject>
-
-#include <difftableinfo.h>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QFile>
 
 struct LinkField
 {

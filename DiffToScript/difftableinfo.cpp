@@ -264,3 +264,37 @@ void DiffTableInfo::loadFromFmt(FmtTable *fmtTable, const QString &datfilename)
             qCWarning(logDatTable) << "Can't open dat struct info file: datstruct.info";
     }
 }
+
+void DiffTableInfo::InitUniqFields(TableLinks* tableLink)
+{
+    qCInfo(logScriptTable) << "Start InitUniqFields. Table name = " << tableLink->tableName;
+    if(!tableLink->index.isEmpty())
+    {
+        foreach (const QString &IndxField, tableLink->index)
+        {
+            uniqFields.append(fields.fieldByName(IndxField));
+        }
+        qCInfo(logScriptTable) << "Init uniqFields from json. Table name = " << tableLink->tableName;
+    }
+    else
+    {
+        DatIndex idx;
+        if(firstUniq(idx, false))
+        {
+            foreach (const IndexField &IndxField, idx.fields)
+            {
+                DiffField df;
+                df.name = IndxField.name;
+                df.type = IndxField.type;
+                df.typeName = fmtTypeNameForType(IndxField.type);
+                df.isString = IndxField.isString;
+                df.isAutoinc = IndxField.isAutoinc;
+                uniqFields.append(df);
+            }
+
+            qCInfo(logScriptTable) << "Init uniqFields from firstUniqIndex. Table name = " << tableLink->tableName;
+        }
+
+        qCWarning(logDatTable) << "Can't Init UniqFields";
+    }
+}

@@ -42,7 +42,7 @@ struct DiffField: IndexField
     bool isBlob() const;
     DiffField()
     {
-        type = std::numeric_limits<qint16>::infinity();
+        type = std::numeric_limits<qint16>::min();
     }
 
     DiffField(const QString& name, qint16 type, const QString& typeName, bool isAutoinc = false, bool isString = false)
@@ -50,7 +50,8 @@ struct DiffField: IndexField
 
     bool isValid() const
     {
-        return type != std::numeric_limits<qint16>::infinity();
+        qint16 inval = std::numeric_limits<qint16>::min();
+        return type != inval;
     }
 };
 

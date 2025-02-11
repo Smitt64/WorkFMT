@@ -11,7 +11,8 @@ class LinesParserMain
 {
 public:
     LinesParserMain();
-    bool parseDoc(QTextStream &is);
+    bool parseTableName(QTextStream &is);
+    bool parseDoc(QTextStream &is, ScriptTable &dt);
     void setTableParser(LinesParser* linesParser) {_linesTableParser.reset(linesParser);};
     void setInsertParser(LinesParser* linesParser) {_linesInsertParser.reset(linesParser);};
     void setDeleteParser(LinesParser* linesParser) {_linesDeleteParser.reset(linesParser);};

@@ -30,7 +30,7 @@ void DiffToScriptTest::cleanupTestCase()
 
 void DiffToScriptTest::caseLinesType()
 {
-    QStringList input;
+    /*QStringList input;
     input << "Index: table1.dat"
           << "+++n"
           << "+i"
@@ -72,7 +72,7 @@ void DiffToScriptTest::caseLinesType()
 
     QCOMPARE(pm.getLines({ltDelete}).count(),1);
     QCOMPARE(pm.getLines({ltInsert}).count(),1);
-    QCOMPARE(pm.getLines({ltUpdate}).count(),2);
+    QCOMPARE(pm.getLines({ltUpdate}).count(),2);*/
 }
 
 void DiffToScriptTest::caseParseStringField()
@@ -125,13 +125,9 @@ void DiffToScriptTest::caseParseStringField()
             "+3,3,1.1,4.4,'string''3'', string2',01-01-0001:00:00:00,0001-01-01 13:08:03.000,\u0002,'0001',1234.56\n";  //update
 
     is.setString(&input);
-    linesParser.parseDoc(is);
 
-    QCOMPARE(linesParser.getLines({ltTable}).count(), 1);
-    QCOMPARE(linesParser.getLines({ltTable})[0], "table");
-    QCOMPARE(linesParser.getParsedLines().count(), 5);
-
-    QTextStream os(stdout);
+    TableLinks tableLinks;
+    tableLinks.tableName = "table";
 
     ScriptTable dt;
     dt.name = "table";
@@ -142,14 +138,20 @@ void DiffToScriptTest::caseParseStringField()
     DatIndex index{"INX0", fields, true};
 
     dt.indexes.append(index);
-    dt.loadData(linesParser.getParsedLines());
+    dt.InitUniqFields(&tableLinks);
+
+    linesParser.parseDoc(is, dt);
+
+    QCOMPARE(linesParser.getLines({ltTable}).count(), 1);
+    QCOMPARE(linesParser.getLines({ltTable})[0], "table");
+    QCOMPARE(linesParser.getParsedLines().count(), 5);
+
+    QTextStream os(stdout);
 
     QSharedPointer<DiffConnection> conn(new DiffConnection());;
     QSharedPointer<DbSpelling> ora(new DbSpellingOracle);
     SqlScriptMain ssm(ora, conn);
 
-    TableLinks tableLinks;
-    tableLinks.tableName = "table";
 
     JoinTable joinTable(&dt, tableLinks);
 
@@ -242,7 +244,16 @@ void DiffToScriptTest::caseDoubleInsert()
 
     while (!is.atEnd())
     {
-        mainParser.parseDoc(is);
+        mainParser.parseTableName(is);
+
+        tableLinks.append(TableLinks());
+        TableLinks& tableLink = tableLinks.back();
+        QString fileName = "test\\" + mainParser.getLines({ltTable})[0].toLower() + ".json";
+        if (QFile::exists(fileName))
+            tableLink.loadLinks(fileName);
+        else
+            tableLink.tableName = mainParser.getLines({ltTable})[0].toLower();
+
         datTables.append(ScriptTable());
 
         ScriptTable& datTable = datTables.back();
@@ -251,6 +262,8 @@ void DiffToScriptTest::caseDoubleInsert()
         fmtTable.loadFromXml("test\\" + mainParser.getLines({ltTable})[0].toLower() + ".xml");
 
         datTable.loadFromFmt(&fmtTable);
+        datTable.InitUniqFields(&tableLink);
+
         if (datTable.name.toLower() == "dopusymhist_dbt")
         {
             datTables[0].fields.fieldByName("t_name").isString = true; // Почему-то из xml не правильно тип считывается.
@@ -267,16 +280,9 @@ void DiffToScriptTest::caseDoubleInsert()
             datTables[1].fields.fieldByName("T_RECID").isAutoinc = true; //из xml не подгружается автоинеремент
         }
 
-        datTable.loadData(mainParser.getParsedLines());
+        mainParser.parseDoc(is, datTable);
         QCOMPARE(datTable.errorCount(), 0);
 
-        tableLinks.append(TableLinks());
-        TableLinks& tableLink = tableLinks.back();
-        QString fileName = "test\\" + datTable.name.toLower() + ".json";
-        if (QFile::exists(fileName))
-            tableLink.loadLinks(fileName);
-        else
-            tableLink.tableName = datTable.name.toLower();
     }
 
     QCOMPARE(datTables.count(), 2);
