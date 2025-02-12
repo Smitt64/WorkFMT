@@ -24,6 +24,7 @@ ProjectsWizardPage::ProjectsWizardPage(QWidget *parent) :
     m_Proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     connect(m_pModel.data(), &ModuleListModel::dataChanged, this, &ProjectsWizardPage::onDataChanged);
+    connect(ui->lineEdit, &QLineEdit::textChanged, this, &ProjectsWizardPage::updateFilter);
 }
 
 ProjectsWizardPage::~ProjectsWizardPage()
@@ -79,4 +80,18 @@ void ProjectsWizardPage::initializePage()
     QString text = pModel->projectLoader()->generateTextForProjects(projectNames, QStringList());
     ui->plainTextEdit->clear();
     ui->plainTextEdit->appendPlainText(text);
+}
+
+void ProjectsWizardPage::updateFilter(const QString& text)
+{
+    // Устанавливаем фильтр для QSortFilterProxyModel
+    m_Proxy->setFilterCaseSensitivity(Qt::CaseInsensitive); // Без учета регистра
+    m_Proxy->setFilterFixedString(text); // Фильтр по введенному тексту
+
+    // Фильтрация по всем колонкам
+    m_Proxy->setFilterKeyColumn(-1); // -1 означает фильтрацию по всем колонкам
+
+    // Обновляем подсветку в делегате
+    //m_highlightDelegate->setFilter(text);
+    ui->treeView->viewport()->update(); // Принудительно обновляем отображение
 }

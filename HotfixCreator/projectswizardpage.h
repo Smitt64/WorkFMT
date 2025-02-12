@@ -21,6 +21,7 @@ public:
 
 private slots:
     void onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
+    void updateFilter(const QString& text);
 
 private:
     Ui::ProjectsWizardPage *ui;
