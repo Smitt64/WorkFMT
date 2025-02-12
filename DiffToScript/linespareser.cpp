@@ -69,7 +69,7 @@ bool LinesDeleteParser::parseLine(QTextStream& is, ParsedLines& lines, ScriptTab
     if (s == _token)
     {
         RecordParser recParser(&dt->fields, dt->realFields);
-        auto parsedLine = ParsedLine{is.readLine(), ltInsert};
+        auto parsedLine = ParsedLine{is.readLine(), ltDelete};
         if(recParser.parseRecord(parsedLine.value))
         {
             QStringList key;
