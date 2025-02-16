@@ -5,6 +5,13 @@
 #include <vector>
 #include <memory>
 
+enum MakeResult
+{
+    ResultWarning = -1,
+    ResultSuccess = 0,
+    ResultFail,
+};
+
 class QFileIconProvider;
 class HotfixContentModel;
 class ContentTreeItem : public QObject
@@ -33,6 +40,7 @@ public:
 
     virtual QVariant data(const int &column, const int &role) const;
     virtual bool setData(const QVariant &value, const int &column = 0, int role = Qt::EditRole);
+    virtual MakeResult make(QString &msg) const;
 
     int row() const;
     ContentTreeItem *parentItem();

@@ -75,6 +75,26 @@ const QString &FileContentTreeItem::svnAction() const
     return m_SvnAction;
 }
 
+MakeResult FileContentTreeItem::make(QString &msg) const
+{
+    QFileInfo fi(m_FileName);
+    QDir d(fi.absolutePath());
+    QString filename = d.absoluteFilePath(data(0, Qt::DisplayRole).toString());
+
+    bool hr = QFile::copy(m_FullFileName, filename);
+
+    if (hr)
+        msg = QString("Файл <b>%1</b> успено скопирован в <b>%2</b>")
+                .arg(QDir::toNativeSeparators(m_FullFileName))
+                .arg(QDir::toNativeSeparators(filename));
+    else
+        msg = QString("Не удалось скопировать файл <b>%1</b> в <b>%2</b>")
+                .arg(QDir::toNativeSeparators(m_FullFileName))
+                .arg(QDir::toNativeSeparators(filename));
+
+    return hr ? ResultSuccess : ResultFail;
+}
+
 QIcon FileContentTreeItem::getIconForExtension(const QString &ext)
 {
     static QMap<QString, QIcon> icons =

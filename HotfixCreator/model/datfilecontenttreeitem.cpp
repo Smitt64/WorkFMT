@@ -1,5 +1,6 @@
 #include "datfilecontenttreeitem.h"
 #include "hotfixcontentmodel.h"
+#include "toolsruntime.h"
 #include <QIcon>
 #include <QFileInfo>
 
@@ -37,4 +38,23 @@ QVariant DatFileContentTreeItem::data(const int &column, const int &role) const
     }
 
     return FileContentTreeItem::data(column, role);
+}
+
+MakeResult DatFileContentTreeItem::make(QString &msg) const
+{
+    MakeResult result = ResultFail;
+
+    SvnInfoMap info = SvnGetRepoInfo(Path);
+
+    /*QStringList argtmpl;
+    argtmpl << "--delete"
+        << "--insert"
+        << "--update"
+        << "--cs"
+        << connectionString;
+
+    if (IsUnicode)
+        argtmpl.append("--unicodedb");*/
+
+    return result;
 }

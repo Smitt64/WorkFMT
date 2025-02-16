@@ -17,6 +17,7 @@ public:
 
     const QString &folder() const;
     virtual QVariant data(const int &column, const int &role) const Q_DECL_OVERRIDE;
+    virtual MakeResult make(QString &msg) const Q_DECL_OVERRIDE;
 
     FolderContentTreeItem *appendFolder(const QString &name);
     FileContentTreeItem *appendFile(const QString &name);

@@ -1,8 +1,38 @@
 #include "generatorpage.h"
 #include "errordlg.h"
 #include "errorsmodel.h"
+#include "hotfixcontentmodel.h"
 #include <QVBoxLayout>
 #include <QProgressBar>
+#include <QThreadPool>
+#include "hotfixwizard.h"
+
+GeneratorOp::GeneratorOp(QObject *parent) :
+    QObject(parent),
+    QRunnable()
+{
+    setAutoDelete(true);
+}
+
+GeneratorOp::~GeneratorOp()
+{
+
+}
+
+void GeneratorOp::run()
+{
+    UsrMakeHandle func = [=](const qint16 &action, ContentTreeItem *item)
+    {
+        /*if (action == UsrMakeBegin)
+            m_Mutex.lock();
+        else
+            m_Mutex.unlock();*/
+    };
+
+    m_pModel->makeHotFix(m_pLog, func);
+}
+
+// --------------------------------------------------------------------------
 
 GeneratorPage::GeneratorPage(QWidget *parent) :
     QWizardPage(parent)
@@ -27,4 +57,16 @@ GeneratorPage::GeneratorPage(QWidget *parent) :
 GeneratorPage::~GeneratorPage()
 {
 
+}
+
+void GeneratorPage::initializePage()
+{
+    HotfixWizard *wzrd = (HotfixWizard*)wizard();
+    HotfixContentModel *pModel = wzrd->structModel();
+
+    GeneratorOp *op = new GeneratorOp();
+    op->m_pLog = m_Log.data();
+    op->m_pModel = pModel;
+
+    QThreadPool::globalInstance()->start(op);
 }

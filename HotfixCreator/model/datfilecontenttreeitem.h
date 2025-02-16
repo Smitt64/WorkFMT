@@ -10,6 +10,7 @@ public:
     virtual ~DatFileContentTreeItem();
 
     virtual QVariant data(const int &column, const int &role) const;
+    virtual MakeResult make(QString &msg) const Q_DECL_OVERRIDE;
 };
 
 #endif // DATFILECONTENTTREEITEM_H

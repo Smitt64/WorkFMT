@@ -5,9 +5,18 @@
 #include <memory>
 #include <QSet>
 
+enum
+{
+    UsrMakeBegin = 0,
+    UsrMakeEnd
+};
+
 class ContentTreeItem;
 class FolderContentTreeItem;
 class ProjectLoader;
+class ErrorsModel;
+
+typedef std::function<void(const qint16 &action, ContentTreeItem *item)> UsrMakeHandle;
 class HotfixContentModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -35,7 +44,7 @@ public:
     void sort(int column, Qt::SortOrder order) Q_DECL_OVERRIDE;
 
     void makeModel(const QString &source, const QString &dst, const QString &hfname, const bool &NewFormat);
-
+    void makeHotFix(ErrorsModel *logs, UsrMakeHandle usr);
     QStringList projects() const;
     ProjectLoader *projectLoader();
 

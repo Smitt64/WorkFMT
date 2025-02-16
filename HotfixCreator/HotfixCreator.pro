@@ -23,6 +23,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     generatorpage.cpp \
+    hotfixcontentmake.cpp \
     hotfixcontentmodel.cpp \
     hotfixwizard.cpp \
     main.cpp \

@@ -4,6 +4,7 @@
 #include "fmtcontenttreeitem.h"
 #include "datfilecontenttreeitem.h"
 #include <QFileIconProvider>
+#include <QDir>
 #include <QDebug>
 
 FolderContentTreeItem::FolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
@@ -61,4 +62,17 @@ DatFileContentTreeItem *FolderContentTreeItem::appendDatItem(const QString &name
 {
     QString path = m_Folder + "\\" + name;
     return (DatFileContentTreeItem*)appendChild(std::make_unique<DatFileContentTreeItem>(QDir::toNativeSeparators(path)));
+}
+
+MakeResult FolderContentTreeItem::make(QString &msg) const
+{
+    QDir d(m_Folder);
+    bool hr = d.mkpath(m_Folder);
+
+    if (hr)
+        msg = QString("Создан каталог <b>%1</b>").arg(m_Folder);
+    else
+        msg = QString("Каталог <b>%1</b> не создан").arg(m_Folder);
+
+    return hr ? ResultSuccess : ResultFail;
 }

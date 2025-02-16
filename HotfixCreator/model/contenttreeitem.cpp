@@ -219,3 +219,9 @@ const qint16 &ContentTreeItem::order() const
 {
     return m_Order;
 }
+
+MakeResult ContentTreeItem::make(QString &msg) const
+{
+    msg = "Действие не реализовано";
+    return ResultWarning;
+}

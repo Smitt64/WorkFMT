@@ -514,6 +514,7 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
         {
             QFileInfo fi(name);
             DatFileContentTreeItem *item = parent->appendDatItem(fi.baseName());
+            item->setFullFileName(fullname);
             return item;
         }
 
