@@ -46,6 +46,8 @@ private:
     typedef QMap<QString, FolderContentTreeItem*> FolderParents;
     typedef std::function<ContentTreeItem*(FolderContentTreeItem *parent, const QString &name, const QString &fullname)> PathMaker;
 
+    ContentTreeItem *stdMakePathFunc(FolderContentTreeItem *parent, const QString &name, const QString &fullname);
+
     bool getTFStructValue(const QString &fileName, bool &tfStruct);
     ContentTreeItem *makePath(FolderParents &Parents, const QString &path, Qt::HANDLE element, FolderContentTreeItem *parent);
     ContentTreeItem *makePathEx(FolderParents &Parents, const QString &path, Qt::HANDLE elem, FolderContentTreeItem *parent, PathMaker maker);
@@ -56,6 +58,9 @@ private:
     QSet<QString> m_Projects;
     std::unique_ptr<ContentTreeItem> rootItem;
     QScopedPointer<ProjectLoader> m_pLoader;
+    QStringList m_DatFiles;
+
+    bool m_NewFormat;
 };
 
 #endif // HOTFIXCONTENTMODEL_H

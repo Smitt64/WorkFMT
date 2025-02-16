@@ -22,7 +22,12 @@ QVariant FileContentTreeItem::data(const int &column, const int &role) const
     if (column == HotfixContentModel::ColumnName)
     {
         if (role == Qt::DisplayRole)
-            return m_Dirs.back();
+        {
+            if (!parentItem()->isShowRowNumber())
+                return m_Dirs.back();
+            else
+                return QString("%1_").arg(row() + 1, 2, 10, QChar('0')) + m_Dirs.back();
+        }
         else if (role == Qt::DecorationRole)
         {
             if (!m_FullFileName.isEmpty())

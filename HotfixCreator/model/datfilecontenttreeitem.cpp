@@ -23,7 +23,11 @@ QVariant DatFileContentTreeItem::data(const int &column, const int &role) const
         else if (role == Qt::DisplayRole)
         {
             QFileInfo fi(fileName());
-            return fi.baseName().toLower() + ".sql";
+
+            if (!parentItem()->isShowRowNumber())
+                return fi.baseName().toLower() + ".sql";
+            else
+               return QString("%1_").arg(row() + 1, 2, 10, QChar('0')) + fi.baseName().toLower() + ".sql";
         }
     }
     else if (column == HotfixContentModel::ColumnAction)

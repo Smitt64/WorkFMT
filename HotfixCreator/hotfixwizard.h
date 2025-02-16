@@ -6,6 +6,7 @@
 
 class SelDirsPage;
 class StructSettingsPage;
+class GeneratorPage;
 class ConnectionInfo;
 class QSettings;
 class HotfixContentModel;
@@ -22,6 +23,14 @@ public:
         ContentMac,
         ContentFmt,
         ContentCreateTables,
+    };
+
+    enum Pages
+    {
+        PageSelDirs = 0,
+        PageStructSettings,
+        PageProjectsWizard,
+        PageGenerate
     };
     HotfixWizard();
     virtual ~HotfixWizard();
@@ -41,6 +50,7 @@ private:
     SelDirsPage *m_pSelDirsPage;
     StructSettingsPage *m_pStructPage;
     ProjectsWizardPage *m_pProjects;
+    GeneratorPage *m_pGeneratorPage;
 
     ConnectionInfo *pConnetion;
     QStringList m_FileList;

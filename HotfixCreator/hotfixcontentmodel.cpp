@@ -262,8 +262,6 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
                 FolderContentTreeItem *realParent = !i ? parent : Parents[separated[i - 1]];
                 FolderContentTreeItem *item = dynamic_cast<FolderContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
 
-                        //realParent->appendFolder(separated[i]);
-
                 lastCreateItem = item;
                 Parents.insert(separated[i], item);
             }
@@ -272,7 +270,7 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
         {
             FolderContentTreeItem *realParent = !i ? parent : Parents[separated[i - 1]];
             FileContentTreeItem *item = dynamic_cast<FileContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
-                    //realParent->appendFile(separated[i]);
+
             item->setSvnAction(element.action);
             item->setFullFileName(element.fullpath);
             lastCreateItem = item;
@@ -286,44 +284,20 @@ ContentTreeItem *HotfixContentModel::makePath(FolderParents &Parents, const QStr
 {
     PathMaker func = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
     {
-        if (!isFile(name) && !isExcludeElement(name))
-            return parent->appendFolder(name);
-        else if (!isExcludeElement(name))
-            return parent->appendFile(name);
-
-        return nullptr;
+        return stdMakePathFunc(parent, name, fullname);
     };
 
     return makePathEx(Parents, path, elem, parent, func);
-    /*ContentTreeItem *lastCreateItem = nullptr;
+}
 
-    const SvnStatusElement &element = *((SvnStatusElement*)elem);
+ContentTreeItem *HotfixContentModel::stdMakePathFunc(FolderContentTreeItem *parent, const QString &name, const QString &fullname)
+{
+    if (!isFile(name) && !isExcludeElement(name))
+        return parent->appendFolder(name);
+    else if (!isExcludeElement(name))
+        return parent->appendFile(name);
 
-    QStringList separated = path.split("\\");
-    for (int i = 0; i < separated.size(); i++)
-    {
-        if (!isFile(separated[i]) && !isExcludeElement(separated[i]))
-        {
-            if (!Parents.contains(separated[i]))
-            {
-                FolderContentTreeItem *realParent = !i ? parent : Parents[separated[i - 1]];
-                FolderContentTreeItem *item = realParent->appendFolder(separated[i]);
-
-                lastCreateItem = item;
-                Parents.insert(separated[i], item);
-            }
-        }
-        else if (!isExcludeElement(separated[i]))
-        {
-            FolderContentTreeItem *realParent = !i ? parent : Parents[separated[i - 1]];
-            FileContentTreeItem *item = realParent->appendFile(separated[i]);
-            item->setSvnAction(element.action);
-            item->setFullFileName(element.fullpath);
-            lastCreateItem = item;
-        }
-    }
-
-    return lastCreateItem;*/
+    return nullptr;
 }
 
 void HotfixContentModel::makeModel(const QString &source, const QString &dst, const QString &hfname, const bool &NewFormat)
@@ -331,6 +305,9 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
     beginResetModel();
     rootItem.reset(new FolderContentTreeItem(source));
     rootItem->setModel(this);
+
+    m_DatFiles.clear();
+    m_NewFormat = NewFormat;
 
     QString path = dst + "\\" + hfname;
     FolderContentTreeItem *hfroot = (FolderContentTreeItem*)rootItem->appendChild(std::make_unique<FolderContentTreeItem>(QDir::toNativeSeparators(path)));
@@ -433,6 +410,11 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
         qDebug() << element.action << element.filename << element.path;
     }
 
+    FolderContentTreeItem *SqlFolder = rootItem->findItemByData<FolderContentTreeItem>("04_SQL", 0, Qt::DisplayRole);
+
+    if (SqlFolder)
+        SqlFolder->setShowRowNumber(true);
+
     if (!PackagesList.empty())
     {
         std::sort(PackagesList.begin(), PackagesList.end(), [&](const ElementWrp &a, const ElementWrp &b)
@@ -454,11 +436,45 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
 
             QString filename = QString("%1").arg(pkgindex++, 2, 10, QChar('0'));
             filename += "_" + fi.baseName() + "_" + fi.completeSuffix() + ".sql";
-            pkgpath = QString("05_PCKG\\") + filename;
 
-            makePath(Parents, pkgpath, (Qt::HANDLE)&item.get(), AddFiles);
+            if (!m_NewFormat)
+                pkgpath = QString("05_PCKG\\") + filename;
+            else
+                pkgpath = QString("Ora\\05_PCKG\\") + filename;
+
+            makePath(AddFilesParents, pkgpath, (Qt::HANDLE)&item.get(), AddFiles);
+
+            if (m_NewFormat)
+            {
+                QString pgpkgpath = "PG\\DBFile\\SQLProc\\" + fi.fileName();
+                makePath(AddFilesParents, pgpkgpath, (Qt::HANDLE)&item.get(), AddFiles);
+            }
         }
     }
+
+    if (!CrebankdistrList.isEmpty())
+    {
+        PathMaker func = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
+        {
+            ContentTreeItem *item = stdMakePathFunc(parent, name, fullname);
+            item->setOrder(1);
+            return item;
+        };
+
+        for (const ElementWrp &item : CrebankdistrList)
+        {
+            QFileInfo fi(item.get().path);
+            QString sqlpath = item.get().path;
+
+            if (!m_NewFormat)
+                sqlpath = QString("04_SQL\\") + fi.baseName() + ".sql";
+            else
+                sqlpath = QString("Ora\\04_SQL\\") + fi.baseName() + ".sql";
+
+            makePathEx(AddFilesParents, sqlpath, (Qt::HANDLE)&item.get(), AddFiles, func);
+        }
+    }
+
     endResetModel();
 }
 
@@ -527,6 +543,15 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
         QString xmlpath = QString("01_FMT\\XML\\") + fmtpath.mid(pos + 4);
         QString idxpath = QString("03_INDX\\") + fmtpath.mid(pos + 4);
 
+        if (m_NewFormat)
+        {
+            xmlpath.prepend("Ora\\");
+            idxpath.prepend("Ora\\");
+
+            QString pgfmtpath = "PG\\DBFile\\FMT\\" + fmtpath.mid(pos + 4);
+            makePath(Parents, pgfmtpath, (Qt::HANDLE)&element, AddFiles);
+        }
+
         makePath(Parents, xmlpath, (Qt::HANDLE)&element, AddFiles);
         makePathEx(Parents, idxpath, (Qt::HANDLE)&element, AddFiles, IdxMaker);
     }
@@ -536,6 +561,10 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
 
         int pos = tablepath.indexOf("CreateTablesSql\\", 0, Qt::CaseInsensitive);
         tablepath = QString("02_TABLE\\") + tablepath.mid(pos + 16);
+
+        if (m_NewFormat)
+            tablepath.prepend("Ora\\");
+
         makePathEx(Parents, tablepath, (Qt::HANDLE)&element, AddFiles, TableMaker);
     }
     else if (element.path.contains("Data\\", Qt::CaseInsensitive))
@@ -544,6 +573,12 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
 
         int pos = tablepath.indexOf("Data\\", 0, Qt::CaseInsensitive);
         tablepath = QString("04_SQL\\") + tablepath.mid(pos + 5);
+
+        m_DatFiles.append(tablepath.mid(pos + 5));
+
+        if (m_NewFormat)
+            tablepath.prepend("Ora\\");
+
         makePathEx(Parents, tablepath, (Qt::HANDLE)&element, AddFiles, DatMaker);
     }
 }

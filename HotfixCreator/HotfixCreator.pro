@@ -22,6 +22,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    generatorpage.cpp \
     hotfixcontentmodel.cpp \
     hotfixwizard.cpp \
     main.cpp \
@@ -37,6 +38,7 @@ SOURCES += \
     structsettingspage.cpp
 
 HEADERS += \
+    generatorpage.h \
     hotfixcontentmodel.h \
     hotfixwizard.h \
     model/contenttreeitem.h \
@@ -70,6 +72,13 @@ DEPENDPATH += $$PWD/../FmtLib
 RESOURCES += \
     hfcres.qrc \
     res.qrc
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime

@@ -17,6 +17,17 @@ public:
 
     ContentTreeItem *appendChild(std::unique_ptr<ContentTreeItem> &&child);
 
+    ContentTreeItem *findItemByData(const QVariant& value, int column, int role);
+    template<class T>T *findItemByData(const QVariant& value, int column, int role)
+    {
+        ContentTreeItem *found = findItemByData(value, column, role);
+
+        if (!found)
+            return nullptr;
+
+        return dynamic_cast<T*>(found);
+    }
+
     ContentTreeItem *child(int row);
     int childCount() const;
 
@@ -25,6 +36,7 @@ public:
 
     int row() const;
     ContentTreeItem *parentItem();
+    ContentTreeItem *parentItem() const;
 
     QFileIconProvider *iconProvider();
     QFileIconProvider *iconProvider() const;
@@ -32,6 +44,7 @@ public:
     void setCheckable(const bool &checkable);
     void setTristate(const bool &state);
     void setEnable(const bool &state);
+    void setShowRowNumber(const bool &state);
 
     void setOrder(const qint16 &v);
     const qint16 &order() const;
@@ -39,6 +52,7 @@ public:
     const bool &checkable() const;
     const bool &tristate() const;
     const bool &isEnable() const;
+    const bool &isShowRowNumber() const;
 
     Qt::CheckState checkState();
 
@@ -57,7 +71,7 @@ private:
     std::vector<std::unique_ptr<ContentTreeItem>> m_childItems;
 
     Qt::CheckState m_Check;
-    bool m_Chackable, m_Tristate, m_fEnabled;
+    bool m_Chackable, m_Tristate, m_fEnabled, m_fShowRowNumber;
     qint16 m_Order;
 };
 

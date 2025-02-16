@@ -14,6 +14,7 @@ ContentTreeItem::ContentTreeItem(ContentTreeItem *parentItem) :
     m_Chackable(false),
     m_Tristate(false),
     m_fEnabled(true),
+    m_fShowRowNumber(false),
     m_Order(0)
 {
 
@@ -22,6 +23,22 @@ ContentTreeItem::ContentTreeItem(ContentTreeItem *parentItem) :
 ContentTreeItem::~ContentTreeItem()
 {
 
+}
+
+ContentTreeItem *ContentTreeItem::findItemByData(const QVariant& value, int column, int role)
+{
+    if (data(column, role) == value)
+        return this;
+
+    for (const auto& child : m_childItems)
+    {
+        ContentTreeItem* foundItem = child->findItemByData(value, column, role);
+
+        if (foundItem)
+            return foundItem;
+    }
+
+    return nullptr;
 }
 
 ContentTreeItem *ContentTreeItem::appendChild(std::unique_ptr<ContentTreeItem> &&child)
@@ -108,6 +125,11 @@ ContentTreeItem *ContentTreeItem::parentItem()
     return m_parentItem;
 }
 
+ContentTreeItem *ContentTreeItem::parentItem() const
+{
+    return m_parentItem;
+}
+
 int ContentTreeItem::row() const
 {
     if (m_parentItem == nullptr)
@@ -119,7 +141,7 @@ int ContentTreeItem::row() const
 
     if (it != m_parentItem->m_childItems.cend())
         return std::distance(m_parentItem->m_childItems.cbegin(), it);
-    Q_ASSERT(false); // should not happen
+    //Q_ASSERT(false); // should not happen
     return -1;
 }
 
@@ -146,6 +168,11 @@ void ContentTreeItem::setTristate(const bool &state)
 void ContentTreeItem::setEnable(const bool &state)
 {
     m_fEnabled = state;
+}
+
+void ContentTreeItem::setShowRowNumber(const bool &state)
+{
+    m_fShowRowNumber = state;
 }
 
 Qt::CheckState ContentTreeItem::checkState()
@@ -176,6 +203,11 @@ HotfixContentModel *ContentTreeItem::model()
 const bool &ContentTreeItem::isEnable() const
 {
     return m_fEnabled;
+}
+
+const bool &ContentTreeItem::isShowRowNumber() const
+{
+    return m_fShowRowNumber;
 }
 
 void ContentTreeItem::setOrder(const qint16 &v)
