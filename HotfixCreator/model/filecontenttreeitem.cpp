@@ -75,7 +75,7 @@ const QString &FileContentTreeItem::svnAction() const
     return m_SvnAction;
 }
 
-MakeResult FileContentTreeItem::make(const MakeAction &action, QString &msg) const
+MakeResult FileContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     if (action != ActionMake)
         return ResultSuccess;

@@ -11,6 +11,7 @@ class ConnectionInfo;
 class QSettings;
 class HotfixContentModel;
 class ProjectsWizardPage;
+class ConnactionPage;
 class HotfixWizard Q_DECL_FINAL : public QWizard
 {
     Q_OBJECT
@@ -28,6 +29,7 @@ public:
     enum Pages
     {
         PageSelDirs = 0,
+        PageConnaction,
         PageStructSettings,
         PageProjectsWizard,
         PageGenerate
@@ -51,6 +53,7 @@ private:
     StructSettingsPage *m_pStructPage;
     ProjectsWizardPage *m_pProjects;
     GeneratorPage *m_pGeneratorPage;
+    ConnactionPage *m_pConnactionPage;
 
     ConnectionInfo *pConnetion;
     QStringList m_FileList;

@@ -44,7 +44,7 @@ public:
     void sort(int column, Qt::SortOrder order) Q_DECL_OVERRIDE;
 
     void makeModel(const QString &source, const QString &dst, const QString &hfname, const bool &NewFormat);
-    void makeHotFix(ErrorsModel *logs, UsrMakeHandle usr);
+    void makeHotFix(ErrorsModel *logs, const QMap<QString, QVariant> &params, UsrMakeHandle usr);
     QStringList projects() const;
     ProjectLoader *projectLoader();
 

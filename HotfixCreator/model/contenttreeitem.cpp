@@ -225,7 +225,7 @@ const qint16 &ContentTreeItem::order() const
     return m_Order;
 }
 
-MakeResult ContentTreeItem::make(const MakeAction &action, QString &msg) const
+MakeResult ContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     if (action == ActionMake)
     {

@@ -10,11 +10,11 @@
 #include <QFileInfo>
 #include <QDir>
 
-bool ExecMakeAction(const MakeAction &action, ContentTreeItem *root, ErrorsModel *logs, bool logonlyerror)
+bool ExecMakeAction(const MakeAction &action, ContentTreeItem *root, ErrorsModel *logs, bool logonlyerror, const MakeParams &params)
 {
     QString msg;
 
-    MakeResult result = root->make(action, msg);
+    MakeResult result = root->make(action, msg, params);
     if (result == ResultSuccess)
     {
         if (!logonlyerror && !msg.isEmpty())
@@ -36,17 +36,17 @@ bool ExecMakeAction(const MakeAction &action, ContentTreeItem *root, ErrorsModel
     return true;
 }
 
-void HotfixContentModel::makeHotFix(ErrorsModel *logs, UsrMakeHandle usr)
+void HotfixContentModel::makeHotFix(ErrorsModel *logs, const QMap<QString, QVariant> &params, UsrMakeHandle usr)
 {
-    std::function<void(ContentTreeItem *root)> func = [&usr, &func, &logs](ContentTreeItem *root)
+    std::function<void(ContentTreeItem *root)> func = [&usr, &func, &logs, &params](ContentTreeItem *root)
     {
         if (usr)
             usr(UsrMakeBegin, root);
 
-        bool result = ExecMakeAction(ActionPrepare, root, logs, false);
+        bool result = ExecMakeAction(ActionPrepare, root, logs, false, params);
 
         if (result)
-            result = ExecMakeAction(ActionMake, root, logs, false);
+            result = ExecMakeAction(ActionMake, root, logs, false, params);
 
         if (usr)
             usr(UsrMakeEnd, root);
@@ -57,7 +57,7 @@ void HotfixContentModel::makeHotFix(ErrorsModel *logs, UsrMakeHandle usr)
                 func(root->child(i));
         }
 
-        result = ExecMakeAction(ActionEnd, root, logs, false);
+        result = ExecMakeAction(ActionEnd, root, logs, false, params);
     };
 
     for (int i = 0; i <rootItem->childCount(); i++)

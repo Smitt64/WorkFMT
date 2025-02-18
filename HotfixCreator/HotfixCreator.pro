@@ -22,6 +22,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    connactionpage.cpp \
     generatorpage.cpp \
     hotfixcontentmake.cpp \
     hotfixcontentmodel.cpp \
@@ -39,6 +40,7 @@ SOURCES += \
     structsettingspage.cpp
 
 HEADERS += \
+    connactionpage.h \
     generatorpage.h \
     hotfixcontentmodel.h \
     hotfixwizard.h \
@@ -58,6 +60,7 @@ target.path = $$PWD/../bin
 INSTALLS += target
 
 FORMS += \
+    connactionpage.ui \
     datpage.ui \
     projectswizardpage.ui \
     seldirspage.ui \

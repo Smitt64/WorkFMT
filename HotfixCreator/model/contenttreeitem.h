@@ -20,6 +20,8 @@ enum MakeResult
     ResultFail,
 };
 
+typedef QMap<QString,QVariant> MakeParams;
+
 class QFileIconProvider;
 class HotfixContentModel;
 class ContentTreeItem : public QObject
@@ -70,7 +72,7 @@ public:
 
     virtual QVariant data(const int &column, const int &role) const;
     virtual bool setData(const QVariant &value, const int &column = 0, int role = Qt::EditRole);
-    virtual MakeResult make(const MakeAction &action, QString &msg) const;
+    virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const;
 
     int row() const;
     ContentTreeItem *parentItem();

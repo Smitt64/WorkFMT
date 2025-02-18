@@ -4,6 +4,7 @@
 #include "fmtcore.h"
 #include "hotfixcontentmodel.h"
 #include "projectswizardpage.h"
+#include "connactionpage.h"
 #include "generatorpage.h"
 #include <QSettings>
 #include <connectioninfo.h>
@@ -21,11 +22,13 @@ HotfixWizard::HotfixWizard() :
     m_pSettings.reset(new QSettings(settingsDir.absoluteFilePath("hfcreator.ini"), QSettings::IniFormat));
 
     m_pSelDirsPage = new SelDirsPage(this);
+    m_pConnactionPage = new ConnactionPage(this);
     m_pStructPage = new StructSettingsPage(this);
     m_pProjects = new ProjectsWizardPage(this);
     m_pGeneratorPage = new GeneratorPage(this);
 
     addPage(m_pSelDirsPage);
+    addPage(m_pConnactionPage);
     addPage(m_pStructPage);
     addPage(m_pProjects);
     addPage(m_pGeneratorPage);

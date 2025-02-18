@@ -73,7 +73,7 @@ DatFileContentTreeItem *FolderContentTreeItem::appendDatItem(const QString &name
     return (DatFileContentTreeItem*)appendChild(std::make_unique<DatFileContentTreeItem>(QDir::toNativeSeparators(path)));
 }
 
-MakeResult FolderContentTreeItem::make(const MakeAction &action, QString &msg) const
+MakeResult FolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     if (action != ActionMake)
         return ResultSuccess;
@@ -215,10 +215,10 @@ QStringList OraSqlFolderContentTreeItem::findFileInPathChunks(const OraSqlFolder
     return QStringList(); // Возвращаем пустой QStringList, если файл не найден
 }
 
-MakeResult OraSqlFolderContentTreeItem::make(const MakeAction &action, QString &msg) const
+MakeResult OraSqlFolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     if (action == ActionMake)
-        return FolderContentTreeItem::make(action, msg);
+        return FolderContentTreeItem::make(action, msg, params);
     else if (action == ActionPrepare)
     {
         QTextStream stream(&msg);

@@ -50,7 +50,7 @@ void DatFileContentTreeItem::setChunks(const QStringList &lst)
     m_Chunks = lst;
 }
 
-MakeResult DatFileContentTreeItem::make(const MakeAction &action, QString &msg) const
+MakeResult DatFileContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     MakeResult result = ResultFail;
 

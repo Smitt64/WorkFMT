@@ -9,6 +9,7 @@ class ErrorDlg;
 class QVBoxLayout;
 class QProgressBar;
 class ErrorsModel;
+class HotfixWizard;
 class HotfixContentModel;
 
 class GeneratorOp : public QObject, public QRunnable
@@ -21,6 +22,7 @@ public:
 
     ErrorsModel *m_pLog;
     HotfixContentModel *m_pModel;
+    HotfixWizard *wzrd;
 
 private:
     QMutex m_Mutex;

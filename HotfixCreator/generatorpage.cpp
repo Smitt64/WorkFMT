@@ -2,6 +2,7 @@
 #include "errordlg.h"
 #include "errorsmodel.h"
 #include "hotfixcontentmodel.h"
+#include "model/contenttreeitem.h"
 #include <QVBoxLayout>
 #include <QProgressBar>
 #include <QThreadPool>
@@ -29,7 +30,13 @@ void GeneratorOp::run()
             m_Mutex.unlock();*/
     };
 
-    m_pModel->makeHotFix(m_pLog, func);
+    MakeParams params;
+    params["User"] = wzrd->field("User");
+    params["Password"] = wzrd->field("Password");
+    params["Service"] = wzrd->field("Service");
+    params["IsUnicode"] = wzrd->field("IsUnicode");
+
+    m_pModel->makeHotFix(m_pLog, params, func);
 }
 
 // --------------------------------------------------------------------------
@@ -67,6 +74,7 @@ void GeneratorPage::initializePage()
     GeneratorOp *op = new GeneratorOp();
     op->m_pLog = m_Log.data();
     op->m_pModel = pModel;
+    op->wzrd = dynamic_cast<HotfixWizard*>(wizard());
 
     QThreadPool::globalInstance()->start(op);
 }
