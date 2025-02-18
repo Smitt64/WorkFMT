@@ -509,7 +509,12 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
     PathMaker DatMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
     {
         if (!isFile(name) && !isExcludeElement(name))
-            return parent->appendFolder(name);
+        {
+            if (name != "04_SQL")
+                return parent->appendFolder(name);
+            else
+                return parent->appendFolder<OraSqlFolderContentTreeItem>(name);
+        }
         else if (!isExcludeElement(name))
         {
             QFileInfo fi(name);

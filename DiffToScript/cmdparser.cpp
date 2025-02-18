@@ -51,6 +51,9 @@ CommandLineParseResult CmdParser::parse()
     QCommandLineOption unicodeConnectionOption("unicodedb", "Признак unicode базы данных.", "");
     parser.addOption(unicodeConnectionOption);
 
+    QCommandLineOption normalOption("normal", QCoreApplication::translate("main", "Нормализовать список файлов"));
+    parser.addOption(normalOption);
+
 //    QCommandLineOption autoIncOption("autoinc", "0 - исключает автоинкрементные поля из результата, 1 - включает (по умолчанию)", "0|1");
 //    parser.addOption(autoIncOption);
 
@@ -108,6 +111,7 @@ CommandLineParseResult CmdParser::parse()
     opts[ctoConnectionUnicode].isSet = parser.isSet(unicodeConnectionOption);
     opts[ctoDiffInfoMode].isSet = parser.isSet(diffOption);
     opts[ctoXml].isSet = parser.isSet(xmlOption);
+    opts[ctoNormalFileList].isSet = parser.isSet(normalOption);
 
     if (opts[ctoOracle].isSet & opts[ctoPostgres].isSet)
     {

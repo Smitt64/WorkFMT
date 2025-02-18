@@ -9,6 +9,7 @@
 
 #include "taskoptions.h"
 
+class TableLinks;
 class Task : public QObject
 {
     Q_OBJECT
@@ -19,6 +20,7 @@ public:
 //    bool getOption(TaskOption opt) const { return optns[opt];}
     void runScriptTask();
     void runDiffTask();
+    void runNormalPathsTask();
     void setInput(QString fileName);
 
     int result() const;
@@ -36,5 +38,10 @@ private:
 
     int m_Result;
 };
+
+extern QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLinks);
+extern QStringList GetNormalFileList(const QStringList files,
+                                     const QList<TableLinks> &tableLinks,
+                                     std::function<void(const QString &file)> userfunc);
 
 #endif // TASK_H

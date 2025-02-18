@@ -20,8 +20,53 @@
 #include <QTextStream>
 #include <QFile>
 #include <QApplication>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QDomDocument>
+#include <QDomElement>
 #include "qloggingcategory.h"
 #include "diffmodeparser.h"
+
+QString serializeNormalPathsToJson(const QList<QStringList>& chunks)
+{
+    QJsonArray jsonArray;
+    for (const QStringList& chunk : chunks)
+    {
+        QJsonArray innerArray;
+        for (const QString& str : chunk)
+            innerArray.append(str);
+
+        jsonArray.append(innerArray);
+    }
+
+    QJsonDocument doc(jsonArray);
+    return doc.toJson(QJsonDocument::Compact);
+}
+
+QString serializeNormalPathsToXml(const QList<QStringList>& chunks)
+{
+    QDomDocument doc;
+    QDomElement root = doc.createElement("chunks");
+    doc.appendChild(root);
+
+    for (const QStringList& chunk : chunks)
+    {
+        QDomElement chunkElement = doc.createElement("chunk");
+        for (const QString& str : chunk)
+        {
+            QDomElement itemElement = doc.createElement("item");
+            QDomText textNode = doc.createTextNode(str);
+            itemElement.appendChild(textNode);
+            chunkElement.appendChild(itemElement);
+        }
+        root.appendChild(chunkElement);
+    }
+
+    return doc.toString();
+}
+
+// ------------------------------------------------------------------
 
 Task::Task(QObject *parent) :
     QObject(parent),
@@ -157,10 +202,12 @@ void parseUpdateRecords(DatTable& datTable)
 
 void Task::run()
 {
-    if (!optns[ctoDiffInfoMode].isSet)
-        runScriptTask();
-    else
+    if (optns[ctoDiffInfoMode].isSet)
         runDiffTask();
+    else if (optns[ctoNormalFileList].isSet)
+        runNormalPathsTask();
+    else
+        runScriptTask();
 
     emit finished();
 }
@@ -168,6 +215,73 @@ void Task::run()
 int Task::result() const
 {
     return m_Result;
+}
+
+void Task::runNormalPathsTask()
+{
+    QString rules = getRules(optns);
+    QLoggingCategory::setFilterRules(rules);
+
+    StreamControl sc;
+    QTextStream os(sc.makeOutputDevice(optns[ctoOutput].value));
+    QTextStream *is = sc.getInput(optns[ctoInput].value);
+    is->setCodec("IBM 866");
+    os.setCodec("IBM 866");
+
+    QString array;
+
+    is->device()->waitForReadyRead(-1);
+    while (!is->atEnd())
+    {
+        array += is->readAll();
+        is->device()->waitForReadyRead(-1);
+    }
+
+    QStringList paths = array.split(";");
+
+    QList<TableLinks> tableLinks;
+    QStringList filesCleared = GetClearedFiles(paths, tableLinks);
+
+    QList<QStringList> chunks;
+
+    if (!filesCleared.isEmpty())
+        chunks.append(filesCleared);
+
+    for (const TableLinks &tableLink : qAsConst(tableLinks))
+    {
+        QStringList::ConstIterator file = std::find_if(paths.begin(), paths.end(), [=](const QString &f)
+        {
+            return f.contains(tableLink.tableName, Qt::CaseInsensitive);
+        });
+
+        QStringList chunk;
+
+        if (file != paths.cend())
+            chunk.append("!" + (*file));
+
+        for (const Link &childlnk : qAsConst(tableLink.links))
+        {
+            file = std::find_if(paths.begin(), paths.end(), [=](const QString &f)
+            {
+                return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+            });
+
+            if (file != paths.cend())
+                chunk.append("!" + *file);
+        }
+
+        if (!chunk.isEmpty())
+            chunks.append(chunk);
+    }
+
+    QString result;
+    if (optns[ctoXml].isSet)
+        result = serializeNormalPathsToXml(chunks);
+    else
+        result = serializeNormalPathsToJson(chunks);
+
+    os << result;
+    os.flush();
 }
 
 void Task::runDiffTask()
@@ -317,7 +431,12 @@ void Task::runScriptTask()
         QString datfilepath;
 
         if (optns[ctoDatFile].isSet)
-            datfilepath = optns[ctoDatFile].value;
+        {
+            QFileInfo fi(optns[ctoDatFile].value);
+
+            QDir datdir = fi.absoluteDir();
+            datfilepath = datdir.absoluteFilePath(QString("%1.dat").arg(fmtTable.name().toUpper()));
+        }
 
         datTable.loadFromFmt(&fmtTable, datfilepath);
         datTable.InitUniqFields(&tableLink);
@@ -339,8 +458,7 @@ void Task::runScriptTask()
         qCInfo(logTask) << "Diff parsed. Lines:"
                         << "insert -" << linesParser.linesCount({ltInsert})
                         << "delete -" << linesParser.linesCount({ltDelete})
-                        << "update -" << linesParser.linesCount({ltUpdate})
-            ;
+                        << "update -" << linesParser.linesCount({ltUpdate});
 
         datTable.loadData(linesParser.getParsedLines());
         qCInfo(logTask) << "Records of" << datTable.name << "loaded. Count =" << datTable.records.count();

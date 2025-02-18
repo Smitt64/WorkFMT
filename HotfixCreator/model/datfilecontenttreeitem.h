@@ -9,8 +9,13 @@ public:
     DatFileContentTreeItem(const QString &file, ContentTreeItem *parentItem = nullptr);
     virtual ~DatFileContentTreeItem();
 
-    virtual QVariant data(const int &column, const int &role) const;
-    virtual MakeResult make(QString &msg) const Q_DECL_OVERRIDE;
+    virtual QVariant data(const int &column, const int &role) const Q_DECL_OVERRIDE;
+    virtual MakeResult make(const MakeAction &action, QString &msg) const Q_DECL_OVERRIDE;
+
+    void setChunks(const QStringList &lst);
+
+private:
+    QStringList m_Chunks;
 };
 
 #endif // DATFILECONTENTTREEITEM_H

@@ -75,8 +75,11 @@ const QString &FileContentTreeItem::svnAction() const
     return m_SvnAction;
 }
 
-MakeResult FileContentTreeItem::make(QString &msg) const
+MakeResult FileContentTreeItem::make(const MakeAction &action, QString &msg) const
 {
+    if (action != ActionMake)
+        return ResultSuccess;
+
     QFileInfo fi(m_FileName);
     QDir d(fi.absolutePath());
     QString filename = d.absoluteFilePath(data(0, Qt::DisplayRole).toString());

@@ -25,6 +25,7 @@ enum CmdTaskOption
     ctoDiffInfoMode,
     ctoXml,
     ctoDatFile,
+    ctoNormalFileList,
 
     toLast
 };

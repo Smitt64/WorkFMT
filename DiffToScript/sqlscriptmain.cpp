@@ -640,12 +640,18 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
             oldIndex = nextRecIndex;
             newIndex = recIndex;
         }
-            qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
-                toScript(joinTable, joinTable->scriptTable->records[newIndex]);
-                buildUpdateStatement(os, joinTable, sql, oldIndex, newIndex);
-                buildChildStatement(os, joinTable, sql, newIndex);
-                joinTable->processedRecords[oldIndex] = true;
-                joinTable->processedRecords[newIndex] = true;
+        qCInfo(logSqlScriptMain) << "Build script for update. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
+
+        if (newIndex < joinTable->scriptTable->records.size())
+        {
+            toScript(joinTable, joinTable->scriptTable->records[newIndex]);
+            buildUpdateStatement(os, joinTable, sql, oldIndex, newIndex);
+            buildChildStatement(os, joinTable, sql, newIndex);
+            joinTable->processedRecords[oldIndex] = true;
+            joinTable->processedRecords[newIndex] = true;
+        }
+        else
+            qCWarning(logSqlScriptMain) << "Can't " << recIndex << ". Record not processed: " << rec.values.join(", ");
 
         nextRecIndex++;
     }

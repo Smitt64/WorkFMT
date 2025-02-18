@@ -58,6 +58,11 @@ ContentTreeItem *ContentTreeItem::child(int row)
     return row >= 0 && row < childCount() ? m_childItems.at(row).get() : nullptr;
 }
 
+ContentTreeItem *ContentTreeItem::child(int row) const
+{
+    return row >= 0 && row < childCount() ? m_childItems.at(row).get() : nullptr;
+}
+
 int ContentTreeItem::childCount() const
 {
     return int(m_childItems.size());
@@ -220,8 +225,13 @@ const qint16 &ContentTreeItem::order() const
     return m_Order;
 }
 
-MakeResult ContentTreeItem::make(QString &msg) const
+MakeResult ContentTreeItem::make(const MakeAction &action, QString &msg) const
 {
-    msg = "Действие не реализовано";
-    return ResultWarning;
+    if (action == ActionMake)
+    {
+        msg = "Действие не реализовано";
+        return ResultWarning;
+    }
+
+    return ResultSuccess;
 }

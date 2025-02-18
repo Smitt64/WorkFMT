@@ -30,6 +30,11 @@ QVariant DatFileContentTreeItem::data(const int &column, const int &role) const
             else
                return QString("%1_").arg(row() + 1, 2, 10, QChar('0')) + fi.baseName().toLower() + ".sql";
         }
+        else if (role == Qt::EditRole)
+        {
+            QFileInfo fi(fileName());
+            return fi.baseName().toLower();
+        }
     }
     else if (column == HotfixContentModel::ColumnAction)
     {
@@ -40,11 +45,16 @@ QVariant DatFileContentTreeItem::data(const int &column, const int &role) const
     return FileContentTreeItem::data(column, role);
 }
 
-MakeResult DatFileContentTreeItem::make(QString &msg) const
+void DatFileContentTreeItem::setChunks(const QStringList &lst)
+{
+    m_Chunks = lst;
+}
+
+MakeResult DatFileContentTreeItem::make(const MakeAction &action, QString &msg) const
 {
     MakeResult result = ResultFail;
 
-    SvnInfoMap info = SvnGetRepoInfo(Path);
+    //SvnInfoMap info = SvnGetRepoInfo(Path);
 
     /*QStringList argtmpl;
     argtmpl << "--delete"

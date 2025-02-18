@@ -5,10 +5,18 @@
 #include <vector>
 #include <memory>
 
+enum MakeAction
+{
+    ActionPrepare = 1,
+    ActionMake,
+    ActionEnd
+};
+
 enum MakeResult
 {
     ResultWarning = -1,
     ResultSuccess = 0,
+    ResultSuccessSkipChild,
     ResultFail,
 };
 
@@ -36,11 +44,33 @@ public:
     }
 
     ContentTreeItem *child(int row);
+    ContentTreeItem *child(int row) const;
+
+    template<class T>T *child(int row)
+    {
+        ContentTreeItem *item = child(row);
+
+        if (!item)
+            return nullptr;
+
+        return dynamic_cast<T*>(item);
+    }
+
+    template<class T>T *child(int row) const
+    {
+        ContentTreeItem *item = child(row);
+
+        if (!item)
+            return nullptr;
+
+        return dynamic_cast<T*>(item);
+    }
+
     int childCount() const;
 
     virtual QVariant data(const int &column, const int &role) const;
     virtual bool setData(const QVariant &value, const int &column = 0, int role = Qt::EditRole);
-    virtual MakeResult make(QString &msg) const;
+    virtual MakeResult make(const MakeAction &action, QString &msg) const;
 
     int row() const;
     ContentTreeItem *parentItem();

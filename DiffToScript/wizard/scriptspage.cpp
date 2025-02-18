@@ -44,6 +44,90 @@ void GenerateOperation::setErrorsBuf(ErrorsModel *err)
 {
     m_Errors = err;
 }
+
+QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLinks)
+{
+    QStringList filesCleared = files;
+
+    for (const QString &file : qAsConst(files))
+    {
+        QFileInfo fi(file);
+        QString fileName = toolFullFileNameFromDir(QString("relations/%1.json").arg(fi.baseName().toLower()));
+
+        if (QFile::exists(fileName))
+        {
+            tableLinks.append(TableLinks());
+            TableLinks& tableLink = tableLinks.back();
+            tableLink.loadLinks(fileName);
+
+            for (const Link &childlnk : qAsConst(tableLink.links))
+            {
+                QStringList::ConstIterator pos = std::find_if(files.begin(), files.end(), [=](const QString &f)
+                {
+                    return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+                });
+
+                if (pos != files.end())
+                    filesCleared.removeOne(*pos);
+            }
+
+            filesCleared.removeOne(file);
+        }
+    }
+
+    return filesCleared;
+}
+
+QStringList GetNormalFileList(const QStringList files,
+                              const QList<TableLinks> &tableLinks,
+                              std::function<void(const QString &file)> userfunc)
+{
+    QStringList normalfiles;
+
+    for (const TableLinks &tableLink : qAsConst(tableLinks))
+    {
+        QStringList::ConstIterator file = std::find_if(files.begin(), files.end(), [=](const QString &f)
+        {
+            return f.contains(tableLink.tableName, Qt::CaseInsensitive);
+        });
+
+        if (file != files.end())
+        {
+            normalfiles.append(*file);
+
+            if (userfunc)
+                userfunc(*file);
+            /*if (Revision.isEmpty())
+                args.append(*file);
+            else
+                args.append(QString("%1/%2").arg(info["url"], *file));*/
+        }
+
+        for (const Link &childlnk : qAsConst(tableLink.links))
+        {
+            file = std::find_if(files.begin(), files.end(), [=](const QString &f)
+            {
+                return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+            });
+
+            if (file != files.end())
+            {
+                normalfiles.append(*file);
+
+                if (userfunc)
+                    userfunc(*file);
+
+                /*if (Revision.isEmpty())
+                    args.append(*file);
+                else
+                    args.append(QString("%1/%2").arg(info["url"], *file));*/
+            }
+        }
+    }
+
+    return files;
+}
+
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
 void GenerateOperation::run()
 {
@@ -59,36 +143,10 @@ void GenerateOperation::run()
 
     SvnInfoMap info = SvnGetRepoInfo(Path);
 
+    QList<TableLinks> tableLinks;
     bool IsUnicode = m_pWzrd->field("IsUnicode").toBool();
     QStringList files = m_pWzrd->userField("Files").toStringList();
-    QStringList filesCleared = files;
-    QList<TableLinks> tableLinks;
-
-    for (const QString &file : qAsConst(files))
-    {
-        QFileInfo fi(file);
-        QString fileName = toolFullFileNameFromDir(QString("relations/%1.json").arg(fi.baseName().toLower()));
-
-        if (QFile::exists(fileName))
-        {
-            tableLinks.append(TableLinks());
-            TableLinks& tableLink = tableLinks.back();
-            tableLink.loadLinks(fileName);
-
-            for (const Link &childlnk : qAsConst(tableLink.links))
-            {
-                QStringList::iterator pos = std::find_if(files.begin(), files.end(), [=](const QString &f)
-                {
-                    return f.contains(childlnk.tableName, Qt::CaseInsensitive);
-                });
-
-                if (pos != files.end())
-                    filesCleared.removeOne(*pos);
-            }
-
-            filesCleared.removeOne(file);
-        }
-    }
+    QStringList filesCleared = GetClearedFiles(files, tableLinks);
 
     QMap<QString, QByteArray> DiffData;
     QStringList args = { "diff" };
@@ -99,7 +157,7 @@ void GenerateOperation::run()
         args.append(Revision);
     }
 
-    for (const TableLinks &tableLink : tableLinks)
+    /*for (const TableLinks &tableLink : qAsConst(tableLinks))
     {
         QStringList::iterator file = std::find_if(files.begin(), files.end(), [=](const QString &f)
         {
@@ -129,7 +187,14 @@ void GenerateOperation::run()
                     args.append(QString("%1/%2").arg(info["url"], *file));
             }
         }
-    }
+    }*/
+    GetNormalFileList(files, tableLinks, [&args, &Revision, &info](const QString &strfile)
+    {
+        if (Revision.isEmpty())
+            args.append(strfile);
+        else
+            args.append(QString("%1/%2").arg(info["url"], strfile));
+    });
 
     //if (Action == ActionByLocalDiff)
     {
@@ -144,7 +209,7 @@ void GenerateOperation::run()
         }
     }
 
-    for (const QString &file : filesCleared)
+    for (const QString &file : qAsConst(filesCleared))
     {
         args = QStringList { "diff" };
 

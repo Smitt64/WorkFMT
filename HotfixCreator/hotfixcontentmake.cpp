@@ -10,32 +10,54 @@
 #include <QFileInfo>
 #include <QDir>
 
+bool ExecMakeAction(const MakeAction &action, ContentTreeItem *root, ErrorsModel *logs, bool logonlyerror)
+{
+    QString msg;
+
+    MakeResult result = root->make(action, msg);
+    if (result == ResultSuccess)
+    {
+        if (!logonlyerror && !msg.isEmpty())
+            logs->addMessage(msg);
+    }
+    else if (result == ResultFail)
+    {
+        if (!msg.isEmpty())
+            logs->addError(msg);
+
+        return false;
+    }
+    else
+    {
+        if (!msg.isEmpty())
+            logs->appendError(msg, ErrorsModel::TypeWarning);
+    }
+
+    return true;
+}
+
 void HotfixContentModel::makeHotFix(ErrorsModel *logs, UsrMakeHandle usr)
 {
     std::function<void(ContentTreeItem *root)> func = [&usr, &func, &logs](ContentTreeItem *root)
     {
-        QString msg;
-
         if (usr)
             usr(UsrMakeBegin, root);
 
-        MakeResult result = root->make(msg);
+        bool result = ExecMakeAction(ActionPrepare, root, logs, false);
 
-        if (result == ResultSuccess)
-            logs->addMessage(msg);
-        else if (result == ResultFail)
-            logs->addError(msg);
-        else
-            logs->appendError(msg, ErrorsModel::TypeWarning);
+        if (result)
+            result = ExecMakeAction(ActionMake, root, logs, false);
 
         if (usr)
             usr(UsrMakeEnd, root);
 
-        if (result != ResultFail)
+        if (result)
         {
             for (int i = 0; i <root->childCount(); i++)
                 func(root->child(i));
         }
+
+        result = ExecMakeAction(ActionEnd, root, logs, false);
     };
 
     for (int i = 0; i <rootItem->childCount(); i++)
