@@ -213,6 +213,11 @@ ProjectLoader *HotfixContentModel::projectLoader()
     return m_pLoader.data();
 }
 
+int HotfixContentModel::totalChildCount() const
+{
+    return rootItem->totalChildCount();
+}
+
 bool HotfixContentModel::isFile(const QString &name)
 {
     static QStringList fileTypes =

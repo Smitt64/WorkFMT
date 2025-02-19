@@ -78,6 +78,7 @@ public:
     }
 
     int childCount() const;
+    int totalChildCount() const;
 
     virtual QVariant data(const int &column, const int &role) const;
     virtual bool setData(const QVariant &value, const int &column = 0, int role = Qt::EditRole);

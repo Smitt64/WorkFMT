@@ -68,6 +68,19 @@ int ContentTreeItem::childCount() const
     return int(m_childItems.size());
 }
 
+int ContentTreeItem::totalChildCount() const
+{
+    int count = 0;
+
+    for (const auto& child : m_childItems)
+    {
+        count += 1;
+        count += child->totalChildCount();
+    }
+
+    return count;
+}
+
 QVariant ContentTreeItem::data(const int &column, const int &role) const
 {
     if (column == 0 && role == Qt::CheckStateRole && m_Chackable)

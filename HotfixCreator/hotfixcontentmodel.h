@@ -48,6 +48,8 @@ public:
     QStringList projects() const;
     ProjectLoader *projectLoader();
 
+    int totalChildCount() const;
+
 public slots:
     void contentItemChanged(const int &column, const QVector<int> &roles);
 

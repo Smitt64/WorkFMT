@@ -14,6 +14,7 @@ class HotfixContentModel;
 
 class GeneratorOp : public QObject, public QRunnable
 {
+    Q_OBJECT
 public:
     GeneratorOp(QObject *parent = nullptr);
     virtual ~GeneratorOp();
@@ -23,6 +24,9 @@ public:
     ErrorsModel *m_pLog;
     HotfixContentModel *m_pModel;
     HotfixWizard *wzrd;
+
+signals:
+    void progressChanged(int);
 
 private:
     QMutex m_Mutex;

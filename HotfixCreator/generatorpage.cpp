@@ -22,8 +22,10 @@ GeneratorOp::~GeneratorOp()
 
 void GeneratorOp::run()
 {
-    UsrMakeHandle func = [=](const qint16 &action, ContentTreeItem *item)
+    int progress = 0;
+    UsrMakeHandle func = [&progress, this](const qint16 &action, ContentTreeItem *item)
     {
+        emit progressChanged(++progress);
         /*if (action == UsrMakeBegin)
             m_Mutex.lock();
         else
@@ -55,7 +57,7 @@ GeneratorPage::GeneratorPage(QWidget *parent) :
     m_LogWidget.reset(new ErrorDlg(ErrorDlg::ModeWidget));
     m_Log.reset(new ErrorsModel());
 
-    m_Progress->setTextVisible(false);
+    //m_Progress->setTextVisible(false);
 
     m_Layout->addWidget(m_LogWidget.data());
     m_Layout->addWidget(m_Progress.data());
@@ -80,6 +82,8 @@ void GeneratorPage::initializePage()
     op->m_pLog = m_Log.data();
     op->m_pModel = pModel;
     op->wzrd = dynamic_cast<HotfixWizard*>(wizard());
+    m_Progress->setMaximum(pModel->totalChildCount());
 
+    connect(op, &GeneratorOp::progressChanged, m_Progress.data(), &QProgressBar::setValue);
     QThreadPool::globalInstance()->start(op);
 }
