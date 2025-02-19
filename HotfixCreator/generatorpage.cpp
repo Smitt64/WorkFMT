@@ -31,10 +31,15 @@ void GeneratorOp::run()
     };
 
     MakeParams params;
-    params["User"] = wzrd->field("User");
-    params["Password"] = wzrd->field("Password");
-    params["Service"] = wzrd->field("Service");
-    params["IsUnicode"] = wzrd->field("IsUnicode");
+    params[PARAM_USER] = wzrd->field("User");
+    params[PARAM_PASSWORD] = wzrd->field("Password");
+    params[PARAM_SERVICE] = wzrd->field("Service");
+    params[PARAM_IS_UNICODE] = wzrd->field("IsUnicode");
+
+    params[PARAM_SOURCE_DIR] = wzrd->field("sourceEdit");
+    params[PARAM_HOTFIX_DIR] = wzrd->field("hotfixEdit");
+    params[PARAM_HOTFIX_NAME] = wzrd->field("hotfixName");
+    params[PARAM_ORA_PG] = wzrd->field("checkOraPg");
 
     m_pModel->makeHotFix(m_pLog, params, func);
 }

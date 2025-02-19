@@ -16,6 +16,7 @@ public:
 
     static QIcon getIconForExtension(const QString &ext);
     const QString &fileName() const;
+    const QString &fullFileName() const;
     const QString &svnAction() const;
 
 private:

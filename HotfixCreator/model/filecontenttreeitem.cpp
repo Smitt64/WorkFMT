@@ -70,6 +70,11 @@ const QString &FileContentTreeItem::fileName() const
     return m_FileName;
 }
 
+const QString &FileContentTreeItem::fullFileName() const
+{
+    return m_FullFileName;
+}
+
 const QString &FileContentTreeItem::svnAction() const
 {
     return m_SvnAction;
@@ -87,7 +92,7 @@ MakeResult FileContentTreeItem::make(const MakeAction &action, QString &msg, con
     bool hr = QFile::copy(m_FullFileName, filename);
 
     if (hr)
-        msg = QString("Файл <b>%1</b> успено скопирован в <b>%2</b>")
+        msg = QString("Файл <b>%1</b> успешно скопирован в <b>%2</b>")
                 .arg(QDir::toNativeSeparators(m_FullFileName))
                 .arg(QDir::toNativeSeparators(filename));
     else

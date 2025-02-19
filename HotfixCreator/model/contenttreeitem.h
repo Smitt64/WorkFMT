@@ -5,6 +5,15 @@
 #include <vector>
 #include <memory>
 
+#define PARAM_USER "User"
+#define PARAM_PASSWORD "Password"
+#define PARAM_SERVICE "Service"
+#define PARAM_IS_UNICODE "IsUnicode"
+#define PARAM_SOURCE_DIR "SourceDir"
+#define PARAM_HOTFIX_DIR "HotfixDir"
+#define PARAM_HOTFIX_NAME "HotfixName"
+#define PARAM_ORA_PG "OraPg"
+
 enum MakeAction
 {
     ActionPrepare = 1,

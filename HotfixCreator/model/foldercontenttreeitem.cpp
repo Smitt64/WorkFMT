@@ -229,7 +229,7 @@ MakeResult OraSqlFolderContentTreeItem::make(const MakeAction &action, QString &
             DatFileContentTreeItem *item = child<DatFileContentTreeItem>(i);
 
             if (item)
-                paths.append(item->fileName() + ".dat");
+                paths.append(item->fullFileName());
         }
 
         stream << "<ul>";
@@ -240,7 +240,7 @@ MakeResult OraSqlFolderContentTreeItem::make(const MakeAction &action, QString &
 
             if (item)
             {
-                QString fname = getFileNameWithoutExtension(item->fileName());
+                QString fname = getFileNameWithoutExtension(item->fullFileName());
                 QStringList lst = findFileInPathChunks(chunks, fname);
                 item->setChunks(lst);
 
