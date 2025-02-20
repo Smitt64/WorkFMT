@@ -15,6 +15,8 @@
 #include <QDomElement>
 #include <QJsonObject>
 #include <QTextCodec>
+#include <QTemporaryDir>
+#include <QDirIterator>
 
 FolderContentTreeItem::FolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
     ContentTreeItem(parentItem)
@@ -252,5 +254,123 @@ MakeResult OraSqlFolderContentTreeItem::make(const MakeAction &action, QString &
         }
         stream << "</ul>";
     }
+    else if (action == ActionEnd)
+    {
+        QDir d(folder());
+        if (!toolSaveResourceToFile("://res/execute_sql.cmd", d.absoluteFilePath("execute_sql.cmd")))
+        {
+            msg = QString("Ошибка создания файла <b>%1</b>")
+                    .arg(d.absoluteFilePath("execute_sql.cmd"));
+
+            d.mkdir("log");
+            return ResultWarning;
+        }
+        /*if (params[PARAM_UNPACKDBEXE].toBool())
+        {
+            QString dstfolder = folder();
+            QString arch = toolFullFileNameFromDir("hfdestrib.tar.gz");
+            toolExtractDirFromArchive(arch, dstfolder, "")
+            qDebug() << dstfolder;
+        }*/
+    }
+
+    return ResultSuccess;
+}
+
+// ----------------------------------------------------------------------
+
+IdxFolderContentTreeItem::IdxFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
+    FolderContentTreeItem(folder, parentItem)
+{
+
+}
+
+IdxFolderContentTreeItem::~IdxFolderContentTreeItem()
+{
+
+}
+
+MakeResult IdxFolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
+{
+    if (checkState() != Qt::Checked && checkState() != Qt::PartiallyChecked)
+        return ResultSuccess;
+
+    if (action == ActionMake)
+    {
+        MakeResult res =  FolderContentTreeItem::make(action, msg, params);
+
+        if (res == ResultSuccess)
+        {
+            QDir d(folder());
+            if (!toolSaveResourceToFile(":/res/create_index.cmd", d.absoluteFilePath("create_index.cmd")))
+            {
+                msg = QString("Ошибка создания файла <b>%1</b>")
+                        .arg(d.absoluteFilePath("create_index.cmd"));
+
+                return ResultWarning;
+            }
+        }
+    }
+    else if (action == ActionPrepare)
+    {
+        int width = 0;
+        for (int i = 0; i < childCount(); i++)
+        {
+            FmtContentTreeItem *item = child<FmtContentTreeItem>(i);
+
+            if (item && item->checkState() == Qt::Checked)
+            {
+                QFileInfo fi(item->fileName());
+                width = qMax(width, fi.baseName().length());
+            }
+        }
+
+        for (int i = 0; i < childCount(); i++)
+        {
+            FmtContentTreeItem *item = child<FmtContentTreeItem>(i);
+
+            if (item && item->checkState() == Qt::Checked)
+                item->setWidth(width);
+        }
+    }
+    else if (action == ActionEnd)
+    {
+        MakeResult result = ResultSuccess;
+
+        QDir d(folder());
+        QString arch = toolFullFileNameFromDir("hfdestrib.tar.gz");
+
+        QFile file(d.absoluteFilePath("create_index.cmd"));
+        if (!file.open(QIODevice::Append | QIODevice::Text))
+        {
+            msg = QString("Не удалось добавить инструкцию <b>pause</b> в файл <b>%2</b>").arg(file.fileName());
+            result = ResultWarning;
+        }
+
+        QTextStream stream(&file);
+        stream.setCodec("IBM 866");
+        stream << Qt::endl << "pause" << Qt::endl;
+        file.close();
+
+        QTemporaryDir dir;
+        dir.setAutoRemove(true);
+        if (!toolExtractDirFromArchive(arch, dir.path(), "INDX"))
+        {
+            QString idx = QString("%1\\INDX").arg(dir.path());
+            if (!toolCopyDirectory(idx, folder()))
+            {
+                msg = QString("Ошибка копирования <b>DbInit.exe</b>");
+                result = ResultWarning;
+            }
+        }
+        else
+        {
+            msg = QString("Ошибка распаковки <b>DbInit.exe</b>");
+            result = ResultWarning;
+        }
+
+        return result;
+    }
+
     return ResultSuccess;
 }

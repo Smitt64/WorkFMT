@@ -490,7 +490,12 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
     PathMaker IdxMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
     {
         if (!isFile(name) && !isExcludeElement(name))
-            return parent->appendFolder(name);
+        {
+            if (name != "03_INDX")
+                return parent->appendFolder(name);
+            else
+                return parent->appendFolder<IdxFolderContentTreeItem>(name);
+        }
         else if (!isExcludeElement(name))
         {
             QFileInfo fi(name);
@@ -504,6 +509,8 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
             bool tfStruct = false;
             if (!getTFStructValue(fullname, tfStruct) || tfStruct)
                 item->setEnable(false);
+            else
+                item->setData(Qt::Checked, 0, Qt::CheckStateRole);
 
             return item;
         }

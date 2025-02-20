@@ -56,4 +56,13 @@ private:
     PathChunks GetDiffGroups(const QStringList &paths) const;
 };
 
+class IdxFolderContentTreeItem : public FolderContentTreeItem
+{
+public:
+    IdxFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem = nullptr);
+    virtual ~IdxFolderContentTreeItem();
+
+    virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const Q_DECL_OVERRIDE;
+};
+
 #endif // FOLDERCONTENTTREEITEM_H

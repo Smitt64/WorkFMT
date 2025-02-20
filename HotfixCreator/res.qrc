@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>res/projects.json</file>
+        <file>res/execute_sql.cmd</file>
+        <file>res/create_index.cmd</file>
     </qresource>
 </RCC>

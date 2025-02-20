@@ -193,7 +193,7 @@ void ContentTreeItem::setShowRowNumber(const bool &state)
     m_fShowRowNumber = state;
 }
 
-Qt::CheckState ContentTreeItem::checkState()
+Qt::CheckState ContentTreeItem::checkState() const
 {
     return m_Check;
 }

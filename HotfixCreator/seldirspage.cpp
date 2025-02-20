@@ -16,6 +16,7 @@ SelDirsPage::SelDirsPage(QWidget *parent) :
     registerField("hotfixEdit", ui->hotfixEdit);
     registerField("hotfixName", ui->hotfixName);
     registerField("checkOraPg", ui->checkOraPg);
+    registerField("unpackDbExe", ui->unpackDbExe);
 
 #ifdef _DEBUG
     ui->sourceEdit->setText("d:/svn/UranRSBankV6/Renewal_2031_89");
@@ -24,7 +25,7 @@ SelDirsPage::SelDirsPage(QWidget *parent) :
 #endif
 
     ui->checkOraPg->setChecked(true);
-    setSubTitle(tr("Рабочие каталоги"));
+    setTitle(tr("Рабочие каталоги"));
 
     connect(ui->sourceButton, &QToolButton::clicked, m_pSourceWrp, &SelectDirWrp::selectDirSlot);
     connect(ui->hotfixButton, &QToolButton::clicked, m_pHotfixWrp, &SelectDirWrp::selectDirSlot);

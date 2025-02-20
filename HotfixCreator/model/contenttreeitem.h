@@ -13,6 +13,7 @@
 #define PARAM_HOTFIX_DIR "HotfixDir"
 #define PARAM_HOTFIX_NAME "HotfixName"
 #define PARAM_ORA_PG "OraPg"
+#define PARAM_UNPACKDBEXE "UnpackDbExe"
 
 enum MakeAction
 {
@@ -104,7 +105,7 @@ public:
     const bool &isEnable() const;
     const bool &isShowRowNumber() const;
 
-    Qt::CheckState checkState();
+    Qt::CheckState checkState() const;
 
 signals:
     void itemChanged(const int &column, const QVector<int> &roles);

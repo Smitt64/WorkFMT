@@ -100,9 +100,26 @@
           <widget class="QLineEdit" name="hotfixName"/>
          </item>
          <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="checkOraPg">
            <property name="text">
             <string>Формировать каталоги AddFiles/ORA и AddFiles/PG</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="unpackDbExe">
+           <property name="text">
+            <string>Распаковывать fmtxml.exe и DbInit.exe в каталоги</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
