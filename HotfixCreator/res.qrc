@@ -3,5 +3,6 @@
         <file>res/projects.json</file>
         <file>res/execute_sql.cmd</file>
         <file>res/create_index.cmd</file>
+        <file>res/start_import.cmd</file>
     </qresource>
 </RCC>

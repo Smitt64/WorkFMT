@@ -65,4 +65,13 @@ public:
     virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const Q_DECL_OVERRIDE;
 };
 
+class FmtFolderContentTreeItem : public FolderContentTreeItem
+{
+public:
+    FmtFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem = nullptr);
+    virtual ~FmtFolderContentTreeItem();
+
+    virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const Q_DECL_OVERRIDE;
+};
+
 #endif // FOLDERCONTENTTREEITEM_H

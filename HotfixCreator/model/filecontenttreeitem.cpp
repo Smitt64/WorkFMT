@@ -85,7 +85,7 @@ MakeResult FileContentTreeItem::make(const MakeAction &action, QString &msg, con
     if (action != ActionMake)
         return ResultSuccess;
 
-    if (checkState() != Qt::Checked && checkState() != Qt::PartiallyChecked)
+    if (checkable() && checkState() != Qt::Checked && checkState() != Qt::PartiallyChecked)
         return ResultSuccess;
 
     QFileInfo fi(m_FileName);

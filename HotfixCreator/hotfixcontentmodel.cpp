@@ -553,6 +553,16 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
         return nullptr;
     };
 
+    PathMaker FmtMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
+    {
+        if (!isFile(name) && !isExcludeElement(name))
+            return parent->appendFolder<FmtFolderContentTreeItem>(name);
+        else
+            return stdMakePathFunc(parent, name, fullname);
+
+        return nullptr;
+    };
+
     if (element.path.contains("FMT\\", Qt::CaseInsensitive))
     {
         QString fmtpath = element.path;
@@ -570,7 +580,7 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
             makePath(Parents, pgfmtpath, (Qt::HANDLE)&element, AddFiles);
         }
 
-        makePath(Parents, xmlpath, (Qt::HANDLE)&element, AddFiles);
+        makePathEx(Parents, xmlpath, (Qt::HANDLE)&element, AddFiles, FmtMaker);
         makePathEx(Parents, idxpath, (Qt::HANDLE)&element, AddFiles, IdxMaker);
     }
     else if (element.path.contains("CreateTablesSql\\", Qt::CaseInsensitive))

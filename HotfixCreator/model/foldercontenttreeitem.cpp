@@ -374,3 +374,65 @@ MakeResult IdxFolderContentTreeItem::make(const MakeAction &action, QString &msg
 
     return ResultSuccess;
 }
+
+// ----------------------------------------------------------------------
+
+FmtFolderContentTreeItem::FmtFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
+    FolderContentTreeItem(folder, parentItem)
+{
+
+}
+
+FmtFolderContentTreeItem::~FmtFolderContentTreeItem()
+{
+
+}
+
+MakeResult FmtFolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
+{
+    if (checkable() && checkState() != Qt::Checked && checkState() != Qt::PartiallyChecked)
+        return ResultSuccess;
+
+    if (action == ActionMake)
+    {
+        MakeResult res = FolderContentTreeItem::make(action, msg, params);
+
+        if (res != ResultSuccess)
+            return res;
+
+        QDir d(folder());
+        QString arch = toolFullFileNameFromDir("hfdestrib.tar.gz");
+
+        QTemporaryDir dir;
+        dir.setAutoRemove(true);
+        if (!toolExtractDirFromArchive(arch, dir.path(), "FMT"))
+        {
+            QString idx = QString("%1\\FMT").arg(dir.path());
+            if (!toolCopyDirectory(idx, folder()))
+            {
+                msg = QString("Ошибка копирования <b>DbInit.exe</b>");
+                res = ResultWarning;
+            }
+        }
+        else
+        {
+            msg = QString("Ошибка распаковки <b>DbInit.exe</b>");
+            res = ResultWarning;
+        }
+
+        return res;
+    }
+    else if(action == ActionEnd)
+    {
+        QDir d(folder());
+        if (!toolSaveResourceToFile(":/res/start_import.cmd", d.absoluteFilePath("start_import.cmd")))
+        {
+            msg = QString("Ошибка создания файла <b>%1</b>")
+                    .arg(d.absoluteFilePath("start_import.cmd"));
+
+            return ResultWarning;
+        }
+    }
+
+    return ResultSuccess;
+}
