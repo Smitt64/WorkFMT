@@ -93,8 +93,43 @@ MakeResult FolderContentTreeItem::make(const MakeAction &action, QString &msg, c
 
 // ----------------------------------------------------------------------
 
-OraSqlFolderContentTreeItem::OraSqlFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
+SqlFolderContentTreeItem::SqlFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
     FolderContentTreeItem(folder, parentItem)
+{
+
+}
+
+SqlFolderContentTreeItem::~SqlFolderContentTreeItem()
+{
+
+}
+
+MakeResult SqlFolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
+{
+    if (action == ActionMake)
+        return FolderContentTreeItem::make(action, msg, params);
+
+    if (action == ActionEnd)
+    {
+        QDir d(folder());
+        if (!toolSaveResourceToFile("://res/execute_sql.cmd", d.absoluteFilePath("execute_sql.cmd")))
+        {
+            msg = QString("Ошибка создания файла <b>%1</b>")
+                    .arg(d.absoluteFilePath("execute_sql.cmd"));
+
+            return ResultWarning;
+        }
+
+        d.mkdir("log");
+    }
+
+    return ResultSuccess;
+}
+
+// ----------------------------------------------------------------------
+
+OraSqlFolderContentTreeItem::OraSqlFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
+    SqlFolderContentTreeItem(folder, parentItem)
 {
 
 }
@@ -220,7 +255,8 @@ QStringList OraSqlFolderContentTreeItem::findFileInPathChunks(const OraSqlFolder
 MakeResult OraSqlFolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     if (action == ActionMake)
-        return FolderContentTreeItem::make(action, msg, params);
+        return SqlFolderContentTreeItem::make(action, msg, params);
+
     else if (action == ActionPrepare)
     {
         QTextStream stream(&msg);
@@ -255,24 +291,7 @@ MakeResult OraSqlFolderContentTreeItem::make(const MakeAction &action, QString &
         stream << "</ul>";
     }
     else if (action == ActionEnd)
-    {
-        QDir d(folder());
-        if (!toolSaveResourceToFile("://res/execute_sql.cmd", d.absoluteFilePath("execute_sql.cmd")))
-        {
-            msg = QString("Ошибка создания файла <b>%1</b>")
-                    .arg(d.absoluteFilePath("execute_sql.cmd"));
-
-            d.mkdir("log");
-            return ResultWarning;
-        }
-        /*if (params[PARAM_UNPACKDBEXE].toBool())
-        {
-            QString dstfolder = folder();
-            QString arch = toolFullFileNameFromDir("hfdestrib.tar.gz");
-            toolExtractDirFromArchive(arch, dstfolder, "")
-            qDebug() << dstfolder;
-        }*/
-    }
+        return SqlFolderContentTreeItem::make(action, msg, params);
 
     return ResultSuccess;
 }

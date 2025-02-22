@@ -38,7 +38,16 @@ private:
     QStringList m_Dirs;
 };
 
-class OraSqlFolderContentTreeItem : public FolderContentTreeItem
+class SqlFolderContentTreeItem : public FolderContentTreeItem
+{
+public:
+    SqlFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem = nullptr);
+    virtual ~SqlFolderContentTreeItem();
+
+    virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const Q_DECL_OVERRIDE;
+};
+
+class OraSqlFolderContentTreeItem : public SqlFolderContentTreeItem
 {
 public:
     OraSqlFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem = nullptr);

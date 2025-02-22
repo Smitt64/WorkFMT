@@ -61,6 +61,7 @@ private:
     QSet<ContentFlag> m_Contents;
     QScopedPointer<QSettings> m_pSettings;
 
+    //QScopedPointer<QPushButton> m_OptionsButton;
     QScopedPointer<HotfixContentModel> m_pStrucModel;
 };
 

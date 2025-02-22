@@ -8,6 +8,7 @@
 #include "generatorpage.h"
 #include <QSettings>
 #include <connectioninfo.h>
+#include <QPushButton>
 
 HotfixWizard::HotfixWizard() :
     QWizard()
@@ -27,11 +28,21 @@ HotfixWizard::HotfixWizard() :
     m_pProjects = new ProjectsWizardPage(this);
     m_pGeneratorPage = new GeneratorPage(this);
 
+    //m_OptionsButton.reset(new QPushButton());
+
     addPage(m_pSelDirsPage);
     addPage(m_pConnactionPage);
     addPage(m_pStructPage);
     addPage(m_pProjects);
     addPage(m_pGeneratorPage);
+
+    setOption(QWizard::HaveHelpButton);
+    setOption(QWizard::HelpButtonOnRight, false);
+    setOption(QWizard::HaveCustomButton1);
+
+    setButtonText(QWizard::CustomButton1, "Параметры");
+    setButtonLayout({QWizard::BackButton, QWizard::HelpButton, QWizard::CustomButton1, QWizard::Stretch,
+                     QWizard::NextButton, QWizard::FinishButton, QWizard::CancelButton});
 }
 
 HotfixWizard::~HotfixWizard()

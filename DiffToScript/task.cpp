@@ -328,6 +328,7 @@ void Task::runDiffTask()
     parser.serialize(os, optns[ctoXml].isSet ? "xml" : "json");
 }
 
+// --delete --insert --update --input diff.txt --updtbl --output 1_alter.txt
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
 // --delete --insert --update --input diff.txt --ora --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031"
 // --delete --insert --update --input diff.txt --ora --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_MYA_2031;password=SERP_MYA_2031" --dat D:\svn\UranRSBankV6\Main\Distrib\DBFile\Data\DPURPLE_DBT.dat

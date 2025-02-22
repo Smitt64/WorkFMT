@@ -21,7 +21,10 @@ public:
 
     virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const Q_DECL_OVERRIDE;
 
+    static QString WrapCreateTableBlock(const QString &sql);
+    static QString removeComments(const QString &input);
 private:
+    MakeResult makeTable(const MakeAction &action, QString &msg, const MakeParams &params) const;
     FmtElement m_Elem;
     int m_Width;
 };

@@ -118,45 +118,15 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
             // Обработка обновления столбца
             if (oldValue.startsWith("COMMENT ON COLUMN") && newValue.startsWith("COMMENT ON COLUMN"))
             {
-                // Если это изменение комментария
-                /*QString columnName = newValue.section(' ', 3, 3); // Извлекаем имя колонки
-                QString comment = newValue.section(' ', 6, -1); // Извлекаем комментарий
 
-                // Ищем, есть ли блок для этой колонки
-                //bool columnBlockFound = false;
-                for (const QJsonValue &change2 : qAsConst(changes))
-                {
-                    QJsonObject obj2 = change2.toObject();
-                    QString type2 = obj2["type"].toString();
-                    QString oldValue2 = obj2["oldValue"].toString().trimmed();
-                    QString newValue2 = obj2["newValue"].toString().trimmed();
-
-                    if ((type2 == "update" || type2 == "insert") && !oldValue2.startsWith("COMMENT ON COLUMN"))
-                    {
-                        auto column = extractColumnNameAndType(type2 == "update" ? oldValue2 : newValue2);
-
-                        if (column.first == columnName)
-                        {
-                            // Если найден блок для колонки, добавляем комментарий в него
-                            stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName << " IS " << comment << "';" << Qt::endl;
-                            //columnBlockFound = true;
-                            break;
-                        }
-                    }
-                }*/
-
-                /*if (!columnBlockFound)
-                {*/
-                    // Если блок для колонки не найден, создаем отдельный блок для комментария
-                    stream << "DECLARE" << Qt::endl;
-                    stream << indent << "e_col_exist EXCEPTION;" << Qt::endl;
-                    stream << indent << "PRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
-                    stream << "BEGIN" << Qt::endl;
-                    stream << indent << "EXECUTE IMMEDIATE '" << escapeSqlString(newValue) << "';" << Qt::endl;
-                    stream << "EXCEPTION" << Qt::endl;
-                    stream << indent << "WHEN e_col_exist THEN NULL;" << Qt::endl;
-                    stream << "END;" << Qt::endl << "/" << Qt::endl << Qt::endl;
-                //}
+                // Если блок для колонки не найден, создаем отдельный блок для комментария
+                stream << "DECLARE" << Qt::endl;
+                stream << indent << "e_col_exist EXCEPTION;" << Qt::endl;
+                stream << indent << "PRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
+                stream << "BEGIN" << Qt::endl;
+                stream << indent << "EXECUTE IMMEDIATE '" << escapeSqlString(newValue) << "';" << Qt::endl;
+                stream << "EXCEPTION" << Qt::endl;
+                stream << indent << "WHEN e_col_exist THEN NULL;" << Qt::endl;
             }
             else
             {

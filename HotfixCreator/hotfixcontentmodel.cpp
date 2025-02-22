@@ -433,6 +433,19 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
             return aIsPks && !bIsPks;
         });
 
+        PathMaker PkgMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
+        {
+            if (!isFile(name) && !isExcludeElement(name))
+            {
+                if (name != "05_PCKG")
+                    return parent->appendFolder(name);
+                else
+                    return parent->appendFolder<SqlFolderContentTreeItem>(name);
+            }
+
+            return stdMakePathFunc(parent, name, fullname);
+        };
+
         int pkgindex = 1;
         for (const ElementWrp &item : PackagesList)
         {
@@ -447,7 +460,7 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
             else
                 pkgpath = QString("Ora\\05_PCKG\\") + filename;
 
-            makePath(AddFilesParents, pkgpath, (Qt::HANDLE)&item.get(), AddFiles);
+            makePathEx(AddFilesParents, pkgpath, (Qt::HANDLE)&item.get(), AddFiles, PkgMaker);
 
             if (m_NewFormat)
             {
@@ -541,7 +554,12 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
     PathMaker TableMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
     {
         if (!isFile(name) && !isExcludeElement(name))
-            return parent->appendFolder(name);
+        {
+            if (name != "02_TABLE")
+                return parent->appendFolder(name);
+            else
+                return parent->appendFolder<SqlFolderContentTreeItem>(name);
+        }
         else if (!isExcludeElement(name))
         {
             QFileInfo fi(name);
@@ -556,7 +574,12 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
     PathMaker FmtMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
     {
         if (!isFile(name) && !isExcludeElement(name))
-            return parent->appendFolder<FmtFolderContentTreeItem>(name);
+        {
+            if (name == "01_FMT")
+                return parent->appendFolder<FmtFolderContentTreeItem>(name);
+            else
+                return parent->appendFolder(name);
+        }
         else
             return stdMakePathFunc(parent, name, fullname);
 
