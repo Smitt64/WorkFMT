@@ -12,6 +12,7 @@ CommandLineParseResult CmdParser::parse()
     const QString postgresParm = "pg";
     const QString diffParm = "diff";
     const QString xmlParm = "xml";
+    const QString updtblParm = "updtbl";
 
     using Status = CommandLineParseResult::Status;
 
@@ -81,6 +82,9 @@ CommandLineParseResult CmdParser::parse()
     QCommandLineOption xmlOption(xmlParm, "Возвращать результат в формате xml");
     parser.addOption(xmlOption);
 
+    QCommandLineOption updtblOption(updtblParm, QCoreApplication::translate("main", "Создать alter скрипты обновления таблицы"));
+    parser.addOption(updtblOption);
+
     const QCommandLineOption helpOption = parser.addHelpOption();
 
     parser.process(*_app);
@@ -112,6 +116,7 @@ CommandLineParseResult CmdParser::parse()
     opts[ctoDiffInfoMode].isSet = parser.isSet(diffOption);
     opts[ctoXml].isSet = parser.isSet(xmlOption);
     opts[ctoNormalFileList].isSet = parser.isSet(normalOption);
+    opts[ctoUpdateTable].isSet = parser.isSet(updtblOption);
 
     if (opts[ctoOracle].isSet & opts[ctoPostgres].isSet)
     {

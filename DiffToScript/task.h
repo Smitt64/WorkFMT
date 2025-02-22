@@ -21,6 +21,7 @@ public:
     void runScriptTask();
     void runDiffTask();
     void runNormalPathsTask();
+    void runAlterTableTask();
     void setInput(QString fileName);
 
     int result() const;
@@ -43,5 +44,7 @@ extern QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &
 extern QStringList GetNormalFileList(const QStringList files,
                                      const QList<TableLinks> &tableLinks,
                                      std::function<void(const QString &file)> userfunc);
+
+extern void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int indentSpaces = 4);
 
 #endif // TASK_H

@@ -206,6 +206,8 @@ void Task::run()
         runDiffTask();
     else if (optns[ctoNormalFileList].isSet)
         runNormalPathsTask();
+    else if (optns[ctoUpdateTable].isSet)
+        runAlterTableTask();
     else
         runScriptTask();
 
@@ -215,6 +217,31 @@ void Task::run()
 int Task::result() const
 {
     return m_Result;
+}
+
+void Task::runAlterTableTask()
+{
+    QString rules = getRules(optns);
+    QLoggingCategory::setFilterRules(rules);
+
+    // Определение потоков вывода
+    StreamControl sc;
+    QTextStream os(sc.makeOutputDevice(optns[ctoOutput].value));
+    QTextStream *is = sc.getInput(optns[ctoInput].value);
+    is->setCodec("IBM 866");
+    os.setCodec("IBM 866");
+
+    DiffModeParser parser(*is);
+    QVector<DiffLine> lines = parser.getResult();
+
+    QByteArray json;
+    QTextStream stream(&json);
+    stream.setCodec("IBM 866");
+    parser.serialize(stream, "json");
+    stream.flush();
+
+    generateUpdateScript(json, os);
+    os.flush();
 }
 
 void Task::runNormalPathsTask()

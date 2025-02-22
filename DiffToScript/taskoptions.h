@@ -26,6 +26,7 @@ enum CmdTaskOption
     ctoXml,
     ctoDatFile,
     ctoNormalFileList,
+    ctoUpdateTable,
 
     toLast
 };

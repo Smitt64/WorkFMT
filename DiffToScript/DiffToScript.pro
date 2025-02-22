@@ -17,6 +17,7 @@ RC_FILE = res/difftoscript.rc
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    altertable.cpp \
     cmdparser.cpp \
     dattable.cpp \
     dbspelling.cpp \
