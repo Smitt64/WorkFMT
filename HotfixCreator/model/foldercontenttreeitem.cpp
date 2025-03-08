@@ -3,6 +3,7 @@
 #include "filecontenttreeitem.h"
 #include "fmtcontenttreeitem.h"
 #include "datfilecontenttreeitem.h"
+#include "releasechangelogcontenttreeitem.h"
 #include "toolsruntime.h"
 #include <QFileIconProvider>
 #include <QDir>
@@ -75,6 +76,12 @@ DatFileContentTreeItem *FolderContentTreeItem::appendDatItem(const QString &name
     return (DatFileContentTreeItem*)appendChild(std::make_unique<DatFileContentTreeItem>(QDir::toNativeSeparators(path)));
 }
 
+ReleaseChangelogContentTreeItem *FolderContentTreeItem::appendReleaseChangelogItem(const QString &name)
+{
+    QString path = m_Folder + "\\" + name;
+    return (ReleaseChangelogContentTreeItem*)appendChild(std::make_unique<ReleaseChangelogContentTreeItem>(QDir::toNativeSeparators(path)));
+}
+
 MakeResult FolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     if (action != ActionMake)
@@ -94,7 +101,8 @@ MakeResult FolderContentTreeItem::make(const MakeAction &action, QString &msg, c
 // ----------------------------------------------------------------------
 
 SqlFolderContentTreeItem::SqlFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem) :
-    FolderContentTreeItem(folder, parentItem)
+    FolderContentTreeItem(folder, parentItem),
+    m_fIgnoreCreateCmd(false)
 {
 
 }
@@ -104,12 +112,17 @@ SqlFolderContentTreeItem::~SqlFolderContentTreeItem()
 
 }
 
+void SqlFolderContentTreeItem::setIgnoreCreateCmd(const bool &value)
+{
+    m_fIgnoreCreateCmd = value;
+}
+
 MakeResult SqlFolderContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
 {
     if (action == ActionMake)
         return FolderContentTreeItem::make(action, msg, params);
 
-    if (action == ActionEnd)
+    if (action == ActionEnd && !m_fIgnoreCreateCmd)
     {
         QDir d(folder());
         if (!toolSaveResourceToFile("://res/execute_sql.cmd", d.absoluteFilePath("execute_sql.cmd")))

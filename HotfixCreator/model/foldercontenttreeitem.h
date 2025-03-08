@@ -9,6 +9,7 @@ class QFileIconProvider;
 class FileContentTreeItem;
 class FmtContentTreeItem;
 class DatFileContentTreeItem;
+class ReleaseChangelogContentTreeItem;
 class FolderContentTreeItem : public ContentTreeItem
 {
 public:
@@ -23,6 +24,7 @@ public:
     FileContentTreeItem *appendFile(const QString &name);
     FmtContentTreeItem *appendFmtItem(const QString &name);
     DatFileContentTreeItem *appendDatItem(const QString &name);
+    ReleaseChangelogContentTreeItem *appendReleaseChangelogItem(const QString &name);
 
     template<class T>
     T *appendFolder(const QString &name)
@@ -44,7 +46,11 @@ public:
     SqlFolderContentTreeItem(const QString &folder, ContentTreeItem *parentItem = nullptr);
     virtual ~SqlFolderContentTreeItem();
 
+    void setIgnoreCreateCmd(const bool &value);
     virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const Q_DECL_OVERRIDE;
+
+private:
+    bool m_fIgnoreCreateCmd;
 };
 
 class OraSqlFolderContentTreeItem : public SqlFolderContentTreeItem

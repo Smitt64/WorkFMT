@@ -15,6 +15,7 @@ class ContentTreeItem;
 class FolderContentTreeItem;
 class ProjectLoader;
 class ErrorsModel;
+class SvnStatusModel;
 
 typedef std::function<void(const qint16 &action, ContentTreeItem *item)> UsrMakeHandle;
 class HotfixContentModel : public QAbstractItemModel
@@ -63,6 +64,9 @@ private:
     ContentTreeItem *makePath(FolderParents &Parents, const QString &path, Qt::HANDLE element, FolderContentTreeItem *parent);
     ContentTreeItem *makePathEx(FolderParents &Parents, const QString &path, Qt::HANDLE elem, FolderContentTreeItem *parent, PathMaker maker);
     void makeAddFiles(FolderParents &Parents, const QString &path, Qt::HANDLE elem, FolderContentTreeItem *AddFiles);
+
+    void makePgRoutes(SvnStatusModel *svn, FolderParents Parents, FolderContentTreeItem *AddFiles, const QString &hfname);
+
     bool isFile(const QString &name);
     bool isExcludeElement(const QString &name);
 

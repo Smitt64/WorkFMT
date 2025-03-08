@@ -4,6 +4,7 @@
 #include "model/filecontenttreeitem.h"
 #include "model/fmtcontenttreeitem.h"
 #include "model/datfilecontenttreeitem.h"
+#include "model/releasechangelogcontenttreeitem.h"
 #include "projectloader.h"
 #include <svn/svnstatusmodel.h>
 #include <QXmlStreamReader>
@@ -255,7 +256,6 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
                                                 PathMaker maker)
 {
     ContentTreeItem *lastCreateItem = nullptr;
-    const SvnStatusElement &element = *((SvnStatusElement*)elem);
 
     QStringList separated = path.split("\\");
     for (int i = 0; i < separated.size(); i++)
@@ -264,6 +264,7 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
         {
             if (!Parents.contains(separated[i]))
             {
+                const SvnStatusElement &element = *((SvnStatusElement*)elem);
                 FolderContentTreeItem *realParent = !i ? parent : Parents[separated[i - 1]];
                 FolderContentTreeItem *item = dynamic_cast<FolderContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
 
@@ -274,10 +275,18 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
         else if (!isExcludeElement(separated[i]))
         {
             FolderContentTreeItem *realParent = !i ? parent : Parents[separated[i - 1]];
-            FileContentTreeItem *item = dynamic_cast<FileContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
+            FileContentTreeItem *item = nullptr;
 
-            item->setSvnAction(element.action);
-            item->setFullFileName(element.fullpath);
+            if (elem)
+            {
+                const SvnStatusElement &element = *((SvnStatusElement*)elem);
+                item = dynamic_cast<FileContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
+                item->setSvnAction(element.action);
+                item->setFullFileName(element.fullpath);
+            }
+            else
+                item = dynamic_cast<FileContentTreeItem*>(maker(realParent, separated[i], ""));
+
             lastCreateItem = item;
         }
     }
@@ -297,6 +306,9 @@ ContentTreeItem *HotfixContentModel::makePath(FolderParents &Parents, const QStr
 
 ContentTreeItem *HotfixContentModel::stdMakePathFunc(FolderContentTreeItem *parent, const QString &name, const QString &fullname)
 {
+    if (!parent)
+        return nullptr;
+
     if (!isFile(name) && !isExcludeElement(name))
         return parent->appendFolder(name);
     else if (!isExcludeElement(name))
@@ -493,6 +505,9 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
         }
     }
 
+    if (m_NewFormat)
+        makePgRoutes(&svn, AddFilesParents, AddFiles, hfname);
+
     endResetModel();
 }
 
@@ -631,5 +646,110 @@ void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &pat
             tablepath.prepend("Ora\\");
 
         makePathEx(Parents, tablepath, (Qt::HANDLE)&element, AddFiles, DatMaker);
+    }
+}
+
+void HotfixContentModel::makePgRoutes(SvnStatusModel *svn, FolderParents Parents, FolderContentTreeItem *AddFiles, const QString &hfname)
+{
+    PathMaker TablesMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
+    {
+        if (!isFile(name) && !isExcludeElement(name))
+        {
+            if (name != hfname)
+                return parent->appendFolder(name);
+            else
+            {
+                OraSqlFolderContentTreeItem *folder = parent->appendFolder<OraSqlFolderContentTreeItem>(name);
+                folder->setIgnoreCreateCmd(true);
+                return folder;
+            }
+        }
+        else if (!isExcludeElement(name))
+        {
+            QFileInfo fi(name);
+            FmtContentTreeItem *item = parent->appendFmtItem(fi.baseName());
+            item->setElementType(FmtContentTreeItem::ElementTable);
+            item->setOrder(-2);
+            return item;
+        }
+
+        return nullptr;
+    };
+
+    PathMaker DatMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
+    {
+        if (!isFile(name) && !isExcludeElement(name))
+        {
+            return parent->appendFolder(name);
+        }
+        else if (!isExcludeElement(name))
+        {
+            QFileInfo fi(name);
+            DatFileContentTreeItem *item = parent->appendDatItem(fi.baseName());
+            item->setFullFileName(fullname);
+            item->setOrder(-1);
+            return item;
+        }
+
+        return nullptr;
+    };
+
+    PathMaker ChangelogMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
+    {
+        if (name == "release-changelog.xml")
+            return parent->appendReleaseChangelogItem(name);
+
+        return stdMakePathFunc(parent, name, fullname);
+    };
+
+    using ElementWrp = std::reference_wrapper<const SvnStatusElement>;
+    QList<ElementWrp> DataList;
+    QList<ElementWrp> TablesList;
+    QList<ElementWrp> SqlList;
+
+    for (int i = 0; i < svn->rowCount(); i++)
+    {
+        const SvnStatusElement &element = svn->element(i);
+
+        if (element.path.contains("CreateTablesSql\\", Qt::CaseInsensitive))
+            TablesList.append(std::cref(element));
+        else if (element.path.contains("Data\\", Qt::CaseInsensitive))
+            DataList.append(std::cref(element));
+        else if (element.path.contains("Crebankdistr\\", Qt::CaseInsensitive) &&
+                 !element.path.contains("\\PG\\", Qt::CaseInsensitive))
+        {
+            if (isFile(element.path))
+            {
+                if (!element.path.contains("Packages\\", Qt::CaseInsensitive))
+                    SqlList.append(std::cref(element));
+            }
+        }
+    }
+
+    for (auto tableref : TablesList)
+    {
+        QFileInfo fi(tableref.get().path);
+        QString path = "PG\\U_CHANGELOG\\6_20_031_\\SQL\\" + hfname + "\\" + fi.baseName() + ".sql";
+        makePathEx(Parents, path, (Qt::HANDLE)&tableref.get(), AddFiles, TablesMaker);
+    }
+
+    for (auto datref : DataList)
+    {
+        QFileInfo fi(datref.get().path);
+        QString path = "PG\\U_CHANGELOG\\6_20_031_\\SQL\\" + hfname + "\\" + fi.baseName() + ".sql";
+        makePathEx(Parents, path, (Qt::HANDLE)&datref.get(), AddFiles, DatMaker);
+    }
+
+    for (auto sqlref : SqlList)
+    {
+        QFileInfo fi(sqlref.get().path);
+        QString path = "PG\\U_CHANGELOG\\6_20_031_\\SQL\\" + hfname + "\\" + fi.baseName() + ".sql";
+        makePath(Parents, path, (Qt::HANDLE)&sqlref.get(), AddFiles);
+    }
+
+    if (Parents.contains("PG"))
+    {
+        QString changelog = "PG\\U_CHANGELOG\\6_20_031_\\release-changelog.xml";
+        makePathEx(Parents, changelog, nullptr, AddFiles, ChangelogMaker);
     }
 }

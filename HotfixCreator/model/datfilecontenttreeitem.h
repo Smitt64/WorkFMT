@@ -13,6 +13,7 @@ public:
     virtual MakeResult make(const MakeAction &action, QString &msg, const MakeParams &params) const Q_DECL_OVERRIDE;
 
     void setChunks(const QStringList &lst);
+    bool isChunksEmpty() const;
 
 private:
     QStringList m_Chunks;

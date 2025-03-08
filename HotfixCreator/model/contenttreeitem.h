@@ -107,6 +107,8 @@ public:
 
     Qt::CheckState checkState() const;
 
+    QString getPathToAncestor(const ContentTreeItem *targetItem) const;
+
 signals:
     void itemChanged(const int &column, const QVector<int> &roles);
 
@@ -117,6 +119,7 @@ protected:
     bool m_fSkipSetDataChild;
 
 private:
+    bool findPathToAncestor(const ContentTreeItem *currentItem, const ContentTreeItem *targetItem, QString &path) const;
     HotfixContentModel *m_pModel;
     ContentTreeItem *m_parentItem;
     std::vector<std::unique_ptr<ContentTreeItem>> m_childItems;

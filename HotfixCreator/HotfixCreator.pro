@@ -33,6 +33,7 @@ SOURCES += \
     model/filecontenttreeitem.cpp \
     model/fmtcontenttreeitem.cpp \
     model/foldercontenttreeitem.cpp \
+    model/releasechangelogcontenttreeitem.cpp \
     modulelistmodel.cpp \
     projectloader.cpp \
     projectswizardpage.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
     model/filecontenttreeitem.h \
     model/fmtcontenttreeitem.h \
     model/foldercontenttreeitem.h \
+    model/releasechangelogcontenttreeitem.h \
     modulelistmodel.h \
     projectloader.h \
     projectswizardpage.h \

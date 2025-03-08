@@ -248,3 +248,35 @@ MakeResult ContentTreeItem::make(const MakeAction &action, QString &msg, const M
 
     return ResultSuccess;
 }
+
+QString ContentTreeItem::getPathToAncestor(const ContentTreeItem *targetItem) const
+{
+    QString path;
+    if (findPathToAncestor(this, targetItem, path))
+        return path;
+
+    return QString(); // Если путь не найден, возвращаем пустую строку
+}
+
+bool ContentTreeItem::findPathToAncestor(const ContentTreeItem *currentItem, const ContentTreeItem *targetItem, QString &path) const
+{
+    if (currentItem == targetItem)
+        return true; // Нашли целевой элемент
+
+    // Рекурсивно проверяем всех родителей
+    ContentTreeItem *parent = currentItem->parentItem();
+    if (parent)
+    {
+        if (findPathToAncestor(parent, targetItem, path))
+        {
+            // Добавляем текущий элемент в путь
+            if (!path.isEmpty())
+                path.append("/");
+
+            path.append(currentItem->data(0, Qt::DisplayRole).toString());
+            return true;
+        }
+    }
+
+    return false; // Если целевой элемент не найден
+}

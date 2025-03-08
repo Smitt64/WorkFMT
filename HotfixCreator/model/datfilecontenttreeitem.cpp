@@ -19,6 +19,11 @@ DatFileContentTreeItem::~DatFileContentTreeItem()
 
 }
 
+bool DatFileContentTreeItem::isChunksEmpty() const
+{
+    return m_Chunks.isEmpty();
+}
+
 QVariant DatFileContentTreeItem::data(const int &column, const int &role) const
 {
     if (column == HotfixContentModel::ColumnName)
