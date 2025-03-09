@@ -249,6 +249,23 @@ bool HotfixContentModel::isExcludeElement(const QString &name)
     return fileTypes.contains(name, Qt::CaseInsensitive);
 }
 
+bool HotfixContentModel::isExcludePath(const QString &name)
+{
+    static QStringList fileTypes =
+    {
+        "ExternLib",
+        "tools"
+    };
+
+    for (int i = 0; i < fileTypes.size(); i++)
+    {
+        if (name.contains(fileTypes[i], Qt::CaseInsensitive))
+            return true;
+    }
+
+    return false;
+}
+
 ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
                                                 const QString &path,
                                                 Qt::HANDLE elem,
@@ -326,6 +343,7 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
     m_DatFiles.clear();
     m_NewFormat = NewFormat;
 
+    int pkgindex = 1;
     QString path = dst + "\\" + hfname;
     FolderContentTreeItem *hfroot = (FolderContentTreeItem*)rootItem->appendChild(std::make_unique<FolderContentTreeItem>(QDir::toNativeSeparators(path)));
     FolderContentTreeItem *appserver = nullptr;
@@ -361,7 +379,7 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
         const SvnStatusElement &element = svn.element(i);
 
         QStringList separated = element.path.split("\\");
-        if (element.path.contains("Source\\", Qt::CaseInsensitive))
+        if (element.path.contains("Source\\", Qt::CaseInsensitive) && !isExcludePath(element.path))
         {
             if (!element.path.contains("\\mac", Qt::CaseInsensitive))
             {
@@ -421,7 +439,12 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
                 if (element.path.contains("Packages\\", Qt::CaseInsensitive))
                     PackagesList.append(std::cref(element));
                 else
-                    CrebankdistrList.append(std::cref(element));
+                {
+                    if (element.path.endsWith(".pks", Qt::CaseInsensitive) || element.path.endsWith(".pkb", Qt::CaseInsensitive))
+                        PackagesList.append(std::cref(element));
+                    else
+                        CrebankdistrList.append(std::cref(element));
+                }
             }
         }
         qDebug() << element.action << element.filename << element.path;
@@ -458,7 +481,6 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
             return stdMakePathFunc(parent, name, fullname);
         };
 
-        int pkgindex = 1;
         for (const ElementWrp &item : PackagesList)
         {
             QFileInfo fi(item.get().path);
@@ -476,7 +498,9 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
 
             if (m_NewFormat)
             {
-                QString pgpkgpath = "PG\\DBFile\\SQLProc\\" + fi.fileName();
+                QString procpath = item.get().path;
+                QString normalname = procpath.remove("Crebankdistr\\SQLProc\\");
+                QString pgpkgpath = "PG\\DBFile\\SQLProc\\" + normalname;
                 makePath(AddFilesParents, pgpkgpath, (Qt::HANDLE)&item.get(), AddFiles);
             }
         }
@@ -502,6 +526,14 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
                 sqlpath = QString("Ora\\04_SQL\\") + fi.baseName() + ".sql";
 
             makePathEx(AddFilesParents, sqlpath, (Qt::HANDLE)&item.get(), AddFiles, func);
+
+            if (m_NewFormat)
+            {
+                QString procpath = item.get().path;
+                QString normalname = procpath.remove("Crebankdistr\\SQLProc\\");
+                QString pgpkgpath = "PG\\DBFile\\SQLProc\\" + normalname;
+                makePath(AddFilesParents, pgpkgpath, (Qt::HANDLE)&item.get(), AddFiles);
+            }
         }
     }
 
@@ -703,53 +735,63 @@ void HotfixContentModel::makePgRoutes(SvnStatusModel *svn, FolderParents Parents
     };
 
     using ElementWrp = std::reference_wrapper<const SvnStatusElement>;
-    QList<ElementWrp> DataList;
-    QList<ElementWrp> TablesList;
-    QList<ElementWrp> SqlList;
+    QList<ElementWrp> ReleaseChangeList;
+    QList<ElementWrp> PgSqlList;
 
     for (int i = 0; i < svn->rowCount(); i++)
     {
         const SvnStatusElement &element = svn->element(i);
 
-        if (element.path.contains("CreateTablesSql\\", Qt::CaseInsensitive))
-            TablesList.append(std::cref(element));
-        else if (element.path.contains("Data\\", Qt::CaseInsensitive))
-            DataList.append(std::cref(element));
-        else if (element.path.contains("Crebankdistr\\", Qt::CaseInsensitive) &&
-                 !element.path.contains("\\PG\\", Qt::CaseInsensitive))
+        if (isFile(element.path))
         {
-            if (isFile(element.path))
+            if (element.path.contains("release-changelog.xml", Qt::CaseInsensitive))
+                ReleaseChangeList.append(std::cref(element));
+            else if (element.path.contains("U_CHANGELOG", Qt::CaseInsensitive) &&
+                     element.path.contains("SQL", Qt::CaseInsensitive))
             {
-                if (!element.path.contains("Packages\\", Qt::CaseInsensitive))
-                    SqlList.append(std::cref(element));
+                PgSqlList.append(std::cref(element));
             }
         }
     }
 
-    for (auto tableref : TablesList)
-    {
-        QFileInfo fi(tableref.get().path);
-        QString path = "PG\\U_CHANGELOG\\6_20_031_\\SQL\\" + hfname + "\\" + fi.baseName() + ".sql";
-        makePathEx(Parents, path, (Qt::HANDLE)&tableref.get(), AddFiles, TablesMaker);
-    }
-
-    for (auto datref : DataList)
-    {
-        QFileInfo fi(datref.get().path);
-        QString path = "PG\\U_CHANGELOG\\6_20_031_\\SQL\\" + hfname + "\\" + fi.baseName() + ".sql";
-        makePathEx(Parents, path, (Qt::HANDLE)&datref.get(), AddFiles, DatMaker);
-    }
-
-    for (auto sqlref : SqlList)
-    {
-        QFileInfo fi(sqlref.get().path);
-        QString path = "PG\\U_CHANGELOG\\6_20_031_\\SQL\\" + hfname + "\\" + fi.baseName() + ".sql";
-        makePath(Parents, path, (Qt::HANDLE)&sqlref.get(), AddFiles);
-    }
-
     if (Parents.contains("PG"))
     {
-        QString changelog = "PG\\U_CHANGELOG\\6_20_031_\\release-changelog.xml";
-        makePathEx(Parents, changelog, nullptr, AddFiles, ChangelogMaker);
+        if (!ReleaseChangeList.isEmpty())
+        {
+            const SvnStatusElement &element = ReleaseChangeList[0].get();
+
+            QFileInfo fi(element.fullpath);
+            QString verstr = fi.path();
+            int pos = verstr.lastIndexOf("\\");
+
+            if (pos == -1)
+                pos = verstr.lastIndexOf("/");
+
+            QString changelog = QString("PG\\U_CHANGELOG\\%1\\release-changelog.xml")
+                    .arg(verstr.mid(pos + 1));
+            makePathEx(Parents, changelog, (Qt::HANDLE)&ReleaseChangeList[0].get(), AddFiles, ChangelogMaker);
+        }
+
+        for (const auto &item : PgSqlList)
+        {
+            const SvnStatusElement &element = item.get();
+
+            QFileInfo fi(element.fullpath);
+            QString verstr = fi.path();
+
+            if (verstr.endsWith("SQL", Qt::CaseInsensitive))
+                verstr.chop(4);
+
+            int pos = verstr.lastIndexOf("\\");
+
+            if (pos == -1)
+                pos = verstr.lastIndexOf("/");
+
+            QString path = QString("PG\\U_CHANGELOG\\%1\\SQL\\%2")
+                    .arg(verstr.mid(pos + 1))
+                    .arg(fi.fileName());
+
+            makePathEx(Parents, path, (Qt::HANDLE)&PgSqlList[0].get(), AddFiles, ChangelogMaker);
+        }
     }
 }

@@ -61,6 +61,45 @@ QString escapeSqlString(const QString &input)
     return escapedString;
 }
 
+QString normalColumnType(const QString &input)
+{
+    QString result = input.simplified();
+
+    if (result.endsWith(","))
+        result.chop(1);
+
+    return result.toUpper();
+}
+
+typedef std::tuple<QString, QString> CommentAndColumpTyple;
+CommentAndColumpTyple extractCommentAndColumn(const QString &input)
+{
+    QString columnName = input.section(' ', 3, 3);
+    QString comment = input.section(' ', 6, -1);
+
+    int commentpos = input.indexOf(columnName);
+    if (commentpos != -1)
+        comment = input.mid(commentpos + 1 + columnName.size());
+
+    int dotpos = columnName.indexOf('.');
+    if (dotpos != -1)
+        columnName = columnName.mid(dotpos + 1);
+
+    if (comment.startsWith("IS "))
+        comment = comment.remove(0, 3);
+
+    if (comment.endsWith(";"))
+        comment.chop(1);
+
+    if (comment.startsWith('\''))
+        comment.remove(0, 1);
+
+    if (comment.endsWith('\''))
+        comment.chop(1);
+
+    return std::make_tuple(columnName.toUpper(), comment);
+}
+
 void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int indentSpaces)
 {
     // Декодируем данные из кодировки IBM-866
@@ -83,6 +122,7 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
 
     QJsonArray changes = doc.array();
     QString tableName;
+    QStringList BlockedCommentsColumn;
 
     // Сначала ищем секцию index, чтобы извлечь имя таблицы
     for (const QJsonValue &change : qAsConst(changes))
@@ -111,6 +151,9 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
         QString oldValue = obj["oldValue"].toString().trimmed();
         QString newValue = obj["newValue"].toString().trimmed();
 
+        if (oldValue.simplified().isEmpty() && newValue.simplified().isEmpty())
+            continue;
+
         QString indent = generateIndent(indentSpaces);
 
         if (type == "update")
@@ -118,15 +161,26 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
             // Обработка обновления столбца
             if (oldValue.startsWith("COMMENT ON COLUMN") && newValue.startsWith("COMMENT ON COLUMN"))
             {
+                CommentAndColumpTyple coltuple = extractCommentAndColumn(newValue);
+                QString columnName = std::get<0>(coltuple);
 
-                // Если блок для колонки не найден, создаем отдельный блок для комментария
-                stream << "DECLARE" << Qt::endl;
-                stream << indent << "e_col_exist EXCEPTION;" << Qt::endl;
-                stream << indent << "PRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
-                stream << "BEGIN" << Qt::endl;
-                stream << indent << "EXECUTE IMMEDIATE '" << escapeSqlString(newValue) << "';" << Qt::endl;
-                stream << "EXCEPTION" << Qt::endl;
-                stream << indent << "WHEN e_col_exist THEN NULL;" << Qt::endl;
+                if (!BlockedCommentsColumn.contains(columnName))
+                {
+                    // Если блок для колонки не найден, создаем отдельный блок для комментария
+                    stream << "DECLARE" << Qt::endl;
+                    stream << indent << "e_col_exist EXCEPTION;" << Qt::endl;
+                    stream << indent << "PRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
+                    stream << "BEGIN" << Qt::endl;
+
+                    QString comment = escapeSqlString(newValue);
+                    if (comment.endsWith(";"))
+                        comment.chop(1);
+
+                    stream << indent << "EXECUTE IMMEDIATE '" << comment << "';" << Qt::endl;
+                    stream << "EXCEPTION" << Qt::endl;
+                    stream << indent << "WHEN e_col_exist THEN NULL;" << Qt::endl;
+                    stream << "END;" << Qt::endl << "/" << Qt::endl << Qt::endl;
+                }
             }
             else
             {
@@ -134,7 +188,9 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
                 auto oldColumn = extractColumnNameAndType(oldValue);
                 auto newColumn = extractColumnNameAndType(newValue);
 
-                if (!oldColumn.first.isEmpty() && !newColumn.first.isEmpty())
+                if (!oldColumn.first.isEmpty() && !newColumn.first.isEmpty() &&
+                        oldColumn.first != newColumn.first &&
+                        oldColumn.second != newColumn.second)
                 {
                     stream << "DECLARE" << Qt::endl;
                     stream << indent << "e_col_exist EXCEPTION;" << Qt::endl;
@@ -144,14 +200,16 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
                     if (oldColumn.first != newColumn.first)
                     {
                         // Если имя колонки изменилось, выполняем RENAME COLUMN
-                        stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " RENAME COLUMN " << oldColumn.first << " TO " << newColumn.first << "';" << Qt::endl;
+                        stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " RENAME COLUMN " << oldColumn.first.toUpper() << " TO " << normalColumnType(newColumn.first) << "';" << Qt::endl;
                     }
 
                     if (oldColumn.second != newColumn.second)
                     {
                         // Если тип колонки изменился, выполняем MODIFY
-                        stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " MODIFY " << newColumn.first << " " << newColumn.second << "';" << Qt::endl;
+                        stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " MODIFY " << newColumn.first.toUpper() << " " << normalColumnType(newColumn.second) << "';" << Qt::endl;
                     }
+                    else
+                        continue;
 
                     // Добавляем комментарий, если он есть
                     for (const QJsonValue &change2 : qAsConst(changes))
@@ -163,11 +221,14 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
 
                         if (type2 == "update" && newValue2.startsWith("COMMENT ON COLUMN"))
                         {
-                            QString columnName = newValue2.section(' ', 3, 3);
-                            if (columnName == newColumn.first)
+                            CommentAndColumpTyple coltuple = extractCommentAndColumn(newValue);
+                            QString columnName = std::get<0>(coltuple);
+                            QString comment = std::get<1>(coltuple);
+
+                            if (columnName == newColumn.first.toUpper())
                             {
-                                QString comment = newValue2.section(' ', 6, -1);
-                                stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName << " IS " << comment << "';" << Qt::endl;
+                                BlockedCommentsColumn.append(columnName);
+                                stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName.toUpper() << " IS ''" << comment << "''';" << Qt::endl;
                             }
                         }
                     }
@@ -196,7 +257,7 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
                     stream << indent << "e_col_not_exist EXCEPTION;" << Qt::endl;
                     stream << indent << "PRAGMA EXCEPTION_INIT (e_col_not_exist, -904);" << Qt::endl;
                     stream << "BEGIN" << Qt::endl;
-                    stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " DROP COLUMN " << oldColumn.first << "';" << Qt::endl;
+                    stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " DROP COLUMN " << oldColumn.first.toUpper() << "';" << Qt::endl;
                     stream << "EXCEPTION" << Qt::endl;
                     stream << indent << "WHEN e_col_not_exist THEN NULL;" << Qt::endl;
                     stream << "END;" << Qt::endl << "/" << Qt::endl << Qt::endl;
@@ -206,41 +267,21 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
         else if (type == "insert")
         {
             // Обработка добавления нового столбца
-            if (newValue.startsWith("COMMENT ON COLUMN")) {
+            if (newValue.startsWith("COMMENT ON COLUMN"))
+            {
                 // Если это добавление комментария
-                QString columnName = newValue.section(' ', 3, 3);
-                QString comment = newValue.section(' ', 6, -1);
+                CommentAndColumpTyple coltuple = extractCommentAndColumn(newValue);
+                QString columnName = std::get<0>(coltuple);
+                QString comment = std::get<1>(coltuple);
 
-                // Ищем, есть ли блок для этой колонки
-                bool columnBlockFound = false;
-                for (const QJsonValue &change2 : qAsConst(changes))
-                {
-                    QJsonObject obj2 = change2.toObject();
-                    QString type2 = obj2["type"].toString();
-                    QString oldValue2 = obj2["oldValue"].toString().trimmed();
-                    QString newValue2 = obj2["newValue"].toString().trimmed();
-
-                    if ((type2 == "update" || type2 == "insert") && !oldValue2.startsWith("COMMENT ON COLUMN"))
-                    {
-                        auto column = extractColumnNameAndType(type2 == "update" ? oldValue2 : newValue2);
-                        if (column.first == columnName)
-                        {
-                            // Если найден блок для колонки, добавляем комментарий в него
-                            stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName << " IS " << comment << "';" << Qt::endl;
-                            columnBlockFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!columnBlockFound)
+                if (!BlockedCommentsColumn.contains(columnName))
                 {
                     // Если блок для колонки не найден, создаем отдельный блок для комментария
                     stream << "DECLARE" << Qt::endl;
                     stream << indent << "e_col_exist EXCEPTION;" << Qt::endl;
                     stream << indent << "PRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
                     stream << "BEGIN" << Qt::endl;
-                    stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName << " IS " << comment << "';" << Qt::endl;
+                    stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName.toUpper() << " IS ''" << escapeSqlString(comment) << "''';" << Qt::endl;
                     stream << "EXCEPTION" << Qt::endl;
                     stream << indent << "WHEN e_col_exist THEN NULL;" << Qt::endl;
                     stream << "END;" << Qt::endl << "/" << Qt::endl << Qt::endl;
@@ -255,10 +296,10 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
                     stream << indent << "e_col_exist EXCEPTION;" << Qt::endl;
                     stream << indent << "PRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
                     stream << "BEGIN" << Qt::endl;
-                    stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " ADD " << newColumn.first << " " << newColumn.second << "';" << Qt::endl;
+                    stream << indent << "EXECUTE IMMEDIATE 'ALTER TABLE " << tableName << " ADD " << newColumn.first.toUpper() << " " << normalColumnType(newColumn.second) << "';" << Qt::endl;
 
                     // Добавляем комментарий, если он есть
-                    for (const QJsonValue &change2 : changes)
+                    for (const QJsonValue &change2 : qAsConst(changes))
                     {
                         QJsonObject obj2 = change2.toObject();
                         QString type2 = obj2["type"].toString();
@@ -267,10 +308,14 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
 
                         if (type2 == "insert" && newValue2.startsWith("COMMENT ON COLUMN"))
                         {
-                            QString columnName = newValue2.section(' ', 3, 3);
-                            if (columnName == newColumn.first) {
-                                QString comment = newValue2.section(' ', 6, -1);
-                                stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName << " IS " << comment << "';" << Qt::endl;
+                            CommentAndColumpTyple coltuple = extractCommentAndColumn(newValue2);
+                            QString columnName = std::get<0>(coltuple);
+                            QString comment = std::get<1>(coltuple);
+
+                            if (columnName == newColumn.first.toUpper())
+                            {
+                                BlockedCommentsColumn.append(columnName);
+                                stream << indent << "EXECUTE IMMEDIATE 'COMMENT ON COLUMN " << tableName << "." << columnName.toUpper() << " IS ''" << escapeSqlString(comment) << "''';" << Qt::endl;
                             }
                         }
                     }
@@ -281,5 +326,7 @@ void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int i
                 }
             }
         }
+
+        stream.flush();
     }
 }

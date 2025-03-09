@@ -6,6 +6,12 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QFileInfo>
+#include "toolsruntime.h"
+#include <QTemporaryFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QDebug>
 
 QString getCurrentUsername()
 {
@@ -41,11 +47,12 @@ ReleaseChangelogContentTreeItem::~ReleaseChangelogContentTreeItem()
 
 void ReleaseChangelogContentTreeItem::addChangeSet(QDomDocument &doc, QDomElement &root, const MakeParams &params) const
 {
-    QStringList WRITABLE_TABLES;
+    /*QStringList WRITABLE_TABLES;
     QDomElement changeSet = doc.createElement("changeSet");
     changeSet.setAttribute("id", params[PARAM_HOTFIX_NAME].toString());
     changeSet.setAttribute("author", getCurrentUsername());
     changeSet.setAttribute("context", "upg");
+
 
     ContentTreeItem *pgitem = parentItem();
     ContentTreeItem *sqlfolder = pgitem->findItemByData(params[PARAM_HOTFIX_NAME], 0, Qt::DisplayRole);
@@ -83,9 +90,70 @@ void ReleaseChangelogContentTreeItem::addChangeSet(QDomDocument &doc, QDomElemen
         comentwrite.appendChild(textNode);
 
         changeSet.appendChild(comentwrite);
-    }
+    }*/
 
-    root.appendChild(changeSet);
+    //root.appendChild(changeSet);
+    QStringList args = { "diff" };
+    args.append(fullFileName());
+
+    QScopedPointer<QProcess> process(new QProcess());
+    process->setWorkingDirectory(params[PARAM_SOURCE_DIR].toString());
+    toolStartProcess(process.data(), "svn.exe", args, true, true);
+
+    QTemporaryFile tmp;
+    if (!tmp.open())
+        return;
+
+    QByteArray resdiff = process->readAllStandardOutput();
+    tmp.write(resdiff);
+    tmp.close();
+
+    //qDebug() << resdiff;
+
+    QStringList argtmpl;
+    argtmpl << "--diff"
+            << "--delete"
+            << "--insert"
+            << "--update"
+            << "--input"
+            << tmp.fileName();
+
+    QScopedPointer<QProcess> proc(new QProcess);
+    int ExitCode = toolStartProcess(proc.data(), "DiffToScript.exe", argtmpl, true, true);
+
+    if (!ExitCode)
+    {
+        resdiff = proc->readAllStandardOutput();
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(resdiff);
+        QJsonArray jsonArray = jsonDoc.array();
+
+        QString newChangeSet;
+        for (const QJsonValue &value : qAsConst(jsonArray))
+        {
+            QJsonObject obj = value.toObject();
+            if (obj["type"] == "insert" && !obj["newValue"].toString().isEmpty())
+                newChangeSet += obj["newValue"].toString() + "\n";
+        }
+
+        QDomDocumentFragment changeSetFragment = doc.createDocumentFragment();
+
+        if (!changeSetFragment.appendChild(doc.createElement("dummy")).isNull())
+        {
+            QDomElement root = doc.documentElement();
+            root.appendChild(changeSetFragment);
+
+            // Заменяем dummy на собранный XML
+            QDomElement dummyElement = root.lastChild().toElement();
+            if (!dummyElement.isNull())
+            {
+                QDomDocument tempDoc;
+                tempDoc.setContent(newChangeSet);
+                QDomNode importedNode = doc.importNode(tempDoc.documentElement(), true);
+                root.replaceChild(importedNode, dummyElement);
+            }
+        }
+    }
 }
 
 MakeResult ReleaseChangelogContentTreeItem::make(const MakeAction &action, QString &msg, const MakeParams &params) const
@@ -113,5 +181,6 @@ MakeResult ReleaseChangelogContentTreeItem::make(const MakeAction &action, QStri
         stream << doc.toString();
         outputFile.close();
     }
+
     return ResultSuccess;
 }

@@ -69,6 +69,7 @@ private:
 
     bool isFile(const QString &name);
     bool isExcludeElement(const QString &name);
+    bool isExcludePath(const QString &name);
 
     QSet<QString> m_Projects;
     std::unique_ptr<ContentTreeItem> rootItem;
