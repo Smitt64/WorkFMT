@@ -22,6 +22,8 @@ public:
 
     QString generateTextForProjects(const QStringList &projectNames, const QStringList &modules);
 
+    QString getRealProjectName(const QString& name) const;
+
 private:
     void loadJson(const QString& filePath);
     QMap<QString, QJsonValue> m_projects;

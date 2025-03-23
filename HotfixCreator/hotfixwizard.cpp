@@ -6,6 +6,9 @@
 #include "projectswizardpage.h"
 #include "connactionpage.h"
 #include "generatorpage.h"
+#include "rsscript/registerobjlist.hpp"
+#include "model/contenttreeitem.h"
+#include "paramsmap.h"
 #include <QSettings>
 #include <connectioninfo.h>
 #include <QPushButton>
@@ -29,6 +32,9 @@ HotfixWizard::HotfixWizard() :
     m_pGeneratorPage = new GeneratorPage(this);
 
     //m_OptionsButton.reset(new QPushButton());
+    RegisterObjList::inst()->RegisterRslObject<ContentTreeItem>();
+    RegisterObjList::inst()->RegisterRslObject<ParamsMap>();
+    rslAddStaticMacroDir(".\\mac\\hfwizard");
 
     addPage(m_pSelDirsPage);
     addPage(m_pConnactionPage);

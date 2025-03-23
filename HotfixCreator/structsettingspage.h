@@ -19,6 +19,9 @@ public:
 
     virtual void initializePage() Q_DECL_OVERRIDE;
 
+private slots:
+    void OnTest();
+
 private:
     Ui::StructSettingsPage *ui;
     HotfixContentModel *m_pModel;

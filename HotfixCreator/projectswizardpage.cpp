@@ -13,6 +13,7 @@ ProjectsWizardPage::ProjectsWizardPage(QWidget *parent) :
     ui->setupUi(this);
 
     setTitle("Проекты для сборки");
+    registerField("BuildInstruction", ui->plainTextEdit, "plainText");
 
     m_Proxy.reset(new QSortFilterProxyModel());
     m_pModel.reset(new ModuleListModel());

@@ -5,11 +5,31 @@ ProjectLoader::ProjectLoader(const QString& filePath)
     loadJson(filePath);
 }
 
+QString ProjectLoader::getRealProjectName(const QString& name) const
+{
+    QString proj = name;
+    proj = proj.remove(".lib", Qt::CaseInsensitive).remove(".www", Qt::CaseInsensitive);
+
+    QStringList keys = m_projects.keys();
+    for (int i = 0; i < keys.size(); i++)
+    {
+        if (keys[i].startsWith(proj, Qt::CaseInsensitive))
+        {
+           proj = keys[i];
+           break;
+        }
+    }
+
+    return proj;
+}
+
 bool ProjectLoader::getProjectInfo(const QString& name, QString& vcxproj, QString& dir, QString& targetName, QString& targetExt)
 {
-    if (m_projects.contains(name))
+    QString proj = getRealProjectName(name);
+
+    if (m_projects.contains(proj))
     {
-        QJsonObject project = m_projects[name].toObject();
+        QJsonObject project = m_projects[proj].toObject();
         vcxproj = project["vcxproj"].toString();
         dir = project["dir"].toString();
         targetName = project["target_name"].toString();
@@ -22,13 +42,18 @@ bool ProjectLoader::getProjectInfo(const QString& name, QString& vcxproj, QStrin
 
 QStringList ProjectLoader::getModules(const QString& name)
 {
-    if (m_projects.contains(name))
+    QString proj = getRealProjectName(name);
+
+    if (m_projects.contains(proj))
     {
-        QJsonObject project = m_projects[name].toObject();
+        QJsonObject project = m_projects[proj].toObject();
         QJsonArray modulesArray = project["module"].toArray();
         QStringList modules;
         for (const QJsonValue& module : qAsConst(modulesArray))
             modules.append(module.toString());
+
+        if (!project["target_ext"].toString().compare(".dll", Qt::CaseInsensitive))
+            modules.append(proj);
 
         return modules;
     }

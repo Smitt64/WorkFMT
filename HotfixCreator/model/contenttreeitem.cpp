@@ -25,9 +25,16 @@ ContentTreeItem::~ContentTreeItem()
 
 }
 
+QObject *ContentTreeItem::findItem(const QVariant& value, int column, int role)
+{
+    QObject *obj = findItemByData(value, column, role);
+    return obj;
+}
+
 ContentTreeItem *ContentTreeItem::findItemByData(const QVariant& value, int column, int role)
 {
-    if (data(column, role) == value)
+    QString val = data(column, role).toString();
+    if (!val.compare(value.toString(), Qt::CaseInsensitive))
         return this;
 
     for (const auto& child : m_childItems)
@@ -51,6 +58,11 @@ ContentTreeItem *ContentTreeItem::appendChild(std::unique_ptr<ContentTreeItem> &
 
     connect(item, &ContentTreeItem::itemChanged, model(), &HotfixContentModel::contentItemChanged);
     return item;
+}
+
+QObject *ContentTreeItem::item(int row)
+{
+    return child(row);
 }
 
 ContentTreeItem *ContentTreeItem::child(int row)
@@ -138,6 +150,11 @@ bool ContentTreeItem::setData(const QVariant &value, const int &column, int role
     return false;
 }
 
+QObject *ContentTreeItem::parentObject()
+{
+    return m_parentItem;
+}
+
 ContentTreeItem *ContentTreeItem::parentItem()
 {
     return m_parentItem;
@@ -146,6 +163,16 @@ ContentTreeItem *ContentTreeItem::parentItem()
 ContentTreeItem *ContentTreeItem::parentItem() const
 {
     return m_parentItem;
+}
+
+ContentTreeItem* ContentTreeItem::rootItem() const
+{
+    ContentTreeItem* currentItem = const_cast<ContentTreeItem*>(this);
+
+    while (currentItem->parentItem() != nullptr)
+        currentItem = currentItem->parentItem();
+
+    return currentItem;
 }
 
 int ContentTreeItem::row() const
@@ -193,7 +220,7 @@ void ContentTreeItem::setShowRowNumber(const bool &state)
     m_fShowRowNumber = state;
 }
 
-Qt::CheckState ContentTreeItem::checkState() const
+int ContentTreeItem::checkState() const
 {
     return m_Check;
 }

@@ -51,6 +51,18 @@ public:
 
     int totalChildCount() const;
 
+    ContentTreeItem *findItemByData(const QVariant& value, int column, int role);
+
+    template<class T>T *findItemByData(const QVariant& value, int column, int role)
+    {
+        ContentTreeItem *found = findItemByData(value, column, role);
+
+        if (!found)
+            return nullptr;
+
+        return dynamic_cast<T*>(found);
+    }
+
 public slots:
     void contentItemChanged(const int &column, const QVector<int> &roles);
 

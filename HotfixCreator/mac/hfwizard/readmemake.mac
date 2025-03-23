@@ -1,0 +1,207 @@
+/*
+$Author: Serpkov
+$Description: Инструкции по установке HotFix RS-Bank V6
+$ShowReport: true
+*/
+import StrLib, ToolsRuntime, Io;
+
+const DisplayRole = 0;
+const TabSize = 4;
+private var numeration = 1;
+
+const PARAM_USER = "User";
+const PARAM_PASSWORD = "Password";
+const PARAM_SERVICE = "Service";
+const PARAM_IS_UNICODE = "IsUnicode";
+const PARAM_SOURCE_DIR = "SourceDir";
+const PARAM_HOTFIX_DIR = "HotfixDir";
+const PARAM_HOTFIX_NAME = "HotfixName";
+const PARAM_ORA_PG = "OraPg";
+const PARAM_UNPACKDBEXE = "UnpackDbExe";
+const PARAM_BUILDINSTRUCTION = "BuildInstruction";
+
+private macro ChunkNum()
+    var str = String(numeration) + ". ";
+    numeration = numeration + 1;
+    return str;
+end;
+
+private macro AppServerPart(RootItem, Params)
+    var Dirs = TArray;
+
+    var macdir = RootItem.findItem("Mac");
+    var source = RootItem.findItem("Source");
+    var lbr = RootItem.findItem("LBR");
+    var xsd = RootItem.findItem("XSD");
+
+    if (macdir)
+        Dirs[Dirs.size] = "Mac";
+    end;
+
+    if (source or lbr)
+        Dirs[Dirs.size] = "Obj";
+    end;
+
+    if (xsd)
+        Dirs[Dirs.size] = "XSD";
+    end;
+
+    if (not Dirs.size)
+        return;
+    end;
+
+    var str = ChunkNum() + "Скопировать в каталог RS-Bank на сервере приложений каталоги " + strJoin(Dirs, ", ");
+    println(str);
+
+    if (lbr)
+        println(strFill(" ", TabSize) + "Изменены ресурсы:");
+        var lbrnum = 0;
+        while (lbrnum < lbr.childCount)
+            var res = TArray();
+            var lib = lbr.item(lbrnum);
+            var resnum = 0;
+            var fi;
+
+            while (resnum < lib.childCount)
+                var resitem = lib.item(resnum);
+
+                fi = IoFileInfo(resitem.data(0, DisplayRole));
+                res[res.size] = fi.fileName;
+                resnum = resnum + 1;
+            end;
+
+            fi = IoFileInfo(lib.data(0, DisplayRole));
+            println(strFill(" ", TabSize * 2) + strToLower(fi.baseName) + ".lbr (" + strJoin(res, ", ") + ")");
+            lbrnum = lbrnum + 1;
+        end;
+    end;
+
+    println();
+end;
+
+private macro FmtXmlPart(RootItem, Params)
+    var fmtxml = RootItem.findItem("01_FMT");
+
+    if (not fmtxml)
+        return;
+    end;
+
+    var xml = fmtxml.findItem("XML");
+    println(ChunkNum() + "Запустить пакетный файл start_import.cmd (находится в каталоге AddFiles\\01_FMT). Для этого:");
+    println(strFill(" ", TabSize) + "- Предварительно в файле указать значения для параметров user, pass, dsn");
+    println(strFill(" ", TabSize) + "- По завершении работы файла проверить лог protocol.out на отсутствие ошибок");
+
+    var i = 0;
+    var FmtFiles = TArray;
+    while (i < xml.childCount)
+        var fmt = xml.item(i);
+        var fi = IoFileInfo(fmt.data(0, DisplayRole));
+        FmtFiles[FmtFiles.size] = fi.fileName;
+        i = i + 1;
+    end;
+
+    println(strFill(" ", TabSize) + "Содержание обновления FMT: " + strJoin(FmtFiles, ", "));
+
+    println();
+end;
+
+private macro TablesPart(RootItem, Params)
+    var tables = RootItem.findItem("02_TABLE");
+
+    if (not tables)
+        return;
+    end;
+
+    println(ChunkNum() + "Запустить сценарий оболочки execute_sql.cmd (находится в каталоге AddFiles\\02_TABLE). Для этого:");
+    println(strFill(" ", TabSize) + "- Предварительно в файле указать значения для параметров user, pass, dsn");
+    println(strFill(" ", TabSize) + "- По завершении работы сценария проверить подкаталог LOG на отсутствие ошибок");
+
+    println();
+end;
+
+private macro IndecesPart(RootItem, Params)
+    var index = RootItem.findItem("03_INDX");
+
+    if ((not index) or ((index.checkState != PartiallyChecked) and (index.checkState != Checked)))
+        return;
+    end;
+
+    println(ChunkNum() + "Запустить пакетный файл create_index.cmd (находится в каталоге AddFiles\\03_INDX). Для этого:");
+    println(strFill(" ", TabSize) + "- Предварительно в файле указать значения для параметров user, pass, tns, и в случае необходимости indx_tsn");
+    println(strFill(" ", TabSize) + "- По завершении работы сценария проверить логи в папке LOG на отсутствие ошибок.");
+    println(strFill(" ", TabSize) + "  Строки вида Warning # и их детализация NativeError в логах выполнения не являются ошибкой.");
+
+    println();
+end;
+
+private macro SqlsPart(RootItem, Params)
+    var sql = RootItem.findItem("04_SQL");
+
+    if (not sql)
+        return;
+    end;
+
+    println(ChunkNum() + "Запустить сценарий оболочки execute_sql.cmd (находится в каталоге AddFiles\\04_SQL). Для этого:");
+    println(strFill(" ", TabSize) + "- Предварительно в файле указать значения для параметров user, pass, dsn");
+    println(strFill(" ", TabSize) + "- По завершении работы сценария проверить подкаталог LOG на отсутствие ошибок");
+
+    println();
+end;
+
+private macro PackagesPart(RootItem, Params)
+    var sql = RootItem.findItem("05_PCKG");
+
+    if (not sql)
+        return;
+    end;
+
+    println(ChunkNum() + "Запустить сценарий оболочки execute_sql.cmd (находится в каталоге AddFiles\\05_PCKG). Для этого:");
+    println(strFill(" ", TabSize) + "- Предварительно в файле указать значения для параметров user, pass, dsn");
+    println(strFill(" ", TabSize) + "- По завершении работы сценария проверить подкаталог LOG на отсутствие ошибок");
+
+    println();
+end;
+
+private macro PgConnectionPart(RootItem, Params)
+    println(ChunkNum() + "В UpgParamInstall.txt установить следующие параметры:");
+    println("*ipAddr - IP сервера Postgres, через двоеточие указывается порт, пример: \"192.168.120.89:5432\"");
+    println("*dbName - имя БД в Postgres");
+    println("dsn - Data Source Name указанный в драйверах ODBC");
+    println("*sysScheme - имя схемы системного пользователя");
+    println("*sysPwd - пароль системного пользователя");
+    println("*userScheme - имя пользовательской схемы");
+    println("*userPwd - пароль пользовательской схемы");
+    println("jdkBinPath - путь к Java, пример: \"c:/app/jdk-15.0.1/bin\"");
+    println("liquibaseRootPath - путь к LiquiBase, пример: \"c:/ProgFile/liquibase-4.26.0\"");
+    println("myExternalIpAddr - IP ПК с которого производится обновление");
+    println();
+    println("* - параметры обязательные к заполнению");
+end;
+
+private macro PgStepsPart(RootItem, Params)
+
+end;
+
+macro ReadmeFile(RootItem, Params)
+debugbreak;
+    println("Исправлены запросы: <номера запросов, список> ");
+    println("Для исправления нужно:");
+
+    AppServerPart(RootItem, Params);
+
+    if (Params.value(PARAM_ORA_PG))
+        println("Для ORACLE версии");
+    end;
+
+    FmtXmlPart(RootItem, Params);
+    TablesPart(RootItem, Params);
+    IndecesPart(RootItem, Params);
+    SqlsPart(RootItem, Params);
+    PackagesPart(RootItem, Params);
+
+    if (Params.value(PARAM_ORA_PG))
+        println("Для POSTGRES версии");
+        PgConnectionPart(RootItem, Params);
+        PgStepsPart(RootItem, Params);
+    end;
+end;

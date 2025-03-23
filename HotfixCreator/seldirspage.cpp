@@ -19,7 +19,7 @@ SelDirsPage::SelDirsPage(QWidget *parent) :
     registerField("unpackDbExe", ui->unpackDbExe);
 
 #ifdef _DEBUG
-    ui->sourceEdit->setText("d:/svn/UranRSBankV6/Renewal_2031_89");
+    ui->sourceEdit->setText("d:/svn/UranRSBankV6/Renewal_2031_91");
     ui->hotfixEdit->setText("D:/Work/WorkFMT/bin/hf_test");
     ui->hotfixName->setText("hf_89_test");
 #endif

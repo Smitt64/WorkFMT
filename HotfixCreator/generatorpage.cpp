@@ -43,6 +43,7 @@ void GeneratorOp::run()
     params[PARAM_HOTFIX_NAME] = wzrd->field("hotfixName");
     params[PARAM_ORA_PG] = wzrd->field("checkOraPg");
     params[PARAM_UNPACKDBEXE] = wzrd->field("unpackDbExe");
+    params[PARAM_BUILDINSTRUCTION] = wzrd->field("BuildInstruction");
 
     m_pModel->makeHotFix(m_pLog, params, func);
 }

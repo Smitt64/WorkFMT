@@ -329,11 +329,11 @@ MakeResult FmtContentTreeItem::make(const MakeAction &action, QString &msg, cons
         stream.setCodec("IBM 866");
         stream.setFieldAlignment(QTextStream::AlignLeft);
 
-        stream << "dbinit %%user%%:%%pass%%@%%dsn%% -dt:ora -log:\".\\log\\";
+        stream << "dbinit %user%:%pass%@%dsn% -dt:ora -log:\".\\log\\";
         stream.setFieldWidth(m_Width + 5);
         stream << dbtname + ".log\"";
         stream.setFieldWidth(0);
-        stream << " -op:idx -tsn:%%indx_tsn%% -tbli:";
+        stream << " -op:idx -tsn:%indx_tsn% -tbli:";
         stream.setFieldWidth(m_Width);
         stream << dbtname;
         stream.setFieldWidth(0);

@@ -120,6 +120,7 @@ QIcon FileContentTreeItem::getIconForExtension(const QString &ext)
         {"s362", QIcon("://img/ext_txt.png")},
         {"def", QIcon("://img/ext_def.png")},
         {"xml", QIcon("://img/ext_xml.png")},
+        {"xsd", QIcon("://img/ext_xml.png")},
         {"mac", QIcon("://img/ext_mac.png")},
         {"xls", QIcon("://img/ext_xls.png")},
         {"xlsx", QIcon("://img/ext_xls.png")},

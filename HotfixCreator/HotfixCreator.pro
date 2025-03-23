@@ -33,8 +33,10 @@ SOURCES += \
     model/filecontenttreeitem.cpp \
     model/fmtcontenttreeitem.cpp \
     model/foldercontenttreeitem.cpp \
+    model/readmefilecontenttreeitem.cpp \
     model/releasechangelogcontenttreeitem.cpp \
     modulelistmodel.cpp \
+    paramsmap.cpp \
     projectloader.cpp \
     projectswizardpage.cpp \
     seldirspage.cpp \
@@ -50,8 +52,10 @@ HEADERS += \
     model/filecontenttreeitem.h \
     model/fmtcontenttreeitem.h \
     model/foldercontenttreeitem.h \
+    model/readmefilecontenttreeitem.h \
     model/releasechangelogcontenttreeitem.h \
     modulelistmodel.h \
+    paramsmap.h \
     projectloader.h \
     projectswizardpage.h \
     seldirspage.h \
@@ -92,3 +96,31 @@ else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
 
 INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
+else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
+
+INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+
+OTHER_FILES += \
+    $$PWD/mac
+
+defineTest(copyToDestDir) {
+    files = $$1
+    dir = $$2
+    # replace slashes in destination path for Windows
+    win32:dir ~= s,/,\\,g
+
+    for(file, files) {
+        # replace slashes in source path for Windows
+        win32:file ~= s,/,\\,g
+        QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$shell_quote($$file) $$shell_quote($$dir) $$escape_expand(\\n\\t)
+    }
+
+    export(QMAKE_POST_LINK)
+}
+
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../HotfixCreator/debug/mac)

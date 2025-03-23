@@ -5,6 +5,7 @@
 #include "model/fmtcontenttreeitem.h"
 #include "model/datfilecontenttreeitem.h"
 #include "model/releasechangelogcontenttreeitem.h"
+#include "model/readmefilecontenttreeitem.h"
 #include "projectloader.h"
 #include <svn/svnstatusmodel.h>
 #include <QXmlStreamReader>
@@ -190,6 +191,11 @@ int HotfixContentModel::rowCount(const QModelIndex &parent) const
     return parentItem->childCount();
 }
 
+ContentTreeItem *HotfixContentModel::findItemByData(const QVariant& value, int column, int role)
+{
+    return rootItem->findItemByData(value, column, role);
+}
+
 void HotfixContentModel::contentItemChanged(const int &column, const QVector<int> &roles)
 {
     ContentTreeItem *item = dynamic_cast<ContentTreeItem*>(sender());
@@ -226,7 +232,7 @@ bool HotfixContentModel::isFile(const QString &name)
         ".mac", ".cpp", ".c", ".vcxproj", ".s362", ".hpp",
         ".hss", ".h", ".def", ".xml", ".doc", ".docx", ".dot",
         ".xls", ".xlsx", ".sql", ".dat", ".pks", ".pkb",
-        ".trg", ".trn"
+        ".trg", ".trn", ".xsd"
     };
 
     int pos = 0;
@@ -424,6 +430,15 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
 
             makePath(Parents, templpath, (Qt::HANDLE)&element, getTemplItem());
         }
+        else if (element.path.contains("XSD\\", Qt::CaseInsensitive))
+        {
+            QString templpath = element.path;
+
+            int pos = templpath.indexOf("XSD\\", 0, Qt::CaseInsensitive);
+            templpath = "XSD\\" + templpath.mid(pos + 4);
+
+            makePath(Parents, templpath, (Qt::HANDLE)&element, getAppServerItem());
+        }
         else if (element.path.contains("DBFile\\", Qt::CaseInsensitive))
         {
             if (!AddFiles)
@@ -539,6 +554,16 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
 
     if (m_NewFormat)
         makePgRoutes(&svn, AddFilesParents, AddFiles, hfname);
+
+    ContentTreeItem *root = rootItem->findItemByData(hfname, 0, Qt::DisplayRole);
+    ContentTreeItem *readme = root->appendChild(std::make_unique<ReadmeFileContentTreeItem>("readme.txt"));
+    readme->setOrder(-1);
+
+    if (root->findItemByData("Source", 0, Qt::DisplayRole))
+    {
+        ContentTreeItem *build = root->appendChild(std::make_unique<BuildTxtFileContentTreeItem>("build.txt"));
+        build->setOrder(-1);
+    }
 
     endResetModel();
 }
