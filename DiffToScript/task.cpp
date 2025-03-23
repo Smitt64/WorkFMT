@@ -386,11 +386,13 @@ void Task::runScriptTask()
         linesParser.setInsertParser(new LinesInsertParser("+"));
         qCInfo(logTask) << "Include insert parser.";
     }
+
     if (optns[ctoDelete].isSet)
     {
         linesParser.setDeleteParser(new LinesDeleteParser("-"));
         qCInfo(logTask) << "Include delete parser.";
     }
+
     if (optns[ctoUpdate].isSet)
     {
         linesParser.setUpdateParser(new LinesUpdateParser("-"));
@@ -469,7 +471,6 @@ void Task::runScriptTask()
         datTable.loadFromFmt(&fmtTable, datfilepath);
         datTable.InitUniqFields(&tableLink);
         qCInfo(logTask) << "Fields of" << datTable.name << "loaded. Count =" << datTable.fields.count();
-
 
         if (optns[ctoTableInfo].isSet)
             getFmtInfo(os, datTable);

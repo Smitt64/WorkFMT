@@ -434,7 +434,7 @@ QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecor
     return where;
 }
 
-int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex)
+int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding)
 {
     DatRecord rec = joinTable->scriptTable->records[recIndex];
 
@@ -446,7 +446,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
         rec.values[autoIncIndex] = "0";
 
     QString InsertFieldList;
-    for (const QString &fld : joinTable->scriptTable->realFields)
+    for (const QString &fld : qAsConst(joinTable->scriptTable->realFields))
     {
         if (!InsertFieldList.isEmpty())
             InsertFieldList += ",";
@@ -465,30 +465,32 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     for (int i = 0; i < joinTable->scriptTable->fields.count(); ++i)
         fields.append(joinTable->scriptTable->fields[i].name);
 
-    QString values = rec.values.join(", ");
     QString names = fields.join(", ");
 
     if (variable != "")
     {
+        QStringList tmpvalues = rec.values;
         int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
-        QString autoIncField = joinTable->scriptTable->fields[autoIncIndex].name;
+        tmpvalues.removeAt(autoIncIndex);
+
+        QString values = tmpvalues.join(", ");
         //sql.append(QString(PADDING + "INSERT INTO %1 (%2) VALUES (%3) RETURNING %4 INTO %5;").arg(joinTable->scriptTable->name, names, values, autoIncField, variable));
         QString call = QString("%1 := %2 (%3);")
                 .arg(variable)
                 .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()].name)
                 .arg(values);
 
-        sql.append(Padding(1) + call);
+        sql.append(childPadding + Padding(1) + call);
     }
     else
     {
-        //sql.append(QString(PADDING + "INSERT INTO %1 (%2) VALUES (%3);").arg(joinTable->scriptTable->name,  names, values));
         QString values = rec.values.join(", ");
+        //sql.append(QString(PADDING + "INSERT INTO %1 (%2) VALUES (%3);").arg(joinTable->scriptTable->name,  names, values));
         QString call = QString("%1 (%2);")
                 .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()].name)
                 .arg(values);
 
-        sql.append(Padding(1) + _dbSpelling->callProcedure(call));
+        sql.append(childPadding + Padding(1) + _dbSpelling->callProcedure(call));
     }
 
     return ++recIndex;
@@ -583,7 +585,8 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
                                   QStringList& sql,
                                   int recIndex,
                                   Join* childJoin,
-                                  const QStringList &ParentValuesByIndex)
+                                  const QStringList &ParentValuesByIndex,
+                                  const QString &childPadding)
 {
     int nextRecIndex = recIndex + 1;
 
@@ -600,21 +603,18 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
     {
         qCInfo(logSqlScriptMain) << "Build script for insert. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
 
-        QStringList childsql;
-        buildInsertStatement(os, joinTable, sql, recIndex);
-        buildChildStatement(os, joinTable, sql, recIndex);
+        buildInsertStatement(os, joinTable, sql, recIndex, childPadding);
         joinTable->processedRecords[recIndex] = true;
         int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
         if (autoIncIndex == -1)
-            sql.append(childsql);
+            buildChildStatement(os, joinTable, sql, recIndex, childPadding);
         else
         {
             QString variable = buildVariableName(joinTable->scriptTable);
-            sql.append(Padding(1) + QString("IF %1 <> -1 THEN")
+            sql.append(childPadding + Padding(1) + QString("IF %1 <> -1 THEN")
                        .arg(variable));
 
-            for (const QString &s : childsql)
-                sql.append(Padding(1) + s);
+            buildChildStatement(os, joinTable, sql, recIndex, childPadding + Padding(1));
 
             sql.append(Padding(1) + "END IF;");
         }
@@ -664,7 +664,7 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
     return nextRecIndex;
 }
 
-int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJoinTable, QStringList &sql, int recIndex)
+int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJoinTable, QStringList &sql, int recIndex, const QString &childPadding)
 {
     int nextRecIndex = recIndex + 1;
 
@@ -689,7 +689,7 @@ int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJ
                 << "Parent primary keys =" << childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->scriptTable->records[recIndex])
                 << ". Child records count =" << childJoin->indexUpToDown[recIndex].count();
         for (int childIndex: childJoin->indexUpToDown[recIndex])
-            buildStatement(os, childJoin->child, sql, childIndex, childJoin, ParentValuesByIndex);
+            buildStatement(os, childJoin->child, sql, childIndex, childJoin, ParentValuesByIndex, childPadding);
     }
     return nextRecIndex;
 }
@@ -734,7 +734,7 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
     QStringList errors;
     checkDatFldsCount(errors, joinTable);
 
-    for (const QString &err : errors)
+    for (const QString &err : qAsConst(errors))
     {
         sql.append(QString("-- %1").arg(err));
         StdErr << err << Qt::endl;
@@ -799,7 +799,7 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
     DisEnableAutoIncTrigger(joinTable->scriptTable, sql);
 
-    for (const Join *idx : joinTable->joinList)
+    for (const Join *idx : qAsConst(joinTable->joinList))
     {
         DisEnableAutoIncTrigger(idx->child->scriptTable, sql);
         sql.append(QString());
@@ -816,7 +816,7 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
     DisEnableAutoIncTrigger(joinTable->scriptTable, sql, true);
 
-    for (const Join *idx : joinTable->joinList)
+    for (const Join *idx : qAsConst(joinTable->joinList))
         DisEnableAutoIncTrigger(idx->child->scriptTable, sql, true);
 
     sql << _dbSpelling->getEnd() << "";

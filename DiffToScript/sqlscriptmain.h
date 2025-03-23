@@ -47,15 +47,16 @@ public:
     int getForeignReplaceField(const JoinTable* joinTable, DatRecord& rec);
 
     QStringList buildWhere(const JoinTable* joinTable, const DatRecord& rec);
-    int buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
+    int buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
     int buildDeleteStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
     int buildUpdateStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int recIndex, int newIndex);
     int buildStatement(QTextStream& os, JoinTable* joinTable,
                        QStringList& sql,
                        int recIndex,
                        Join *childJoin = nullptr,
-                       const QStringList &ParentValuesByIndex = QStringList());
-    int buildChildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
+                       const QStringList &ParentValuesByIndex = QStringList(),
+                       const QString &childPadding = QString());
+    int buildChildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
     int build(QTextStream& os, JoinTable* joinTable);
 
     void dateSpelling(const JoinTable* joinTable, DatRecord& rec);

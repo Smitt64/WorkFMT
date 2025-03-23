@@ -40,14 +40,27 @@ bool LinesInsertParser::parseLine(QTextStream& is, ParsedLines& lines, ScriptTab
             key.append("-"); //сначала находим удаление для определения операции обновления
             if(lines.contains(key))
             {
-                lines[key].lineType = ltUpdate;
-                lines[key].lineUpdateType = lutOld;
+                const ParsedLine &oldLine = lines.value(key);
 
-                parsedLine.lineType = ltUpdate;
-                parsedLine.lineUpdateType = lutNew;
+                if (parsedLine.value.simplified() != oldLine.value.simplified())
+                {
+                    lines[key].lineType = ltUpdate;
+                    lines[key].lineUpdateType = lutOld;
+
+                    parsedLine.lineType = ltUpdate;
+                    parsedLine.lineUpdateType = lutNew;
+
+                    key.last() = "+";
+                    lines.insert(key, parsedLine);
+                }
+                else
+                    lines.remove(key);
             }
-            key.last() = "+";
-            lines.insert(key, parsedLine);
+            else
+            {
+                key.last() = "+";
+                lines.insert(key, parsedLine);
+            }
 
             qCInfo(logLinesParser) << "Added line for insert: " << parsedLine.value;
         }
