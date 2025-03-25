@@ -42,6 +42,7 @@ SOURCES += \
     rslexecutors/checksaveexecutor.cpp \
     rslexecutors/generatorrslexecutor.cpp \
     rslexecutors/toolbaractionexecutor.cpp \
+    src/core/fmttablecomparemodel.cpp \
     src/debugconnect.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
@@ -292,6 +293,7 @@ HEADERS += \
     rslexecutors/checksaveexecutor.h \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
+    src/core/fmttablecomparemodel.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
