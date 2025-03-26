@@ -24,12 +24,18 @@ class FmtTableCompareModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
+    enum
+    {
+        ColumnMine = 0,
+        ColumnTheir
+    };
     FmtTableCompareModel(QObject *parent = nullptr);
     virtual ~FmtTableCompareModel();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
     void setLists(FmtTable *table, const QString &cppcstruct);
 
@@ -37,7 +43,10 @@ public:
     static void readTableStruct(const QString &cppcstruct, FmtFldElementVector &vec);
 
 private:
+    void makeCompareData(const FmtFldElementVector &mine, const FmtFldElementVector &theirs);
     static QString extractComments(const QString& structCode, int fieldEndPos);
+
+    QVector<FmtTableCompareElement> m_data;
 };
 
 #endif // FMTTABLECOMPAREMODEL_H

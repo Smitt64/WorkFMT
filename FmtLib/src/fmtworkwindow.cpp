@@ -9,7 +9,7 @@
 #include "dbinitdlg.h"
 #include "fmtfielddlg.h"
 #include "fmtcore.h"
-#include "ErrorsModel.h"
+#include "errorsmodel.h"
 #include "errordlg.h"
 #include "fmtimpexpwrp.h"
 #include "fmtfield.h"

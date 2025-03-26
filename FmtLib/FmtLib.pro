@@ -60,6 +60,8 @@ SOURCES += \
     src/oracleauthdlg.cpp \
     src/queryeditor/queryeditor.cpp \
     src/tablesgroupsdlg.cpp \
+    src/widgets/comparefmt/comparefmtwizard.cpp \
+    src/widgets/comparefmt/compareparamspage.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
     src/widgets/guiconverterdlg.cpp \
@@ -171,6 +173,7 @@ FORMS += \
     options/tablegroupoptions.ui \
     options/usercommandsgroup.ui \
     src/debugconnect.ui \
+    src/widgets/comparefmt/compareparamspage.ui \
     src/widgets/guiconverterdlg.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
@@ -297,6 +300,8 @@ HEADERS += \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/queryeditor/queryeditor.h \
+    src/widgets/comparefmt/comparefmtwizard.h \
+    src/widgets/comparefmt/compareparamspage.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
     h/datelineedit.h \
     src/widgets/editcontent/fmteditcontentfilter.h \

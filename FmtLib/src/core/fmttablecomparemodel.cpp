@@ -16,12 +16,39 @@ FmtTableCompareModel::~FmtTableCompareModel()
 
 int FmtTableCompareModel::rowCount(const QModelIndex &parent) const
 {
-    return 0;
+    return m_data.size();
 }
 
 int FmtTableCompareModel::columnCount(const QModelIndex &parent) const
 {
     return 3;
+}
+
+QVariant FmtTableCompareModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid() || index.row() >= m_data.size() || index.column() >= 2)
+        return QVariant();
+
+    const FmtTableCompareElement &row = m_data[index.row()];
+
+    if (role == Qt::DisplayRole || role == Qt::EditRole)
+    {
+        if (index.column() == ColumnMine)
+            return row.mine.name;
+        else if (index.column() == ColumnTheir)
+            return row.theirs.name;
+    }
+    else if (role == Qt::BackgroundRole) {
+        if (row.mine.name.isEmpty() && !row.theirs.name.isEmpty())
+            return QBrush(QColor(200, 255, 200)); // Зеленый для добавленных
+        else if (!row.mine.name.isEmpty() && row.theirs.name.isEmpty())
+            return QBrush(QColor(255, 200, 200)); // Красный для удаленных
+        else if (row.mine.name != row.theirs.name) {
+            return QBrush(QColor(255, 255, 200)); // Желтый для измененных
+        }
+    }
+
+    return QVariant();
 }
 
 QVariant FmtTableCompareModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -37,7 +64,9 @@ QVariant FmtTableCompareModel::headerData(int section, Qt::Orientation orientati
 
 void FmtTableCompareModel::setLists(FmtTable *table, const QString &cppcstruct)
 {
-
+    FmtFldElementVector tablevec, structvec;
+    readFmtTable(table, tablevec);
+    readTableStruct(cppcstruct, structvec);
 }
 
 void FmtTableCompareModel::readFmtTable(FmtTable *table, FmtFldElementVector &vec)
@@ -101,7 +130,8 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
 
     QRegularExpressionMatchIterator it = fieldRegex.globalMatch(code);
 
-    while (it.hasNext()) {
+    while (it.hasNext())
+    {
         QRegularExpressionMatch match = it.next();
         FmtFldElement info;
 
@@ -114,9 +144,8 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
         info.name = namePart.remove('*').remove('&').trimmed();
 
         // Обработка массива
-        if (match.capturedLength(3) > 0) {
+        if (match.capturedLength(3) > 0)
             info.size = match.captured(3).toInt();
-        }
 
         // Извлекаем комментарий после поля
         int fieldEndPos = match.capturedEnd();
@@ -124,4 +153,69 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
 
         vec.append(info);
     }
+}
+
+void FmtTableCompareModel::makeCompareData(const FmtFldElementVector &mine, const FmtFldElementVector &theirs)
+{
+    beginResetModel();
+
+    m_data.clear();
+    int i = 0, j = 0;
+
+    while (i < mine.size() || j < theirs.size())
+    {
+        FmtTableCompareElement row;
+
+        if (i < mine.size() && j < theirs.size() && mine[i].name == theirs[j].name)
+        {
+            row.mine = mine[i];
+            row.theirs = theirs[i];
+            i++;
+            j++;
+        }
+        else
+        {
+            bool foundInNew = false;
+            bool foundInOld = false;
+
+            // Поиск в новом списке
+            if (i < mine.size())
+            {
+                for (int k = j; k < theirs.size(); k++)
+                {
+                    if (mine[i].name == theirs[k].name)
+                    {
+                        foundInNew = true;
+                        break;
+                    }
+                }
+            }
+
+            // Поиск в старом списке
+            if (j < theirs.size())
+            {
+                for (int k = i; k < mine.size(); k++)
+                {
+                    if (theirs[j].name == mine[k].name)
+                    {
+                        foundInOld = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundInNew && i < mine.size())
+                row.mine = mine[i++];
+            else if (!foundInOld && j < theirs.size())
+                row.theirs = theirs[j++];
+            else
+            {
+                if (i < mine.size()) i++;
+                if (j < theirs.size()) j++;
+            }
+        }
+
+        m_data.append(row);
+    }
+    endResetModel();
 }
