@@ -57,15 +57,20 @@ SOURCES += \
     src/massop/destribcreate/massdestribprogress.cpp \
     src/models/odbctablemodel.cpp \
     src/models/odbctablemodeldelegate.cpp \
+    src/models/tableobjectsmodel.cpp \
     src/oracleauthdlg.cpp \
     src/queryeditor/queryeditor.cpp \
     src/tablesgroupsdlg.cpp \
+    src/widgets/comparefmt/comparecppstructpage.cpp \
+    src/widgets/comparefmt/comparefmtviewtab.cpp \
     src/widgets/comparefmt/comparefmtwizard.cpp \
     src/widgets/comparefmt/compareparamspage.cpp \
+    src/widgets/comparefmt/compareselecttablepage.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
     src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
+    src/widgets/tablestructsqldlg.cpp \
     src/windowslistdlg.cpp \
     src/core/fmtlib.cpp \
     src/core/hotfixhelp.cpp \
@@ -173,8 +178,12 @@ FORMS += \
     options/tablegroupoptions.ui \
     options/usercommandsgroup.ui \
     src/debugconnect.ui \
+    src/widgets/comparefmt/comparecppstructpage.ui \
+    src/widgets/comparefmt/comparefmtviewtab.ui \
     src/widgets/comparefmt/compareparamspage.ui \
+    src/widgets/comparefmt/compareselecttablepage.ui \
     src/widgets/guiconverterdlg.ui \
+    src/widgets/tablestructsqldlg.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
     src/widgets/fmtsegmentflagsdlg.ui \
@@ -299,9 +308,13 @@ HEADERS += \
     src/core/fmttablecomparemodel.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
+    src/models/tableobjectsmodel.h \
     src/queryeditor/queryeditor.h \
+    src/widgets/comparefmt/comparecppstructpage.h \
+    src/widgets/comparefmt/comparefmtviewtab.h \
     src/widgets/comparefmt/comparefmtwizard.h \
     src/widgets/comparefmt/compareparamspage.h \
+    src/widgets/comparefmt/compareselecttablepage.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
     h/datelineedit.h \
     src/widgets/editcontent/fmteditcontentfilter.h \
@@ -343,7 +356,8 @@ HEADERS += \
     h/odbctablemodeldelegate.h \
     h/recentconnectionlist.h \
     h/tnsnames.h \
-    src/widgets/guiconverterdlg.h
+    src/widgets/guiconverterdlg.h \
+    src/widgets/tablestructsqldlg.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin

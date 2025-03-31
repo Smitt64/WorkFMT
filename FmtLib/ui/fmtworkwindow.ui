@@ -93,6 +93,20 @@
               </widget>
              </item>
              <item>
+              <widget class="QToolButton" name="compareBtn">
+               <property name="toolTip">
+                <string>Сравнить структуры</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../res/fmt.qrc">
+                 <normaloff>:/img/SychronizeListHS.png</normaloff>:/img/SychronizeListHS.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QToolButton" name="copyTool">
                <property name="text">
                 <string/>

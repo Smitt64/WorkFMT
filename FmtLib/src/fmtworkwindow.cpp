@@ -29,11 +29,14 @@
 #include "fmtsegment.h"
 #include "widgets/filteredtablewidget.h"
 #include "widgets/editcontent/import/importwizard.h"
+#include "widgets/comparefmt/comparefmtviewtab.h"
 #include "rslexecutors/toolbaractionexecutor.h"
 #include "selectfolderdlg.h"
 #include "gensqltemplatedlg.h"
 #include "mainwindow.h"
 #include "fmtapplication.h"
+#include "src/widgets/tablestructsqldlg.h"
+#include "widgets/comparefmt/comparefmtwizard.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -171,6 +174,8 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu->addSeparator();
     m_GenDiffToScript = pActionsMenu->addAction(QIcon(":/img/DiffToScript.png"), tr("Diff to Script"));
     pActionsMenu->addSeparator();
+    m_pCompareFmt = pActionsMenu->addAction(QIcon(":/img/SychronizeListHS.png"), tr("Сравнить структуры"));
+    pActionsMenu->addSeparator();
     m_MassRemoveFields = pActionsMenu->addAction(QIcon(":/img/remove.png"), tr("Удалить поля из таблицы"));
     pActionsMenu->addSeparator();
     m_EditContent = pActionsMenu->addAction(QIcon(":/img/EditTableHS.png"), tr("Редактировать содержимое"));
@@ -193,6 +198,8 @@ void FmtWorkWindow::SetupActionsMenu()
     m_GenModifyScript = pCodeGenMenu->addAction(tr("Изменение полей"));
     m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
     pCodeGenMenu->addSeparator();
+    m_TableObjects = pCodeGenMenu->addAction(tr("Объекты таблицы"));
+    pCodeGenMenu->addSeparator();
     m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
     ui->pushActions->setMenu(pActionsMenu);//pUserActionsMenu
 
@@ -204,6 +211,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_GenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
     connect(m_GenInsertTemplate, SIGNAL(triggered(bool)), SLOT(GenInsertTemplateSql()));
     connect(m_GenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
+    connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
     connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
     connect(m_MassRemoveFields, SIGNAL(triggered(bool)), SLOT(RemoveTableFields()));
     connect(m_AddFieldsToEnd, SIGNAL(triggered(bool)), SLOT(AddFieldsToEnd()));
@@ -214,6 +222,8 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_CamelCaseAction, SIGNAL(triggered(bool)), SLOT(CamelCaseAction()));
     connect(m_GenDiffToScript, SIGNAL(triggered(bool)), SLOT(DiffToScript()));
     connect(m_CheckAction, SIGNAL(triggered(bool)), SLOT(CheckAction()));
+    connect(m_pCompareFmt, SIGNAL(triggered(bool)), SLOT(CompareStruct()));
+    connect(ui->compareBtn, SIGNAL(clicked()), SLOT(CompareStruct()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 }
 
@@ -1114,4 +1124,35 @@ void FmtWorkWindow::onUserActionTriggered()
         return;
 
     execUserAction(action->data().toString());
+}
+
+void FmtWorkWindow::TableObjects()
+{
+    TableStructSqlDlg dlg(pTable->connection(), pTable->name(), this);
+    dlg.exec();
+}
+
+void FmtWorkWindow::CompareStruct()
+{
+    CompareFmtWizard dlg(pTable->connection(), this);
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        CompareFmtViewTab *tabView = new CompareFmtViewTab(ui->tabWidget);
+
+        int Action = dlg.field("Action").toInt();
+        if (Action == CompareFmtWizard::CompareStruct)
+            tabView->setLists(pTable.data(), dlg.structString());
+        else if (Action == CompareFmtWizard::CompareTable)
+        {
+            QString SelectedTable = dlg.field("SelectedTable").toString();
+
+            FmtTable tbl(pTable->connection());
+            tbl.load(SelectedTable);
+
+            tabView->setLists(pTable.data(), &tbl);
+        }
+
+        int tab = ui->tabWidget->addTab(tabView, tr("Результат сравнения"));
+        ui->tabWidget->setCurrentIndex(tab);
+    }
 }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CompareParamsPage</class>
- <widget class="QWizardPage" name="CompareParamsPage">
+ <class>CompareSelectTablePage</class>
+ <widget class="QWizardPage" name="CompareSelectTablePage">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>679</width>
-    <height>553</height>
+    <width>725</width>
+    <height>532</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>133</height>
+       <height>115</height>
       </size>
      </property>
     </spacer>
@@ -45,58 +45,27 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QRadioButton" name="radioText">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Со структурой с++</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../res/fmt.qrc">
-           <normaloff>:/cplusplus</normaloff>:/cplusplus</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
+          <string>Фильтр:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioTable">
-         <property name="text">
-          <string>С другой таблицей схемы</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../res/fmt.qrc">
-           <normaloff>:/table</normaloff>:/table</iconset>
-         </property>
-         <property name="iconSize">
+        <widget class="QLineEdit" name="lineEdit"/>
+       </item>
+       <item>
+        <widget class="QListView" name="listView">
+         <property name="minimumSize">
           <size>
-           <width>24</width>
-           <height>24</height>
+           <width>320</width>
+           <height>0</height>
           </size>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioConnection">
-         <property name="text">
-          <string>С записью fmt из другой бд</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../res/fmt.qrc">
-           <normaloff>:/db</normaloff>:/db</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
-         </property>
-        </widget>
+        <widget class="QLineEdit" name="tableEdit"/>
        </item>
       </layout>
      </item>
@@ -123,15 +92,13 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>318</height>
+       <height>114</height>
       </size>
      </property>
     </spacer>
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../../res/fmt.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

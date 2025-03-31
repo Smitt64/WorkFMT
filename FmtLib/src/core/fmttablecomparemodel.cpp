@@ -2,11 +2,14 @@
 #include "fmtcore.h"
 #include "fmttable.h"
 #include "fmtfield.h"
+#include <QStyle>
+#include <QApplication>
 
 FmtTableCompareModel::FmtTableCompareModel(QObject *parent)
     : QAbstractTableModel{parent}
 {
-
+    QStyle *AppStyle = qApp->style();
+    m_Warning = AppStyle->standardIcon(QStyle::SP_MessageBoxWarning);
 }
 
 FmtTableCompareModel::~FmtTableCompareModel()
@@ -21,30 +24,74 @@ int FmtTableCompareModel::rowCount(const QModelIndex &parent) const
 
 int FmtTableCompareModel::columnCount(const QModelIndex &parent) const
 {
-    return 3;
+    return ColumnCount;
+}
+
+Qt::ItemFlags FmtTableCompareModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags f = QAbstractTableModel::flags(index);
+    f &= ~Qt::ItemIsUserCheckable;
+    return f;
+}
+
+bool FmtTableCompareModel::isAddition(const FmtTableCompareElement &row) const
+{
+    return row.mine.name.isEmpty() && !row.theirs.name.isEmpty();
+}
+
+bool FmtTableCompareModel::isDeleton(const FmtTableCompareElement &row) const
+{
+    return !row.mine.name.isEmpty() && row.theirs.name.isEmpty();
 }
 
 QVariant FmtTableCompareModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() >= m_data.size() || index.column() >= 2)
+    if (!index.isValid() || index.row() >= m_data.size() || index.column() >= ColumnCount)
         return QVariant();
 
     const FmtTableCompareElement &row = m_data[index.row()];
 
     if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
-        if (index.column() == ColumnMine)
+        if (index.column() == ColumnId)
+            return index.row() + 1;
+        else if (index.column() == ColumnMineName && !isAddition(row))
             return row.mine.name;
-        else if (index.column() == ColumnTheir)
+        else if (index.column() == ColumnMineType && !isAddition(row))
+            return fmtTypeNameForType(row.mine.type);
+        else if (index.column() == ColumnMineSize && !isAddition(row))
+            return row.mine.size;
+
+        else if (index.column() == ColumnTheirsName && !isDeleton(row))
             return row.theirs.name;
+        else if (index.column() == ColumnTheirsType && !isDeleton(row))
+            return fmtTypeNameForType(row.theirs.type);
+        else if (index.column() == ColumnTheirsSize && !isDeleton(row))
+            return row.theirs.size;
     }
-    else if (role == Qt::BackgroundRole) {
-        if (row.mine.name.isEmpty() && !row.theirs.name.isEmpty())
+    else if (role == Qt::BackgroundRole)
+    {
+        if (isAddition(row))
             return QBrush(QColor(200, 255, 200)); // Зеленый для добавленных
-        else if (!row.mine.name.isEmpty() && row.theirs.name.isEmpty())
+        else if (isDeleton(row))
             return QBrush(QColor(255, 200, 200)); // Красный для удаленных
-        else if (row.mine.name != row.theirs.name) {
+        else if ((row.mine.type != row.theirs.type) || (row.mine.size != row.theirs.size))
             return QBrush(QColor(255, 255, 200)); // Желтый для измененных
+    }
+    else if (role == Qt::DecorationRole)
+    {
+        if (!isAddition(row) && !isDeleton(row))
+        {
+            if (row.mine.type != row.theirs.type)
+            {
+                if (index.column() == ColumnMineType || index.column() == ColumnTheirsType)
+                    return m_Warning;
+            }
+            else if (row.mine.size != row.theirs.size)
+            {
+                if (index.column() == ColumnMineSize || index.column() == ColumnTheirsSize)
+                    return m_Warning;
+            }
         }
     }
 
@@ -53,6 +100,11 @@ QVariant FmtTableCompareModel::data(const QModelIndex &index, int role) const
 
 QVariant FmtTableCompareModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    static QStringList header =
+    {
+        tr("Имя столбца (mine)"),
+        tr("Тип (mine)")
+    };
     if (role != Qt::DisplayRole)
         return QVariant();
 
@@ -67,6 +119,17 @@ void FmtTableCompareModel::setLists(FmtTable *table, const QString &cppcstruct)
     FmtFldElementVector tablevec, structvec;
     readFmtTable(table, tablevec);
     readTableStruct(cppcstruct, structvec);
+
+    makeCompareData(tablevec, structvec);
+}
+
+void FmtTableCompareModel::setLists(FmtTable *table1, FmtTable *table2)
+{
+    FmtFldElementVector tablevec, structvec;
+    readFmtTable(table1, tablevec);
+    readFmtTable(table2, structvec);
+
+    makeCompareData(tablevec, structvec);
 }
 
 void FmtTableCompareModel::readFmtTable(FmtTable *table, FmtFldElementVector &vec)
@@ -76,7 +139,7 @@ void FmtTableCompareModel::readFmtTable(FmtTable *table, FmtFldElementVector &ve
         FmtField *fld = table->field(i);
 
         FmtFldElement elem;
-        elem.name = fld->name();
+        elem.name = fld->undecorateName();
         elem.comment = fld->comment();
         elem.size = fld->size();
         elem.type = fld->type();
@@ -125,7 +188,7 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
     code.replace(QRegularExpression(R"(^\s*//[^\n]*\n)", QRegularExpression::MultilineOption), "");
 
     // Основное регулярное выражение для полей структуры
-    QRegularExpression fieldRegex("(([\\w:<>]+)\\s*([\\*\\&]?\\s*\\w+\\s*[\\*\\&]?)(?:\\s*\\[\\s*(\\d+)\\s*\\])?\\s*;)",
+    QRegularExpression fieldRegex(R"(([^{}\w][\w:<>]+)\s+([\*\&]?\s*\w+\s*[\*\&]?)(?:\s*\[\s*(\d+)\s*\])?\s*;)",
                                   QRegularExpression::CaseInsensitiveOption);
 
     QRegularExpressionMatchIterator it = fieldRegex.globalMatch(code);
@@ -136,6 +199,7 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
         FmtFldElement info;
 
         // Обработка типа
+        QString type = match.captured(1).trimmed();
         //info.type = match.captured(1).trimmed();
 
         // Обработка имени и указателей
@@ -146,10 +210,19 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
         // Обработка массива
         if (match.capturedLength(3) > 0)
             info.size = match.captured(3).toInt();
+        else
+            info.size = 0;
+
+        info.type = fmtTypeFromCppType(type, info.size);
+
+        if (!info.size)
+            info.size = fmtTypeSize(info.type);
 
         // Извлекаем комментарий после поля
         int fieldEndPos = match.capturedEnd();
         info.comment = extractComments(cppcstruct, fieldEndPos);
+
+        qDebug() << info.name << info.size;
 
         vec.append(info);
     }
@@ -166,10 +239,10 @@ void FmtTableCompareModel::makeCompareData(const FmtFldElementVector &mine, cons
     {
         FmtTableCompareElement row;
 
-        if (i < mine.size() && j < theirs.size() && mine[i].name == theirs[j].name)
+        if (i < mine.size() && j < theirs.size() && mine[i].name.toUpper() == theirs[j].name.toUpper())
         {
             row.mine = mine[i];
-            row.theirs = theirs[i];
+            row.theirs = theirs[j];
             i++;
             j++;
         }
@@ -183,7 +256,7 @@ void FmtTableCompareModel::makeCompareData(const FmtFldElementVector &mine, cons
             {
                 for (int k = j; k < theirs.size(); k++)
                 {
-                    if (mine[i].name == theirs[k].name)
+                    if (mine[i].name.toUpper() == theirs[k].name.toUpper())
                     {
                         foundInNew = true;
                         break;
@@ -196,7 +269,7 @@ void FmtTableCompareModel::makeCompareData(const FmtFldElementVector &mine, cons
             {
                 for (int k = i; k < mine.size(); k++)
                 {
-                    if (theirs[j].name == mine[k].name)
+                    if (theirs[j].name.toUpper() == mine[k].name.toUpper())
                     {
                         foundInOld = true;
                         break;

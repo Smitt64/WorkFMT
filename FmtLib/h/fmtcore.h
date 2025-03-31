@@ -194,6 +194,7 @@ FMTLIBSHARED_EXPORT quint16 fmtTypeIndexSize(const qint16 &id);
 FMTLIBSHARED_EXPORT QString fmtRsdType(const qint16 &Type);
 FMTLIBSHARED_EXPORT QString fmtRsdConstant(const qint16 &Type);
 FMTLIBSHARED_EXPORT QString fmtZeroConstant(const qint16 &Type);
+FMTLIBSHARED_EXPORT qint16 fmtTypeFromCppType(const QString& typeName, quint16 size = 0);
 
 FMTLIBSHARED_EXPORT int trn(QSqlDatabase &db, std::function<int(void)> func);
 

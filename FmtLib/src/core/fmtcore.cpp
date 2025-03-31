@@ -560,6 +560,43 @@ QString fmtGetPgDefaultVal(const qint16 &Type, const int &size)
     return t;
 }
 
+qint16 fmtTypeFromCppType(const QString& typeName, quint16 size)
+{
+    // Сначала проверяем специальные случаи
+    if (typeName == "bdate") return fmtt_DATE;
+    if (typeName == "btime") return fmtt_TIME;
+    if (typeName == "lmoney" || typeName == "db_lmoney") return fmtt_NUMERIC;
+    if (typeName == "DBNumeric") return fmtt_NUMERIC;
+    if (typeName == "QDateTime") return fmtt_DATETIME;
+
+    // Для строковых типов учитываем размер
+    if (typeName == "char") {
+        if (size > 1) return fmtt_STRING;
+        return fmtt_CHR; // или fmtt_UCHR, если нужно различать
+    }
+
+    // Проходим по всем типам из JSON
+    for (const auto& typeInfo : FmtTypesMap)
+    {
+        if (typeInfo._cppType == typeName ||
+                typeInfo._cppDbType == typeName ||
+                typeInfo._cppDbBaseType == typeName)
+        {
+            return typeInfo._type;
+        }
+    }
+
+    // Для числовых типов можно добавить дополнительные проверки
+    if (typeName == "int16") return fmtt_INT;
+    if (typeName == "int32") return fmtt_LONG;
+    if (typeName == "int64_t") return fmtt_BIGINT;
+    if (typeName == "float") return fmtt_FLOAT;
+    if (typeName == "double") return fmtt_DOUBLE;
+
+    // Если тип не найден, возвращаем STRING по умолчанию
+    return fmtt_INT;
+}
+
 QString AddTabButtonCss()
 {
     return "*         {image: url(':/img/addtab-icon.png'); border: 0;}"

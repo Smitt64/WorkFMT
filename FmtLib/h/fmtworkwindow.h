@@ -121,6 +121,8 @@ private slots:
     void OnImport();
     void CamelCaseAction();
     void CheckAction();
+    void CompareStruct();
+    void TableObjects();
 
     void onUserActionTriggered();
 
@@ -158,8 +160,8 @@ private:
     QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_MassRemoveFields;
     QAction *m_unloadDbf, *m_loadDbf, *m_ImportData;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
-    QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
-    QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript;
+    QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript, *m_TableObjects;
+    QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript, *m_pCompareFmt;
     QAction *m_CheckAction;
     FmtWorkWndGen *pCodeGenWidget;
 

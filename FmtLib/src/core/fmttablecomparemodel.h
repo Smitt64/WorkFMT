@@ -3,6 +3,7 @@
 
 #include <QAbstractTableModel>
 #include <QVector>
+#include <QIcon>
 
 typedef struct
 {
@@ -26,8 +27,16 @@ class FmtTableCompareModel : public QAbstractTableModel
 public:
     enum
     {
-        ColumnMine = 0,
-        ColumnTheir
+        ColumnId = 0,
+        ColumnMineName,
+        ColumnMineType,
+        ColumnMineSize,
+
+        ColumnTheirsName,
+        ColumnTheirsType,
+        ColumnTheirsSize,
+
+        ColumnCount
     };
     FmtTableCompareModel(QObject *parent = nullptr);
     virtual ~FmtTableCompareModel();
@@ -36,8 +45,10 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 
     void setLists(FmtTable *table, const QString &cppcstruct);
+    void setLists(FmtTable *table1, FmtTable *table2);
 
     static void readFmtTable(FmtTable *table, FmtFldElementVector &vec);
     static void readTableStruct(const QString &cppcstruct, FmtFldElementVector &vec);
@@ -46,6 +57,10 @@ private:
     void makeCompareData(const FmtFldElementVector &mine, const FmtFldElementVector &theirs);
     static QString extractComments(const QString& structCode, int fieldEndPos);
 
+    bool isAddition(const FmtTableCompareElement &row) const;
+    bool isDeleton(const FmtTableCompareElement &row) const;
+
+    QIcon m_Warning;
     QVector<FmtTableCompareElement> m_data;
 };
 
