@@ -130,6 +130,7 @@ SOURCES += \
     src/fmt/fmtfile.cpp \
     src/fmtscriptwindow.cpp \
     src/widgets/fmrichtextwidget.cpp \
+    src/widgets/connectionwzardpage/connactionpage.cpp \
     src/models/fmteditcontentmodel.cpp \
     src/widgets/editcontent/fmteditcontentwindow.cpp \
     src/widgets/editcontent/fmteditcontentdialog.cpp \
@@ -184,6 +185,7 @@ FORMS += \
     src/widgets/comparefmt/compareselecttablepage.ui \
     src/widgets/guiconverterdlg.ui \
     src/widgets/tablestructsqldlg.ui \
+    ui/connactionpage.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
     src/widgets/fmtsegmentflagsdlg.ui \
@@ -204,6 +206,7 @@ FORMS += \
     ui/selectfiltereddlg.ui \
     ui/fmteditcontentfilter.ui \
     ui/dataselectdialog.ui \
+    ui/connactionpage.ui \
     src/widgets/editcontent/import/selecttypepage.ui \
     src/widgets/editcontent/import/texteditpage.ui \
     src/widgets/editcontent/import/tablemaptofmtwidget.ui \
@@ -316,6 +319,7 @@ HEADERS += \
     src/widgets/comparefmt/compareparamspage.h \
     src/widgets/comparefmt/compareselecttablepage.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
+    src/widgets/connectionwzardpage/connactionpage.h \
     h/datelineedit.h \
     src/widgets/editcontent/fmteditcontentfilter.h \
     h/dataselectdialog.h \

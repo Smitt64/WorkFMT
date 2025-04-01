@@ -542,7 +542,7 @@ QString TableObjectsModel::getTriggerDefinitionOracle(const QString &triggerName
     query.bindValue(":owner", m_pConnection->user());
 
     if (query.exec() && query.next())
-        return query.value(0).toString();
+        return query.value(0).toString().trimmed();
 
     return QString("Не удалось получить определение триггера %1").arg(triggerName);
 }
@@ -557,7 +557,7 @@ QString TableObjectsModel::getConstraintDefinitionOracle(const QString &constrai
     query.bindValue(":owner", m_pConnection->user());
 
     if (!ExecuteQuery(&query) && query.next())
-        return query.value(0).toString();
+        return query.value(0).toString().simplified();
 
     return QString("Не удалось получить определение ограничения %1").arg(constraintName);
 }
