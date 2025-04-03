@@ -7,6 +7,7 @@ class CompareParamsPage;
 class CompareCppStructPage;
 class ConnectionInfo;
 class CompareSelectTablePage;
+class ConnactionPage;
 class CompareFmtWizard : public QWizard
 {
     Q_OBJECT
@@ -22,6 +23,7 @@ public:
     {
         PageParams = 0,
         PageStruct,
+        PageConnection,
         PageSelectTable
     };
 
@@ -34,6 +36,7 @@ public:
 private:
     CompareParamsPage *m_ParamsPage;
     CompareCppStructPage *m_CodePage;
+    ConnactionPage *m_pConnectionPage;
     CompareSelectTablePage *m_pSeltablePage;
 
     ConnectionInfo *m_Connection;

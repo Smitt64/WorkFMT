@@ -16,7 +16,7 @@ class FMTLIBSHARED_EXPORT ConnactionPage : public QWizardPage
     Q_OBJECT
 
 public:
-    explicit ConnactionPage(QWidget *parent = nullptr);
+    ConnactionPage(QWidget *parent = nullptr);
     ~ConnactionPage();
 
     virtual bool isComplete() const Q_DECL_OVERRIDE;

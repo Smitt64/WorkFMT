@@ -3,6 +3,7 @@
 #include "comparecppstructpage.h"
 #include "compareselecttablepage.h"
 #include "codeeditor/codeeditor.h"
+#include "src/widgets/connectionwzardpage/connactionpage.h"
 #include <QIcon>
 
 CompareFmtWizard::CompareFmtWizard(ConnectionInfo *connection, QWidget *parent) :
@@ -12,9 +13,11 @@ CompareFmtWizard::CompareFmtWizard(ConnectionInfo *connection, QWidget *parent) 
     m_ParamsPage = new CompareParamsPage(this);
     m_CodePage = new CompareCppStructPage(this);
     m_pSeltablePage = new CompareSelectTablePage(this);
+    m_pConnectionPage = new ConnactionPage(this);
 
     addPage(m_ParamsPage);
     addPage(m_CodePage);
+    addPage(m_pConnectionPage);
     addPage(m_pSeltablePage);
 
     setWindowIcon(QIcon(":/img/SychronizeListHS.png"));

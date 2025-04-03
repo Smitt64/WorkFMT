@@ -51,9 +51,10 @@ CompareSelectTablePage::CompareSelectTablePage(QWidget *parent) :
 
     setTitle(tr("Таблица для сравнения"));
     registerField("SelectedTable", ui->tableEdit);
-    connect(ui->lineEdit, &QLineEdit::textChanged, [=](const QString &text)
+
+    connect(ui->lineEdit, &QLineEdit::returnPressed, [=]()
     {
-        m_pModel->updateFilter(text);
+        m_pModel->updateFilter(ui->lineEdit->text());
         emit completeChanged();
     });
 }
@@ -76,6 +77,26 @@ void CompareSelectTablePage::initializePage()
     if (Action == CompareFmtWizard::CompareTable)
     {
         m_Connection.reset();
+        m_pModel.reset(new FilteredSqlModel(wzrd->connection()));
+
+        ui->listView->setModel(m_pModel.data());
+        m_pModel->updateFilter("");
+    }
+    else if (Action == CompareFmtWizard::PageConnection)
+    {
+        QString unicode;
+        QString User = wzrd->field("User").toString();
+        QString Password = wzrd->field("Password").toString();
+        QString Service = wzrd->field("Service").toString();
+        bool IsUnicode = wzrd->field("IsUnicode").toBool();
+
+        if (IsUnicode)
+            unicode = "RSD_UNICODE";
+
+        QString error;
+        m_Connection.reset(new ConnectionInfo());
+        m_Connection->open(QRSD_DRIVER, User, Password, Service, unicode, &error);
+
         m_pModel.reset(new FilteredSqlModel(wzrd->connection()));
 
         ui->listView->setModel(m_pModel.data());

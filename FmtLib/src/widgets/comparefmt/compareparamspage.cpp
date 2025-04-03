@@ -37,6 +37,8 @@ int CompareParamsPage::nextId() const
         return CompareFmtWizard::PageStruct;
     else if (ui->radioTable->isChecked())
         return CompareFmtWizard::PageSelectTable;
+    else if (ui->radioConnection->isChecked())
+        return CompareFmtWizard::PageConnection;
 
     return -1;
 }

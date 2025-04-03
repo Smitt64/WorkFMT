@@ -2,6 +2,7 @@
 #include "connectioninfo.h"
 #include "fmtcore.h"
 #include <QSqlQuery>
+#include <QSqlError>
 
 TableObjectsModel::TableObjectsModel(ConnectionInfo *connection, const QString &_tableName, QObject *parent) :
     QAbstractItemModel(parent),
@@ -296,7 +297,7 @@ void TableObjectsModel::addObjectsToCategory(TreeNode *category, const QStringLi
 QString TableObjectsModel::getTableDefinitionPostgres() const
 {
     QSqlQuery query(m_pConnection->db());
-    query.prepare("SELECT pg_get_tabledef(?)");
+    query.prepare("/*@ DisConv */SELECT pg_get_tabledef(?)");
     query.addBindValue(tableName);
 
     if (!ExecuteQuery(&query) && query.next())
@@ -324,7 +325,7 @@ QString TableObjectsModel::getTriggersPostgres() const
 {
     QSqlQuery query(m_pConnection->db());
     query.prepare(
-        "SELECT trigger_name FROM information_schema.triggers "
+        "SELECT distinct trigger_name FROM information_schema.triggers "
         "WHERE event_object_table = ?");
 
     query.addBindValue(tableName);
@@ -342,8 +343,8 @@ QString TableObjectsModel::getConstraintsPostgres() const
 {
     QSqlQuery query(m_pConnection->db());
     query.prepare(
-        "SELECT constraint_name FROM information_schema.table_constraints "
-        "WHERE table_name = ? AND constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY', 'UNIQUE', 'CHECK')");
+        "/*@ DisConv */SELECT constraint_name FROM information_schema.table_constraints "
+        "WHERE table_name = ? AND constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY', 'UNIQUE')");
     query.addBindValue(tableName);
 
     QStringList constraints;
@@ -389,25 +390,48 @@ QString TableObjectsModel::getIndexDefinitionPostgres(const QString &indexName) 
 QString TableObjectsModel::getTriggerDefinitionPostgres(const QString &triggerName) const
 {
     QSqlQuery query(m_pConnection->db());
+
+    // Получаем определение триггера и информацию о функции
     query.prepare(
-        "SELECT pg_get_triggerdef(oid) FROM pg_trigger WHERE tgname = ?");
+                "SELECT pg_get_triggerdef(t.oid) as trigger_def, "
+                "       pg_get_functiondef(t.tgfoid) as function_def "
+                "FROM pg_trigger t "
+                "WHERE t.tgname = ?");
     query.addBindValue(triggerName);
 
-    if (!ExecuteQuery(&query) && query.next())
-        return query.value(0).toString();
+    if (ExecuteQuery(&query))
+    {
+        qWarning() << "Ошибка выполнения запроса:" << query.lastError().text();
+        return QString("Не удалось получить определение триггера %1").arg(triggerName);
+    }
 
-    return QString("Не удалось получить определение триггера %1").arg(triggerName);
+    if (query.next())
+    {
+        QString triggerDef = query.value("trigger_def").toString().trimmed();
+        QString functionDef = query.value("function_def").toString().trimmed();
+
+        return QString("%1\n/\n\n%2;\n/")
+                .arg(functionDef)
+                .arg(triggerDef);
+    }
+
+    return QString("Триггер %1 не найден").arg(triggerName);
 }
 
 QString TableObjectsModel::getConstraintDefinitionPostgres(const QString &constraintName) const
 {
     QSqlQuery query(m_pConnection->db());
     query.prepare(
-        "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = ?");
+                "/*@ DisConv */SELECT pg_get_constraintdef(c.oid, true) AS definition "
+                "FROM pg_constraint c "
+                "JOIN pg_namespace n ON n.oid = c.connamespace "
+                "WHERE c.conname = ? AND n.nspname NOT IN ('pg_catalog', 'information_schema')"
+                );
     query.addBindValue(constraintName);
 
-    if (!ExecuteQuery(&query) && query.next())
-        return query.value(0).toString();
+    if (!ExecuteQuery(&query) && query.next()) {
+        return query.value("definition").toString();
+    }
 
     return QString("Не удалось получить определение ограничения %1").arg(constraintName);
 }
@@ -416,10 +440,13 @@ QString TableObjectsModel::getSequenceDefinitionPostgres(const QString &sequence
 {
     QSqlQuery query(m_pConnection->db());
     query.prepare(
-        "SELECT 'CREATE SEQUENCE ' || sequence_name || ' START ' || start_value || "
-        "' INCREMENT ' || increment || ' MAXVALUE ' || maximum_value || ' MINVALUE ' || minimum_value || "
-        "' CACHE ' || cache_value || ' CYCLE ' || cycle_option "
-        "FROM information_schema.sequences WHERE sequence_name = ?");
+            "/*@ DisConv */SELECT 'CREATE SEQUENCE ' || sequence_name || E'\n' || "
+            "'START ' || start_value || E'\n' || "
+            "'INCREMENT ' || increment || E'\n' || "
+            "'MAXVALUE ' || maximum_value || E'\n' || "
+            "'MINVALUE ' || minimum_value || E'\n' || "
+            "CASE WHEN cycle_option = 'YES' THEN 'CYCLE;' ELSE 'NO CYCLE;' END "
+            "FROM information_schema.sequences WHERE sequence_name = ?");
 
     query.addBindValue(sequenceName);
     if (!ExecuteQuery(&query) && query.next())
