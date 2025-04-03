@@ -7,7 +7,11 @@ enum TreeItemType
 {
     RootItem,
     CategoryItem,
-    ObjectItem
+    ObjectItem,
+    IndexItem,
+    TriggerItem,
+    ConstraintItem,
+    SequenceItem
 };
 
 struct TreeNode
@@ -54,7 +58,7 @@ public:
 private:
     void setupModelData();
     TreeNode* addCategory(TreeNode *parent, const QString &categoryName);
-        void addObjectsToCategory(TreeNode *category, const QStringList &objects, const QString &prefix = "");
+    void addObjectsToCategory(TreeNode *category, const QStringList &objects, const QString &prefix = "");
 
     // Методы для работы с PostgreSQL
     QString getTableDefinitionPostgres() const;
@@ -77,6 +81,8 @@ private:
     QString getTriggerDefinitionOracle(const QString &triggerName) const;
     QString getConstraintDefinitionOracle(const QString &constraintName) const;
     QString getSequenceDefinitionOracle(const QString &sequenceName) const;
+
+    QString simplifyIndexDDL(const QString &originalDDL);
 
     ConnectionInfo *m_pConnection;
     DbType dbType;

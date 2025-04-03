@@ -3,6 +3,9 @@
 #include "fmtcore.h"
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QIcon>
+#include <QApplication>
+#include <QStyle>
 
 TableObjectsModel::TableObjectsModel(ConnectionInfo *connection, const QString &_tableName, QObject *parent) :
     QAbstractItemModel(parent),
@@ -30,6 +33,9 @@ QVariant TableObjectsModel::data(const QModelIndex &index, int role) const
 
     TreeNode *item = static_cast<TreeNode*>(index.internalPointer());
 
+    if (item->type == RootItem && role == Qt::DisplayRole)
+        return item->name;
+
     if (role == Qt::DisplayRole)
         return item->name;
 
@@ -48,6 +54,13 @@ QVariant TableObjectsModel::data(const QModelIndex &index, int role) const
         if (checkedCount == item->children.size()) return Qt::Checked;
 
         return Qt::PartiallyChecked;
+    }
+    else if (role == Qt::DecorationRole && item->type == RootItem)
+        return QIcon(":/table");
+    else if (role == Qt::DecorationRole && item->type == CategoryItem)
+    {
+        QStyle *style = QApplication::style();
+        return style->standardIcon(QStyle::SP_DirIcon);
     }
 
     return QVariant();
@@ -80,7 +93,11 @@ QModelIndex TableObjectsModel::index(int row, int column, const QModelIndex &par
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    TreeNode *parentItem = parent.isValid() ? static_cast<TreeNode*>(parent.internalPointer()) : rootItem;
+    // Если запрашивается индекс корневого элемента
+    if (!parent.isValid())
+        return createIndex(row, column, rootItem);
+
+    TreeNode *parentItem = static_cast<TreeNode*>(parent.internalPointer());
 
     if (row < parentItem->children.size())
         return createIndex(row, column, parentItem->children.at(row));
@@ -96,8 +113,13 @@ QModelIndex TableObjectsModel::parent(const QModelIndex &index) const
     TreeNode *childItem = static_cast<TreeNode*>(index.internalPointer());
     TreeNode *parentItem = childItem->parent;
 
-    if (parentItem == rootItem || parentItem == nullptr)
+    // Если parentItem == nullptr, значит это корневой элемент
+    if (parentItem == nullptr || childItem == rootItem)
         return QModelIndex();
+
+    // Если родитель - корневой элемент
+    if (parentItem == rootItem)
+        return createIndex(0, 0, rootItem);
 
     return createIndex(parentItem->parent->children.indexOf(parentItem), 0, parentItem);
 }
@@ -107,7 +129,11 @@ int TableObjectsModel::rowCount(const QModelIndex &parent) const
     if (parent.column() > 0)
         return 0;
 
-    TreeNode *parentItem = parent.isValid() ? static_cast<TreeNode*>(parent.internalPointer()) : rootItem;
+    // Если запрашивается количество строк корневого элемента
+    if (!parent.isValid())
+        return 1;  // Только один корневой элемент - сама таблица
+
+    TreeNode *parentItem = static_cast<TreeNode*>(parent.internalPointer());
     return parentItem->children.size();
 }
 
@@ -295,13 +321,64 @@ void TableObjectsModel::addObjectsToCategory(TreeNode *category, const QStringLi
 }
 
 QString TableObjectsModel::getTableDefinitionPostgres() const
-{
-    QSqlQuery query(m_pConnection->db());
-    query.prepare("/*@ DisConv */SELECT pg_get_tabledef(?)");
+{/*@ DisConv */
+    /*QSqlQuery query(m_pConnection->db());
+    query.prepare("SELECT pg_get_tabledef(?)");
     query.addBindValue(tableName);
 
     if (!ExecuteQuery(&query) && query.next())
         return query.value(0).toString();
+
+    return QString("Не удалось получить определение таблицы %1").arg(tableName);*/
+    QSqlQuery query(m_pConnection->db());
+    query.prepare(R"(
+            /*@ DisConv */SELECT
+                'CREATE TABLE ' || quote_ident(table_name) || ' (\n' ||
+                string_agg(
+                    '    ' || quote_ident(column_name) || ' ' ||
+                    data_type ||
+                    CASE WHEN character_maximum_length IS NOT NULL
+                         THEN '(' || character_maximum_length || ')'
+                         ELSE '' END ||
+                    CASE WHEN is_nullable = 'NO' THEN ' NOT NULL' ELSE '' END ||
+                    COALESCE(' DEFAULT ' || column_default, '') ||
+                    COALESCE(' ' || extra_info, ''),
+                    ',\n'
+                ) || '\n);'
+            FROM (
+                SELECT
+                    c.table_name,
+                    c.column_name,
+                    c.data_type,
+                    c.character_maximum_length,
+                    c.is_nullable,
+                    c.column_default,
+                    CASE
+                        WHEN tc.constraint_type = 'PRIMARY KEY' THEN ' PRIMARY KEY'
+                        ELSE ''
+                    END as extra_info
+                FROM
+                    information_schema.columns c
+                LEFT JOIN
+                    information_schema.key_column_usage kcu
+                    ON c.table_name = kcu.table_name
+                    AND c.column_name = kcu.column_name
+                LEFT JOIN
+                    information_schema.table_constraints tc
+                    ON kcu.constraint_name = tc.constraint_name
+                WHERE
+                    c.table_name = ?
+                ORDER BY
+                    c.ordinal_position
+            ) as cols
+            GROUP BY
+                table_name
+        )");
+
+    query.addBindValue(tableName);
+
+    if (!ExecuteQuery(&query) && query.next())
+        return query.value(0).toString().replace("\\n", "\n");
 
     return QString("Не удалось получить определение таблицы %1").arg(tableName);
 }
@@ -461,11 +538,11 @@ QString TableObjectsModel::getTableDefinitionOracle() const
 {
     QSqlQuery query(m_pConnection->db());
     query.prepare(
-        "SELECT DBMS_METADATA.GET_DDL('TABLE', :table_name) FROM dual");
+        "SELECT to_char(DBMS_METADATA.GET_DDL('TABLE', :table_name)) FROM dual");
 
     query.bindValue(":table_name", tableName.toUpper());
     if (!ExecuteQuery(&query) && query.next())
-        return query.value(0).toString();
+        return query.value(0).toString().trimmed();
 
     return QString("Не удалось получить определение таблицы %1").arg(tableName);
 }
@@ -602,4 +679,43 @@ QString TableObjectsModel::getSequenceDefinitionOracle(const QString &sequenceNa
         return query.value(0).toString().simplified();
 
     return QString("Не удалось получить определение последовательности %1").arg(sequenceName);
+}
+
+QString TableObjectsModel::simplifyIndexDDL(const QString &originalDDL)
+{
+    if (originalDDL.isEmpty())
+        return originalDDL;
+
+    QString simplified = originalDDL;
+
+    // Удаление имени схемы перед именем индекса и таблицы
+    QRegularExpression schemaPattern(R"(\b\w+\.)");
+    simplified.remove(schemaPattern);
+
+    // Удаление всего после закрывающей скобки перечисления полей
+    int fieldsEndPos = simplified.indexOf(')');
+    if (fieldsEndPos != -1) {
+        // Ищем точку с запятой после закрывающей скобки
+        int semicolonPos = simplified.indexOf(';', fieldsEndPos);
+        if (semicolonPos != -1) {
+            simplified = simplified.left(fieldsEndPos + 1) + ";";
+        } else {
+            simplified = simplified.left(fieldsEndPos + 1);
+        }
+    }
+
+    // Дополнительная очистка для PostgreSQL (условия WHERE и т.д.)
+    if (dbType == DbType::PostgreSQL) {
+        QRegularExpression pgOptions(R"(\s+(WITH|USING|TABLESPACE|WHERE|INCLUDE)\s+.+)",
+                                     QRegularExpression::CaseInsensitiveOption);
+        simplified.remove(pgOptions);
+    }
+    // Дополнительная очистка для Oracle (параметры хранения и т.д.)
+    else if (dbType == DbType::Oracle) {
+        QRegularExpression oraOptions(R"(\s+(TABLESPACE|STORAGE|COMPRESS|PARALLEL|LOGGING)\s+.+)",
+                                      QRegularExpression::CaseInsensitiveOption);
+        simplified.remove(oraOptions);
+    }
+
+    return simplified.trimmed();
 }
