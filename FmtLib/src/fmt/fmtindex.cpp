@@ -421,7 +421,8 @@ FmtSegment *FmtIndex::addSegmentPrivate(const qint16 &row)
 
 qint16 FmtIndex::indexNumber() const
 {
-    return keyNum();
+    return static_cast<qint16>(pTable->m_pIndeces.indexOf(const_cast<FmtIndex*>(this)));
+    //return keyNum();
 }
 
 qint32 FmtIndex::segmentsCount() const
@@ -503,7 +504,7 @@ bool FmtIndex::isPrimary() const
 void FmtIndex::UpdateIndexName(const QString &value)
 {
     Q_UNUSED(value);
-    m_Name = FmtTableMakeIndexName(pTable, indexNumber());
+    m_Name = FmtTableMakeIndexName(pTable, keyNum());
 }
 
 void FmtIndex::removeSegment(const quint16 &segmentIndex)
