@@ -18,9 +18,11 @@ public:
     ~TableStructSqlDlg();
 
 private slots:
+    void saveSettings();
     void onTreeItemClicked(const QModelIndex &index);
 
 private:
+
     Ui::TableStructSqlDlg *ui;
     ConnectionInfo *m_pConnection;
 

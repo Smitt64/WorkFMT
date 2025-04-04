@@ -6,6 +6,7 @@
 #include <QIcon>
 #include <QApplication>
 #include <QStyle>
+#include <QRegularExpression>
 
 TableObjectsModel::TableObjectsModel(ConnectionInfo *connection, const QString &_tableName, QObject *parent) :
     QAbstractItemModel(parent),
@@ -39,7 +40,7 @@ QVariant TableObjectsModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole)
         return item->name;
 
-    else if (role == Qt::CheckStateRole && item->type == ObjectItem)
+    else if (role == Qt::CheckStateRole && (item->type != RootItem && item->type != CategoryItem))
         return item->checkState;
     else if (role == Qt::CheckStateRole && item->type == CategoryItem)
     {
@@ -55,15 +56,36 @@ QVariant TableObjectsModel::data(const QModelIndex &index, int role) const
 
         return Qt::PartiallyChecked;
     }
-    else if (role == Qt::DecorationRole && item->type == RootItem)
-        return QIcon(":/table");
-    else if (role == Qt::DecorationRole && item->type == CategoryItem)
+    else if (role == Qt::DecorationRole)
     {
         QStyle *style = QApplication::style();
-        return style->standardIcon(QStyle::SP_DirIcon);
+
+        switch(item->type)
+        {
+        case RootItem: return QIcon(":/table");
+        case CategoryItem: return style->standardIcon(QStyle::SP_DirIcon);
+        case IndexItem: return QIcon(":/index");
+        case TriggerItem: return QIcon(":/trigger");
+        case ConstraintItem: return QIcon(":/constraint");
+        case SequenceItem: return QIcon(":/sequence");
+        default: return QVariant();
+        }
+    }
+    else if (role == Qt::ToolTipRole)
+    {
+        return QString("%1\nType: %2").arg(item->name).arg(item->objectTypeString());
     }
 
     return QVariant();
+}
+
+QString TableObjectsModel::getObjectType(const QModelIndex &index) const
+{
+    if (!index.isValid())
+        return "Table";
+
+    TreeNode *item = static_cast<TreeNode*>(index.internalPointer());
+    return item->objectTypeString();
 }
 
 Qt::ItemFlags TableObjectsModel::flags(const QModelIndex &index) const
@@ -180,12 +202,25 @@ bool TableObjectsModel::setData(const QModelIndex &index, const QVariant &value,
     return false;
 }
 
-QString TableObjectsModel::getSqlForIndex(const QModelIndex &index) const
+QString TableObjectsModel::getSqlForIndex(const QModelIndex &index, bool simplified) const
 {
     if (!index.isValid())
         return rootItem->sql;
 
     TreeNode *item = static_cast<TreeNode*>(index.internalPointer());
+
+    if (simplified)
+    {
+        if (item->type == IndexItem)
+            return simplifyIndexDDL(item->sql);
+        else if (item->type == SequenceItem)
+            return simplifySequenceDDL(item->sql);
+        else if (item->type == ConstraintItem)
+            return simplifyConstraintDDL(item->sql);
+        else if (item->type == TriggerItem)
+            return simplifyTriggerDDL(item->sql);
+    }
+
     return item->sql;
 }
 
@@ -207,7 +242,7 @@ void TableObjectsModel::setupModelData()
 
     // Добавляем категории
     TreeNode* indexes = addCategory(rootItem, "Индексы");
-    TreeNode* constraints = addCategory(rootItem, "Ограничения");
+    //TreeNode* constraints = addCategory(rootItem, "Ограничения");
     TreeNode* sequences = addCategory(rootItem, "Последовательности");
     TreeNode* triggers = addCategory(rootItem, "Триггеры");
 
@@ -220,9 +255,9 @@ void TableObjectsModel::setupModelData()
         getTriggersPostgres() : getTriggersOracle()).split(";", Qt::SkipEmptyParts);
     addObjectsToCategory(triggers, triggerList);
 
-    QStringList constraintList = ((dbType == DbType::PostgreSQL) ?
+   /* QStringList constraintList = ((dbType == DbType::PostgreSQL) ?
         getConstraintsPostgres() : getConstraintsOracle()).split(";", Qt::SkipEmptyParts);
-    addObjectsToCategory(constraints, constraintList);
+    addObjectsToCategory(constraints, constraintList);*/
 
     QStringList sequenceList = ((dbType == DbType::PostgreSQL) ?
         getSequencesPostgres() : getSequencesOracle()).split(";", Qt::SkipEmptyParts);
@@ -282,39 +317,63 @@ void TableObjectsModel::addObjectsToCategory(TreeNode *category, const QStringLi
     for (const QString &objectName : objects)
     {
         QString sql;
+        TreeItemType objectType = ObjectItem;
+
         if (dbType == DbType::PostgreSQL)
         {
             if (category->name == "Индексы")
+            {
                 sql = getIndexDefinitionPostgres(objectName);
-
+                objectType = IndexItem;
+            }
             else if (category->name == "Ограничения")
+            {
                 sql = getConstraintDefinitionPostgres(objectName);
+                objectType = ConstraintItem;
+            }
             else if (category->name == "Последовательности")
+            {
                 sql = getSequenceDefinitionPostgres(objectName);
+                objectType = SequenceItem;
+            }
             else if (category->name == "Триггеры")
+            {
                 sql = getTriggerDefinitionPostgres(objectName);
+                objectType = TriggerItem;
+            }
         }
         else
         {
             if (category->name == "Индексы")
+            {
                 sql = getIndexDefinitionOracle(objectName);
-
+                objectType = IndexItem;
+            }
             else if (category->name == "Ограничения")
+            {
                 sql = getConstraintDefinitionOracle(objectName);
+                objectType = ConstraintItem;
+            }
             else if (category->name == "Последовательности")
+            {
                 sql = getSequenceDefinitionOracle(objectName);
+                objectType = SequenceItem;
+            }
             else if (category->name == "Триггеры")
+            {
                 sql = getTriggerDefinitionOracle(objectName);
+                objectType = TriggerItem;
+            }
         }
 
         TreeNode* object = new TreeNode
         {
-            prefix + objectName,
-            sql,
-            ObjectItem,
-            Qt::Checked,
-            category
-        };
+                prefix + objectName,
+                sql,
+                objectType,  // Используем конкретный тип вместо ObjectItem
+                Qt::Checked,
+                category
+    };
 
         category->children.append(object);
     }
@@ -537,14 +596,78 @@ QString TableObjectsModel::getSequenceDefinitionPostgres(const QString &sequence
 QString TableObjectsModel::getTableDefinitionOracle() const
 {
     QSqlQuery query(m_pConnection->db());
-    query.prepare(
-        "SELECT to_char(DBMS_METADATA.GET_DDL('TABLE', :table_name)) FROM dual");
 
+    // Получаем список столбцов таблицы с информацией о значениях по умолчанию
+    QString columnQueryStr =
+            "SELECT column_name, data_type, data_length, data_precision, data_scale, nullable, "
+            "       data_default "
+            "FROM all_tab_columns "
+            "WHERE table_name = :table_name AND owner = :owner "
+            "ORDER BY column_id";
+
+    query.prepare(columnQueryStr);
     query.bindValue(":table_name", tableName.toUpper());
-    if (!ExecuteQuery(&query) && query.next())
-        return query.value(0).toString().trimmed();
+    query.bindValue(":owner", m_pConnection->user().toUpper());
 
-    return QString("Не удалось получить определение таблицы %1").arg(tableName);
+    int queryResult = ExecuteQuery(&query);
+    if (queryResult != 0) {
+        return QString("Ошибка %1 при получении определения таблицы %2")
+                .arg(queryResult)
+                .arg(tableName);
+    }
+
+    QStringList columns;
+    while (query.next()) {
+        QString columnName = query.value("column_name").toString();
+        QString dataType = query.value("data_type").toString();
+        QString nullable = (query.value("nullable").toString() == "Y") ? "NULL" : "NOT NULL";
+        QString defaultValue = query.value("data_default").toString().trimmed();
+
+        // Обработка числовых типов (NUMBER с precision/scale)
+        if (dataType == "NUMBER") {
+            int precision = query.value("data_precision").toInt();
+            int scale = query.value("data_scale").toInt();
+            if (precision > 0) {
+                if (scale > 0) {
+                    dataType += QString("(%1,%2)").arg(precision).arg(scale);
+                } else {
+                    dataType += QString("(%1)").arg(precision);
+                }
+            }
+        }
+        // Обработка строковых/бинарных типов (VARCHAR2, CHAR, RAW и т. д.)
+        else if (dataType.contains("CHAR") || dataType == "RAW") {
+            int length = query.value("data_length").toInt();
+            dataType += QString("(%1)").arg(length);
+        }
+
+        // Формируем определение столбца
+        QString columnDef = QString("    %1 %2 %3").arg(columnName, dataType, nullable);
+
+        // Добавляем значение по умолчанию, если оно есть
+        if (!defaultValue.isEmpty()) {
+            // Удаляем лишние пробелы и преобразуем значения типа SYSDATE
+            defaultValue = defaultValue.replace(QRegularExpression("\\s+"), " ");
+            if (defaultValue.contains("SYSDATE", Qt::CaseInsensitive)) {
+                defaultValue = "SYSDATE";
+            }
+            columnDef += " DEFAULT " + defaultValue;
+        }
+
+        columns << columnDef;
+    }
+
+    // Если нет столбцов - возвращаем ошибку
+    if (columns.isEmpty()) {
+        return QString("Таблица %1 не найдена или не содержит столбцов").arg(tableName);
+    }
+
+    // Собираем итоговый DDL (без constraints)
+    QString ddl = QString("CREATE TABLE %1 (\n").arg(tableName.toUpper());
+    ddl += columns.join(",\n");
+    ddl += "\n)";
+
+    return ddl;
 }
 
 QString TableObjectsModel::getIndexesOracle() const
@@ -681,41 +804,145 @@ QString TableObjectsModel::getSequenceDefinitionOracle(const QString &sequenceNa
     return QString("Не удалось получить определение последовательности %1").arg(sequenceName);
 }
 
-QString TableObjectsModel::simplifyIndexDDL(const QString &originalDDL)
+QString TableObjectsModel::simplifyIndexDDL(const QString &originalDDL) const
 {
     if (originalDDL.isEmpty())
         return originalDDL;
 
-    QString simplified = originalDDL;
+    QString result = originalDDL;
 
-    // Удаление имени схемы перед именем индекса и таблицы
-    QRegularExpression schemaPattern(R"(\b\w+\.)");
-    simplified.remove(schemaPattern);
+    // 1. Удаляем имя схемы перед индексом (сохраняем имя индекса)
+    result.replace(QRegularExpression(
+                       "(CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+)\"[^\"]+\"\\.(\"[^\"]+\")",
+                       QRegularExpression::CaseInsensitiveOption), "\\1\\2");
 
-    // Удаление всего после закрывающей скобки перечисления полей
-    int fieldsEndPos = simplified.indexOf(')');
-    if (fieldsEndPos != -1) {
-        // Ищем точку с запятой после закрывающей скобки
-        int semicolonPos = simplified.indexOf(';', fieldsEndPos);
-        if (semicolonPos != -1) {
-            simplified = simplified.left(fieldsEndPos + 1) + ";";
-        } else {
-            simplified = simplified.left(fieldsEndPos + 1);
+    // 2. Удаляем имя схемы перед таблицей (сохраняем имя таблицы)
+    result.replace(QRegularExpression(
+                       "(ON\\s+)\"[^\"]+\"\\.(\"[^\"]+\")",
+                       QRegularExpression::CaseInsensitiveOption), "\\1\\2");
+
+    // 3. Удаляем параметры Oracle блоками
+    QList<QRegularExpression> oracleParams = {
+        QRegularExpression("PCTFREE\\s+\\d+", QRegularExpression::CaseInsensitiveOption),
+        QRegularExpression("INITRANS\\s+\\d+", QRegularExpression::CaseInsensitiveOption),
+        QRegularExpression("MAXTRANS\\s+\\d+", QRegularExpression::CaseInsensitiveOption),
+        QRegularExpression("COMPUTE\\s+STATISTICS", QRegularExpression::CaseInsensitiveOption),
+        QRegularExpression("STORAGE\\([^)]+\\)", QRegularExpression::CaseInsensitiveOption),
+        QRegularExpression("TABLESPACE\\s+\"[^\"]+\"", QRegularExpression::CaseInsensitiveOption),
+        QRegularExpression("TABLESPACE\\s+\\w+", QRegularExpression::CaseInsensitiveOption)
+    };
+
+    foreach (const QRegularExpression &regex, oracleParams)
+        result.remove(regex);
+
+    // 4. Удаляем всё после последней закрывающей скобки
+    int lastParen = result.lastIndexOf(')');
+    if (lastParen != -1)
+        result = result.left(lastParen + 1);
+
+    // 5. Удаляем точку с запятой в конце
+    result = result.trimmed();
+    if (result.endsWith(';'))
+        result.chop(1);
+
+    return result.trimmed();
+}
+
+QString TableObjectsModel::simplifySequenceDDL(const QString &originalDDL) const
+{
+    if (originalDDL.isEmpty())
+        return originalDDL;
+
+    QString result = originalDDL;
+
+    // Удаление имени схемы перед последовательностью
+    QRegularExpression sequenceSchemaRegex(
+                "(CREATE\\s+SEQUENCE\\s+)(?:[\"]?[^\\s\"]+[\"]?\\s*\\.\\s*)([\"]?)([^\\s\"]+)([\"]?)",
+                QRegularExpression::CaseInsensitiveOption);
+    result.replace(sequenceSchemaRegex, "\\1\\2\\3\\4");
+
+    // Для Oracle удаляем специфичные параметры
+    if (dbType == DbType::Oracle)
+    {
+        result.remove(QRegularExpression(
+                          "\\s+(TABLESPACE|STORAGE|CACHE|NOCACHE|ORDER|NOORDER|CYCLE|NOCYCLE)\\s+.+",
+                          QRegularExpression::CaseInsensitiveOption));
+    }
+
+    return result.trimmed();
+}
+
+QString TableObjectsModel::simplifyConstraintDDL(const QString &originalDDL) const
+{
+    if (originalDDL.isEmpty())
+        return originalDDL;
+
+    QString result = originalDDL;
+
+    // 1. Удаление имени схемы перед таблицей
+    QRegularExpression tableSchemaRegex(
+        "(ALTER\\s+TABLE\\s+)(?:[\"]?[^\\s\"]+[\"]?\\s*\\.\\s*)([\"]?)([^\\s\"]+)([\"]?\\s+)"
+        "(ADD\\s+(?:CONSTRAINT\\s+)?)([\"]?)([^\\s\"]+)([\"]?)",
+        QRegularExpression::CaseInsensitiveOption);
+    result.replace(tableSchemaRegex, "\\1\\2\\3\\4\\5\\6\\7\\8");
+
+    // 2. Удаление REFERENCES с именем схемы
+    QRegularExpression refSchemaRegex(
+        "(REFERENCES\\s+)(?:[\"]?[^\\s\"]+[\"]?\\s*\\.\\s*)([\"]?)([^\\s\"]+)([\"]?)",
+        QRegularExpression::CaseInsensitiveOption);
+    result.replace(refSchemaRegex, "\\1\\2\\3\\4");
+
+    // 3. Удаление специфичных параметров
+    if (dbType == DbType::Oracle)
+    {
+        result.remove(QRegularExpression(
+            "\\s+(USING\\s+INDEX\\s+(TABLESPACE|STORAGE)\\s+.+)",
+            QRegularExpression::CaseInsensitiveOption));
+    }
+
+    return result.trimmed();
+}
+
+QString TableObjectsModel::simplifyTriggerDDL(const QString &originalDDL) const
+{
+    if (originalDDL.isEmpty())
+            return originalDDL;
+
+        QString result = originalDDL;
+
+        // 1. Удаление EDITIONABLE (если есть)
+        result.remove("EDITIONABLE ");
+
+        // 2. Удаление имени схемы перед триггером в CREATE OR REPLACE TRIGGER
+        result.replace(QRegularExpression(
+            "(CREATE\\s+OR\\s+REPLACE\\s+TRIGGER\\s+)(?:[\"]?[^\\s\"]+[\"]?\\s*\\.\\s*)([\"]?)([^\\s\"]+)([\"]?)",
+            QRegularExpression::CaseInsensitiveOption), "CREATE OR REPLACE TRIGGER \\2\\3\\4");
+
+        // 3. Удаление имени схемы перед триггером в ALTER TRIGGER, сохраняя ENABLE/DISABLE
+        result.replace(QRegularExpression(
+            "(ALTER\\s+TRIGGER\\s+)(?:[\"]?[^\\s\"]+[\"]?\\s*\\.\\s*)([\"]?)([^\\s\"]+)([\"]?)(\\s+(ENABLE|DISABLE))?",
+            QRegularExpression::CaseInsensitiveOption), "ALTER TRIGGER \\2\\3\\4\\5");
+
+        // 4. Удаление имени схемы перед таблицей в ON clause
+        result.replace(QRegularExpression(
+            "(ON\\s+)(?:[\"]?[^\\s\"]+[\"]?\\s*\\.\\s*)([\"]?)([^\\s\"]+)([\"]?)",
+            QRegularExpression::CaseInsensitiveOption), "ON \\2\\3\\4");
+
+        // 5. Очистка лишних переносов строк перед ALTER TRIGGER
+        int alterPos = result.indexOf("ALTER TRIGGER");
+        if (alterPos != -1)
+        {
+            // Находим позицию конца определения триггера (перед ALTER)
+            int triggerEnd = alterPos - 1;
+            while (triggerEnd >= 0 && (result[triggerEnd] == '\n' || result[triggerEnd] == '\r' || result[triggerEnd] == ' '))
+                triggerEnd--;
+
+            // Удаляем все переносы строк между концом триггера и ALTER TRIGGER
+            result.remove(triggerEnd + 1, alterPos - triggerEnd - 1);
+
+            // Вставляем один перенос строки и / перед ALTER TRIGGER
+            result.insert(triggerEnd + 1, "\n/\n");
         }
-    }
 
-    // Дополнительная очистка для PostgreSQL (условия WHERE и т.д.)
-    if (dbType == DbType::PostgreSQL) {
-        QRegularExpression pgOptions(R"(\s+(WITH|USING|TABLESPACE|WHERE|INCLUDE)\s+.+)",
-                                     QRegularExpression::CaseInsensitiveOption);
-        simplified.remove(pgOptions);
-    }
-    // Дополнительная очистка для Oracle (параметры хранения и т.д.)
-    else if (dbType == DbType::Oracle) {
-        QRegularExpression oraOptions(R"(\s+(TABLESPACE|STORAGE|COMPRESS|PARALLEL|LOGGING)\s+.+)",
-                                      QRegularExpression::CaseInsensitiveOption);
-        simplified.remove(oraOptions);
-    }
-
-    return simplified.trimmed();
+        return result.trimmed();
 }

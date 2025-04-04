@@ -27,6 +27,20 @@ struct TreeNode
     {
         qDeleteAll(children);
     }
+
+    QString objectTypeString() const
+    {
+        switch(type)
+        {
+        case RootItem: return "Table";
+        case CategoryItem: return "Category";
+        case IndexItem: return "Index";
+        case TriggerItem: return "Trigger";
+        case ConstraintItem: return "Constraint";
+        case SequenceItem: return "Sequence";
+        default: return "Unknown";
+        }
+    }
 };
 
 class ConnectionInfo;
@@ -52,8 +66,10 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    QString getSqlForIndex(const QModelIndex &index) const;
+    QString getSqlForIndex(const QModelIndex &index, bool simplified = false) const;
     void refreshModel();
+
+    QString getObjectType(const QModelIndex &index) const;
 
 private:
     void setupModelData();
@@ -82,7 +98,10 @@ private:
     QString getConstraintDefinitionOracle(const QString &constraintName) const;
     QString getSequenceDefinitionOracle(const QString &sequenceName) const;
 
-    QString simplifyIndexDDL(const QString &originalDDL);
+    QString simplifyIndexDDL(const QString &originalDDL) const;
+    QString simplifySequenceDDL(const QString &originalDDL) const;
+    QString simplifyConstraintDDL(const QString &originalDDL) const;
+    QString simplifyTriggerDDL(const QString &originalDDL) const;
 
     ConnectionInfo *m_pConnection;
     DbType dbType;

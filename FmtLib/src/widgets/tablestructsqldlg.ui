@@ -11,9 +11,47 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Объекты таблицы</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../../res/fmt.qrc">
+    <normaloff>:/sql</normaloff>:/sql</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QCheckBox" name="checkSimplified">
+       <property name="text">
+        <string>Упрощенный вариант скрптов</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkWordWrap">
+       <property name="text">
+        <string>Word Wrap</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
      <item>
@@ -43,7 +81,9 @@
    <header>codeeditor/codeeditor.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../res/fmt.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
