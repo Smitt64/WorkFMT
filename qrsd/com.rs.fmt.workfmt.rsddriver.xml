@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Rsd Driver">
+    <version ver="3.02.039.2.21">
+        <fix>исправлена ошибка получения результата запроса, если один объект QSqlQuery выполняется несколько раз с разными вызовами prepare;</fix>
+    </version>
     <version ver="3.02.039.2.20">
         <fix>Если результат запроса вернулся RSDRES_NODATA, то теперь считается, что запрос выполнен успешно;</fix>
     </version>

@@ -442,6 +442,7 @@ bool RsdSqlResult::prepare(const QString &query)
             m_QueryString = m_QueryString.replace(QRegExp("\\:\\w+"), "?");*/
 
         QString str = QLatin1String(m_Driver->toOem866(query));
+        m_Cmd.reset(new RsdCommandEx(m_Driver->connection(), m_Driver));
         m_Cmd->setCmdText(str.toLatin1());
 
         //m_Cmd->setNullConversion(true);
