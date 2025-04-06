@@ -93,6 +93,7 @@ private slots:
     void OnMassOpAction();
     void OnConfluence();
     void CreateFromXml();
+    void CompareTables();
     void UpdateCheckFinished(bool hasUpdates, const CheckDataList &updatedata);
     void UpdateCheckStarted();
     void OptionsAction();

@@ -380,19 +380,28 @@ void TableObjectsModel::addObjectsToCategory(TreeNode *category, const QStringLi
 }
 
 QString TableObjectsModel::getTableDefinitionPostgres() const
-{/*@ DisConv */
-    /*QSqlQuery query(m_pConnection->db());
-    query.prepare("SELECT pg_get_tabledef(?)");
+{
+    QSqlQuery query(m_pConnection->db());
+
+    // 1. Проверяем, является ли таблица временной
+    bool isTemporary = false;
+    query.prepare(
+                "SELECT relkind = 't' OR relpersistence = 't' "
+                "FROM pg_class c "
+                "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                "WHERE c.relname = ? AND n.nspname = current_schema()");
     query.addBindValue(tableName);
 
     if (!ExecuteQuery(&query) && query.next())
-        return query.value(0).toString();
+        isTemporary = query.value(0).toBool();
 
-    return QString("Не удалось получить определение таблицы %1").arg(tableName);*/
-    QSqlQuery query(m_pConnection->db());
+    // 2. Получаем определение таблицы
     query.prepare(R"(
-            /*@ DisConv */SELECT
-                'CREATE TABLE ' || quote_ident(table_name) || ' (\n' ||
+            SELECT
+                CASE
+                    WHEN $1 THEN 'CREATE TEMPORARY TABLE '
+                    ELSE 'CREATE TABLE '
+                END || quote_ident(table_name) || ' (\n' ||
                 string_agg(
                     '    ' || quote_ident(column_name) || ' ' ||
                     data_type ||
@@ -414,6 +423,7 @@ QString TableObjectsModel::getTableDefinitionPostgres() const
                     c.column_default,
                     CASE
                         WHEN tc.constraint_type = 'PRIMARY KEY' THEN ' PRIMARY KEY'
+                        WHEN tc.constraint_type = 'UNIQUE' THEN ' UNIQUE'
                         ELSE ''
                     END as extra_info
                 FROM
@@ -434,12 +444,63 @@ QString TableObjectsModel::getTableDefinitionPostgres() const
                 table_name
         )");
 
+    query.addBindValue(isTemporary);
+    query.addBindValue(tableName);
+
+    QString tableDef;
+    if (!ExecuteQuery(&query) && query.next())
+        tableDef = query.value(0).toString().replace("\\n", "\n");
+    else
+        tableDef = QString("Не удалось получить определение таблицы %1").arg(tableName);
+
+    // 3. Получаем комментарии
+    QStringList comments;
+
+    // Комментарий к таблице
+    query.prepare(
+                "SELECT obj_description(c.oid) "
+                "FROM pg_class c "
+                "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                "WHERE c.relname = ? AND n.nspname = current_schema()");
     query.addBindValue(tableName);
 
     if (!ExecuteQuery(&query) && query.next())
-        return query.value(0).toString().replace("\\n", "\n");
+    {
+        QString comment = query.value(0).toString();
+        if (!comment.isEmpty())
+        {
+            comments << QString("COMMENT ON TABLE %1 IS '%2';")
+                        .arg(tableName)
+                        .arg(comment.replace("'", "''"));
+        }
+    }
 
-    return QString("Не удалось получить определение таблицы %1").arg(tableName);
+    // Комментарии к столбцам
+    query.prepare(
+                "SELECT a.attname, d.description "
+                "FROM pg_description d "
+                "JOIN pg_class c ON c.oid = d.objoid "
+                "JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = d.objsubid "
+                "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                "WHERE c.relname = ? AND n.nspname = current_schema() AND d.description IS NOT NULL");
+    query.addBindValue(tableName);
+
+    if (!ExecuteQuery(&query))
+    {
+        while (query.next())
+        {
+            comments << QString("COMMENT ON COLUMN %1.%2 IS '%3';")
+                        .arg(tableName)
+                        .arg(query.value(0).toString())
+                        .arg(query.value(1).toString().replace("'", "''"));
+        }
+    }
+
+    // Собираем итоговый SQL
+    if (!comments.isEmpty())
+        tableDef += "\n\n" + comments.join("\n");
+
+    return tableDef;
 }
 
 QString TableObjectsModel::getIndexesPostgres() const
@@ -596,57 +657,70 @@ QString TableObjectsModel::getSequenceDefinitionPostgres(const QString &sequence
 QString TableObjectsModel::getTableDefinitionOracle() const
 {
     QSqlQuery query(m_pConnection->db());
+    QStringList result;
 
-    // Получаем список столбцов таблицы с информацией о значениях по умолчанию
-    QString columnQueryStr =
-            "SELECT column_name, data_type, data_length, data_precision, data_scale, nullable, "
-            "       data_default "
-            "FROM all_tab_columns "
-            "WHERE table_name = :table_name AND owner = :owner "
-            "ORDER BY column_id";
-
-    query.prepare(columnQueryStr);
+    // 1. Проверяем, является ли таблица временной (GLOBAL TEMPORARY)
+    bool isTemporary = false;
+    QString onCommitClause;
+    query.prepare(
+                "SELECT temporary, duration FROM all_tables "
+                "WHERE table_name = :table_name AND owner = :owner");
     query.bindValue(":table_name", tableName.toUpper());
     query.bindValue(":owner", m_pConnection->user().toUpper());
 
-    int queryResult = ExecuteQuery(&query);
-    if (queryResult != 0) {
-        return QString("Ошибка %1 при получении определения таблицы %2")
-                .arg(queryResult)
-                .arg(tableName);
+    if (!ExecuteQuery(&query) && query.next())
+    {
+        isTemporary = (query.value(0).toString() == "Y");
+        QString duration = query.value(1).toString();
+        if (duration == "SYS$SESSION") {
+            onCommitClause = " ON COMMIT PRESERVE ROWS";
+        } else if (duration == "SYS$TRANSACTION") {
+            onCommitClause = " ON COMMIT DELETE ROWS";
+        }
+    }
+
+    // 2. Получаем столбцы таблицы (исправленный запрос без temporary)
+    query.prepare(
+                "SELECT column_name, data_type, data_length, data_precision, data_scale, "
+                "       nullable, data_default "
+                "FROM all_tab_columns "
+                "WHERE table_name = :table_name AND owner = :owner "
+                "ORDER BY column_id");
+    query.bindValue(":table_name", tableName.toUpper());
+    query.bindValue(":owner", m_pConnection->user().toUpper());
+
+    if (ExecuteQuery(&query)) {
+        return QString("Ошибка при получении столбцов таблицы %1").arg(tableName);
     }
 
     QStringList columns;
-    while (query.next()) {
+    while (query.next())
+    {
         QString columnName = query.value("column_name").toString();
         QString dataType = query.value("data_type").toString();
         QString nullable = (query.value("nullable").toString() == "Y") ? "NULL" : "NOT NULL";
         QString defaultValue = query.value("data_default").toString().trimmed();
 
-        // Обработка числовых типов (NUMBER с precision/scale)
-        if (dataType == "NUMBER") {
+        // Обработка типов данных
+        if (dataType == "NUMBER")
+        {
             int precision = query.value("data_precision").toInt();
             int scale = query.value("data_scale").toInt();
             if (precision > 0) {
-                if (scale > 0) {
-                    dataType += QString("(%1,%2)").arg(precision).arg(scale);
-                } else {
-                    dataType += QString("(%1)").arg(precision);
-                }
+                dataType += QString("(%1%2)")
+                        .arg(precision)
+                        .arg(scale > 0 ? QString(",%1").arg(scale) : "");
             }
         }
-        // Обработка строковых/бинарных типов (VARCHAR2, CHAR, RAW и т. д.)
         else if (dataType.contains("CHAR") || dataType == "RAW") {
-            int length = query.value("data_length").toInt();
-            dataType += QString("(%1)").arg(length);
+            dataType += QString("(%1)").arg(query.value("data_length").toInt());
         }
 
         // Формируем определение столбца
         QString columnDef = QString("    %1 %2 %3").arg(columnName, dataType, nullable);
 
-        // Добавляем значение по умолчанию, если оно есть
-        if (!defaultValue.isEmpty()) {
-            // Удаляем лишние пробелы и преобразуем значения типа SYSDATE
+        if (!defaultValue.isEmpty())
+        {
             defaultValue = defaultValue.replace(QRegularExpression("\\s+"), " ");
             if (defaultValue.contains("SYSDATE", Qt::CaseInsensitive)) {
                 defaultValue = "SYSDATE";
@@ -657,17 +731,58 @@ QString TableObjectsModel::getTableDefinitionOracle() const
         columns << columnDef;
     }
 
-    // Если нет столбцов - возвращаем ошибку
-    if (columns.isEmpty()) {
-        return QString("Таблица %1 не найдена или не содержит столбцов").arg(tableName);
+    // 3. Формируем CREATE TABLE с учетом временности
+    QString createTable;
+    if (isTemporary)
+    {
+        createTable = QString("CREATE GLOBAL TEMPORARY TABLE %1 (\n%2\n)%3;")
+                .arg(tableName.toUpper())
+                .arg(columns.join(",\n"))
+                .arg(onCommitClause);
+    } else
+    {
+        createTable = QString("CREATE TABLE %1 (\n%2\n)")
+                .arg(tableName.toUpper())
+                .arg(columns.join(",\n"));
+    }
+    result << createTable;
+
+    // 4. Получаем комментарии (остальной код без изменений)
+    query.prepare(
+                "SELECT comments FROM all_tab_comments "
+                "WHERE table_name = :table_name AND owner = :owner");
+    query.bindValue(":table_name", tableName.toUpper());
+    query.bindValue(":owner", m_pConnection->user().toUpper());
+
+    if (!ExecuteQuery(&query) && query.next())
+    {
+        QString tableComment = query.value(0).toString().trimmed();
+        if (!tableComment.isEmpty())
+        {
+            result << QString("COMMENT ON TABLE %1 IS '%2';")
+                      .arg(tableName.toUpper())
+                      .arg(tableComment.replace("'", "''"));
+        }
     }
 
-    // Собираем итоговый DDL (без constraints)
-    QString ddl = QString("CREATE TABLE %1 (\n").arg(tableName.toUpper());
-    ddl += columns.join(",\n");
-    ddl += "\n)";
+    query.prepare(
+                "SELECT column_name, comments FROM all_col_comments "
+                "WHERE table_name = :table_name AND owner = :owner AND comments IS NOT NULL");
+    query.bindValue(":table_name", tableName.toUpper());
+    query.bindValue(":owner", m_pConnection->user().toUpper());
 
-    return ddl;
+    if (!ExecuteQuery(&query))
+    {
+        while (query.next())
+        {
+            result << QString("COMMENT ON COLUMN %1.%2 IS '%3';")
+                      .arg(tableName.toUpper())
+                      .arg(query.value(0).toString())
+                      .arg(query.value(1).toString().replace("'", "''"));
+        }
+    }
+
+    return result.join("\n\n");
 }
 
 QString TableObjectsModel::getIndexesOracle() const
@@ -945,4 +1060,45 @@ QString TableObjectsModel::simplifyTriggerDDL(const QString &originalDDL) const
         }
 
         return result.trimmed();
+}
+
+TableObjectsInfoList TableObjectsModel::getCheckedObjectsWithSql(bool simplifiedSql) const
+{
+    TableObjectsInfoList result;
+
+    // Добавляем RootItem (всегда первый элемент)
+    QModelIndex rootIndex = index(0, 0);
+    if (!rootIndex.isValid())
+        return result;
+
+    TreeNode *rootNode = static_cast<TreeNode*>(rootIndex.internalPointer());
+    QString rootSql = rootNode->sql;
+            //simplifiedSql ? simplifyTableDDL(rootNode->sql) : rootNode->sql;
+    result.append({rootNode->name, RootItem, rootSql});
+
+    // Рекурсивный обход дерева
+    std::function<void(const QModelIndex&)> traverseTree;
+    traverseTree = [&](const QModelIndex &parentIndex)
+    {
+        int childCount = rowCount(parentIndex);
+        for (int i = 0; i < childCount; ++i)
+        {
+            QModelIndex childIndex = index(i, 0, parentIndex);
+            TreeNode *item = static_cast<TreeNode*>(childIndex.internalPointer());
+
+            // Берём только Index/Trigger/Sequence с галочкой
+            bool isChecked = (item->checkState == Qt::Checked);
+            bool isRelevantType = (item->type == IndexItem || item->type == TriggerItem || item->type == SequenceItem);
+
+            if (isRelevantType && isChecked) {
+                QString sql = getSqlForIndex(childIndex, simplifiedSql);
+                result.append({item->name, item->type, sql});
+            }
+
+            traverseTree(childIndex); // Рекурсивно обходим детей
+        }
+    };
+
+    traverseTree(rootIndex);
+    return result;
 }

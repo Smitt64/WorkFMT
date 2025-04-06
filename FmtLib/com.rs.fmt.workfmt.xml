@@ -1,5 +1,10 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.7.5">
+        <add>Добавлена возможность сравнения структур таблиц;</add>
+        <add>Добавлены нове скрипты для генерации;</add>
+        <fix>Исправлено падение при добавлении сегмента к индексу;</fix>
+    </version>
     <version ver="1.0.7.4">
         <add>Доработка использования DiffToScript;</add>
     </version>

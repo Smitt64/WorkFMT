@@ -222,8 +222,6 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
         int fieldEndPos = match.capturedEnd();
         info.comment = extractComments(cppcstruct, fieldEndPos);
 
-        qDebug() << info.name << info.size;
-
         vec.append(info);
     }
 }

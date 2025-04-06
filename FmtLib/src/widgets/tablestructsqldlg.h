@@ -17,11 +17,15 @@ public:
     explicit TableStructSqlDlg(ConnectionInfo *connection, const QString &tableName, QWidget *parent = nullptr);
     ~TableStructSqlDlg();
 
+    QString getObjectsSql();
+
 private slots:
     void saveSettings();
     void onTreeItemClicked(const QModelIndex &index);
 
 private:
+    QString wrapCreateTableExecuteImmediate(const QString &sqlScript);
+    QString wrapIndexDdlInExecuteImmediate(const QString &indexDdl);
 
     Ui::TableStructSqlDlg *ui;
     ConnectionInfo *m_pConnection;

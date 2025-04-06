@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
+   <enum>Qt::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
@@ -29,7 +29,7 @@
      <x>0</x>
      <y>0</y>
      <width>1164</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -85,11 +85,14 @@
     <addaction name="actionInit"/>
     <addaction name="actionSql"/>
     <addaction name="separator"/>
+    <addaction name="actionDiffTables"/>
+    <addaction name="separator"/>
     <addaction name="actionEditContent"/>
     <addaction name="actionUnloadDbf"/>
     <addaction name="actionLoadDbf"/>
     <addaction name="separator"/>
     <addaction name="menuUpdateScripts"/>
+    <addaction name="separator"/>
     <addaction name="action_Diff_to_Script"/>
     <addaction name="separator"/>
     <addaction name="actionMassOp"/>
@@ -161,7 +164,7 @@
     <string>Окно</string>
    </property>
    <property name="allowedAreas">
-    <set>Qt::ToolBarArea::NoToolBarArea</set>
+    <set>Qt::NoToolBarArea</set>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -504,6 +507,15 @@
    </property>
    <property name="text">
     <string>Запустить GuiConverter</string>
+   </property>
+  </action>
+  <action name="actionDiffTables">
+   <property name="icon">
+    <iconset resource="../res/fmt.qrc">
+     <normaloff>:/img/SychronizeListHS.png</normaloff>:/img/SychronizeListHS.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сравнить структуры</string>
    </property>
   </action>
  </widget>

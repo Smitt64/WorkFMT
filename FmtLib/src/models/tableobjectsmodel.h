@@ -2,6 +2,7 @@
 #define TABLEOBJECTSMODEL_H
 
 #include <QAbstractItemModel>
+#include <QVector>
 
 enum TreeItemType
 {
@@ -13,6 +14,14 @@ enum TreeItemType
     ConstraintItem,
     SequenceItem
 };
+
+typedef struct
+{
+    QString name;       // Имя объекта
+    int itemType;       // Тип элемента (IndexItem, SequenceItem, TriggerItem, RootItem)
+    QString sql;        // SQL-определение объекта (опционально, если нужно)
+} TableObjectInfo;
+using TableObjectsInfoList = QVector<TableObjectInfo>;
 
 struct TreeNode
 {
@@ -70,6 +79,8 @@ public:
     void refreshModel();
 
     QString getObjectType(const QModelIndex &index) const;
+
+    TableObjectsInfoList getCheckedObjectsWithSql(bool simplifiedSql = false) const;
 
 private:
     void setupModelData();

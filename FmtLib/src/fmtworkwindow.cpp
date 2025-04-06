@@ -198,8 +198,10 @@ void FmtWorkWindow::SetupActionsMenu()
     m_GenModifyScript = pCodeGenMenu->addAction(tr("Изменение полей"));
     m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
     pCodeGenMenu->addSeparator();
+
     m_TableObjects = pCodeGenMenu->addAction(tr("Объекты таблицы"));
     pCodeGenMenu->addSeparator();
+
     m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
     ui->pushActions->setMenu(pActionsMenu);//pUserActionsMenu
 
@@ -211,7 +213,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_GenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
     connect(m_GenInsertTemplate, SIGNAL(triggered(bool)), SLOT(GenInsertTemplateSql()));
     connect(m_GenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
-    connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
+
     connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
     connect(m_MassRemoveFields, SIGNAL(triggered(bool)), SLOT(RemoveTableFields()));
     connect(m_AddFieldsToEnd, SIGNAL(triggered(bool)), SLOT(AddFieldsToEnd()));
@@ -225,6 +227,8 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_pCompareFmt, SIGNAL(triggered(bool)), SLOT(CompareStruct()));
     connect(ui->compareBtn, SIGNAL(clicked()), SLOT(CompareStruct()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
+
+    connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
 }
 
 void FmtWorkWindow::setupFind()
@@ -308,7 +312,10 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     color = info->color();
 
     if (info->type() != ConnectionInfo::CON_ORA)
+    {
         m_EditContent->setEnabled(false);
+        m_TableObjects->setEnabled(false);
+    }
 
 /*#ifndef QT_DEBUG
     if (info->type() != ConnectionInfo::CON_ORA)
@@ -1129,7 +1136,8 @@ void FmtWorkWindow::onUserActionTriggered()
 void FmtWorkWindow::TableObjects()
 {
     TableStructSqlDlg dlg(pTable->connection(), pTable->name(), this);
-    dlg.exec();
+    if (dlg.exec() == QDialog::Accepted)
+        AddSqlCodeTab(tr("Объекты таблицы"), dlg.getObjectsSql());
 }
 
 void FmtWorkWindow::CompareStruct()

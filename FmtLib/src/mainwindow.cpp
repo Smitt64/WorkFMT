@@ -12,7 +12,7 @@
 #include "treecombobox.h"
 #include "subwindowsmodel.h"
 #include "fmtimpexpwrp.h"
-#include "ErrorsModel.h"
+#include "errorsmodel.h"
 #include "aboutdlg.h"
 #include "tablesdockwidget.h"
 #include "exporttoxmlwizard.h"
@@ -198,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Diff_to_Script, SIGNAL(triggered(bool)), SLOT(GenDiffToScriptScript()));
     connect(ui->actionOptions, SIGNAL(triggered(bool)), SLOT(OptionsAction()));
     connect(ui->action_GuiConverter,SIGNAL(triggered(bool)), SLOT(StartGuiConverter()));
+    connect(ui->actionDiffTables,SIGNAL(triggered(bool)), SLOT(CompareTables()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
@@ -918,7 +919,10 @@ void MainWindow::tablesContextMenu(QContextMenuEvent *event, QListView *view)
     menu.addSeparator();
     menu.setDefaultAction(actionEdit);
     menu.addAction(ui->actionSql);
+    menu.addSeparator();
     menu.addAction(ui->action_Diff_to_Script);
+    menu.addSeparator();
+    menu.addAction(ui->actionDiffTables);
     menu.addSeparator();
     menu.addMenu(ui->menuUpdateScripts);
 
@@ -1398,6 +1402,28 @@ void MainWindow::GenAddFiledsScript()
             FmtWorkWindow *window = Q_NULLPTR;
             CreateDocument(table, &window)->show();
             window->GenAddFiledsScript();
+        }
+    }
+}
+
+void MainWindow::CompareTables()
+{
+    ConnectionInfo *current = currentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            FmtWorkWindow *window = Q_NULLPTR;
+            CreateDocument(table, &window)->show();
+            window->CompareStruct();
         }
     }
 }
