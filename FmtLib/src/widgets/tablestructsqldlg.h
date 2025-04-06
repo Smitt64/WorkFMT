@@ -26,6 +26,8 @@ private slots:
 private:
     QString wrapCreateTableExecuteImmediate(const QString &sqlScript);
     QString wrapIndexDdlInExecuteImmediate(const QString &indexDdl);
+    QString wrapSequenceDdlInExecuteImmediate(const QString &sequenceDdl);
+    QString wrapTriggerDdlInExecuteImmediate(const QString &triggerDdl);
 
     Ui::TableStructSqlDlg *ui;
     ConnectionInfo *m_pConnection;

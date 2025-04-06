@@ -103,6 +103,10 @@ QString TableStructSqlDlg::getObjectsSql()
             stream << wrapCreateTableExecuteImmediate(item.sql) << Qt::endl << Qt::endl;
         else if (item.itemType == IndexItem)
             stream << wrapIndexDdlInExecuteImmediate(item.sql) << Qt::endl << Qt::endl;
+        else if (item.itemType == SequenceItem)
+            stream << wrapSequenceDdlInExecuteImmediate(item.sql) << Qt::endl << Qt::endl;
+        else if (item.itemType == TriggerItem)
+            stream << wrapTriggerDdlInExecuteImmediate(item.sql) << Qt::endl << Qt::endl;
         else
             stream << item.sql << Qt::endl << Qt::endl;
     }
@@ -153,11 +157,14 @@ QString TableStructSqlDlg::wrapCreateTableExecuteImmediate(const QString &sqlScr
 
             // Получаем список колонок
             QStringList columns;
-            for (int k = i + 1; k < lines.size(); ++k) {
+            for (int k = i + 1; k < lines.size(); ++k)
+            {
                 QString innerLine = lines[k].trimmed();
-                if (innerLine.startsWith(")")) {
+                if (innerLine.startsWith(")"))
+                {
                     // Проверяем ON COMMIT если не нашли ранее
-                    if (onCommitClause.isEmpty() && innerLine.contains("ON COMMIT")) {
+                    if (onCommitClause.isEmpty() && innerLine.contains("ON COMMIT"))
+                    {
                         if (innerLine.contains("PRESERVE ROWS", Qt::CaseInsensitive))
                             onCommitClause = " ON COMMIT PRESERVE ROWS";
                         else if (innerLine.contains("DELETE ROWS", Qt::CaseInsensitive))
@@ -175,7 +182,7 @@ QString TableStructSqlDlg::wrapCreateTableExecuteImmediate(const QString &sqlScr
                             .replace(";", "");
                     if (columnDef.endsWith(","))
                         columnDef.chop(1);
-                    columns << columnDef.trimmed();
+                    columns << escapeSqlString(columnDef.trimmed());
                 }
             }
 
@@ -210,7 +217,7 @@ QString TableStructSqlDlg::wrapCreateTableExecuteImmediate(const QString &sqlScr
                             .replace(";", "");
                     if (columnDef.endsWith(","))
                         columnDef.chop(1);
-                    columns << columnDef.trimmed();
+                    columns << escapeSqlString(columnDef.trimmed());
                 }
             }
 
@@ -295,4 +302,102 @@ QString TableStructSqlDlg::wrapIndexDdlInExecuteImmediate(const QString &indexDd
             .arg(tmp.replace("'", "''")); // Экранируем кавычки в оригинальном DDL
 
     return result;
+}
+
+QString TableStructSqlDlg::wrapSequenceDdlInExecuteImmediate(const QString &sequenceDdl)
+{
+    // Регулярное выражение для извлечения имени последовательности и параметров
+    QRegularExpression sequenceRegex(
+                R"(CREATE\s+SEQUENCE\s+("?[\w_]+\"?)\s*(.*))",
+                QRegularExpression::CaseInsensitiveOption
+                );
+
+    QRegularExpressionMatch match = sequenceRegex.match(sequenceDdl);
+
+    if (!match.hasMatch())
+        return sequenceDdl; // Если не удалось распарсить, возвращаем как есть
+
+    QString sequenceName = match.captured(1);
+    QString sequenceParams = match.captured(2).trimmed();
+
+    // Удаляем START WITH из параметров
+    sequenceParams.remove(QRegularExpression(
+                              R"(\s*START\s+WITH\s+\d+\s*)",
+                              QRegularExpression::CaseInsensitiveOption
+                              ));
+
+    // Формируем блоки EXECUTE IMMEDIATE
+    QString result =
+            QString("BEGIN\n"
+                    "  EXECUTE IMMEDIATE 'DROP SEQUENCE %1';\n"
+                    "EXCEPTION\n"
+                    "  WHEN OTHERS THEN NULL;\n"
+                    "END;\n"
+                    "/\n\n"
+                    "BEGIN\n"
+                    "  EXECUTE IMMEDIATE 'CREATE SEQUENCE %1 %2';\n"
+                    "EXCEPTION\n"
+                    "  WHEN OTHERS THEN NULL;\n"
+                    "END;\n"
+                    "/")
+            .arg(sequenceName)
+            .arg(sequenceParams.replace("'", "''").trimmed());
+
+    return result;
+}
+
+QString TableStructSqlDlg::wrapTriggerDdlInExecuteImmediate(const QString &triggerDdl)
+{
+    QString result;
+    QStringList parts = triggerDdl.split("/", Qt::SkipEmptyParts);
+
+    // Обрабатываем CREATE OR REPLACE TRIGGER
+    if (parts.size() > 0)
+    {
+        QString createTriggerPart = parts[0].trimmed();
+        if (!createTriggerPart.isEmpty())
+            result += createTriggerPart + "\n/\n";
+    }
+
+    // Обрабатываем ALTER TRIGGER (если есть)
+    if (parts.size() > 1)
+    {
+        QString alterTriggerPart = parts[1].trimmed();
+        if (alterTriggerPart.startsWith("ALTER TRIGGER", Qt::CaseInsensitive))
+        {
+            // Извлекаем имя триггера
+            QRegularExpression alterRegex(
+                        R"(ALTER\s+TRIGGER\s+("?[\w_]+\"?)\s+(ENABLE|DISABLE))",
+                        QRegularExpression::CaseInsensitiveOption
+                        );
+
+            QRegularExpressionMatch match = alterRegex.match(alterTriggerPart);
+            if (match.hasMatch())
+            {
+                QString triggerName = match.captured(1);
+                QString action = match.captured(2).toUpper();
+
+                // Оборачиваем ALTER TRIGGER в EXECUTE IMMEDIATE
+                result += QString("\nBEGIN\n"
+                                  "  EXECUTE IMMEDIATE 'ALTER TRIGGER %1 %2';\n"
+                                  "EXCEPTION\n"
+                                  "  WHEN OTHERS THEN NULL;\n"
+                                  "END;\n"
+                                  "/")
+                        .arg(triggerName)
+                        .arg(action);
+            } else
+            {
+                // Если не удалось распарсить, добавляем как есть
+                result += alterTriggerPart + "\n/";
+            }
+        }
+        else
+        {
+            // Если это не ALTER TRIGGER, добавляем как есть
+            result += alterTriggerPart + "\n/";
+        }
+    }
+
+    return result.trimmed();
 }
