@@ -70,7 +70,7 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
     undecorateTable.front() = undecorateTable.front().toUpper();
 
-    QString name = QString("InsertInto%1").arg(undecorateTable);
+    QString name = QString("InsertInto%1__").arg(undecorateTable);
     int autoIncIndex = getAutoincIndex(datTable);
 
     if (autoIncIndex != -1)
@@ -715,7 +715,7 @@ void SqlScriptMain::checkDatFldsCount(QStringList& sql, JoinTable* joinTable)
 
     CheckFlds(*joinTable->scriptTable);
 
-    for (Join* childJoin: joinTable->joinList)
+    for (Join* childJoin: qAsConst(joinTable->joinList))
         CheckFlds(*childJoin->child->scriptTable);
 }
 

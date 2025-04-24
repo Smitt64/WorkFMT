@@ -41,7 +41,7 @@ TableStructSqlDlg::TableStructSqlDlg(ConnectionInfo *connection, const QString &
         if (settings)
         {
             // Загружаем состояние чекбоксов
-            ui->checkSimplified->setChecked(settings->value("TableStructSqlDlg/simplified", false).toBool());
+            ui->checkSimplified->setChecked(settings->value("TableStructSqlDlg/simplified", true).toBool());
             ui->checkWordWrap->setChecked(settings->value("TableStructSqlDlg/wordWrap", true).toBool());
 
             // Применяем перенос строк
