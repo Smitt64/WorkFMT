@@ -36,6 +36,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     recordparser.cpp \
+    rslobj/taskoptionscontainer.cpp \
     scripttable.cpp \
     sqlscriptmain.cpp \
     streamcontrol.cpp \
@@ -78,6 +79,7 @@ HEADERS += \
     linesparsermain.h \
     mainwindow.h \
     recordparser.h \
+    rslobj/taskoptionscontainer.h \
     scripttable.h \
     sqlscriptmain.h \
     streamcontrol.h \
