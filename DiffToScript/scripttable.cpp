@@ -25,7 +25,7 @@ void ScriptTable::loadData(const ParsedLines& lines)
         {
             if (recParser.parseRecord(line.value))
             {
-                records.append({recParser.getValues(), line.lineType, line.lineUpdateType});
+                records.append(recParser.getValues(), line.lineType, line.lineUpdateType);
                 qCInfo(logScriptTable) << "Record added: " << recParser.getValues().join("m");
             }
             else

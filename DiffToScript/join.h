@@ -53,18 +53,23 @@ struct JoinTable
     Join* getParentJoin() const;
 };
 
-struct JoinTables
+class JoinTables : public QObject
 {
+    Q_OBJECT
+public:
     QList<JoinTable*> joinTableList;
     QList<Join*> joins;
     QList<TableLinks> tableLinksList;
     ~JoinTables();
     void add(ScriptTable* datTable, const TableLinks& tableLinks);
     void build();
-    JoinTable* tableByName(QString name);
-    bool hasJoin(QString parent, QString child);
-    JoinTable *getRoot();    
+
+    Q_INVOKABLE JoinTable* tableByName(QString name);
+    Q_INVOKABLE bool hasJoin(QString parent, QString child);
+    Q_INVOKABLE JoinTable *getRoot();
 };
+
+Q_DECLARE_OPAQUE_POINTER(JoinTables)
 
 struct JoinListIterator
 {

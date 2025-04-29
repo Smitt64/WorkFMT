@@ -27,6 +27,7 @@
 #include <QDomElement>
 #include "qloggingcategory.h"
 #include "diffmodeparser.h"
+#include <QSettings>
 
 QString serializeNormalPathsToJson(const QList<QStringList>& chunks)
 {
@@ -64,6 +65,14 @@ QString serializeNormalPathsToXml(const QList<QStringList>& chunks)
     }
 
     return doc.toString();
+}
+
+QSharedPointer<QSettings> diffGetSettings()
+{
+    QDir settingsDir = QDir(qApp->applicationDirPath());
+
+    QSharedPointer<QSettings> pSettings(new QSettings(settingsDir.absoluteFilePath("difftoscript.ini"), QSettings::IniFormat));
+    return pSettings;
 }
 
 // ------------------------------------------------------------------
@@ -447,7 +456,7 @@ void Task::runScriptTask()
 
         datTables.append(ScriptTable());
 
-        ScriptTable& datTable= datTables.back();
+        ScriptTable& datTable = datTables.back();
 
         FmtTable fmtTable(conn->getConnection());
         if (!fmtTable.load(linesParser.getLines({ltTable})[0].toLower()))

@@ -10,6 +10,9 @@
 #include <QDir>
 #include <QTranslator>
 #include <QMessageBox>
+#include <QSettings>
+#include "task.h"
+#include "diffoptionsdlg.h"
 
 DiffWizard::DiffWizard(QWidget *parent) :
     QWizard(parent)
@@ -26,13 +29,29 @@ DiffWizard::DiffWizard(QWidget *parent) :
     addPage(m_pConnactionPage);
     addPage(m_pScriptsPage);
 
-    QAbstractButton *btn = button(QWizard::HelpButton);
     setOption(QWizard::HaveHelpButton);
     setOption(QWizard::HelpButtonOnRight, false);
+    setOption(QWizard::HaveCustomButton1);
 
-    connect(btn, &QAbstractButton::clicked, [=]()
+    QAbstractButton *helpbtn = button(QWizard::HelpButton);
+    QAbstractButton *settingsbtn = button(QWizard::CustomButton1);
+
+    QList<QWizard::WizardButton> layout;
+    layout << QWizard::BackButton << QWizard::HelpButton << QWizard::CustomButton1 << QWizard::Stretch
+           << QWizard::CancelButton << QWizard::NextButton << QWizard::FinishButton;
+    setButtonLayout(layout);
+    setButtonText(QWizard::CustomButton1, tr("Параметры"));
+
+    connect(helpbtn, &QAbstractButton::clicked, [=]()
     {
         QDesktopServices::openUrl(QUrl("https://confluence.softlab.ru/pages/viewpage.action?pageId=609715197"));
+    });
+
+    connect(settingsbtn, &QAbstractButton::clicked, [=]()
+    {
+        QSharedPointer<QSettings> settings = diffGetSettings();
+        DiffOptionsDlg dlg(settings.data(), this);
+        dlg.exec();
     });
 }
 

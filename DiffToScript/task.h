@@ -10,6 +10,7 @@
 #include "taskoptions.h"
 
 class TableLinks;
+class QSettings;
 class Task : public QObject
 {
     Q_OBJECT
@@ -39,6 +40,8 @@ private:
 
     int m_Result;
 };
+
+QSharedPointer<QSettings> diffGetSettings();
 
 extern QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLinks);
 extern QStringList GetNormalFileList(const QStringList files,

@@ -15,7 +15,7 @@
 #include <QCommandLineParser>
 #include <QTest>
 #include <qloggingcategory.h>
-
+#include <rsscript/registerobjlist.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules(QStringLiteral("Fmt=false\nSql=false\nCore=false\n*.info=true"));
     return 0;
 #endif*/
+
+    rslAddStaticMacroDir(".\\mac\\difftoscript");
 
     if (argc > 1)
     {
