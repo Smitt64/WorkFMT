@@ -38,7 +38,7 @@ DiffWizard::DiffWizard(QWidget *parent) :
 
     QList<QWizard::WizardButton> layout;
     layout << QWizard::BackButton << QWizard::HelpButton << QWizard::CustomButton1 << QWizard::Stretch
-           << QWizard::CancelButton << QWizard::NextButton << QWizard::FinishButton;
+            << QWizard::NextButton << QWizard::FinishButton << QWizard::CancelButton;
     setButtonLayout(layout);
     setButtonText(QWizard::CustomButton1, tr("Параметры"));
 

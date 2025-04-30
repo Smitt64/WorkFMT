@@ -37,13 +37,13 @@ int main(int argc, char *argv[])
         QApplication::addLibraryPath(current.path() + "\\sqldrivers");
         QApplication::addLibraryPath(current.path() + "\\platforms");
 
-        CmdParser cmdParser(&app);
-        CommandLineParseResult result = cmdParser.parse();
+        CmdParser cmdParser;
+        CommandLineParseResult result = cmdParser.parse(&app);
 
         Task *pTask = new Task();
         if (result.statusCode == CommandLineParseResult::Status::Error)
         {
-            QTextStream(stdout) << result.errorString <<Qt::endl;
+            QTextStream(stdout) << result.errorString << Qt::endl;
             return 1;
         }
         QObject::connect(pTask, &Task::finished, &app, [&app, &pTask]()

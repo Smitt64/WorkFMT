@@ -7,6 +7,7 @@
 #include "diffwizard.h"
 #include "tablelinks.h"
 #include "task.h"
+#include "cmdparser.h"
 #include "svnlogmodel.h"
 #include "errorsmodel.h"
 #include <QTabBar>
@@ -279,6 +280,7 @@ void GenerateOperation::run()
         result.close();
 
         QStringList arg = argtmpl;
+        arg.prepend("DiffToScript.exe");
         arg << "--input"
             <<tmp.fileName()
            << "--output"
@@ -287,12 +289,14 @@ void GenerateOperation::run()
            << "--dat"
            << QDir::toNativeSeparators(datfilename);
 
-        int ExitCode = CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true
-#ifdef _DEBUG
-                                        ,std::numeric_limits<int>::max()
-#endif
-                                        );
+        CmdParser cmdParser;
+        cmdParser.parse(arg);
 
+        QScopedPointer<Task> pTask(new Task());
+        pTask->optns = cmdParser.opts;
+        pTask->run();
+
+        /*int ExitCode = pTask->result();
         if (ExitCode)
         {
             QByteArray errdata = proc->readAllStandardError();
@@ -330,7 +334,7 @@ void GenerateOperation::run()
                                           ErrorsModel::TypeInfo);
                 }
             }
-        }
+        }*/
 
         resultStr = GetResult(result.fileName());
         return resultStr;
