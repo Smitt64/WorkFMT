@@ -1,6 +1,7 @@
 #ifndef DIFFFIELD_H
 #define DIFFFIELD_H
 
+#include <QObject>
 #include <QString>
 #include <QList>
 #include <QException>
@@ -20,7 +21,6 @@ struct IndexField
     qint16 type;
 
     bool isString;
-//    IndexField(const QString& name, bool isAutoinc):name(name),isAutoinc(isAutoinc){}
 };
 bool operator==(const IndexField& a, const IndexField& b);
 bool operator!=(const IndexField& a, const IndexField& b);
@@ -32,27 +32,39 @@ struct IndexFields : QList<IndexField>{
 bool operator==(const IndexFields& a, const IndexFields& b);
 
 
-struct DiffField: IndexField
+class DiffField: public QObject, public IndexField
 {
+    Q_OBJECT
+    // Свойства для полей IndexField
+    Q_PROPERTY(QString name READ getName CONSTANT)
+    Q_PROPERTY(bool isAutoinc READ getIsAutoinc CONSTANT)
+    Q_PROPERTY(qint16 type READ getType CONSTANT)
+    Q_PROPERTY(bool isString READ getIsString CONSTANT)
+
+    // Свойства для собственных полей DiffField
+    Q_PROPERTY(QString typeName READ getTypeName CONSTANT)
+    Q_PROPERTY(int size READ getSize CONSTANT)
+public:
+    DiffField();
+    DiffField(const QString& name, qint16 type, const QString& typeName, bool isAutoinc = false, bool isString = false);
+    DiffField(const DiffField& other);
+
+    DiffField& operator=(const DiffField& other);
+
     qint16 type;
     QString typeName;
     int size;
-    bool isString;
+    //bool isString;
     bool isDate() const;
     bool isBlob() const;
-    DiffField()
-    {
-        type = std::numeric_limits<qint16>::min();
-    }
+    bool isValid() const;
 
-    DiffField(const QString& name, qint16 type, const QString& typeName, bool isAutoinc = false, bool isString = false)
-        : IndexField{name, isAutoinc}, type(type), typeName(typeName), isString(isString){}
-
-    bool isValid() const
-    {
-        qint16 inval = std::numeric_limits<qint16>::min();
-        return type != inval;
-    }
+    QString getName() const;
+    bool getIsAutoinc() const;
+    qint16 getType() const;
+    bool getIsString() const;
+    QString getTypeName() const;
+    int getSize() const;
 };
 
 struct DiffFields: public QList<DiffField>
@@ -77,5 +89,7 @@ struct DatIndex
 bool operator==(const DatIndex& a, const DatIndex& b);
 
 using DatIndexes = QList<DatIndex>;
+
+Q_DECLARE_OPAQUE_POINTER(DiffField);
 
 #endif // DIFFFIELD_H

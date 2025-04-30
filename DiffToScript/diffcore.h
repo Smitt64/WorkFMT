@@ -6,6 +6,8 @@
 #include <QPair>
 #include <QMap>
 #include <QStringList>
+#include <QVariant>
+#include "rslobj/iterableobjectbase.h"
 
 enum LineType
 {
@@ -43,215 +45,54 @@ class DatRecord : public QObject
     Q_PROPERTY(QString lineUpdateTypeStr READ lineUpdateTypeStr CONSTANT)
     Q_PROPERTY(QStringList values READ getValues CONSTANT)
 public:
-    DatRecord() : QObject() { }
-
-    DatRecord(const DatRecord& other)
-        : QObject(other.parent()),
-          values(other.values),
-          lineType(other.lineType),
-          lineUpdateType(other.lineUpdateType)
-    {
-    }
-
+    DatRecord();
+    DatRecord(const DatRecord& other);
     DatRecord(const QStringList& vals,
               LineType lType,
               LineUpdateType luType = lutNone,
-              QObject* parent = nullptr) :
-        QObject()
-    {
-        values = vals;
-        lineType = lType;
-        lineUpdateType = luType;
-    }
+              QObject* parent = nullptr);
 
-    DatRecord& operator=(const DatRecord& other)
-    {
-        if (this != &other)
-        {
-            setParent(other.parent());
-            values = other.values;
-            lineType = other.lineType;
-            lineUpdateType = other.lineUpdateType;
-        }
+    DatRecord& operator=(const DatRecord& other);
 
-        return *this;
-    }
-
-    int size() const
-    {
-        return values.size();
-    }
-
-    const QStringList &getValues() const
-    {
-        return values;
-    }
-
-    int getLineType() const
-    {
-        return lineType;
-    }
-
-    int getLineUpdateType() const
-    {
-        return lineUpdateType;
-    }
-
-    QString lineTypeStr() const
-    {
-        switch (lineType)
-        {
-        case ltDelete:
-            return "Delete";
-        case ltInsert:
-            return "Insert";
-        case ltUpdate:
-            return "Update";
-        default:
-            return "";
-        }
-    }
-
-    QString lineUpdateTypeStr() const
-    {
-        switch (lineUpdateType)
-        {
-        case lutNew:
-            return "New";
-        case lutOld:
-            return "Old";
-        case lutNone:
-            return "Nan";
-        default:
-            return "";
-        }
-    }
+    int size() const;
+    const QStringList &getValues() const;
+    int getLineType() const;
+    int getLineUpdateType() const;
+    QString lineTypeStr() const;
+    QString lineUpdateTypeStr() const;
 
     QStringList values;
     LineType lineType;
     LineUpdateType lineUpdateType = lutNone;
 };
 
-class DatRecords : public QObject, public QVector<DatRecord>
+class DatRecords : public VectorIterableObject<DatRecord>
 {
     Q_OBJECT
-    Q_PROPERTY(int size READ size CONSTANT)
-    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex)
 public:
-    DatRecords() :
-        QObject(),
-        QVector<DatRecord>()
-    {
-
-    }
-
-    DatRecords(const DatRecords& other)
-        : QObject(other.parent()),
-          QVector<DatRecord>(other)
-    {
-    }
-
-    DatRecords& operator=(const DatRecords& other)
-    {
-        if (this != &other) // Проверка на самоприсваивание
-        {
-            QObject::setParent(other.parent());
-            QVector<DatRecord>::operator=(other);
-        }
-
-        return *this;
-    }
-
-    // Переместить итератор в начало
-    Q_INVOKABLE void toFront()
-    {
-        m_currentIndex = -1;
-    }
-
-    // Переместить итератор в конец
-    Q_INVOKABLE void toBack()
-    {
-        m_currentIndex = size();
-    }
-
-    // Есть ли следующий элемент
-    Q_INVOKABLE bool hasNext() const
-    {
-        return m_currentIndex + 1 < size();
-    }
+    DatRecords();
+    DatRecords(const DatRecords& other);
+    DatRecords& operator=(const DatRecords& other);
 
     // Получить следующий элемент и переместить итератор
-    Q_INVOKABLE const DatRecord *next()
-    {
-        if (!hasNext())
-            return nullptr;
-
-        ++m_currentIndex;
-        const DatRecord &rec = QVector<DatRecord>::at(m_currentIndex);
-        return &rec;
-    }
-
-    // Есть ли предыдущий элемент
-    Q_INVOKABLE bool hasPrevious() const
-    {
-        return m_currentIndex > 0;
-    }
+    INVOKABLE_NEXT(DatRecord)
 
     // Получить предыдущий элемент и переместить итератор
-    Q_INVOKABLE const DatRecord *previous()
-    {
-        if (!hasPrevious())
-            return nullptr;
-
-        --m_currentIndex;
-        const DatRecord &rec = QVector<DatRecord>::at(m_currentIndex);
-        return &rec;
-    }
-
-    // Получить текущую позицию итератора
-    Q_INVOKABLE int currentIndex() const
-    {
-        return m_currentIndex;
-    }
-
-    // Установить текущую позицию итератора
-    Q_INVOKABLE void setCurrentIndex(int index)
-    {
-        if (index >= -1 && index < size() && index != m_currentIndex)
-            m_currentIndex = index;
-    }
+    INVOKABLE_PREVIOUS(DatRecord)
 
     // Получить запись по индексу
-    Q_INVOKABLE const DatRecord *record(int index) const
-    {
-        if (index < 0 || index >= size())
-            return nullptr;
+    Q_INVOKABLE const DatRecord *record(int index) const;
 
-        const DatRecord &rec = QVector<DatRecord>::at(m_currentIndex);
-        return &rec;
-    }
+    void append(const QStringList& values, LineType lineType, LineUpdateType updateType = lutNone);
 
-    void append(const QStringList& values, LineType lineType, LineUpdateType updateType = lutNone)
-    {
-        QVector<DatRecord>::append(DatRecord(values, lineType, updateType));
-    }
-
-    inline QVector<QStringList> getRecords(std::initializer_list<LineType> types)
-    {
-        QVector<QStringList> v;
-        for (const DatRecord& rec: (*this))
-        {
-            for (const LineType& type: types)
-            {
-                if (type == rec.lineType)
-                    v.append(rec.values);
-            }
-        }
-        return v;
-    }
+    QVector<QStringList> getRecords(std::initializer_list<LineType> types);
+    Q_INVOKABLE QVariantList getRecords(const QVariantList &types);
 
 private:
-    int m_currentIndex; // Текущая позиция итератора
+    int m_currentIndex = -1; // Текущая позиция итератора
 };
+
+Q_DECLARE_OPAQUE_POINTER(DatRecord);
+Q_DECLARE_OPAQUE_POINTER(DatRecords);
 
 #endif // DIFFCORE_H

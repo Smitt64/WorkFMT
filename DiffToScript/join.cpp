@@ -183,6 +183,7 @@ bool operator!=(const JoinTableIterator& a, const JoinTableIterator& b)
     return !(a == b);
 }
 
+// ----------------------------------------------------------------------------
 
 JoinTable::JoinTable(ScriptTable *datTable, const TableLinks &tableLinks)
 {
@@ -216,6 +217,8 @@ Join *JoinTable::getParentJoin() const
             return joinList[i];
     return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 JoinTables::~JoinTables()
 {

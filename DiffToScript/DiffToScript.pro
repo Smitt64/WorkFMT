@@ -25,6 +25,7 @@ SOURCES += \
     dbspellingpostgres.cpp \
     diffconnection.cpp \
     diffconnection.cpp \
+    diffcore.cpp \
     difffield.cpp \
     difflogging.cpp \
     diffmodeparser.cpp \
@@ -37,6 +38,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     recordparser.cpp \
+    rslobj/iterableobjectbase.cpp \
     rslobj/sqlstringlist.cpp \
     rslobj/tablefilesmodel.cpp \
     rslobj/taskoptionscontainer.cpp \
@@ -84,6 +86,7 @@ HEADERS += \
     linesparsermain.h \
     mainwindow.h \
     recordparser.h \
+    rslobj/iterableobjectbase.h \
     rslobj/sqlstringlist.h \
     rslobj/tablefilesmodel.h \
     rslobj/taskoptionscontainer.h \

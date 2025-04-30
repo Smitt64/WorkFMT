@@ -59,6 +59,8 @@ int IndexFields::indexByName(const QString& name) const
     return -1;
 }
 
+// ----------------------------------------------------------------------------------
+
 int DiffFields::indexByFieldName(QString name) const
 {
     for (int i = 0; i < count(); ++i)
@@ -85,6 +87,47 @@ bool DatIndex::hasAutoinc() const
     return false;
 }
 
+// ----------------------------------------------------------------------------------
+
+DiffField::DiffField() :
+    QObject()
+{
+    type = std::numeric_limits<qint16>::min();
+}
+
+DiffField::DiffField(const QString& name, qint16 type, const QString& typeName, bool isAutoinc, bool _isString)
+    : QObject(),
+      IndexField{name, isAutoinc}, type(type), typeName(typeName)
+{
+    isString = _isString;
+}
+
+DiffField::DiffField(const DiffField& other) :
+    QObject(other.parent()),
+    IndexField(other),
+    typeName(other.typeName),
+    size(other.size)
+{
+}
+
+DiffField& DiffField::operator=(const DiffField& other)
+{
+    if (this != &other)
+    {
+        IndexField::operator=(other);
+        typeName = other.typeName;
+        size = other.size;
+    }
+
+    return *this;
+}
+
+bool DiffField::isValid() const
+{
+    qint16 inval = std::numeric_limits<qint16>::min();
+    return type != inval;
+}
+
 bool DiffField::isDate() const
 {
     return (type == fmtt_DATE || type == fmtt_DATETIME || type == fmtt_TIME);
@@ -102,7 +145,32 @@ bool DiffField::isBlob() const
     return false;
 }
 
+QString DiffField::getName() const
+{
+    return name;
+}
 
+bool DiffField::getIsAutoinc() const
+{
+    return isAutoinc;
+}
 
+qint16 DiffField::getType() const
+{
+    return type;
+}
 
+bool DiffField::getIsString() const
+{
+    return isString;
+}
 
+QString DiffField::getTypeName() const
+{
+    return typeName;
+}
+
+int DiffField::getSize() const
+{
+    return size;
+}
