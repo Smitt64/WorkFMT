@@ -42,11 +42,11 @@ public:
     QVector<int> indexesOfKeyFields(const JoinTable *joinTable);
     QVector<int> indexesOfUniqueIndex(const JoinTable *joinTable);
 
-    void replaceForeignAutoinc(const JoinTable* joinTable, DatRecord& rec);
-    int indexForeignAutoinc(const JoinTable* joinTable, const DatRecord& rec);
+    void replaceForeignAutoinc(const JoinTable* joinTable, DatRecord *rec);
+    int indexForeignAutoinc(const JoinTable* joinTable, const DatRecord *rec);
     int getForeignReplaceField(const JoinTable* joinTable, DatRecord& rec);
 
-    QStringList buildWhere(const JoinTable* joinTable, const DatRecord& rec);
+    QStringList buildWhere(const JoinTable* joinTable, const DatRecord *rec);
     int buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
     int buildDeleteStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
     int buildUpdateStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int recIndex, int newIndex);
@@ -59,12 +59,12 @@ public:
     int buildChildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
     int build(QTextStream& os, JoinTable* joinTable);
 
-    void dateSpelling(const JoinTable* joinTable, DatRecord& rec);
-    void stringSpelling(const JoinTable* joinTable, DatRecord& rec);
+    void dateSpelling(const JoinTable* joinTable, DatRecord *rec);
+    void stringSpelling(const JoinTable* joinTable, DatRecord *rec);
 
     void checkDatFldsCount(QStringList& sql, JoinTable *joinTable);
 
-    void toScript(const JoinTable* joinTable, DatRecord& rec);
+    void toScript(const JoinTable* joinTable, DatRecord *rec);
 private:
     QSharedPointer<DiffConnection> _connection;
     QSharedPointer<DbSpelling> _dbSpelling;

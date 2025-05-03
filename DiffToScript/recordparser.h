@@ -28,7 +28,7 @@ public:
     QStringList getErrors() const {return _errors;}
 signals:
 private:
-    DiffField field(const QString &name);
+    DiffField *field(const QString &name);
     QString getToken(QTextStream& is);
     bool parseString(QTextStream& is, QString& value);
     bool parseValue(QTextStream& is, QString& value);

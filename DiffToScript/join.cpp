@@ -24,15 +24,6 @@ struct ParentChild
     int child;
 };
 
-//Возварщает значения для полей с номером fieldIndexes
-QStringList Join::getValuesByIndex(const QVector<int>& fieldIndexes, const DatRecord& record)
-{
-    QStringList values;
-    for (int index: fieldIndexes)
-        values.append(record.values.at(index));
-    return values;
-}
-
 void JoinIndex::append(int p, int c)
 {
     if (find(p) == end())
@@ -147,23 +138,86 @@ bool Join::makeIndex(ScriptTable* parent, ScriptTable* child, const TableLinks &
                     indexDownToUp.append(childIndx, parentIndx);
                     qCInfo(logJoin)
                             << "Index created"
-                            << ". Parent:" << parent->records[parentIndx].lineTypeStr() << parent->records[parentIndx].lineUpdateTypeStr()
-                            << ". Child:"  << child->records[childIndx].lineTypeStr()  << child->records[childIndx].lineUpdateTypeStr()
+                            << ". Parent:" << parent->records[parentIndx]->lineTypeStr() << parent->records[parentIndx]->lineUpdateTypeStr()
+                            << ". Child:"  << child->records[childIndx]->lineTypeStr()  << child->records[childIndx]->lineUpdateTypeStr()
                             << ". ForeignKey =" << childValues;
                 }
                 else
                 {
                     qCInfo(logJoin)
                             << "Index skipped"
-                            << ". Parent:" << parent->records[parentIndx].lineTypeStr() << parent->records[parentIndx].lineUpdateTypeStr()
-                            << ". Child:"  << child->records[childIndx].lineTypeStr()  << child->records[childIndx].lineUpdateTypeStr()
+                            << ". Parent:" << parent->records[parentIndx]->lineTypeStr() << parent->records[parentIndx]->lineUpdateTypeStr()
+                            << ". Child:"  << child->records[childIndx]->lineTypeStr()  << child->records[childIndx]->lineUpdateTypeStr()
                             << ". ForeignKey =" << childValues;
                 }
             }
         }
     }
     qCInfo(logJoin) << "Index count = " << indexUpToDown.size();
+
+    return true;
 }
+
+//Возварщает значения для полей с номером fieldIndexes
+QStringList Join::getValuesByIndex(const QVector<int>& fieldIndexes, const DatRecord *record)
+{
+    QStringList values;
+
+    for (int index: fieldIndexes)
+        values.append(record->values.at(index));
+
+    return values;
+}
+
+QStringList Join::getValuesByIndex(const QVariantList& fieldIndexes, const DatRecord *record)
+{
+    QStringList values;
+
+    for (const QVariant &index: fieldIndexes)
+    {
+        bool ok = false;
+        int index_ = index.toInt(&ok);
+
+        if (ok)
+            values.append(record->values.at(index_));
+    }
+
+    return values;
+}
+
+QObject *Join::getParent() const
+{
+    return parent;
+}
+
+QObject *Join::getChild() const
+{
+    return child;
+}
+
+QVariantList Join::getChildForeignFields() const
+{
+    QVariantList list;
+    list.reserve(childForeignFields.size());
+
+    for (const auto& item : qAsConst(childForeignFields))
+        list.append(QVariant::fromValue(item));
+
+    return list;
+}
+
+QVariantList Join::getParentForeignFields() const
+{
+    QVariantList list;
+    list.reserve(parentForeignFields.size());
+
+    for (const auto& item : qAsConst(parentForeignFields))
+        list.append(QVariant::fromValue(item));
+
+    return list;
+}
+
+// ----------------------------------------------------------------------------
 
 JoinTableIterator JoinTableIterator::getChildTable()
 {
@@ -218,6 +272,16 @@ Join *JoinTable::getParentJoin() const
     return nullptr;
 }
 
+JoinList *JoinTable::getJoinList()
+{
+    return &joinList;
+}
+
+const QStringList &JoinTable::getKeyFields() const
+{
+    return keyFields;
+}
+
 // ----------------------------------------------------------------------------
 
 JoinTables::~JoinTables()
@@ -267,9 +331,12 @@ JoinTable *JoinTables::tableByName(QString name)
 
 bool JoinTables::hasJoin(QString parent, QString child)
 {
-    for (Join* join: joins)
+    for (Join* join: qAsConst(joins))
+    {
         if (join->child->scriptTable->name.toLower() == child.toLower() && join->parent->scriptTable->name.toLower() == parent.toLower())
             return true;
+    }
+
     return false;
 }
 
@@ -290,6 +357,7 @@ JoinTable *JoinTables::getRoot()
     return table;
 }
 
+// ---------------------------------------------------------------------------------------
 
 JoinListIterator::JoinListIterator()
     :JoinListIterator(nullptr, JoinList::iterator())
@@ -299,8 +367,8 @@ JoinListIterator::JoinListIterator()
 
 
 JoinListIterator::JoinListIterator(JoinTable *joinTable, JoinList::iterator first)
-    :_joinTable(joinTable)
-    , itChild(first)
+    : itChild(first),
+      _joinTable(joinTable)
 {
 }
 
@@ -333,13 +401,5 @@ JoinList::iterator JoinList::firstChild(JoinTable* joinTable)
     return it;
 }
 
-
-
-
-
-
-
-
-
-
+// ----------------------------------------------------------------------------
 

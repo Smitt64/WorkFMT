@@ -10,6 +10,8 @@ DiffOptionsDlg::DiffOptionsDlg(QSettings *settings, QWidget *parent) :
 
     addPage(tr("Макросы"), QIcon("://img/msgr3en.dll_14_128_0-0.png"), m_TableMacOptionsPage);
     addRslPage();
+    addLogPage("difftoscript");
+    addUpdatePage();
 }
 
 DiffOptionsDlg::~DiffOptionsDlg()

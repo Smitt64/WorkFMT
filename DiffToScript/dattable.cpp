@@ -30,16 +30,16 @@ bool DatTable::load(const QString& dir, const QString& tableName, DiffConnection
     inputFile.open(QFile::WriteOnly);
     QTextStream os(&inputFile);
 
-    RecordParser recParser();
+    //RecordParser recParser{};
 
 
 }
 
 bool DatTable::hasInserts() const
 {
-    for (const DatRecord &rec : records)
+    for (const DatRecord *rec : records)
     {
-        if (rec.lineType == ltInsert)
+        if (rec->lineType == ltInsert)
             return true;
     }
 

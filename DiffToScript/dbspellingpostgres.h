@@ -5,6 +5,7 @@
 
 class DbSpellingPostgres : public DbSpelling
 {
+    Q_OBJECT
 public:
     DbSpellingPostgres();
 
@@ -18,12 +19,12 @@ public:
     QString blobTypeName(const int &type) override;
     QString callProcedure(const QString &proc) override;
 
-    QString getExceptionName(const ExcceptionType &type) override;
+    QString getExceptionName(const int &type) override;
     QString functionParamType(const qint16 &type) override;
 
     bool needDropFunctions() const override;
     QString dropFunction(const QString &proc, const QString &fullproc, const QString &returnType) const override;
-    FunctionDeclarePos functionDeclare() const override;
+    int functionDeclare() const override;
     void functionChunks(QStringList &BeginCreateReplace,
                         QStringList &EndCreateReplace,
                         const QString &name,

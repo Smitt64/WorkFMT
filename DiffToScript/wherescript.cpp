@@ -37,9 +37,10 @@ QString WhereScriptIndex::buildWhere(const IndexFields& fields, const QStringLis
     QStringList conditions;
     for (int i = 0; i < fields.count(); ++i)
     {
-        if (_index.indexByName(fields[i].name) == -1)
+        if (_index.indexByName(fields[i]->name) == -1)
             continue;
-        conditions.append(fields[i].name + " = " + values[i]);
+
+        conditions.append(fields[i]->name + " = " + values[i]);
     }
 
     return conditions.join(" AND ");

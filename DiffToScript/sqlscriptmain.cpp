@@ -75,7 +75,7 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
     if (autoIncIndex != -1)
     {
-        QString autoIncField = datTable->fields[autoIncIndex].name;
+        QString autoIncField = datTable->fields[autoIncIndex]->name;
 
         returnType = QString("%1.%2\%TYPE")
                 .arg(datTable->name.toUpper())
@@ -92,18 +92,18 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     }
 
     QString missingFldInDatValues;
-    DiffFields missingFldInDat = datTable->missingFldInDat();
-    for (DiffFields::iterator iter = missingFldInDat.begin(); iter != missingFldInDat.end(); ++iter)
+    DiffFields *missingFldInDat = datTable->missingFldInDat();
+    for (DiffFields::iterator iter = missingFldInDat->begin(); iter != missingFldInDat->end(); ++iter)
     {
         InsertFieldList += ", ";
         missingFldInDatValues += ", ";
 
-        InsertFieldList += (*iter).name.toUpper();
+        InsertFieldList += (*iter)->name.toUpper();
 
-        missingFldInDatValues += _dbSpelling->getDefaultValueForType(iter->type, iter->size);
+        missingFldInDatValues += _dbSpelling->getDefaultValueForType((*iter)->type, (*iter)->size);
     }
 
-    DatRecord rec = datTable->records[0];
+    QScopedPointer<DatRecord> rec(new DatRecord(*datTable->records[0]));
     for (int i = 0; i < datTable->realFields.size(); i++)
     {
         if (i != autoIncIndex)
@@ -118,16 +118,16 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
             QString paramName = QString("p_%1")
                     .arg(undecorateFldName);
 
-            QString paramType = _dbSpelling->functionParamType(datTable->field(datTable->realFields[i]).type);
+            QString paramType = _dbSpelling->functionParamType(datTable->field(datTable->realFields[i])->type);
 
-            if (datTable->fields[i].isBlob())
-                paramType = _dbSpelling->blobTypeName(datTable->field(datTable->realFields[i]).type);
+            if (datTable->fields[i]->isBlob())
+                paramType = _dbSpelling->blobTypeName(datTable->field(datTable->realFields[i])->type);
 
             params += QString("%1 IN %2")
                     .arg(paramName)
                     .arg(paramType);
 
-            rec.values[i] = paramName;
+            rec->values[i] = paramName;
         }
     }
 
@@ -151,9 +151,9 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
     if (autoIncIndex != -1)
     {
-        rec.values[autoIncIndex] = variable;
+        rec->values[autoIncIndex] = variable;
 
-        QString autoIncField = datTable->fields[autoIncIndex].name;
+        QString autoIncField = datTable->fields[autoIncIndex]->name;
         function.append(QString(Padding(1) + "SELECT %4(MAX(%1), 0) + 1 INTO %3 FROM %2;")
                         .arg(autoIncField)
                         .arg(datTable->name.toUpper())
@@ -162,7 +162,7 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
         function.append(QString());
 
-        QString values = rec.values.join(", ");
+        QString values = rec->values.join(", ");
         function.append(QString(Padding(1) + "INSERT INTO %1(%3) VALUES (%2);")
                         .arg(datTable->name,
                              values + missingFldInDatValues,
@@ -170,7 +170,7 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     }
     else
     {
-        QString values = rec.values.join(", ");
+        QString values = rec->values.join(", ");
         function.append(QString(Padding(2) + "INSERT INTO %1(%3) VALUES (%2);")
                         .arg(datTable->name.toUpper(),
                              values + missingFldInDatValues,
@@ -193,14 +193,13 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     QString rusException = tmpException;//sqlerrm
     QString exceptionInfo;
 
-    DatIndex Unique;
-    bool hasUnique = datTable->firstUniq(Unique, true);
+    DatIndex *Unique = datTable->firstUniq(true);
 
-    if (hasUnique)
+    if (Unique)
     {
         QString fldNames, fldValues;
 
-        for (const IndexField &fld : qAsConst(Unique.fields))
+        for (const IndexField *fld : qAsConst(Unique->fields))
         {
             if (!fldNames.isEmpty())
             {
@@ -208,10 +207,10 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
                 fldValues += " || ', ' || ";
             }
 
-            fldNames += fld.name;
+            fldNames += fld->name;
 
-            int realfld = datTable->realFields.indexOf(fld.name.toUpper());
-            fldValues += rec.values[realfld];
+            int realfld = datTable->realFields.indexOf(fld->name.toUpper());
+            fldValues += rec->values[realfld];
         }
 
         exceptionInfo = QString("dbms_output.put_line('(%1) = (' || %2 || ')');")
@@ -281,8 +280,11 @@ QString SqlScriptMain::undecorateTableName(const QString &name) const
 int SqlScriptMain::getAutoincIndex(const ScriptTable* datTable)
 {
     for (int i = 0; i < datTable->fields.count(); ++i)
-        if (datTable->fields[i].isAutoinc)
+    {
+        if (datTable->fields[i]->isAutoinc)
             return i;
+    }
+
     return -1;
 }
 
@@ -293,8 +295,9 @@ QString SqlScriptMain::buildVariableName(const ScriptTable* datTable)
     if (autoIncIndex == -1)
         return "";
 
-    QString autoIncField = datTable->fields[autoIncIndex].name;
+    QString autoIncField = datTable->fields[autoIncIndex]->name;
     QString variableName = QString("v_%1__%2").arg(datTable->name, autoIncField);
+
     return variableName;
 }
 
@@ -305,7 +308,7 @@ QString SqlScriptMain::buildVariable(const ScriptTable* datTable)
     if (autoIncIndex == -1)
         return "";
 
-    QString autoIncField = datTable->fields[autoIncIndex].name;
+    QString autoIncField = datTable->fields[autoIncIndex]->name;
     QString variableName = buildVariableName(datTable);
     return QString(PADDING + "%1 %2.%3\%TYPE;").arg(variableName, datTable->name, autoIncField);
 }
@@ -319,7 +322,7 @@ QVector<int> SqlScriptMain::indexesOfKeyFields(const JoinTable *joinTable)
     {
         for (const Field& keyField: joinTable->keyFields)
         {
-            if (joinTable->scriptTable->fields[i].name.toLower() == keyField.toLower())
+            if (joinTable->scriptTable->fields[i]->name.toLower() == keyField.toLower())
             {
                 if (!keyFieldIndexes.contains(i))
                     keyFieldIndexes.append(joinTable->scriptTable->realFields.indexOf(keyField.toUpper()));
@@ -340,13 +343,13 @@ QVector<int> SqlScriptMain::indexesOfUniqueIndex(const JoinTable *joinTable)
     QVector<int> keyFieldIndexes;
 
     //Индекс из fmt
-    for (const DatIndex& index: joinTable->scriptTable->indexes)
+    for (DatIndex *index: joinTable->scriptTable->indexes)
     {
-        if (index.isUnique && !index.hasAutoinc())
+        if (index->isUnique && !index->hasAutoinc())
         {
-            for (const IndexField& field: index.fields)
+            for (IndexField *field: index->fields)
             {
-                int indx = joinTable->scriptTable->fields.indexByFieldName(field.name);
+                int indx = joinTable->scriptTable->fields.indexByFieldName(field->name);
                 if (indx != -1)
                     keyFieldIndexes.append(indx);
             }
@@ -358,7 +361,7 @@ QVector<int> SqlScriptMain::indexesOfUniqueIndex(const JoinTable *joinTable)
 }
 
 //Заменяет родительский автоинкремент на имя переменной родительской таблицы.
-void SqlScriptMain::replaceForeignAutoinc(const JoinTable* joinTable, DatRecord& rec)
+void SqlScriptMain::replaceForeignAutoinc(const JoinTable* joinTable, DatRecord *rec)
 {
     //Связь с родительской таблицей
     Join* parentJoin = joinTable->getParentJoin();
@@ -371,11 +374,11 @@ void SqlScriptMain::replaceForeignAutoinc(const JoinTable* joinTable, DatRecord&
     if (foreignIndex != -1)
     {
         //Замена значения автоинкрементного поля на имя переменной
-        rec.values[parentJoin->childForeignFields[foreignIndex]] = buildVariableName(parentJoin->parent->scriptTable);
+        rec->values[parentJoin->childForeignFields[foreignIndex]] = buildVariableName(parentJoin->parent->scriptTable);
     }
 }
 
-int SqlScriptMain::indexForeignAutoinc(const JoinTable *joinTable, const DatRecord &rec)
+int SqlScriptMain::indexForeignAutoinc(const JoinTable *joinTable, const DatRecord *rec)
 {
     //Связь с родительской таблицей
     Join* parentJoin = joinTable->getParentJoin();
@@ -395,6 +398,7 @@ int SqlScriptMain::indexForeignAutoinc(const JoinTable *joinTable, const DatReco
                     return i;
         }
     }
+
     return -1;
 }
 
@@ -420,30 +424,27 @@ int SqlScriptMain::getForeignReplaceField(const JoinTable* joinTable, DatRecord&
     return -1;
 }
 
-QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecord& oldRec)
+QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecord *oldRec)
 {
     QStringList where;
-    DatRecord rec = oldRec;
 
     //В where пойдут только ключевые поля.
-    foreach(const DiffField &uf, joinTable->scriptTable->uniqFields)
-    {
-        where.append(uf.name + " = " + rec.values[joinTable->scriptTable->fields.indexByFieldName(uf.name)]);
-    }
+    for (const DiffField *uf : joinTable->scriptTable->uniqFields)
+        where.append(uf->name + " = " + oldRec->values[joinTable->scriptTable->fields.indexByFieldName(uf->name)]);
 
     return where;
 }
 
 int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding)
 {
-    DatRecord rec = joinTable->scriptTable->records[recIndex];
+    DatRecord *rec = joinTable->scriptTable->records[recIndex];
 
     //Определение полей для замены
 
     //Определение автоинкрементного поля и замена на ноль
     int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
     if (autoIncIndex != -1)
-        rec.values[autoIncIndex] = "0";
+        rec->values[autoIncIndex] = "0";
 
     QString InsertFieldList;
     for (const QString &fld : qAsConst(joinTable->scriptTable->realFields))
@@ -463,13 +464,13 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     QString variable = buildVariableName(joinTable->scriptTable);
     QStringList fields;
     for (int i = 0; i < joinTable->scriptTable->fields.count(); ++i)
-        fields.append(joinTable->scriptTable->fields[i].name);
+        fields.append(joinTable->scriptTable->fields[i]->name);
 
     QString names = fields.join(", ");
 
     if (variable != "")
     {
-        QStringList tmpvalues = rec.values;
+        QStringList tmpvalues = rec->values;
         int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
         tmpvalues.removeAt(autoIncIndex);
 
@@ -484,7 +485,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     }
     else
     {
-        QString values = rec.values.join(", ");
+        QString values = rec->values.join(", ");
         //sql.append(QString(PADDING + "INSERT INTO %1 (%2) VALUES (%3);").arg(joinTable->scriptTable->name,  names, values));
         QString call = QString("%1 (%2);")
                 .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()].name)
@@ -498,7 +499,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
 
 int SqlScriptMain::buildDeleteStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int recIndex)
 {
-    DatRecord rec = joinTable->scriptTable->records[recIndex];
+    DatRecord *rec = joinTable->scriptTable->records[recIndex];
 
     replaceForeignAutoinc(joinTable, rec);
 
@@ -510,34 +511,35 @@ int SqlScriptMain::buildDeleteStatement(QTextStream &os, const JoinTable *joinTa
     {
         //Получение имени автоинкрементного поля
         int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
-        QString autoIncField = joinTable->scriptTable->fields[autoIncIndex].name;
+        QString autoIncField = joinTable->scriptTable->fields[autoIncIndex]->name;
 
         sql.append(QString(PADDING + "DELETE FROM %1 WHERE %2 RETURNING %3 INTO %4;").arg(joinTable->scriptTable->name,  where.join(" AND "), autoIncField, variable));
     }
     else
-    {
         sql.append(QString(PADDING + "DELETE FROM %1 WHERE %2;").arg(joinTable->scriptTable->name,  where.join(" AND ")));
-    }
+
     return ++recIndex;
 }
 
 
 int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int oldIndex, int newIndex)
 {
-    DatRecord oldRec = joinTable->scriptTable->records[oldIndex];
-    DatRecord newRec = joinTable->scriptTable->records[newIndex];
+    DatRecord *oldRec = joinTable->scriptTable->records[oldIndex];
+    DatRecord *newRec = joinTable->scriptTable->records[newIndex];
 
     //Заполнение SET
     QStringList setList;
 
     //Изменёные значения
     QVector<int> modifiedValues;
-    for (int i = 0; i < oldRec.values.count(); ++i)
-        if (oldRec.values[i].compare(newRec.values[i]) != 0)
+    for (int i = 0; i < oldRec->values.count(); ++i)
+    {
+        if (oldRec->values[i].compare(newRec->values[i]) != 0)
         {
-            qCInfo(logSqlScriptMain) << oldRec.values[i] << "\" != \"" << newRec.values[i];
+            qCInfo(logSqlScriptMain) << oldRec->values[i] << "\" != \"" << newRec->values[i];
             modifiedValues.append(i);
         }
+    }
 
     qCInfo(logSqlScriptMain) << "Modifed fields count =" << modifiedValues.count();
 
@@ -546,7 +548,7 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
     stringSpelling(joinTable, newRec);
 
     for (int i: modifiedValues)
-        setList.append(joinTable->scriptTable->realFields[i] + " = " + newRec.values[i]);
+        setList.append(joinTable->scriptTable->realFields[i] + " = " + newRec->values[i]);
 
     QStringList where = buildWhere(joinTable, oldRec);
 
@@ -558,7 +560,7 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
         {
             //Получение имени автоинкрементного поля
             int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
-            QString autoIncField = joinTable->scriptTable->fields[autoIncIndex].name;
+            QString autoIncField = joinTable->scriptTable->fields[autoIncIndex]->name;
 
             sql.append(QString(PADDING + "UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;")
                        .arg(joinTable->scriptTable->name,
@@ -597,9 +599,9 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
         return nextRecIndex;
     }
 
-    DatRecord& rec = joinTable->scriptTable->records[recIndex];
+    DatRecord *rec = joinTable->scriptTable->records[recIndex];
     toScript(joinTable, rec);
-    if (rec.lineType == ltInsert)
+    if (rec->lineType == ltInsert)
     {
         qCInfo(logSqlScriptMain) << "Build script for insert. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
 
@@ -619,18 +621,18 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
             sql.append(Padding(1) + "END IF;");
         }
     }
-    else if (rec.lineType == ltDelete)
+    else if (rec->lineType == ltDelete)
     {
         qCInfo(logSqlScriptMain) << "Build script for delete. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
         buildDeleteStatement(os, joinTable, sql, recIndex);
         buildChildStatement(os, joinTable, sql, recIndex);
         joinTable->processedRecords[recIndex] = true;
     }
-    else if (rec.lineType == ltUpdate)
+    else if (rec->lineType == ltUpdate)
     {
         // определение последней записи для обновления
         int newIndex, oldIndex;
-        if(joinTable->scriptTable->records[recIndex].lineUpdateType == lutOld)
+        if(joinTable->scriptTable->records[recIndex]->lineUpdateType == lutOld)
         {
             oldIndex = recIndex;
             newIndex = nextRecIndex;
@@ -651,14 +653,12 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
             joinTable->processedRecords[newIndex] = true;
         }
         else
-            qCWarning(logSqlScriptMain) << "Can't " << recIndex << ". Record not processed: " << rec.values.join(", ");
+            qCWarning(logSqlScriptMain) << "Can't " << recIndex << ". Record not processed: " << rec->values.join(", ");
 
         nextRecIndex++;
     }
     else
-    {
-        qCWarning(logSqlScriptMain) << "Record index" << recIndex << ". Record not processed: " << rec.values.join(", ");
-    }
+        qCWarning(logSqlScriptMain) << "Record index" << recIndex << ". Record not processed: " << rec->values.join(", ");
 
 
     return nextRecIndex;
@@ -770,9 +770,9 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
 
     auto DisEnableAutoIncTrigger = [=](ScriptTable* datTable, QStringList &sql, bool enable = false)
     {
-        for (const DatIndex &idx : qAsConst(datTable->indexes))
+        for (DatIndex *idx : qAsConst(datTable->indexes))
         {
-            if (idx.hasAutoinc())
+            if (idx->hasAutoinc())
             {
                 if (!enable)
                 {
@@ -839,21 +839,21 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
     return stat;
 }
 
-void SqlScriptMain::dateSpelling(const JoinTable *joinTable, DatRecord &rec)
+void SqlScriptMain::dateSpelling(const JoinTable *joinTable, DatRecord *rec)
 {
     for (int i = 0; i < joinTable->scriptTable->realFields.count(); ++i)
     {
-        DiffField fld = joinTable->scriptTable->field(joinTable->scriptTable->realFields[i]);
-        qCInfo(logSqlScriptMain) << fld.name << joinTable->scriptTable->fields[i].typeName;
+        DiffField fld = *joinTable->scriptTable->field(joinTable->scriptTable->realFields[i]);
+        qCInfo(logSqlScriptMain) << fld.name << joinTable->scriptTable->fields[i]->typeName;
 
         if (fld.isDate())
-            rec.values[i] = _dbSpelling->toDate(rec.values[i]);
+            rec->values[i] = _dbSpelling->toDate(rec->values[i]);
     }
 }
 
-void SqlScriptMain::toScript(const JoinTable *joinTable, DatRecord &rec)
+void SqlScriptMain::toScript(const JoinTable *joinTable, DatRecord *rec)
 {
-    for (QString& s: rec.values)
+    for (QString& s: rec->values)
     {
         QString tmp = "'"; tmp += QChar(1); tmp += "'";
         if (s == tmp) {
@@ -876,38 +876,36 @@ void SqlScriptMain::toScript(const JoinTable *joinTable, DatRecord &rec)
     }
 }
 
-void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord &rec)
+void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
 {
     for (int i = 0; i < joinTable->scriptTable->realFields.count(); ++i)
     {
-        DiffField fld = joinTable->scriptTable->field(joinTable->scriptTable->realFields[i]);
-        qint16 type = fld.type;
+        DiffField *fld = joinTable->scriptTable->field(joinTable->scriptTable->realFields[i]);
+        qint16 type = fld->type;
 
         if (type == fmtt_STRING || type == fmtt_SNR)
         {
-            if (rec.values[i].isEmpty() || rec.values[i].at(0) == QChar(1))
+            if (rec->values[i].isEmpty() || rec->values[i].at(0) == QChar(1))
             {
-                rec.values[i] = QString("%1(1)")
+                rec->values[i] = QString("%1(1)")
                         .arg(_dbSpelling->chr());
             }
         }
         else if (type == fmtt_CHR || type == fmtt_UCHR)
         {
-            if (rec.values[i].isEmpty() || rec.values[i].at(0) == QChar(0) || rec.values[i].at(0) == QChar(2))
+            if (rec->values[i].isEmpty() || rec->values[i].at(0) == QChar(0) || rec->values[i].at(0) == QChar(2))
             {
-                rec.values[i] = QString("%1(0)")
+                rec->values[i] = QString("%1(0)")
                         .arg(_dbSpelling->chr());
             }
-            else if (rec.values[i].size() == 3 && rec.values[i].at(1) == QChar(2))
+            else if (rec->values[i].size() == 3 && rec->values[i].at(1) == QChar(2))
             {
-                rec.values[i] = QString("%1(0)")
+                rec->values[i] = QString("%1(0)")
                         .arg(_dbSpelling->chr());
             }
         }
-        else if (isBlobType(fld.typeName))
-        {
-            rec.values[i] = _dbSpelling->toBlob(rec.values[i]);
-        }
+        else if (isBlobType(fld->typeName))
+            rec->values[i] = _dbSpelling->toBlob(rec->values[i]);
     }
 }
 

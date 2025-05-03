@@ -8,9 +8,17 @@
 #include <QtSql>
 #include <QInputDialog>
 
-DiffTableInfo::DiffTableInfo()
+DiffTableInfo::DiffTableInfo() :
+    QObject(),
+    pMissingFldInDat(nullptr)
 {
 
+}
+
+DiffTableInfo::~DiffTableInfo()
+{
+    if (pMissingFldInDat)
+        delete pMissingFldInDat;
 }
 
 QString BlobTypeToString(int type)
@@ -31,52 +39,78 @@ QString BlobTypeToString(int type)
                              .arg(type).toLocal8Bit().data());
 }
 
-DiffField DiffTableInfo::field(const QString &name) const
+const QString &DiffTableInfo::getName() const
 {
-    DiffFields::const_iterator iter = std::find_if(fields.cbegin(), fields.cend(), [=](const DiffField &fld) -> bool
-    {
-        return fld.name.toUpper() == name.toUpper();
-    });
-
-    if (iter != fields.cend())
-        return *iter;
-
-    return DiffField();
+    return name;
 }
 
-DiffFields DiffTableInfo::missingFldInDat() const
+const QStringList &DiffTableInfo::getRealFields() const
 {
-    DiffFields missing;
+    return realFields;
+}
+
+DiffFields *DiffTableInfo::getFields()
+{
+    return &fields;
+}
+
+DiffFields *DiffTableInfo::getUniqFields()
+{
+    return &uniqFields;
+}
+
+DatIndexes *DiffTableInfo::getIndexes()
+{
+    return &indexes;
+}
+
+DiffField *DiffTableInfo::field(const QString &name) const
+{
+    auto iter = std::find_if(fields.begin(), fields.end(), [=](DiffField *fld) -> bool
+    {
+        return fld->name.toUpper() == name.toUpper();
+    });
+
+    if (iter != fields.end())
+    {
+        DiffField *fld = *iter;
+        return fld;
+    }
+
+    return nullptr;
+}
+
+DiffFields *DiffTableInfo::missingFldInDat() const
+{
+    DiffTableInfo *pThis = const_cast<DiffTableInfo*>(this);
+
+    if (!pMissingFldInDat)
+        pThis->pMissingFldInDat = new DiffFields();
 
     DiffFields::const_iterator iter = fields.cbegin();
     for (; iter != fields.cend(); ++iter)
     {
-        if (!realFields.contains((*iter).name.toUpper()))
-            missing.append(*iter);
+        if (!realFields.contains((*iter)->name.toUpper()))
+            pMissingFldInDat->append(new DiffField(*(*iter)));
     }
 
-    return missing;
+    return pMissingFldInDat;
 }
 
-bool DiffTableInfo::firstUniq(DatIndex &idx, bool skipAutoInc) const
+DatIndex *DiffTableInfo::firstUniq(bool skipAutoInc) const
 {
-    bool found = false;
-
-    for (const DatIndex &index : indexes)
+    for (DatIndex *index : indexes)
     {
-        if (index.isUnique)
+        if (index->isUnique)
         {
-            if (index.hasAutoinc() && skipAutoInc)
+            if (index->hasAutoinc() && skipAutoInc)
                 continue;
             else
-            {
-                found = true;
-                idx = index;
-                break;
-            }
+                return index;
         }
     }
-    return found;
+
+    return nullptr;
 }
 
 QStringList DiffTableInfo::readColumnsFromFile(const QString& filePath)
@@ -165,45 +199,45 @@ void DiffTableInfo::loadFromFmt(FmtTable *fmtTable, const QString &datfilename)
         FmtField* fld = fmtTable->field(i);
         bool isString = (fld->isString() || fld->type() == fmtt_CHR);
 
-        DiffField df;
-        df.name = fld->name().toUpper();
-        df.type = fld->type();
-        df.size = fld->size();
-        df.typeName = fmtTypeNameForType(fld->type());
-        df.isAutoinc = fld->isAutoInc();
-        df.isString = isString;
+        DiffField *df = new DiffField();
+        df->name = fld->name().toUpper();
+        df->type = fld->type();
+        df->size = fld->size();
+        df->typeName = fmtTypeNameForType(fld->type());
+        df->isAutoinc = fld->isAutoInc();
+        df->isString = isString;
 
         fields.append(df);
-        realFields.append(df.name.toUpper());
-        qCInfo(logScriptTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
+        realFields.append(df->name.toUpper());
+        qCInfo(logScriptTable) << "Loaded FMT field: " << df->name << " " << df->typeName << " " << (df->isAutoinc?"autoinc":"");
     }
 
     if (fmtTable->blobLen() > 0)
     {
-        DiffField df = { BlobFieldString(fmtTable->blobType()), fmtTable->blobType(), BlobTypeToString(fmtTable->blobType()), false, true};
+        DiffField *df = new DiffField{ BlobFieldString(fmtTable->blobType()), fmtTable->blobType(), BlobTypeToString(fmtTable->blobType()), false, true};
         fields.append(df);
-        qCInfo(logScriptTable) << "Loaded FMT field: " << df.name << " " << df.typeName << " " << (df.isAutoinc?"autoinc":"");
+        qCInfo(logScriptTable) << "Loaded FMT field: " << df->name << " " << df->typeName << " " << (df->isAutoinc?"autoinc":"");
     }
 
     for (int i = 0; i < fmtTable->indecesCount(); ++i)
     {
         FmtIndex* indx = fmtTable->tableIndex(i);
-        DatIndexes::iterator it = indexes.insert(indexes.end(), DatIndex{});
-        it->name = indx->name();
-        it->isUnique = indx->isUnique();
+        DatIndexes::iterator it = indexes.insert(indexes.end(), new DatIndex());
+        (*it)->name = indx->name();
+        (*it)->isUnique = indx->isUnique();
 
-        qCInfo(logScriptTable) << "Loaded FMT index: " << it->name << " isUnique " << it->isUnique;
+        qCInfo(logScriptTable) << "Loaded FMT index: " << (*it)->name << " isUnique " << (*it)->isUnique;
 
         for (int j = 0; j < indx->segmentsCount(); ++j)
         {
             FmtSegment* sgmt = indx->segment(j);
-            it->fields.append(
-                        {
-                            sgmt->field()->name(),
-                            sgmt->field()->isAutoInc(),
-                            sgmt->field()->type(),
-                            sgmt->field()->isString()
-                        });
+            (*it)->fields.append(new IndexField
+                                 {
+                                     sgmt->field()->name(),
+                                     sgmt->field()->type(),
+                                     sgmt->field()->isAutoInc(),
+                                     sgmt->field()->isString()
+                                 });
             qCInfo(logScriptTable) << "Added field for index: name = " << sgmt->field()->name() << " isAutoInc = " << sgmt->field()->isAutoInc();
         }
     }
@@ -270,25 +304,28 @@ void DiffTableInfo::InitUniqFields(TableLinks* tableLink)
     qCInfo(logScriptTable) << "Start InitUniqFields. Table name = " << tableLink->tableName;
     if(!tableLink->index.isEmpty())
     {
-        foreach (const QString &IndxField, tableLink->index)
+        for (const QString &IndxField : qAsConst(tableLink->index))
         {
-            uniqFields.append(fields.fieldByName(IndxField));
+            DiffField *fld = fields.fieldByName(IndxField);
+            uniqFields.append(new DiffField(*fld));
         }
+
         qCInfo(logScriptTable) << "Init uniqFields from json. Table name = " << tableLink->tableName;
     }
     else
     {
-        DatIndex idx;
-        if(firstUniq(idx, false))
+        DatIndex *idx = firstUniq(false);
+        if(idx)
         {
-            foreach (const IndexField &IndxField, idx.fields)
+            for (const IndexField *IndxField : idx->fields)
             {
-                DiffField df;
-                df.name = IndxField.name;
-                df.type = IndxField.type;
-                df.typeName = fmtTypeNameForType(IndxField.type);
-                df.isString = IndxField.isString;
-                df.isAutoinc = IndxField.isAutoinc;
+                DiffField *df = new DiffField();
+                df->name = IndxField->name;
+                df->type = IndxField->type;
+                df->typeName = fmtTypeNameForType(IndxField->type);
+                df->size = 0;
+                df->isString = IndxField->isString;
+                df->isAutoinc = IndxField->isAutoinc;
                 uniqFields.append(df);
             }
 
@@ -297,4 +334,17 @@ void DiffTableInfo::InitUniqFields(TableLinks* tableLink)
 
         qCWarning(logDatTable) << "Can't Init UniqFields";
     }
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+DiffTable::DiffTable() :
+    DiffTableInfo()
+{
+
+}
+
+DatRecords *DiffTable::getRecords()
+{
+    return &records;
 }

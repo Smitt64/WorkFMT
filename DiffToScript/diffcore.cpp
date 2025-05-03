@@ -90,13 +90,13 @@ QString DatRecord::lineUpdateTypeStr() const
 // ------------------------------------------------------------------------
 
 DatRecords::DatRecords() :
-    VectorIterableObject<DatRecord>()
+    VectorIterableObject<DatRecord*>()
 {
 
 }
 
 DatRecords::DatRecords(const DatRecords& other) :
-    VectorIterableObject<DatRecord>()
+    VectorIterableObject<DatRecord*>()
 {
 }
 
@@ -105,55 +105,35 @@ DatRecords& DatRecords::operator=(const DatRecords& other)
     if (this != &other) // Проверка на самоприсваивание
     {
         QObject::setParent(other.parent());
-         VectorIterableObject<DatRecord>::operator=(other);
+         VectorIterableObject<DatRecord*>::operator=(other);
     }
 
     return *this;
 }
-
-/*DatRecord *DatRecords::next()
-{
-    if (!hasNext())
-        return nullptr;
-
-    ++m_currentIndex;
-    const DatRecord &rec = QVector<DatRecord>::at(m_currentIndex);
-    return &rec;
-}
-
-DatRecord *DatRecords::previous()
-{
-    if (!hasPrevious())
-        return nullptr;
-
-    --m_currentIndex;
-    const DatRecord &rec = QVector<DatRecord>::at(m_currentIndex);
-    return &rec;
-}*/
 
 const DatRecord *DatRecords::record(int index) const
 {
     if (index < 0 || index >= size())
         return nullptr;
 
-    const DatRecord &rec = QVector<DatRecord>::at(m_currentIndex);
-    return &rec;
+    const DatRecord *rec = QVector<DatRecord*>::at(m_currentIndex);
+    return rec;
 }
 
 void DatRecords::append(const QStringList& values, LineType lineType, LineUpdateType updateType)
 {
-    QVector<DatRecord>::append(DatRecord(values, lineType, updateType));
+    QVector<DatRecord*>::append(new DatRecord(values, lineType, updateType));
 }
 
 QVector<QStringList> DatRecords::getRecords(std::initializer_list<LineType> types)
 {
     QVector<QStringList> v;
-    for (const DatRecord& rec: (*this))
+    for (const DatRecord* rec: (*this))
     {
         for (const LineType& type: types)
         {
-            if (type == rec.lineType)
-                v.append(rec.values);
+            if (type == rec->lineType)
+                v.append(rec->values);
         }
     }
     return v;
@@ -162,12 +142,12 @@ QVector<QStringList> DatRecords::getRecords(std::initializer_list<LineType> type
 QVariantList DatRecords::getRecords(const QVariantList &types)
 {
     QVariantList v;
-    for (const DatRecord& rec: (*this))
+    for (const DatRecord *rec: (*this))
     {
         for (const QVariant& type: types)
         {
-            if (type.toInt() == rec.lineType)
-                v.append(QVariant::fromValue(rec.values));
+            if (type.toInt() == rec->lineType)
+                v.append(QVariant::fromValue(rec->values));
         }
     }
     return v;

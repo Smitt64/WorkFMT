@@ -11,13 +11,12 @@ RecordParser::RecordParser(DiffFields* diffFields, const QStringList &realFields
 
 }
 
-DiffField RecordParser::field(const QString &name)
+DiffField *RecordParser::field(const QString &name)
 {
-    DiffFields::const_iterator iter = std::find_if(_diffFields->cbegin(),
-                                                   _diffFields->cend(),
-                                                   [name](const DiffField &fld) -> bool
+    auto iter = std::find_if(_diffFields->cbegin(), _diffFields->cend(),
+                                                   [name](const DiffField *fld) -> bool
     {
-        if (!fld.name.compare(name, Qt::CaseInsensitive))
+        if (!fld->name.compare(name, Qt::CaseInsensitive))
             return true;
 
         return false;
@@ -26,7 +25,7 @@ DiffField RecordParser::field(const QString &name)
     if (iter != _diffFields->cend())
         return *iter;
 
-    return DiffField();
+    return nullptr;
 }
 
 bool RecordParser::parseRecord(QString line)
@@ -39,13 +38,13 @@ bool RecordParser::parseRecord(QString line)
 
     for (int i = 0; i < _realFields.count(); ++i)
     {
-        DiffField fld = field(_realFields[i]);
+        DiffField *fld = field(_realFields[i]);
 
-        if (fld.isValid())
+        if (fld->isValid())
         {
             QString value;
             bool success = true;
-            if (fld.isString)
+            if (fld->isString)
             {
                 if ((success = parseString(is, value)))
                     _values.push_back(value);
@@ -61,18 +60,16 @@ bool RecordParser::parseRecord(QString line)
                 success = false;
 
             if (success == false)
-            {
-                _errors.append("\tError. Field number = " + QString::number(i + 1) + ", name = " + fld.name);
-            }
+                _errors.append("\tError. Field number = " + QString::number(i + 1) + ", name = " + fld->name);
 
             is.read(1);
             readCnt++;
         }
         else
         {
-            if (fld.isDate())
+            if (fld->isDate())
                 _values.push_back(QString("TO_DATE('01.01.0001', 'dd.mm.yyyy')"));
-            else if (fld.isString)
+            else if (fld->isString)
                 _values.push_back(QString("CHR(1)"));
             else
                 _values.push_back(QString("0"));

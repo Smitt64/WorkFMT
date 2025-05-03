@@ -58,7 +58,7 @@ QString DbSpellingPostgres::toDate(const QString& value)
     return "glob_func.to_timestamp_immutable('" + tmp + "', 'DD-MM-YYY')";
 }
 
-QString DbSpellingPostgres::getExceptionName(const ExcceptionType &type)
+QString DbSpellingPostgres::getExceptionName(const int &type)
 {
     QString result;
 
@@ -89,7 +89,7 @@ QString DbSpellingPostgres::functionParamType(const qint16 &type)
     return result;
 }
 
-DbSpelling::FunctionDeclarePos DbSpellingPostgres::functionDeclare() const
+int DbSpellingPostgres::functionDeclare() const
 {
     return FunctionBeforeBlocks;
 }

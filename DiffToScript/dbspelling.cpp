@@ -20,7 +20,7 @@ void DbSpelling::setSpelling(const DiffFields &fields, QStringList &values)
 {
     for (int i = 0; i < fields.count(); ++i)
     {
-        if (fields[i].type == fmtt_DATE)
+        if (fields[i]->type == fmtt_DATE)
             values[i] = toDate(values[i]);
     }
 }
@@ -51,7 +51,7 @@ QString DbSpelling::callProcedure(const QString &proc)
     return result;
 }
 
-DbSpelling::FunctionDeclarePos DbSpelling::functionDeclare() const
+int DbSpelling::functionDeclare() const
 {
     return FunctionInDeclareBlock;
 }

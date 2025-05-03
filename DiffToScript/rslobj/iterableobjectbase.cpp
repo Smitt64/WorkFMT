@@ -54,6 +54,23 @@ int IterableObjectBase::GetSize() const
     return 0;
 }
 
+QVariant IterableObjectBase::GetRecord(int index) const
+{
+    return QVariant();
+}
+
+QVariant IterableObjectBase::GetNext()
+{
+    _next();
+    return QVariant();
+}
+
+QVariant IterableObjectBase::GetPrevious()
+{
+    _previous();
+    return QVariant();
+}
+
 void IterableObjectBase::toFront()
 {
     m_currentIndex = -1;
@@ -83,4 +100,19 @@ void IterableObjectBase::setCurrentIndex(const int &index)
 {
     if (index >= -1 && index < GetSize() && index != m_currentIndex)
         m_currentIndex = index;
+}
+
+QVariant IterableObjectBase::next()
+{
+    return GetNext();
+}
+
+QVariant IterableObjectBase::previous()
+{
+    return GetPrevious();
+}
+
+QVariant IterableObjectBase::record(int index) const
+{
+    return GetRecord(index);
 }

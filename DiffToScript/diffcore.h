@@ -66,19 +66,13 @@ public:
     LineUpdateType lineUpdateType = lutNone;
 };
 
-class DatRecords : public VectorIterableObject<DatRecord>
+class DatRecords : public VectorIterableObject<DatRecord*>
 {
     Q_OBJECT
 public:
     DatRecords();
     DatRecords(const DatRecords& other);
     DatRecords& operator=(const DatRecords& other);
-
-    // Получить следующий элемент и переместить итератор
-    INVOKABLE_NEXT(DatRecord)
-
-    // Получить предыдущий элемент и переместить итератор
-    INVOKABLE_PREVIOUS(DatRecord)
 
     // Получить запись по индексу
     Q_INVOKABLE const DatRecord *record(int index) const;

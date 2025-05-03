@@ -2,7 +2,7 @@ QT       += core gui sql testlib xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17
 CONFIG   += console
 CONFIG   += force_debug_info
 
@@ -31,7 +31,7 @@ SOURCES += \
     diffmodeparser.cpp \
     diffoptionsdlg.cpp \
     difftableinfo.cpp \
-    difftoscripttest.cpp \
+#    difftoscripttest.cpp \
     join.cpp \
     linespareser.cpp \
     linesparsermain.cpp \
@@ -80,7 +80,7 @@ HEADERS += \
     diffmodeparser.h \
     diffoptionsdlg.h \
     difftableinfo.h \
-    difftoscripttest.h \
+#    difftoscripttest.h \
     join.h \
     linespareser.h \
     linesparsermain.h \

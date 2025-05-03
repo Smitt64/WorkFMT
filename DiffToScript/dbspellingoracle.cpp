@@ -38,7 +38,7 @@ QString DbSpellingOracle::blobTypeName(const int &type)
     return BlobFieldTypeOraString(type);
 }
 
-QString DbSpellingOracle::getExceptionName(const ExcceptionType &type)
+QString DbSpellingOracle::getExceptionName(const int &type)
 {
     QString result;
 

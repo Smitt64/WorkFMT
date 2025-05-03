@@ -33,10 +33,9 @@ bool LinesInsertParser::parseLine(QTextStream& is, ParsedLines& lines, ScriptTab
         if(recParser.parseRecord(parsedLine.value))
         {
             QStringList key;
-            foreach(const DiffField &uf, dt->uniqFields)
-            {
-                key.append(recParser.getValues()[dt->fields.indexByFieldName(uf.name)]);
-            }
+            for (const DiffField *uf : dt->uniqFields)
+                key.append(recParser.getValues()[dt->fields.indexByFieldName(uf->name)]);
+
             key.append("-"); //сначала находим удаление для определения операции обновления
             if(lines.contains(key))
             {
@@ -86,10 +85,9 @@ bool LinesDeleteParser::parseLine(QTextStream& is, ParsedLines& lines, ScriptTab
         if(recParser.parseRecord(parsedLine.value))
         {
             QStringList key;
-            foreach(const DiffField &uf, dt->uniqFields)
-            {
-                key.append(recParser.getValues()[dt->fields.indexByFieldName(uf.name)]);
-            }
+            for (const DiffField *uf : dt->uniqFields)
+                key.append(recParser.getValues()[dt->fields.indexByFieldName(uf->name)]);
+
             key.append("+"); //сначала находим вставку для определения операции обновления
             if(lines.contains(key))
             {

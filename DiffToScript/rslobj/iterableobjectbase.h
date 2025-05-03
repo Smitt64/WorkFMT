@@ -2,6 +2,8 @@
 #define ITERABLEOBJECTBASE_H
 
 #include <QObject>
+#include <QVariant>
+#include <QDebug>
 
 class IterableObjectBase : public QObject
 {
@@ -36,8 +38,17 @@ public:
     // Установить текущую позицию итератора
     Q_INVOKABLE void setCurrentIndex(const int &index);
 
+    Q_INVOKABLE QVariant next();
+    Q_INVOKABLE QVariant previous();
+
+    Q_INVOKABLE QVariant record(int index) const;
+
 protected:
     virtual int GetSize() const;
+    virtual QVariant GetNext();
+    virtual QVariant GetPrevious();
+    virtual QVariant GetRecord(int index) const;
+
     bool _next();
     bool _previous();
 
@@ -48,19 +59,29 @@ template<template<typename...> class Container, class T>
 class IterableObject : public IterableObjectBase, public Container<T>
 {
 public:
+    using Container<T>::Container;
+    using iterator = typename Container<T>::iterator;
+    using const_iterator = typename Container<T>::const_iterator;
+    using reverse_iterator = typename Container<T>::reverse_iterator;
+    using const_reverse_iterator = typename Container<T>::const_reverse_iterator;
+
     IterableObject() :
         IterableObjectBase(),
         Container<T>() { };
 
     IterableObject(const IterableObject& other)
-            : IterableObjectBase(other),
+            : IterableObjectBase(),
               Container<T>(other) { }
 
     IterableObject(IterableObject&& other) noexcept
             : IterableObjectBase(std::move(other)),
               Container<T>(std::move(other)) {}
 
-    virtual ~IterableObject() = default;
+    virtual ~IterableObject()
+    {
+        if constexpr (std::is_pointer_v<T>)
+              qDeleteAll(*this);
+    }
 
     IterableObject& operator=(const IterableObject& other)
     {
@@ -81,33 +102,56 @@ public:
         return *this;
     }
 
-    const T *doNext()
-    {
-        if (!_next())
-            return nullptr;
+    iterator begin() { return Container<T>::begin(); }
+    const_iterator begin() const { return Container<T>::begin(); }
+    const_iterator cbegin() const { return Container<T>::cbegin(); }
 
-        const T &rec = Container<T>::at(m_currentIndex);
-        return &rec;
-    }
+    iterator end() { return Container<T>::end(); }
+    const_iterator end() const { return Container<T>::end(); }
+    const_iterator cend() const { return Container<T>::cend(); }
 
-    const T *doPrevious()
-    {
-        if (!_previous())
-            return nullptr;
+    reverse_iterator rbegin() { return Container<T>::rbegin(); }
+    const_reverse_iterator rbegin() const { return Container<T>::rbegin(); }
+    const_reverse_iterator crbegin() const { return Container<T>::crbegin(); }
 
-        const T &rec = Container<T>::at(m_currentIndex);
-        return &rec;
-    }
+    reverse_iterator rend() { return Container<T>::rend(); }
+    const_reverse_iterator rend() const { return Container<T>::rend(); }
+    const_reverse_iterator crend() const { return Container<T>::crend(); }
 
 protected:
     virtual int GetSize() const Q_DECL_OVERRIDE
     {
         return Container<T>::size();
     }
-};
 
-#define INVOKABLE_NEXT(type) Q_INVOKABLE const type *next() { return doNext(); }
-#define INVOKABLE_PREVIOUS(type) Q_INVOKABLE const type *previous() { return doPrevious(); }
+    virtual QVariant GetNext() Q_DECL_OVERRIDE
+    {
+        if (!_next())
+            return QVariant();
+
+        return GetRecord(m_currentIndex);
+    }
+
+    virtual QVariant GetPrevious() Q_DECL_OVERRIDE
+    {
+        if (!_previous())
+            return QVariant();
+
+        return GetRecord(m_currentIndex);
+    }
+
+    virtual QVariant GetRecord(int index) const Q_DECL_OVERRIDE
+    {
+        if (index < 0 || index >=  Container<T>::size())
+            return QVariant();
+
+        const T &rec = Container<T>::at(index);
+        if constexpr (std::is_base_of_v<QObject, T> && !std::is_pointer_v<T>)
+                return QVariant::fromValue<QObject*>(const_cast<T*>(&rec));
+
+        return QVariant::fromValue<T>(rec);
+    }
+};
 
 template<typename T>
 using VectorIterableObject = IterableObject<QVector, T>;
