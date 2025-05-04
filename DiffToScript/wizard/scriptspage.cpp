@@ -46,7 +46,7 @@ void GenerateOperation::setErrorsBuf(ErrorsModel *err)
     m_Errors = err;
 }
 
-QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLinks)
+QStringList GetClearedFiles(const QStringList &files, QList<TableLinks*> &tableLinks)
 {
     QStringList filesCleared = files;
 
@@ -57,15 +57,15 @@ QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLi
 
         if (QFile::exists(fileName))
         {
-            tableLinks.append(TableLinks());
-            TableLinks& tableLink = tableLinks.back();
-            tableLink.loadLinks(fileName);
+            tableLinks.append(new TableLinks());
+            TableLinks *tableLink = tableLinks.back();
+            tableLink->loadLinks(fileName);
 
-            for (const Link &childlnk : qAsConst(tableLink.links))
+            for (const Link *childlnk : qAsConst(tableLink->links))
             {
                 QStringList::ConstIterator pos = std::find_if(files.begin(), files.end(), [=](const QString &f)
                 {
-                    return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+                    return f.contains(childlnk->tableName, Qt::CaseInsensitive);
                 });
 
                 if (pos != files.end())
@@ -80,16 +80,16 @@ QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLi
 }
 
 QStringList GetNormalFileList(const QStringList files,
-                              const QList<TableLinks> &tableLinks,
+                              const QList<TableLinks*> &tableLinks,
                               std::function<void(const QString &file)> userfunc)
 {
     QStringList normalfiles;
 
-    for (const TableLinks &tableLink : qAsConst(tableLinks))
+    for (const TableLinks *tableLink : qAsConst(tableLinks))
     {
         QStringList::ConstIterator file = std::find_if(files.begin(), files.end(), [=](const QString &f)
         {
-            return f.contains(tableLink.tableName, Qt::CaseInsensitive);
+            return f.contains(tableLink->tableName, Qt::CaseInsensitive);
         });
 
         if (file != files.end())
@@ -104,11 +104,11 @@ QStringList GetNormalFileList(const QStringList files,
                 args.append(QString("%1/%2").arg(info["url"], *file));*/
         }
 
-        for (const Link &childlnk : qAsConst(tableLink.links))
+        for (Link *childlnk : qAsConst(tableLink->links))
         {
             file = std::find_if(files.begin(), files.end(), [=](const QString &f)
             {
-                return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+                return f.contains(childlnk->tableName, Qt::CaseInsensitive);
             });
 
             if (file != files.end())
@@ -144,7 +144,7 @@ void GenerateOperation::run()
 
     SvnInfoMap info = SvnGetRepoInfo(Path);
 
-    QList<TableLinks> tableLinks;
+    TableLinksList tableLinks;
     bool IsUnicode = m_pWzrd->field("IsUnicode").toBool();
     QStringList files = m_pWzrd->userField("Files").toStringList();
     QStringList filesCleared = GetClearedFiles(files, tableLinks);

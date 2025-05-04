@@ -1,4 +1,17 @@
 #include "iterableobjectbase.h"
+#include <QSet>
+
+Q_GLOBAL_STATIC(QSet<Qt::HANDLE>, deletedObjects)
+
+bool CachedObjectDeleter::CheckObjectInCache(Qt::HANDLE obj)
+{
+    return deletedObjects->contains(obj);
+}
+
+void CachedObjectDeleter::InsertObjectToCache(Qt::HANDLE obj)
+{
+    deletedObjects->insert(obj);
+}
 
 IterableObjectBase::IterableObjectBase(QObject *parent) :
     QObject(parent)

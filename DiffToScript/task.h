@@ -43,9 +43,9 @@ private:
 
 QSharedPointer<QSettings> diffGetSettings();
 
-extern QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLinks);
+extern QStringList GetClearedFiles(const QStringList &files, QList<TableLinks *> &tableLinks);
 extern QStringList GetNormalFileList(const QStringList files,
-                                     const QList<TableLinks> &tableLinks,
+                                     const QList<TableLinks *> &tableLinks,
                                      std::function<void(const QString &file)> userfunc);
 
 extern void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int indentSpaces = 4);

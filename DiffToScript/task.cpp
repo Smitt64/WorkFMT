@@ -281,7 +281,7 @@ void Task::runNormalPathsTask()
 
     QStringList paths = array.split(";");
 
-    QList<TableLinks> tableLinks;
+    QList<TableLinks*> tableLinks;
     QStringList filesCleared = GetClearedFiles(paths, tableLinks);
 
     QList<QStringList> chunks;
@@ -289,11 +289,11 @@ void Task::runNormalPathsTask()
     if (!filesCleared.isEmpty())
         chunks.append(filesCleared);
 
-    for (const TableLinks &tableLink : qAsConst(tableLinks))
+    for (const TableLinks *tableLink : qAsConst(tableLinks))
     {
         QStringList::ConstIterator file = std::find_if(paths.begin(), paths.end(), [=](const QString &f)
         {
-            return f.contains(tableLink.tableName, Qt::CaseInsensitive);
+            return f.contains(tableLink->tableName, Qt::CaseInsensitive);
         });
 
         QStringList chunk;
@@ -301,11 +301,11 @@ void Task::runNormalPathsTask()
         if (file != paths.cend())
             chunk.append("!" + (*file));
 
-        for (const Link &childlnk : qAsConst(tableLink.links))
+        for (const Link *childlnk : qAsConst(tableLink->links))
         {
             file = std::find_if(paths.begin(), paths.end(), [=](const QString &f)
             {
-                return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+                return f.contains(childlnk->tableName, Qt::CaseInsensitive);
             });
 
             if (file != paths.cend())
@@ -417,7 +417,7 @@ void Task::runScriptTask()
     QString curDir = QFileInfo(QCoreApplication::applicationFilePath()).path();
 
     QVector<ScriptTable*> datTables;
-    QVector<TableLinks> tableLinks;
+    TableLinksList tableLinks;
 
     QSharedPointer<DiffConnection> conn;
 
@@ -444,20 +444,20 @@ void Task::runScriptTask()
             return;
         }
 
-        tableLinks.append(TableLinks());
-        TableLinks& tableLink = tableLinks.back();
+        tableLinks.append(new TableLinks());
+        TableLinks *tableLink = tableLinks.back();
         QString fileName = toolFullFileNameFromDir(QString("relations/%1.json")
                                                        .arg(linesParser.getLines({ltTable})[0].toLower()));
 
         if (QFile::exists(fileName))
         {
-            tableLink.loadLinks(fileName);
+            tableLink->loadLinks(fileName);
             qCInfo(logTask) << "Json from" << fileName << "loaded";
         }
         else
         {
             qCWarning(logTask) << "File not exist: " << fileName;
-            tableLink.tableName = linesParser.getLines({ltTable})[0].toLower();
+            tableLink->tableName = linesParser.getLines({ltTable})[0].toLower();
         }
 
         datTables.append(new ScriptTable());
@@ -484,7 +484,7 @@ void Task::runScriptTask()
         }
 
         datTable->loadFromFmt(&fmtTable, datfilepath);
-        datTable->InitUniqFields(&tableLink);
+        datTable->InitUniqFields(tableLink);
         qCInfo(logTask) << "Fields of" << datTable->name << "loaded. Count =" << datTable->fields.count();
 
         if (optns[ctoTableInfo].isSet)
@@ -529,5 +529,8 @@ void Task::runScriptTask()
     m_Result = ssm.build(os, joinTables.getRoot());
 
     qDeleteAll(datTables);
+
+    // Удаляется деструктором объекта IterableObject
+    //qDeleteAll(tableLinks);
 }
 

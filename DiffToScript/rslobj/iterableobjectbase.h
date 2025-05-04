@@ -55,11 +55,28 @@ protected:
     int m_currentIndex = -1; // Текущая позиция итератора
 };
 
-template<template<typename...> class Container, class T>
+struct CachedObjectDeleter
+{
+    template<typename T>
+    void operator()(T* obj)
+    {
+        if (!CheckObjectInCache(obj))
+        {
+            InsertObjectToCache(obj);
+            delete obj;
+        }
+    }
+
+    bool CheckObjectInCache(Qt::HANDLE obj);
+    void InsertObjectToCache(Qt::HANDLE obj);
+};
+
+template<template<typename...> class Container, class T, typename Deleter = std::default_delete<std::remove_pointer_t<T>>>
 class IterableObject : public IterableObjectBase, public Container<T>
 {
 public:
     using Container<T>::Container;
+    using value_type = std::conditional_t<std::is_pointer_v<T>, std::remove_pointer_t<T>, T>;
     using iterator = typename Container<T>::iterator;
     using const_iterator = typename Container<T>::const_iterator;
     using reverse_iterator = typename Container<T>::reverse_iterator;
@@ -80,7 +97,14 @@ public:
     virtual ~IterableObject()
     {
         if constexpr (std::is_pointer_v<T>)
-              qDeleteAll(*this);
+        {
+            for (T ptr : *this)
+            {
+                Deleter deleter;
+                if (ptr)
+                    deleter(ptr);
+            }
+        }
     }
 
     IterableObject& operator=(const IterableObject& other)
@@ -153,10 +177,10 @@ protected:
     }
 };
 
-template<typename T>
-using VectorIterableObject = IterableObject<QVector, T>;
+template<typename T, typename Deleter = std::default_delete<std::remove_pointer_t<T>>>
+using VectorIterableObject = IterableObject<QVector, T, Deleter>;
 
-template<typename T>
-using ListIterableObject = IterableObject<QList, T>;
+template<typename T, typename Deleter = std::default_delete<std::remove_pointer_t<T>>>
+using ListIterableObject = IterableObject<QList, T, Deleter>;
 
 #endif // ITERABLEOBJECTBASE_H

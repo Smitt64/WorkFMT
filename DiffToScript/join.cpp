@@ -1,20 +1,25 @@
 #include "join.h"
 #include "difflogging.h"
 
-
 int indexOfTable(const QVector<TableLinks>& tableLinks, QString name)
 {
     for (int i = 0; i < tableLinks.count(); ++i)
+    {
         if (tableLinks[i].tableName.toLower() == name)
             return i;
+    }
+
     return -1;
 }
 
 int indexOfLink(const Links& links, QString parentName)
 {
     for (int i = 0; i < links.count(); ++i)
-        if (links[i].tableName.toLower() == parentName)
+    {
+        if (links[i]->tableName.toLower() == parentName)
             return i;
+    }
+
     return -1;
 }
 
@@ -24,12 +29,97 @@ struct ParentChild
     int child;
 };
 
+// ----------------------------------------------------------------------------
+
+JoinIndex::JoinIndex(QObject* parent) :
+    QObject(parent)
+{
+
+}
+
+JoinIndex::JoinIndex(const JoinIndex& other)
+    : QObject(other.parent()),
+      IntegerVectorMap(other)
+{
+
+}
+
+JoinIndex::JoinIndex(JoinIndex&& other) noexcept
+    : QObject(other.parent()),
+      IntegerVectorMap(std::move(other))
+{
+
+}
+
+JoinIndex& JoinIndex::operator=(const JoinIndex& other)
+{
+    if (this != &other)
+    {
+        IntegerVectorMap::operator=(other);
+        setParent(other.parent());
+    }
+
+    return *this;
+}
+
+JoinIndex& JoinIndex::operator=(JoinIndex&& other) noexcept
+{
+    if (this != &other)
+    {
+        IntegerVectorMap::operator=(std::move(other));
+        setParent(other.parent());
+    }
+
+    return *this;
+}
+
+bool JoinIndex::hasValues(const int &id)
+{
+    return IntegerVectorMap::contains(id);
+}
+
+QVariantList JoinIndex::values(const int &id)
+{
+    QVariantList list;
+    const QVector<int> &vec = IntegerVectorMap::value(id);
+
+    for (auto item : vec)
+        list.append(item);
+
+    return list;
+}
+
+int JoinIndex::value(const int &id, const int &index)
+{
+    if (hasValues(id))
+    {
+        const QVector<int> &vec = IntegerVectorMap::value(id);
+        if (index >= 0 && index < vec.size())
+            return vec[index];
+    }
+
+    return -1;
+}
+
 void JoinIndex::append(int p, int c)
 {
     if (find(p) == end())
         (*this)[p] = QVector<int>();
     (*this)[p].push_back(c);
 }
+
+QVariantList JoinIndex::getIds() const
+{
+    QVariantList list;
+    QList<int> _keys = IntegerVectorMap::keys();
+
+    for (auto item : _keys)
+        list.append(item);
+
+    return list;
+}
+
+// ----------------------------------------------------------------------------
 
 QString findParentTable(const QVector<TableLinks>& tableLinks)
 {
@@ -45,18 +135,24 @@ QString findChildTable(QString parentName, const QVector<TableLinks>& tableLinks
 {
     for (const TableLinks& tableLink: tableLinks)
     {
-        for (const Link& link: tableLink.links)
-            if (link.tableName.toLower() == parentName.toLower())
-            return tableLink.tableName;
+        for (const Link *link: tableLink.links)
+        {
+            if (link->tableName.toLower() == parentName.toLower())
+                return tableLink.tableName;
+        }
     }
+
     return "";
 }
 
 const ScriptTable& findTable(QString name, const QVector<ScriptTable>& datTables)
 {
     for (const ScriptTable& tab: datTables)
+    {
         if (tab.name.toLower() == name.toLower())
             return tab;
+    }
+
     Q_ASSERT_X(false, "join.h, findTable. table not found", name.toStdString().c_str());
 }
 
@@ -66,14 +162,16 @@ Join::Join(JoinTable* parent, JoinTable* child, const TableLinks &parentTableLin
     this->parent = nullptr;
     this->child  = nullptr;
 
-    for (const Link& link:  parentTableLinks.links)
-        if (link.tableName.toLower() == child->scriptTable->name.toLower())
+    for (const Link *link: parentTableLinks.links)
+    {
+        if (link->tableName.toLower() == child->scriptTable->name.toLower())
         {
             this->child = child;
             child->joinList.append(this);
             qCInfo(logJoin) << "Child table =" << child->scriptTable->name;
 
         }
+    }
 
     if (parentTableLinks.tableName.toLower() == parent->scriptTable->name.toLower())
     {
@@ -85,6 +183,7 @@ Join::Join(JoinTable* parent, JoinTable* child, const TableLinks &parentTableLin
     bool b = (this->parent != nullptr && this->child != nullptr);
     if(!b)
         qCWarning(logJoin) << "Join::Join", "Parent or child tables are not defined.";
+
     Q_ASSERT_X(b , "Join::Join", "Parent or child tables are not defined.");
 
     qCInfo(logJoin) << "Created join " << parent->scriptTable->name << "-" << child->scriptTable->name;
@@ -104,20 +203,20 @@ bool Join::makeIndex(ScriptTable* parent, ScriptTable* child, const TableLinks &
     }
 
     //Запоминание номеров внешних полей для родительской и дочерней таблиц
-    for (const LinkField& linkField: parentTableLinks.links[linkIndex].fields)
+    for (const LinkField *linkField: parentTableLinks.links[linkIndex]->fields)
     {
         //Опреление внешнего индекса по названию поля и запоминание индекса
-        parentForeignFields.append(parent->fields.indexByFieldName(linkField.parentField));
+        parentForeignFields.append(parent->fields.indexByFieldName(linkField->parentField));
         if (parentForeignFields.back() == -1)
         {
-            qCWarning(logJoin) << "Not found field by name: " << linkField.parentField;
+            qCWarning(logJoin) << "Not found field by name: " << linkField->parentField;
             return false;
         }
 
-        childForeignFields.append(child->fields.indexByFieldName(linkField.field));
+        childForeignFields.append(child->fields.indexByFieldName(linkField->field));
         if (childForeignFields.back() == -1)
         {
-            qCWarning(logJoin) << "Not found field by name: " << linkField.field;
+            qCWarning(logJoin) << "Not found field by name: " << linkField->field;
             return false;
         }
     }
@@ -217,6 +316,16 @@ QVariantList Join::getParentForeignFields() const
     return list;
 }
 
+JoinIndex *Join::getIndexUpToDown()
+{
+    return &indexUpToDown;
+}
+
+JoinIndex *Join::getIndexDownToUp()
+{
+    return &indexDownToUp;
+}
+
 // ----------------------------------------------------------------------------
 
 JoinTableIterator JoinTableIterator::getChildTable()
@@ -282,18 +391,25 @@ const QStringList &JoinTable::getKeyFields() const
     return keyFields;
 }
 
+ScriptTable *JoinTable::getScriptTable()
+{
+    return scriptTable;
+}
+
 // ----------------------------------------------------------------------------
 
 JoinTables::~JoinTables()
 {
-    for (int i = 0; i < joins.count(); ++i)
-        delete joins[i];
+    // Удаляется деструктором объекта IterableObject
+    /*for (int i = 0; i < joins.count(); ++i)
+        delete joins[i];*/
 }
 
-void JoinTables::add(ScriptTable *datTable, const TableLinks &tableLinks)
+void JoinTables::add(ScriptTable *datTable, TableLinks *tableLinks)
 {
-    joinTableList.append(new JoinTable(datTable, tableLinks));
+    joinTableList.append(new JoinTable(datTable, *tableLinks));
     tableLinksList.append(tableLinks);
+
     qCInfo(logJoinTables) << "Added table" << datTable->name;
     build();
 }
@@ -301,18 +417,18 @@ void JoinTables::add(ScriptTable *datTable, const TableLinks &tableLinks)
 void JoinTables::build()
 {
     qCInfo(logJoinTables) << "Rebuild table joines. JoinTable count =" << joinTableList.count();
-    for (const TableLinks& tableLinks: tableLinksList)
+    for (TableLinks *tableLinks: qAsConst(tableLinksList))
     {
-        QString parent = tableLinks.tableName;
-        for (const Link& link: tableLinks.links)
+        QString parent = tableLinks->tableName;
+        for (const Link *link: tableLinks->links)
         {
-            QString child = link.tableName;
+            QString child = link->tableName;
             JoinTable* parentJoinTable = tableByName(parent);
             JoinTable* childJoinTable = tableByName(child);
             if (parentJoinTable != nullptr && childJoinTable != nullptr)
             {
                 if (!hasJoin(parent, child))
-                    joins.append(new Join(parentJoinTable, childJoinTable, tableLinks));
+                    joins.append(new Join(parentJoinTable, childJoinTable, *tableLinks));
             }
         }
     }
@@ -343,18 +459,33 @@ bool JoinTables::hasJoin(QString parent, QString child)
 JoinTable *JoinTables::getRoot()
 {
     JoinTable *table= nullptr;
-    Join *parentJoin= nullptr;
+    //Join *parentJoin= nullptr;
 
     if (!joinTableList.count())
         return nullptr;
 
     table = joinTableList[0];
-    parentJoin = table->getParentJoin();
+    //parentJoin = table->getParentJoin();
 
     while (table->getParentJoin() != nullptr)
         table = table->getParentJoin()->parent;
 
     return table;
+}
+
+JoinTableList *JoinTables::getJoinTableList()
+{
+    return &joinTableList;
+}
+
+JoinList *JoinTables::getJoins()
+{
+    return &joins;
+}
+
+TableLinksList *JoinTables::getTableLinksList()
+{
+    return &tableLinksList;
 }
 
 // ---------------------------------------------------------------------------------------
