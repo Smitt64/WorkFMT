@@ -6,6 +6,8 @@
 #include "cmdparser.h"
 #include "taskoptions.h"
 #include "difftoscripttest.h"
+#include "difflogging.h"
+#include "toolsruntime.h"
 #include <QMessageBox>
 #include <QFileInfo>
 //#include <QApplication>
@@ -27,6 +29,19 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules(QStringLiteral("Fmt=false\nSql=false\nCore=false\n*.info=true"));
     return 0;
 #endif*/
+
+    toolLoggingCategoryListAdd(logDiff());
+    toolLoggingCategoryListAdd(logLinesParser());
+    toolLoggingCategoryListAdd(logScriptTable());
+    toolLoggingCategoryListAdd(logDatTable());
+    toolLoggingCategoryListAdd(logRecordParser());
+    toolLoggingCategoryListAdd(logLinesParserMain());
+    toolLoggingCategoryListAdd(logTableLinks());
+    toolLoggingCategoryListAdd(logJoin());
+    toolLoggingCategoryListAdd(logSqlScriptMain());
+    toolLoggingCategoryListAdd(logJoinTable());
+    toolLoggingCategoryListAdd(logJoinTables());
+    toolLoggingCategoryListAdd(logTask());
 
     rslAddStaticMacroDir(".\\mac\\difftoscript");
 
