@@ -21,6 +21,7 @@
 #include <QScrollBar>
 #include <QTabWidget>
 #include <limits>
+#include <QAbstractButton>
 
 enum
 {
@@ -377,6 +378,7 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
     m_Errors = new ErrorsModel();
     m_pOracle = new CodeEditor(this);
     m_pPostgres = new CodeEditor(this);
+    m_Finished = false;
 
     m_pTabWidget = new QTabWidget(this);
     layout()->addWidget(m_pTabWidget);
@@ -392,6 +394,8 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
 
     ToolApplyHighlighter(m_pOracle, HighlighterSql);
     ToolApplyHighlighter(m_pPostgres, HighlighterSql);
+
+    setCommitPage(true);
 }
 
 ScriptsPage::~ScriptsPage()
@@ -413,6 +417,10 @@ void ScriptsPage::postgresScriptReady(const QString &data)
 
 void ScriptsPage::finished()
 {
+    m_Finished = true;
+    wizard()->button(QWizard::CustomButton2)->setVisible(true);
+    emit completeChanged();
+
     if (m_Errors->isEmpty())
         return;
 
@@ -442,6 +450,7 @@ void ScriptsPage::initializePage()
         m_pTabWidget->tabBar()->setVisible(true);
     }
 
+    m_Finished = false;
     m_pOracle->clear();
     m_pPostgres->clear();
     m_Errors->clear();
@@ -451,7 +460,12 @@ void ScriptsPage::initializePage()
 
     connect(oper, &GenerateOperation::oracleScriptReady, this, &ScriptsPage::oracleScriptReady);
     connect(oper, &GenerateOperation::postgresScriptReady, this, &ScriptsPage::postgresScriptReady);
-    connect(oper, &GenerateOperation::finished, this, &ScriptsPage::finished);
+    connect(oper, SIGNAL(finished()), this, SLOT(finished()), Qt::QueuedConnection);
 
     QThreadPool::globalInstance()->start(oper);
+}
+
+bool ScriptsPage::isComplete() const
+{
+    return m_Finished;
 }

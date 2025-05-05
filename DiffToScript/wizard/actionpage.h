@@ -21,6 +21,7 @@ public:
     ~ActionPage();
 
     virtual bool isComplete() const Q_DECL_OVERRIDE;
+    virtual void initializePage() Q_DECL_OVERRIDE;
 
 private slots:
     void on_selFolderBtn_clicked();
@@ -47,6 +48,8 @@ public:
     virtual Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
+
+    void resetCheckstate();
 
 signals:
     void checkChanged();

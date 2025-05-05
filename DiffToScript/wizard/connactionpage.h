@@ -20,6 +20,7 @@ public:
 
     virtual bool isComplete() const Q_DECL_OVERRIDE;
     virtual bool validatePage() Q_DECL_OVERRIDE;
+    virtual void initializePage() Q_DECL_OVERRIDE;
 
 private slots:
     void on_connectionsTree_clicked(const QModelIndex &index);

@@ -78,6 +78,11 @@ QStringList DatSatatusModel::files()
     return lst;
 }
 
+void DatSatatusModel::resetCheckstate()
+{
+    m_CheckSate.clear();
+}
+
 // ---------------------------------------------------------------------------
 
 ActionPage::ActionPage(QWidget *parent) :
@@ -142,6 +147,23 @@ ActionPage::ActionPage(QWidget *parent) :
 ActionPage::~ActionPage()
 {
     delete ui;
+}
+
+void ActionPage::initializePage()
+{
+    m_pStatusModel->setSourceModel(nullptr);
+
+    if (m_pModel)
+        delete m_pModel;
+
+    m_pModel = new SvnSatatusModel(this);
+    m_pStatusModel->setSourceModel(m_pModel);
+    m_pStatusModel->resetCheckstate();
+
+    ui->listView->setModel(m_pStatusModel);
+    ui->listView->setModelColumn(SvnSatatusModel::fld_FileName);
+
+    wizard()->button(QWizard::CustomButton2)->setVisible(false);
 }
 
 void ActionPage::on_selFolderBtn_clicked()

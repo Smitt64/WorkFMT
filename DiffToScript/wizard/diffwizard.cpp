@@ -32,15 +32,21 @@ DiffWizard::DiffWizard(QWidget *parent) :
     setOption(QWizard::HaveHelpButton);
     setOption(QWizard::HelpButtonOnRight, false);
     setOption(QWizard::HaveCustomButton1);
+    setOption(QWizard::HaveCustomButton2);
+    setOption(QWizard::NoCancelButtonOnLastPage);
+    setOption(QWizard::DisabledBackButtonOnLastPage);
 
     QAbstractButton *helpbtn = button(QWizard::HelpButton);
     QAbstractButton *settingsbtn = button(QWizard::CustomButton1);
+    QAbstractButton *restartbtn = button(QWizard::CustomButton2);
 
     QList<QWizard::WizardButton> layout;
     layout << QWizard::BackButton << QWizard::HelpButton << QWizard::CustomButton1 << QWizard::Stretch
-            << QWizard::NextButton << QWizard::FinishButton << QWizard::CancelButton;
+            << QWizard::NextButton << QWizard::CustomButton2 << QWizard::FinishButton << QWizard::CancelButton;
     setButtonLayout(layout);
+
     setButtonText(QWizard::CustomButton1, tr("Параметры"));
+    setButtonText(QWizard::CustomButton2, tr("Рестарт"));
 
     connect(helpbtn, &QAbstractButton::clicked, [=]()
     {
@@ -53,6 +59,8 @@ DiffWizard::DiffWizard(QWidget *parent) :
         DiffOptionsDlg dlg(settings.data(), this);
         dlg.exec();
     });
+
+    connect(restartbtn, &QAbstractButton::clicked, this, &DiffWizard::restart);
 }
 
 DiffWizard::~DiffWizard()
