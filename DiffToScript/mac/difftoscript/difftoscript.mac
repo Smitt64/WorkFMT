@@ -1,0 +1,6 @@
+/*
+$Name:        difftoscript.mac
+$Description: Макрос с объявлениями глобальных переменных
+*/
+
+var {Options}; 

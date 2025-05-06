@@ -38,7 +38,9 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     recordparser.cpp \
+    rslobj/difftoscripexecutor.cpp \
     rslobj/iterableobjectbase.cpp \
+    rslobj/regobjects.cpp \
     rslobj/sqlstringlist.cpp \
     rslobj/tablefilesmodel.cpp \
     rslobj/taskoptionscontainer.cpp \
@@ -86,6 +88,7 @@ HEADERS += \
     linesparsermain.h \
     mainwindow.h \
     recordparser.h \
+    rslobj/difftoscripexecutor.h \
     rslobj/iterableobjectbase.h \
     rslobj/sqlstringlist.h \
     rslobj/tablefilesmodel.h \

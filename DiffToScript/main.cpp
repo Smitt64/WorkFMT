@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     toolLoggingCategoryListAdd(logTask());
 
     rslAddStaticMacroDir(".\\mac\\difftoscript");
+    registerRslObjects();
 
     if (argc > 1)
     {

@@ -81,9 +81,6 @@ public:
 
     QVector<QStringList> getRecords(std::initializer_list<LineType> types);
     Q_INVOKABLE QVariantList getRecords(const QVariantList &types);
-
-private:
-    int m_currentIndex = -1; // Текущая позиция итератора
 };
 
 Q_DECLARE_OPAQUE_POINTER(DatRecord);

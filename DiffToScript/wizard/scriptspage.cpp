@@ -255,10 +255,16 @@ void GenerateOperation::run()
 
         if (f.open(QIODevice::ReadOnly))
         {
-            QTextStream ostream(&f);
-            ostream.setCodec("IBM 866");
-            ostream.seek(0);
+            QByteArray data = f.readAll();
 
+            QTextStream ostream(&f);
+
+            if (!data.contains("Execution finished with errors"))
+                ostream.setCodec("IBM 866");
+            else
+                ostream.setCodec("Windows-1251");
+
+            ostream.seek(0);
             result = ostream.readAll();
             f.close();
         }

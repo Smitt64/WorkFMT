@@ -27,6 +27,9 @@
 #include <QDomElement>
 #include "qloggingcategory.h"
 #include "diffmodeparser.h"
+#include "rslobj/tablefilesmodel.h"
+#include "rslobj/difftoscripexecutor.h"
+#include <rsscript/registerobjlist.hpp>
 #include <QSettings>
 
 QString serializeNormalPathsToJson(const QList<QStringList>& chunks)
@@ -525,8 +528,20 @@ void Task::runScriptTask()
 
     SqlScriptMain ssm(dbSpelling, conn);
 
-    qInfo(logTask) << "Start sql building.";
-    m_Result = ssm.build(os, joinTables.getRoot());
+    QString macroname = tableMacro(joinTables.getRoot()->scriptTable->name);
+
+    if (macroname.isEmpty())
+    {
+        qInfo(logTask) << "Start sql building.";
+        m_Result = ssm.build(os, joinTables.getRoot());
+    }
+    else
+    {
+        DiffToScripExecutor executor;
+        executor.setDebugMacroFlag(true);
+        executor.setTaskOptions(&optns);
+        executor.playRep(macroname);
+    }
 
     qDeleteAll(datTables);
 
@@ -534,3 +549,14 @@ void Task::runScriptTask()
     //qDeleteAll(tableLinks);
 }
 
+QString Task::tableMacro(const QString &table)
+{
+    QSharedPointer<QSettings> settings = diffGetSettings();
+    TableFilesModel model(settings.data());
+
+    rslObjList()->applyMacroDirs();
+    QStringList inc = rslObjList()->incDirs().split(";");
+    model.loadFromDirectories(inc);
+
+    return model.getSelectedFileForTable(table);
+}

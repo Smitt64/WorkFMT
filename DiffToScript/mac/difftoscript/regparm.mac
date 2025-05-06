@@ -1,8 +1,12 @@
 /*
 $Author: Serpkov
-$Description: ╨Ь╨░╨║╤А╨╛╤Б ╨│╨╡╨╜╨╡╤А╨░╤Ж╨╕╨╕ ╤Б╨║╤А╨╕╨┐╤В╨░ ╨┤╨╗╤П ╤В╨░╨▒╨╗╨╕╤Ж dregparm_dbt ╨╕ dregval_dbt
+$Description: Макрос генерации скрипта для таблиц dregparm_dbt и dregval_dbt
 $Table: dregparm_dbt
 */
 
+import "difftoscript.mac";
+
 macro GenSqlScrpt()
+    debugbreak;
+    println("324"); 
 end;

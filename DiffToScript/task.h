@@ -34,6 +34,7 @@ signals:
     void finished();
 
 private:
+    QString tableMacro(const QString &table);
     void showAppInfo(QTextStream& os);
     void makeInputBuff(QString& buff, const TaskOptions& optns);
     void makeOutputStream(QTextStream& os, const TaskOptions& optns);
@@ -49,5 +50,7 @@ extern QStringList GetNormalFileList(const QStringList files,
                                      std::function<void(const QString &file)> userfunc);
 
 extern void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int indentSpaces = 4);
+extern void registerRslObjects();
+extern void addRslObjects();
 
 #endif // TASK_H
