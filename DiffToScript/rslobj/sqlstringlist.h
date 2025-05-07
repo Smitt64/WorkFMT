@@ -8,19 +8,22 @@ class SqlStringList : public QObject
     Q_OBJECT
     Q_PROPERTY(int size READ size NOTIFY sizeChanged)          // Размер списка
     Q_PROPERTY(QStringList lines READ lines NOTIFY linesChanged)  // Содержимое списка
-
+    Q_PROPERTY(QString sql READ sqlText CONSTANT)
 public:
     explicit SqlStringList(QObject *parent = nullptr);
     SqlStringList(QStringList* list, QObject *parent = nullptr);
     virtual ~SqlStringList();
 
+    Q_INVOKABLE void append(const QString& str);
+    Q_INVOKABLE void append(const QStringList& strings);
+
     // Основные методы
-    SqlStringList& append(const QString& str);
-    SqlStringList& append(const QStringList& strings);
+    //SqlStringList& append(const QString& str);
+    //SqlStringList& append(const QStringList& strings);
 
     // Перегрузка операторов
-    SqlStringList& operator<<(const QString& str);
-    SqlStringList& operator<<(const QStringList& strings);
+    //SqlStringList& operator<<(const QString& str);
+    //SqlStringList& operator<<(const QStringList& strings);
 
     // Геттеры
     QStringList stringList() const;  // Возвращает копию списка
@@ -29,6 +32,8 @@ public:
 
     // Указатель на внутренний список
     QStringList* data() const;
+
+    QString sqlText() const;
 
 signals:
     void sizeChanged(int newSize);

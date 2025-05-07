@@ -10,6 +10,7 @@ class IterableObjectBase : public QObject
     Q_OBJECT
     Q_PROPERTY(int size READ GetSize CONSTANT)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex)
+    Q_PROPERTY(QVariantList records READ getRecords CONSTANT)
 public:
     IterableObjectBase(QObject *parent = nullptr);
     IterableObjectBase(IterableObjectBase&& other) noexcept;
@@ -36,12 +37,14 @@ public:
     Q_INVOKABLE int currentIndex() const;
 
     // Установить текущую позицию итератора
-    Q_INVOKABLE void setCurrentIndex(const int &index);
+    void setCurrentIndex(const int &index);
 
     Q_INVOKABLE QVariant next();
     Q_INVOKABLE QVariant previous();
 
     Q_INVOKABLE QVariant record(int index) const;
+
+    QVariantList getRecords() const;
 
 protected:
     virtual int GetSize() const;

@@ -29,6 +29,7 @@
 #include "diffmodeparser.h"
 #include "rslobj/tablefilesmodel.h"
 #include "rslobj/difftoscripexecutor.h"
+#include "rslobj/sqlstringlist.h"
 #include <rsscript/registerobjlist.hpp>
 #include <QSettings>
 
@@ -527,20 +528,29 @@ void Task::runScriptTask()
         dbSpelling.reset(new DbSpellingOracle());
 
     SqlScriptMain ssm(dbSpelling, conn);
-
     QString macroname = tableMacro(joinTables.getRoot()->scriptTable->name);
 
+    QStringList sql;
     if (macroname.isEmpty())
     {
         qInfo(logTask) << "Start sql building.";
-        m_Result = ssm.build(os, joinTables.getRoot());
+        m_Result = ssm.build(sql, joinTables.getRoot());
+
+        os << sql.join("\n");
     }
     else
     {
+        SqlStringList SqlList(&sql);
         DiffToScripExecutor executor;
-        executor.setDebugMacroFlag(true);
+        //executor.setDebugMacroFlag(true);
         executor.setTaskOptions(&optns);
+        executor.setSqlStringList(&SqlList);
+        executor.setDbSpelling(dbSpelling.data());
+        executor.setJoinTables(&joinTables);
+
         executor.playRep(macroname);
+
+        os << sql.join("\n");
     }
 
     qDeleteAll(datTables);

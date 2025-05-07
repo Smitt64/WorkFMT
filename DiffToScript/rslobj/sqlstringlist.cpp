@@ -30,7 +30,7 @@ SqlStringList::~SqlStringList()
     }
 }
 
-SqlStringList& SqlStringList::append(const QString& str)
+/*SqlStringList& SqlStringList::append(const QString& str)
 {
     if (m_list)
     {
@@ -52,9 +52,29 @@ SqlStringList& SqlStringList::append(const QStringList& strings)
     }
 
     return *this;
+}*/
+
+void SqlStringList::append(const QString& str)
+{
+    if (m_list)
+    {
+        m_list->append(str);
+        emit sizeChanged(m_list->size());
+        emit linesChanged();
+    }
 }
 
-SqlStringList& SqlStringList::operator<<(const QString& str)
+void SqlStringList::append(const QStringList& strings)
+{
+    if (m_list)
+    {
+        m_list->append(strings);
+        emit sizeChanged(m_list->size());
+        emit linesChanged();
+    }
+}
+
+/*SqlStringList& SqlStringList::operator<<(const QString& str)
 {
     return append(str);
 }
@@ -62,7 +82,7 @@ SqlStringList& SqlStringList::operator<<(const QString& str)
 SqlStringList& SqlStringList::operator<<(const QStringList& strings)
 {
     return append(strings);
-}
+}*/
 
 QStringList SqlStringList::stringList() const
 {
@@ -85,6 +105,11 @@ QStringList SqlStringList::lines() const
     }
 
     return result;
+}
+
+QString SqlStringList::sqlText() const
+{
+    return m_list->join('\n');
 }
 
 QStringList* SqlStringList::data() const

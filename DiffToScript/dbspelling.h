@@ -9,6 +9,14 @@
 class DbSpelling : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString chr READ chr CONSTANT)
+    Q_PROPERTY(QString nvl READ nvl CONSTANT)
+    Q_PROPERTY(bool needDropFunctions READ needDropFunctions CONSTANT)
+    Q_PROPERTY(int functionDeclare READ functionDeclare CONSTANT)
+
+    Q_PROPERTY(QStringList declare READ getDeclare CONSTANT)
+    Q_PROPERTY(QStringList begin_ READ getBegin CONSTANT)
+    Q_PROPERTY(QStringList end_ READ getEnd CONSTANT)
 public:
     enum ExcceptionType
     {
@@ -24,14 +32,16 @@ public:
 
     Q_INVOKABLE virtual QString toDate(const QString& value);
     Q_INVOKABLE virtual QString toBlob(const QString& value);
-    Q_INVOKABLE virtual QString chr();
-    Q_INVOKABLE virtual QString nvl();
+
+    virtual QString chr();
+    virtual QString nvl();
+
     Q_INVOKABLE virtual void setSpelling(const DiffFields& fields, QStringList& values);
     Q_INVOKABLE virtual QString callProcedure(const QString &proc);
 
-    Q_INVOKABLE virtual bool needDropFunctions() const;
+    virtual bool needDropFunctions() const;
     Q_INVOKABLE virtual QString dropFunction(const QString &proc, const QString &fullproc, const QString &returnType) const;
-    Q_INVOKABLE virtual int functionDeclare() const;
+    virtual int functionDeclare() const;
 
     Q_INVOKABLE virtual void functionChunks(QStringList &BeginCreateReplace,
                                 QStringList &EndCreateReplace,
@@ -39,9 +49,9 @@ public:
                                 const QString &params,
                                 const QString &returnType) = 0;
 
-    Q_INVOKABLE virtual QStringList getDeclare() = 0;
-    Q_INVOKABLE virtual QStringList getBegin() = 0;
-    Q_INVOKABLE virtual QStringList getEnd() = 0;
+    virtual QStringList getDeclare() = 0;
+    virtual QStringList getBegin() = 0;
+    virtual QStringList getEnd() = 0;
 
     Q_INVOKABLE virtual QString blobTypeName(const int &type) = 0;
     Q_INVOKABLE virtual QString functionParamType(const qint16 &type) = 0;

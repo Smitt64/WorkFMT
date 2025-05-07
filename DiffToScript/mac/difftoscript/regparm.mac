@@ -4,9 +4,14 @@ $Description: Макрос генерации скрипта для таблиц dregparm_dbt и dregval_dbt
 $Table: dregparm_dbt
 */
 
-import "difftoscript.mac";
+import "difftoscript.mac", Fmt;
 
-macro GenSqlScrpt()
-    debugbreak;
-    println("324"); 
+macro GenSqlScrpt(joinTables)
+    var joinTable = joinTables.getRoot();
+
+    {SqlStrings}.append({Spelling}.declare);
+    {SqlStrings}.append({Spelling}.begin_);
+    {SqlStrings}.append({Spelling}.end_);
+
+    println(1324);
 end;

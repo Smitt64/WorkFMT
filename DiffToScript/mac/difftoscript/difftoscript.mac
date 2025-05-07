@@ -3,4 +3,6 @@ $Name:        difftoscript.mac
 $Description: Макрос с объявлениями глобальных переменных
 */
 
-var {Options}; 
+var {Options};
+var {SqlStrings};
+var {Spelling};

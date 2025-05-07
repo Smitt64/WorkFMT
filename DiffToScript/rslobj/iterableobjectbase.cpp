@@ -129,3 +129,13 @@ QVariant IterableObjectBase::record(int index) const
 {
     return GetRecord(index);
 }
+
+QVariantList IterableObjectBase::getRecords() const
+{
+    QVariantList list;
+
+    for (int i = 0; i < GetSize(); ++i)
+        list.append(GetRecord(i));
+
+    return list;
+}

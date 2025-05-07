@@ -435,7 +435,7 @@ QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecor
     return where;
 }
 
-int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding)
+int SqlScriptMain::buildInsertStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding)
 {
     DatRecord *rec = joinTable->scriptTable->records[recIndex];
 
@@ -497,7 +497,7 @@ int SqlScriptMain::buildInsertStatement(QTextStream& os, const JoinTable* joinTa
     return ++recIndex;
 }
 
-int SqlScriptMain::buildDeleteStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int recIndex)
+int SqlScriptMain::buildDeleteStatement(const JoinTable *joinTable, QStringList &sql, int recIndex)
 {
     DatRecord *rec = joinTable->scriptTable->records[recIndex];
 
@@ -522,7 +522,7 @@ int SqlScriptMain::buildDeleteStatement(QTextStream &os, const JoinTable *joinTa
 }
 
 
-int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int oldIndex, int newIndex)
+int SqlScriptMain::buildUpdateStatement(const JoinTable *joinTable, QStringList &sql, int oldIndex, int newIndex)
 {
     DatRecord *oldRec = joinTable->scriptTable->records[oldIndex];
     DatRecord *newRec = joinTable->scriptTable->records[newIndex];
@@ -583,7 +583,7 @@ int SqlScriptMain::buildUpdateStatement(QTextStream &os, const JoinTable *joinTa
     return ++oldIndex;
 }
 
-int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
+int SqlScriptMain::buildStatement(JoinTable* joinTable,
                                   QStringList& sql,
                                   int recIndex,
                                   Join* childJoin,
@@ -605,18 +605,18 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
     {
         qCInfo(logSqlScriptMain) << "Build script for insert. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
 
-        buildInsertStatement(os, joinTable, sql, recIndex, childPadding);
+        buildInsertStatement(joinTable, sql, recIndex, childPadding);
         joinTable->processedRecords[recIndex] = true;
         int autoIncIndex = getAutoincIndex(joinTable->scriptTable);
         if (autoIncIndex == -1)
-            buildChildStatement(os, joinTable, sql, recIndex, childPadding);
+            buildChildStatement(joinTable, sql, recIndex, childPadding);
         else
         {
             QString variable = buildVariableName(joinTable->scriptTable);
             sql.append(childPadding + Padding(1) + QString("IF %1 <> -1 THEN")
                        .arg(variable));
 
-            buildChildStatement(os, joinTable, sql, recIndex, childPadding + Padding(1));
+            buildChildStatement(joinTable, sql, recIndex, childPadding + Padding(1));
 
             sql.append(Padding(1) + "END IF;");
         }
@@ -624,8 +624,8 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
     else if (rec->lineType == ltDelete)
     {
         qCInfo(logSqlScriptMain) << "Build script for delete. Table " << joinTable->scriptTable->name << ", record index" << recIndex;
-        buildDeleteStatement(os, joinTable, sql, recIndex);
-        buildChildStatement(os, joinTable, sql, recIndex);
+        buildDeleteStatement(joinTable, sql, recIndex);
+        buildChildStatement(joinTable, sql, recIndex);
         joinTable->processedRecords[recIndex] = true;
     }
     else if (rec->lineType == ltUpdate)
@@ -647,8 +647,8 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
         if (newIndex < joinTable->scriptTable->records.size())
         {
             toScript(joinTable, joinTable->scriptTable->records[newIndex]);
-            buildUpdateStatement(os, joinTable, sql, oldIndex, newIndex);
-            buildChildStatement(os, joinTable, sql, newIndex);
+            buildUpdateStatement(joinTable, sql, oldIndex, newIndex);
+            buildChildStatement(joinTable, sql, newIndex);
             joinTable->processedRecords[oldIndex] = true;
             joinTable->processedRecords[newIndex] = true;
         }
@@ -664,7 +664,7 @@ int SqlScriptMain::buildStatement(QTextStream& os, JoinTable* joinTable,
     return nextRecIndex;
 }
 
-int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJoinTable, QStringList &sql, int recIndex, const QString &childPadding)
+int SqlScriptMain::buildChildStatement(const JoinTable *parentJoinTable, QStringList &sql, int recIndex, const QString &childPadding)
 {
     int nextRecIndex = recIndex + 1;
 
@@ -689,7 +689,7 @@ int SqlScriptMain::buildChildStatement(QTextStream &os, const JoinTable *parentJ
                 << "Parent primary keys =" << childJoin->getValuesByIndex(childJoin->parentForeignFields, childJoin->parent->scriptTable->records[recIndex])
                 << ". Child records count =" << childJoin->indexUpToDown[recIndex].count();
         for (int childIndex: childJoin->indexUpToDown[recIndex])
-            buildStatement(os, childJoin->child, sql, childIndex, childJoin, ParentValuesByIndex, childPadding);
+            buildStatement(childJoin->child, sql, childIndex, childJoin, ParentValuesByIndex, childPadding);
     }
     return nextRecIndex;
 }
@@ -699,6 +699,8 @@ const JoinTable* getParent(JoinTable* joinTable)
     for (const Join* join: qAsConst(joinTable->joinList))
         if (join->child->scriptTable->name.toLower() == joinTable->scriptTable->name.toLower())
             return join->parent;
+
+    return nullptr;
 }
 
 void SqlScriptMain::checkDatFldsCount(QStringList& sql, JoinTable* joinTable)
@@ -719,7 +721,7 @@ void SqlScriptMain::checkDatFldsCount(QStringList& sql, JoinTable* joinTable)
         CheckFlds(*childJoin->child->scriptTable);
 }
 
-int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
+int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable)
 {
     int stat = 0;
     if (!joinTable)
@@ -729,7 +731,6 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
     StdErr.setCodec("IBM 866");
 
     QStringList variables = makeVariables(joinTable);
-    QStringList sql;
 
     QStringList errors;
     checkDatFldsCount(errors, joinTable);
@@ -809,7 +810,7 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
     for (int recno = 0; recno < joinTable->scriptTable->records.count(); )
     {
         int oldSize = sql.size();
-        recno = buildStatement(os, joinTable, sql, recno);
+        recno = buildStatement(joinTable, sql, recno);
         if (sql.size() != oldSize)
             sql.append(QString());
     }
@@ -834,7 +835,7 @@ int SqlScriptMain::build(QTextStream& os, JoinTable* joinTable)
                 << QString();
         }
     }
-    os << sql.join("\n");
+    //sql << sql.join("\n");
 
     return stat;
 }

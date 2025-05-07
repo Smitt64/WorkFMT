@@ -6,6 +6,8 @@
 #include "dbspellingoracle.h"
 #include "dbspellingpostgres.h"
 #include "taskoptionscontainer.h"
+#include "sqlstringlist.h"
+#include "sqlscriptmain.h"
 
 #define REGISTER_DIFF_OBJ(Type) RegisterObjList::inst()->RegisterRslObject<Type>(GenInfoUseParentProps | GenInfoUseParentMeths)
 #define ADDTORSL_DIFF_OBJ(Type, CanCreate) RegisterObjList::inst()->AddObject<Type>(CanCreate)
@@ -38,6 +40,8 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(DatRecord);
     REGISTER_DIFF_OBJ(DatRecords);
     REGISTER_DIFF_OBJ(TaskOptionsContainer);
+    REGISTER_DIFF_OBJ(SqlStringList);
+    REGISTER_DIFF_OBJ(SqlScriptMain);
 }
 
 void addRslObjects()
@@ -57,6 +61,8 @@ void addRslObjects()
     rslAddConstant("lutOld", lutOld);
     rslAddConstant("lutNew", lutNew);
     rslAddConstant("lutLast", lutLast);
+
+    rslAddModule("Fmt");
 
     ADDTORSL_DIFF_OBJ(IterableObjectBase, false);
     ADDTORSL_DIFF_OBJ(SqlStringList, false);
@@ -85,4 +91,6 @@ void addRslObjects()
     ADDTORSL_DIFF_OBJ(DatRecords, false);
 
     ADDTORSL_DIFF_OBJ(TaskOptionsContainer, false);
+    ADDTORSL_DIFF_OBJ(SqlStringList, false);
+    ADDTORSL_DIFF_OBJ(SqlScriptMain, false);
 }
