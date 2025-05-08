@@ -8,6 +8,10 @@
 #include "taskoptionscontainer.h"
 #include "sqlstringlist.h"
 #include "sqlscriptmain.h"
+#include "diffconnection.h"
+#include "fmttableslist.h"
+#include "recordparser.h"
+#include "rslexecutor.h"
 
 #define REGISTER_DIFF_OBJ(Type) RegisterObjList::inst()->RegisterRslObject<Type>(GenInfoUseParentProps | GenInfoUseParentMeths)
 #define ADDTORSL_DIFF_OBJ(Type, CanCreate) RegisterObjList::inst()->AddObject<Type>(CanCreate)
@@ -42,6 +46,9 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(TaskOptionsContainer);
     REGISTER_DIFF_OBJ(SqlStringList);
     REGISTER_DIFF_OBJ(SqlScriptMain);
+    REGISTER_DIFF_OBJ(DiffConnection);
+    REGISTER_DIFF_OBJ(FmtTablesList);
+    REGISTER_DIFF_OBJ(RecordParser);
 }
 
 void addRslObjects()
@@ -93,4 +100,7 @@ void addRslObjects()
     ADDTORSL_DIFF_OBJ(TaskOptionsContainer, false);
     ADDTORSL_DIFF_OBJ(SqlStringList, false);
     ADDTORSL_DIFF_OBJ(SqlScriptMain, false);
+    ADDTORSL_DIFF_OBJ(DiffConnection, false);
+    ADDTORSL_DIFF_OBJ(FmtTablesList, false);
+    ADDTORSL_DIFF_OBJ(RecordParser, true);
 }

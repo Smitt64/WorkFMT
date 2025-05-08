@@ -4,6 +4,8 @@
 #include "taskoptions.h"
 #include <rslexecutor.h>
 
+using RslGlobalsMap = std::map<QString, QVariant>;
+
 class DbSpelling;
 class SqlStringList;
 class TaskOptionsContainer;
@@ -15,22 +17,18 @@ public:
     DiffToScripExecutor(QObject *parent = nullptr);
     virtual ~DiffToScripExecutor();
 
-    void setTaskOptions(const TaskOptions *opts);
-    void setSqlStringList(SqlStringList *opts);
-    void setDbSpelling(DbSpelling *opts);
     void setJoinTables(JoinTables *opts);
+    void setGlobalsVariables(const RslGlobalsMap &globals);
 
 protected:
     virtual void PlayRepProc() Q_DECL_OVERRIDE;
+    virtual void onSetStModuleAdd() Q_DECL_OVERRIDE;
     virtual void onWriteOut(const QString &msg) Q_DECL_OVERRIDE;
     virtual void onInspectModuleSymbol(Qt::HANDLE sym) Q_DECL_OVERRIDE;
 
 private:
-    SqlStringList *m_pSqlList;
-    DbSpelling *m_pDbSpelling;
     JoinTables *m_pJoinTables;
-
-    QScopedPointer<TaskOptionsContainer> m_pTaskOptionsContainer;
+    RslGlobalsMap m_GlobalsVariables;
 };
 
 #endif // DIFFTOSCRIPEXECUTOR_H

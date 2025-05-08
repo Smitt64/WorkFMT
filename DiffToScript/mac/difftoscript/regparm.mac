@@ -4,7 +4,24 @@ $Description: Макрос генерации скрипта для таблиц dregparm_dbt и dregval_dbt
 $Table: dregparm_dbt
 */
 
-import "difftoscript.mac", Fmt;
+import "difftoscript.mac", sql, ToolsRuntime;
+
+private macro GetTemporaryDBaseName(debugmode)
+    if (debugmode)
+        var dir = IoDir(ToolsRuntime.applicationDirPath());
+        return dir.absoluteFilePath("DiffToScript_debug.sqlite");
+    end;
+
+    return ":memory:";
+end;
+
+private macro OpenTemporaryDBase()
+    var db = SqlDatabase("QSQLITE");
+    db.databaseName = GetTemporaryDBaseName(true);
+    db.open();
+
+    return db;
+end;
 
 macro GenSqlScrpt(joinTables)
     var joinTable = joinTables.getRoot();
@@ -13,5 +30,14 @@ macro GenSqlScrpt(joinTables)
     {SqlStrings}.append({Spelling}.begin_);
     {SqlStrings}.append({Spelling}.end_);
 
-    println(1324);
+    var memdb = OpenTemporaryDBase();
+
+    if (not memdb)
+        return;
+    end;
+debugbreak;
+    var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
+    if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable))
+        return;
+    end;
 end;

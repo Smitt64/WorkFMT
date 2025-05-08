@@ -3,6 +3,17 @@ $Name:        difftoscript.mac
 $Description: Макрос с объявлениями глобальных переменных
 */
 
+import io;
+
 var {Options};
 var {SqlStrings};
 var {Spelling};
+var {Connection};
+var {FmtTables};
+
+macro GetDatFileNameForTable(table : string)
+    var fi = IoFileInfo({Options}.DatFile);
+    var dir = IoDir(fi.path);
+
+    return dir.absoluteFilePath(StrUpr(table) + ".dat");
+end;

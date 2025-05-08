@@ -1,7 +1,11 @@
 #include "recordparser.h"
 #include "fmtfield.h"
 #include "fmtcore.h"
+#include "difftableinfo.h"
+#include <QTextStream>
 #include <QRegExp>
+#include <QSql>
+#include <rslmodule/sql/sqldatabase.h>
 
 RecordParser::RecordParser(DiffFields* diffFields, const QStringList &realFields, QObject *parent) :
     QObject(parent),
@@ -169,5 +173,140 @@ bool RecordParser::parseValue(QTextStream &is, QString &value)
         value += c;
         ++pos;
     }
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+
+QString diffCreateTableForSqlite(DiffTableInfo *table)
+{
+    QString sql;
+    QTextStream ss(&sql);
+    ss << "CREATE TABLE " << table->name.toUpper() << " (" << Qt::endl;
+
+    bool fFirst = true;
+    for (const QString &fld : qAsConst(table->realFields))
+    {
+        DiffField *dfld = table->field(fld);
+
+        if (!fFirst)
+            ss << "," << Qt::endl;
+
+        ss << fld.toUpper() << " ";
+
+        if (dfld)
+        {
+            switch(dfld->type)
+            {
+            case fmtt_INT:
+            case fmtt_LONG:
+            case fmtt_BIGINT:
+                ss << "INTEGER";
+                break;
+            case fmtt_FLOAT:
+            case fmtt_DOUBLE:
+                ss << "REAL";
+                break;
+            case fmtt_MONEY:
+            case fmtt_NUMERIC:
+                ss << "NUMERIC";
+                break;
+            default:
+                ss << "TEXT";
+                break;
+            }
+        }
+        else
+            ss << "TEXT";
+
+        fFirst = false;
+    }
+
+    ss << ")";
+
+    return sql;
+}
+
+bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffTableInfo *table)
+{
+    if (!Connection || !Connection->isOpen())
+        return false;
+
+    QSqlQuery query(Connection->database());
+    query.prepare(QString("DROP TABLE IF EXISTS %1").arg(table->name));
+    ExecuteQuery(&query);
+
+    QString CreateTableSql = diffCreateTableForSqlite(table);
+    query.prepare(QString(CreateTableSql));
+
+    if (ExecuteQuery(&query))
+        return false;
+
+    for (DatIndex *index : table->indexes)
+    {
+        QString indexsql = "CREATE ";
+
+        if (index->isUnique)
+            indexsql += "UNIQUE ";
+
+        indexsql += "INDEX " + index->name + " ON " + table->name + "(" + index->fields.fields().join(",") + ")";
+
+        QSqlQuery indexquery(Connection->database());
+        indexquery.prepare(indexsql);
+        ExecuteQuery(&indexquery);
+    }
+
+    QFile f(filename);
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+
+    QStringList params(table->realFields);
+    std::transform(table->realFields.begin(), table->realFields.end(), params.begin(),
+                   [](const QString &value) { return QString(":") + value; });
+
+    QString insertsql = QString("insert into %1(%2) values(%3)")
+            .arg(table->name)
+            .arg(table->realFields.join(","))
+            .arg(params.join(","));
+
+    QScopedPointer<RecordParser> parser(new RecordParser(&table->fields, table->realFields));
+
+    bool IsDataSection = false;
+    QTextStream stream(&f);
+    stream.setCodec("IBM 866");
+
+    while (!stream.atEnd())
+    {
+        QString line = stream.readLine();
+
+        if (!IsDataSection)
+        {
+            if (line.contains("BEGINDATA", Qt::CaseInsensitive))
+                IsDataSection = true;
+        }
+        else
+        {
+            if (parser->parseRecord(line))
+            {
+                QSqlQuery insert(Connection->database());
+                insert.prepare(insertsql);
+
+                QStringList values = parser->getValues();
+                for (int i = 0; i < table->realFields.size(); i++)
+                {
+                    QString value = values[i];
+                    DiffField *field = table->field(table->realFields[i]);
+
+                    if (field->isString)
+                        value = value.mid(1, value.size() - 2);
+
+                    insert.bindValue(params[i], value);
+                }
+
+                ExecuteQuery(&insert);
+            }
+        }
+    }
+
     return true;
 }

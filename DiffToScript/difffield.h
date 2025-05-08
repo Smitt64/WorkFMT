@@ -50,8 +50,10 @@ bool operator!=(const IndexField& a, const IndexField& b);
 class IndexFields : public ListIterableObject<IndexField*>
 {
     Q_OBJECT
+    Q_PROPERTY(QStringList fields READ fields CONSTANT);
 public:
     Q_INVOKABLE int indexByName(const QString& name) const;
+    QStringList fields() const;
 };
 
 Q_DECLARE_OPAQUE_POINTER(IndexFields);

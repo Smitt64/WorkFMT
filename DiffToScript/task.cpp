@@ -31,6 +31,8 @@
 #include "rslobj/difftoscripexecutor.h"
 #include "rslobj/sqlstringlist.h"
 #include <rsscript/registerobjlist.hpp>
+#include "rslobj/taskoptionscontainer.h"
+#include "rslobj/fmttableslist.h"
 #include <QSettings>
 
 QString serializeNormalPathsToJson(const QList<QStringList>& chunks)
@@ -423,6 +425,7 @@ void Task::runScriptTask()
     QVector<ScriptTable*> datTables;
     TableLinksList tableLinks;
 
+    QScopedPointer<FmtTablesList> pFmtTablesList(new FmtTablesList());
     QSharedPointer<DiffConnection> conn;
 
     if (optns[ctoConnectionString].isSet)
@@ -468,8 +471,10 @@ void Task::runScriptTask()
 
         ScriptTable *datTable = datTables.back();
 
-        FmtTable fmtTable(conn->getConnection());
-        if (!fmtTable.load(linesParser.getLines({ltTable})[0].toLower()))
+        FmtTable *fmtTable = new FmtTable(conn->getConnection());
+        pFmtTablesList->append(fmtTable);
+
+        if (!fmtTable->load(linesParser.getLines({ltTable})[0].toLower()))
         {
             QString tableName = linesParser.getLines({ltTable})[0].toLower();
             qCWarning(logTask) << QString("Error. fmtTable was not loaded. Table name = '%1'").arg(linesParser.getLines({ltTable})[0]);
@@ -484,10 +489,10 @@ void Task::runScriptTask()
             QFileInfo fi(optns[ctoDatFile].value);
 
             QDir datdir = fi.absoluteDir();
-            datfilepath = datdir.absoluteFilePath(QString("%1.dat").arg(fmtTable.name().toUpper()));
+            datfilepath = datdir.absoluteFilePath(QString("%1.dat").arg(fmtTable->name().toUpper()));
         }
 
-        datTable->loadFromFmt(&fmtTable, datfilepath);
+        datTable->loadFromFmt(fmtTable, datfilepath);
         datTable->InitUniqFields(tableLink);
         qCInfo(logTask) << "Fields of" << datTable->name << "loaded. Count =" << datTable->fields.count();
 
@@ -540,14 +545,21 @@ void Task::runScriptTask()
     }
     else
     {
+        QScopedPointer<SqlStringList> pSqlStringList(new SqlStringList(&sql));
+        QScopedPointer<TaskOptionsContainer> pTaskOptionsContainer(new TaskOptionsContainer(optns));
+        RslGlobalsMap Globals =
+        {
+            { "{Options}", QVariant::fromValue<QObject*>(pTaskOptionsContainer.data()) },
+            { "{SqlStrings}", QVariant::fromValue<QObject*>(pSqlStringList.data()) },
+            { "{Spelling}", QVariant::fromValue<QObject*>(dbSpelling.data()) },
+            { "{Connection}", QVariant::fromValue<QObject*>(conn.data()) },
+            { "{FmtTables}", QVariant::fromValue<QObject*>(pFmtTablesList.data()) },
+        };
+
         SqlStringList SqlList(&sql);
         DiffToScripExecutor executor;
-        //executor.setDebugMacroFlag(true);
-        executor.setTaskOptions(&optns);
-        executor.setSqlStringList(&SqlList);
-        executor.setDbSpelling(dbSpelling.data());
+        executor.setGlobalsVariables(Globals);
         executor.setJoinTables(&joinTables);
-
         executor.playRep(macroname);
 
         os << sql.join("\n");

@@ -120,6 +120,16 @@ int IndexFields::indexByName(const QString& name) const
     return -1;
 }
 
+QStringList IndexFields::fields() const
+{
+    QStringList lst;
+
+    for (IndexField *fld : *this)
+        lst.append(fld->name);
+
+    return lst;
+}
+
 // ----------------------------------------------------------------------------------
 
 DiffFields::~DiffFields()
