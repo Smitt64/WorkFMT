@@ -7,6 +7,7 @@ class DbSpellingOracle : public DbSpelling
 {
     Q_OBJECT
 public:
+    Q_INVOKABLE DbSpellingOracle();
     QString toDate(const QString& value) override;
     QStringList getDeclare() override;
     QStringList getBegin() override;

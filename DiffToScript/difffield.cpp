@@ -44,6 +44,11 @@ QString IndexField::getName() const
     return name;
 }
 
+QString IndexField::getUndecorateName() const
+{
+    return undecorateName;
+}
+
 bool IndexField::getIsAutoinc() const
 {
     return isAutoinc;

@@ -2,6 +2,12 @@
 #include "fmtcore.h"
 #include "sqlscriptmain.h"
 
+DbSpellingOracle::DbSpellingOracle() :
+    DbSpelling()
+{
+
+}
+
 QString DbSpellingOracle::toDate(const QString& value)
 {
     QString tmp = value;
@@ -46,6 +52,9 @@ QString DbSpellingOracle::getExceptionName(const int &type)
     {
     case ExceptDupValOnIndex:
         result = "DUP_VAL_ON_INDEX";
+        break;
+    case ExceptNoDataFound:
+        result = "NO_DATA_FOUND";
         break;
     }
 

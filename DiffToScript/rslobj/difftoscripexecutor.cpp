@@ -7,6 +7,7 @@
 #include "difftableinfo.h"
 #include "join.h"
 #include "recordparser.h"
+#include "sqlscriptmain.h"
 #include <QDebug>
 #include <rslmodule/sql/sqldatabase.h>
 
@@ -55,10 +56,27 @@ static void Rsl_diffLoadDatToSqlite()
     SetReturnVal(hr);
 }
 
+static void Rsl_Padding()
+{
+    int prmcount = GetFuncParamCount();
+
+    QString result;
+    if (prmcount)
+        result = Padding();
+    else
+    {
+        int depth = GetFuncParam<int>(0);
+        result = Padding(depth);
+    }
+
+    SetReturnVal(result);
+}
+
 // ----------------------------------------------------------------------
 
 DiffToScripExecutor::DiffToScripExecutor(QObject *parent) :
-    RslExecutor(parent)
+    RslExecutor(parent),
+    m_pJoinTables(nullptr)
 {
 
 }
@@ -95,8 +113,10 @@ void DiffToScripExecutor::onInspectModuleSymbol(Qt::HANDLE sym)
 
 void DiffToScripExecutor::onSetStModuleAdd()
 {
+    addRslObjects();
     RegisterObjList::inst()->AddStdProc("diffCreateTableForSqlite", Rsl_diffCreateTableForSqlite);
     RegisterObjList::inst()->AddStdProc("diffLoadDatToSqlite", Rsl_diffLoadDatToSqlite);
+    RegisterObjList::inst()->AddStdProc("Padding", Rsl_Padding);
 }
 
 void DiffToScripExecutor::setJoinTables(JoinTables *opts)
@@ -106,8 +126,6 @@ void DiffToScripExecutor::setJoinTables(JoinTables *opts)
 
 void DiffToScripExecutor::PlayRepProc()
 {
-    addRslObjects();
-
     call("GenSqlScrpt",
          {
              QVariant::fromValue<QObject*>(m_pJoinTables)

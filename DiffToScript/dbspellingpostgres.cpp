@@ -2,7 +2,8 @@
 #include "fmtcore.h"
 #include "sqlscriptmain.h"
 
-DbSpellingPostgres::DbSpellingPostgres()
+DbSpellingPostgres::DbSpellingPostgres() :
+    DbSpelling()
 {
 
 }
@@ -66,6 +67,9 @@ QString DbSpellingPostgres::getExceptionName(const int &type)
     {
     case ExceptDupValOnIndex:
         result = "UNIQUE_VIOLATION";
+        break;
+    case ExceptNoDataFound:
+        result = "NO_DATA_FOUND";
         break;
     }
 

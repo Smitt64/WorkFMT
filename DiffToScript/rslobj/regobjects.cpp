@@ -1,5 +1,4 @@
 #include <rsscript/registerobjlist.hpp>
-#include "iterableobjectbase.h"
 #include "sqlstringlist.h"
 #include "join.h"
 #include "scripttable.h"
@@ -18,7 +17,6 @@
 
 void registerRslObjects()
 {
-    REGISTER_DIFF_OBJ(IterableObjectBase);
     REGISTER_DIFF_OBJ(SqlStringList);
     REGISTER_DIFF_OBJ(JoinIndex);
     REGISTER_DIFF_OBJ(JoinList);
@@ -54,6 +52,7 @@ void registerRslObjects()
 void addRslObjects()
 {
     rslAddConstant("ExceptDupValOnIndex", DbSpelling::ExceptDupValOnIndex);
+    rslAddConstant("ExceptNoDataFound", DbSpelling::ExceptNoDataFound);
     rslAddConstant("FunctionBeforeBlocks", DbSpelling::FunctionBeforeBlocks);
     rslAddConstant("FunctionInDeclareBlock", DbSpelling::FunctionInDeclareBlock);
     rslAddConstant("FunctionInBeginBlock", DbSpelling::FunctionInBeginBlock);
@@ -71,7 +70,6 @@ void addRslObjects()
 
     rslAddModule("Fmt");
 
-    ADDTORSL_DIFF_OBJ(IterableObjectBase, false);
     ADDTORSL_DIFF_OBJ(SqlStringList, false);
     ADDTORSL_DIFF_OBJ(JoinIndex, false);
     ADDTORSL_DIFF_OBJ(JoinList, false);
@@ -91,8 +89,8 @@ void addRslObjects()
     ADDTORSL_DIFF_OBJ(DiffTable, false);
     ADDTORSL_DIFF_OBJ(ScriptTable, false);
 
-    ADDTORSL_DIFF_OBJ(DbSpellingOracle, false);
-    ADDTORSL_DIFF_OBJ(DbSpellingPostgres, false);
+    ADDTORSL_DIFF_OBJ(DbSpellingOracle, true);
+    ADDTORSL_DIFF_OBJ(DbSpellingPostgres, true);
 
     ADDTORSL_DIFF_OBJ(DatRecord, false);
     ADDTORSL_DIFF_OBJ(DatRecords, false);

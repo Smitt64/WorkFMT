@@ -14,8 +14,8 @@ public:
     SqlStringList(QStringList* list, QObject *parent = nullptr);
     virtual ~SqlStringList();
 
-    Q_INVOKABLE void append(const QString& str);
-    Q_INVOKABLE void append(const QStringList& strings);
+    Q_INVOKABLE void append(const QString& str, int depth = 0);
+    Q_INVOKABLE void append(const QStringList& strings, int depth = 0);
 
     // Основные методы
     //SqlStringList& append(const QString& str);

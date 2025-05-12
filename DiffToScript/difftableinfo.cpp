@@ -201,6 +201,7 @@ void DiffTableInfo::loadFromFmt(FmtTable *fmtTable, const QString &datfilename)
 
         DiffField *df = new DiffField();
         df->name = fld->name().toUpper();
+        df->undecorateName = fld->undecorateName();
         df->type = fld->type();
         df->size = fld->size();
         df->typeName = fmtTypeNameForType(fld->type());

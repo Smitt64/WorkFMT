@@ -1,4 +1,5 @@
 #include "sqlstringlist.h"
+#include "sqlscriptmain.h"
 #include <QDebug>
 
 SqlStringList::SqlStringList(QObject *parent)
@@ -54,21 +55,38 @@ SqlStringList& SqlStringList::append(const QStringList& strings)
     return *this;
 }*/
 
-void SqlStringList::append(const QString& str)
+void SqlStringList::append(const QString& str, int depth)
 {
     if (m_list)
     {
-        m_list->append(str);
+        if (depth <= 0)
+            m_list->append(str);
+        else
+            m_list->append(Padding(depth) + str);
+
         emit sizeChanged(m_list->size());
         emit linesChanged();
     }
 }
 
-void SqlStringList::append(const QStringList& strings)
+void SqlStringList::append(const QStringList& strings, int depth)
 {
     if (m_list)
     {
-        m_list->append(strings);
+        if (depth <= 0)
+            m_list->append(strings);
+        else
+        {
+            auto AddPadding = [=](QString &str) -> void
+            {
+                str = Padding(depth) + str;
+            };
+
+            QStringList tmp = strings;
+            std::for_each(tmp.begin(), tmp.end(), AddPadding);
+            m_list->append(tmp);
+        }
+
         emit sizeChanged(m_list->size());
         emit linesChanged();
     }

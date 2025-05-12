@@ -2,7 +2,7 @@
 #define FMTTABLESLIST_H
 
 #include "fmttable.h"
-#include "rslobj/iterableobjectbase.h"
+#include "rslmodule/iterableobjectbase.h"
 
 class FmtTablesList : public ListIterableObject<FmtTable*>
 {

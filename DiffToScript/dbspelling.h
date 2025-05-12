@@ -21,6 +21,7 @@ public:
     enum ExcceptionType
     {
         ExceptDupValOnIndex = 1,
+        ExceptNoDataFound,
     };
 
     enum FunctionDeclarePos

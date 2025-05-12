@@ -4,7 +4,41 @@ $Description: Макрос генерации скрипта для таблиц dregparm_dbt и dregval_dbt
 $Table: dregparm_dbt
 */
 
-import "difftoscript.mac", sql, ToolsRuntime;
+import "difftoscript.mac", sql, ToolsRuntime, fmt;
+
+const GetKeyIDByPath_FuncName = "GetKeyIDByPath__";
+const InsertIntoRegparmEx_FuncName = "InsertIntoRegparmPath__";
+
+private macro GetOracleFindKeyIDTemplate()
+    CaptureOutput;
+[    WITH path_parts AS (
+    SELECT REGEXP_SUBSTR(pPath, '[^/]+', 1, LEVEL) AS part, LEVEL AS lvl
+    FROM dual CONNECT BY REGEXP_SUBSTR(pPath, '[^/]+', 1, LEVEL) IS NOT NULL), 
+    hierarchy(keyid, parentid, name, lvl, full_path) AS (
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, 1, t.T_NAME
+    FROM dregparm_dbt t WHERE UPPER(t.T_NAME) = UPPER((SELECT part FROM path_parts WHERE lvl = 1)) AND t.T_PARENTID = 0
+    UNION ALL
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, h.lvl + 1, h.full_path || '/' || t.T_NAME
+    FROM dregparm_dbt t JOIN hierarchy h ON t.T_PARENTID = h.keyid
+    WHERE UPPER(t.T_NAME) = UPPER((SELECT part FROM path_parts WHERE lvl = h.lvl + 1)) )
+    SELECT keyid INTO KeyID FROM hierarchy WHERE lvl = (SELECT MAX(lvl) FROM path_parts) AND UPPER(full_path) = UPPER(pPath);
+];
+    return StopCaptureOutput;
+end;
+
+private macro GetPostgresFindKeyIDTemplate()
+    CaptureOutput;
+[    WITH RECURSIVE path_parts AS (SELECT split_part(pPath, '/', n) AS part, n AS lvl 
+    FROM generate_series(1, array_length(string_to_array(pPath, '/'), 1)) AS n), hier AS (
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, 1 AS lvl
+    FROM dregparm_dbt tWHERE t.T_NAME = (SELECT part FROM path_parts WHERE lvl = 1) AND t.T_PARENTID = 0 
+    UNION ALL
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, h.lvl + 1 FROM dregparm_dbt t JOIN hier h ON t.T_PARENTID = h.T_KEYID
+    JOIN path_parts p ON p.lvl = h.lvl + 1 AND p.part = t.T_NAME)
+    SELECT T_KEYID INTO STRICT KeyID FROM hier WHERE lvl = (SELECT MAX(lvl) FROM path_parts);
+];
+    return StopCaptureOutput;
+end;
 
 private macro GetTemporaryDBaseName(debugmode)
     if (debugmode)
@@ -23,21 +57,171 @@ private macro OpenTemporaryDBase()
     return db;
 end;
 
+private macro BuildPathString(memdb, parentid, name, getparent)
+    var pathParts = StringListEx();
+
+    pathParts.prepend(name);
+    var currentParentId = parentId;
+
+    while (currentParentId != 0)
+        var query = SqlQuery(memdb);
+        query.prepare("SELECT T_NAME, T_PARENTID FROM dregparm_dbt WHERE T_KEYID = :id");
+        query.bindValue(":id", currentParentId);
+
+        query.exec();
+        query.next();
+
+        var currentName = query.value("T_NAME");
+        currentParentId = Int(query.value("T_PARENTID"));
+
+        pathParts.prepend(currentName);
+    end;
+
+    // получаем путь родителя переданной настройки
+    if (pathParts.size and getparent)
+        pathParts.removeLast();
+    end;
+
+    return pathParts.join("/");
+end;
+
+private macro AppendCommonVariable(joinTable, depth)
+    var VariableKeyID = "v_dregparm_dbt_T_KEYID " + {Spelling}.functionParamType(FmtType.LONG) + " := 0;";
+
+    if ({Options}.isSetOracle)
+        var SpellingPostgres = DbSpellingPostgres();
+        {SqlStrings}.append("-- #conv-Oracle", depth + 1);
+        {SqlStrings}.append(VariableKeyID, depth + 1);
+        {SqlStrings}.append("-- #conv-PG", depth + 1);
+        {SqlStrings}.append("--DECLARE", depth + 1);
+        {SqlStrings}.append("--KeyID " + SpellingPostgres.functionParamType(FmtType.LONG) + " := 0;", depth + 1);
+        {SqlStrings}.append("-- #conv-end", depth + 1);
+    else
+        {SqlStrings}.append("DECLARE", depth);
+        {SqlStrings}.append("v_dregparm_dbt_T_KEYID " + {Spelling}.functionParamType(FmtType.LONG) + " := 0;", depth + 1);
+    end;
+end;
+
+private macro BuildInsertExFunction(joinTable, depth)
+    var BeginCreatePathFunc = TArray;
+    var EndCreatePathFunc = TArray;
+
+    var ParamType = {Spelling}.functionParamType(FmtType.STRING);
+    var ReturnType = {Spelling}.functionParamType(FmtType.LONG);
+
+    var i = 2;
+    var FuncParams = StringListEx();
+    FuncParams.append("pPath in " + ParamType);
+
+    while (i < joinTable.scriptTable.realFields.size)
+        var fld = joinTable.scriptTable.field(joinTable.scriptTable.realFields[i]);
+        FuncParams.append("p" + strToUpper(fld.undecorateName) + " in " + {Spelling}.functionParamType(fld.type));
+
+        i = i + 1;
+    end;
+
+    {Spelling}.functionChunks(BeginCreatePathFunc, EndCreatePathFunc, 
+        InsertIntoRegparmEx_FuncName, FuncParams.join(", "), ReturnType);
+    BeginCreatePathFunc.size = 2;
+
+    {SqlStrings}.append(BeginCreatePathFunc, depth);
+
+    AppendCommonVariable(joinTable, depth); // GetKeyIDByPath_FuncName
+
+    i = 2;
+    FuncParams.clear();
+    {SqlStrings}.append({Spelling}.begin_, depth);
+    {SqlStrings}.append("v_dregparm_dbt_T_KEYID := " + GetKeyIDByPath_FuncName + " (pPath);", depth + 1);
+    {SqlStrings}.append("");
+    {SqlStrings}.append("IF v_dregparm_dbt_T_KEYID > 0 THEN ", depth + 1);
+    
+    FuncParams.append("v_dregparm_dbt_T_KEYID");
+    while (i < joinTable.scriptTable.realFields.size)
+        fld = joinTable.scriptTable.field(joinTable.scriptTable.realFields[i]);
+        FuncParams.append("p" + strToUpper(fld.undecorateName));
+        i = i + 1;
+    end;
+
+    {SqlStrings}.append("v_dregparm_dbt_T_KEYID := InsertIntoRegparm__ (" + FuncParams.join(", ") + ");", depth + 2);
+
+    {SqlStrings}.append("END IF;", depth + 1);
+    {SqlStrings}.append("");
+    {SqlStrings}.append("RETURN v_dregparm_dbt_T_KEYID;", depth + 1);
+    {SqlStrings}.append(EndCreatePathFunc, depth);
+    {SqlStrings}.append("");
+end;
+
+private macro BuildFunctions(joinTable, depth)
+    var BeginCreateReplacePathFunc = TArray;
+    var EndCreateReplacePathFunc = TArray;
+    var ParamType = {Spelling}.functionParamType(FmtType.STRING);
+    var ReturnType = {Spelling}.functionParamType(FmtType.LONG);
+    {Spelling}.functionChunks(BeginCreateReplacePathFunc, EndCreateReplacePathFunc, 
+        GetKeyIDByPath_FuncName, "pPath in " + ParamType, ReturnType);
+    BeginCreateReplacePathFunc.size = 2;
+
+    {SqlStrings}.append({Funcs}.makeInsertFunctions(joinTable), depth);
+    {SqlStrings}.append(BeginCreateReplacePathFunc, depth);
+    
+    AppendCommonVariable(joinTable, depth);    
+    {SqlStrings}.append({Spelling}.begin_, depth);
+
+    var sql;
+    if ({Options}.isSetOracle)
+        sql = GetOracleFindKeyIDTemplate();
+
+        {SqlStrings}.append("-- #conv-Oracle", depth + 1);
+        {SqlStrings}.append(sql, depth);
+        {SqlStrings}.append("-- #conv-PG", depth + 1);
+
+        sql = GetPostgresFindKeyIDTemplate();
+        CommentLines(sql);
+        {SqlStrings}.append(sql, depth);
+
+        {SqlStrings}.append("-- #conv-end", depth + 1);
+    else
+        sql = GetPostgresFindKeyIDTemplate();
+        {SqlStrings}.append(sql, depth);
+    end;
+
+    {SqlStrings}.append("RETURN v_dregparm_dbt_T_KEYID;", depth + 1);
+    {SqlStrings}.append("EXCEPTION WHEN " + {Spelling}.getExceptionName(ExceptNoDataFound) + " THEN RETURN -1;", depth);
+     
+    {SqlStrings}.append(EndCreateReplacePathFunc, depth);
+    {SqlStrings}.append("");
+
+    BuildInsertExFunction(joinTable, depth);
+end;
+
 macro GenSqlScrpt(joinTables)
     var joinTable = joinTables.getRoot();
-
-    {SqlStrings}.append({Spelling}.declare);
-    {SqlStrings}.append({Spelling}.begin_);
-    {SqlStrings}.append({Spelling}.end_);
 
     var memdb = OpenTemporaryDBase();
 
     if (not memdb)
         return;
     end;
-debugbreak;
-    var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
+
+    var OracleFindKeyIDTemplate = GetOracleFindKeyIDTemplate();
+    /*var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
     if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable))
         return;
+    end;*/
+    debugbreak;
+
+    if ({Spelling}.functionDeclare == FunctionBeforeBlocks)
+        BuildFunctions(joinTable, 0);
     end;
+
+    {SqlStrings}.append({Spelling}.declare);
+
+    var variables = {Funcs}.makeVariables(joinTable);
+    {SqlStrings}.append(variables);
+
+    if ({Spelling}.functionDeclare == FunctionInDeclareBlock)
+        BuildFunctions(joinTable, 1);
+    end;
+    /*{SqlStrings}.append({Spelling}.begin_);
+    {SqlStrings}.append("-- " + BuildPathString(memdb, 6419, "ПРОВЕРКИ_ЗАМОРАЖИВАНИЯ"));
+    {SqlStrings}.append({Spelling}.end_);*/
 end;

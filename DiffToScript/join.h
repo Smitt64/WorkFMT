@@ -4,7 +4,7 @@
 #include "tablelinks.h"
 #include "scripttable.h"
 #include "dattable.h"
-#include "rslobj/iterableobjectbase.h"
+#include "rslmodule/iterableobjectbase.h"
 #include <map>
 
 class JoinTable;

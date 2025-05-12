@@ -7,7 +7,7 @@ class DbSpellingPostgres : public DbSpelling
 {
     Q_OBJECT
 public:
-    DbSpellingPostgres();
+    Q_INVOKABLE DbSpellingPostgres();
 
     QStringList getDeclare() override;
     QStringList getBegin() override;

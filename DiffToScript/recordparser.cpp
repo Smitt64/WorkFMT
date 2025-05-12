@@ -298,7 +298,12 @@ bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffT
                     DiffField *field = table->field(table->realFields[i]);
 
                     if (field->isString)
+                    {
                         value = value.mid(1, value.size() - 2);
+
+                        if (value == QChar(1) || value == QChar(2))
+                            value = QString();
+                    }
 
                     insert.bindValue(params[i], value);
                 }

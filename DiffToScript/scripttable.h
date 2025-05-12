@@ -35,4 +35,6 @@ private:
     DatRecords::iterator parseUpdateBlock(int indexPrimaryKey, DatRecords::iterator first, DatRecords::iterator last);
 };
 
+Q_DECLARE_OPAQUE_POINTER(ScriptTable);
+
 #endif // SCRIPTTABLE_H

@@ -7,7 +7,7 @@
 #include <QMap>
 #include <QStringList>
 #include <QVariant>
-#include "rslobj/iterableobjectbase.h"
+#include "rslmodule/iterableobjectbase.h"
 
 enum LineType
 {

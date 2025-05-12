@@ -6,7 +6,7 @@
 #include <QList>
 #include <QException>
 #include <limits>
-#include "rslobj/iterableobjectbase.h"
+#include "rslmodule/iterableobjectbase.h"
 
 class ExceptionOutOfRange: public QException
 {
@@ -19,6 +19,7 @@ class IndexField : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ getName CONSTANT)
+    Q_PROPERTY(QString undecorateName READ getUndecorateName CONSTANT)
     Q_PROPERTY(bool isAutoinc READ getIsAutoinc CONSTANT)
     Q_PROPERTY(qint16 type READ getType CONSTANT)
     Q_PROPERTY(bool isString READ getIsString CONSTANT)
@@ -30,13 +31,14 @@ public:
 
     IndexField& operator=(const IndexField& other);
 
-    QString name;
+    QString name, undecorateName;
     bool isAutoinc;
     qint16 type;
 
     bool isString;
 
     QString getName() const;
+    QString getUndecorateName() const;
     bool getIsAutoinc() const;
     qint16 getType() const;
     bool getIsString() const;

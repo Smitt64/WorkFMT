@@ -3,17 +3,41 @@ $Name:        difftoscript.mac
 $Description: Макрос с объявлениями глобальных переменных
 */
 
-import io;
+import io, StrLib;
 
 var {Options};
 var {SqlStrings};
 var {Spelling};
 var {Connection};
 var {FmtTables};
+var {Funcs};
+
+private var OutputHandlerLines = TArray;
+private macro OutputHandlerProc(str)
+    OutputHandlerLines[OutputHandlerLines.size] = strReplace(str, "\r\n", "");
+end;
 
 macro GetDatFileNameForTable(table : string)
     var fi = IoFileInfo({Options}.DatFile);
     var dir = IoDir(fi.path);
 
     return dir.absoluteFilePath(StrUpr(table) + ".dat");
+end;
+
+macro CaptureOutput
+   OutputHandlerLines.size = 0;
+   SetOutHandler (@OutputHandlerProc);
+end;
+
+macro StopCaptureOutput
+   SetOutHandler;
+   return OutputHandlerLines;
+end;
+
+macro CommentLines(lines)
+    var i = 0;
+    while (i < lines.size)
+        lines[i] = "--" + lines[i];
+        i = i + 1;
+    end;
 end;

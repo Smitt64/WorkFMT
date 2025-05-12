@@ -6,7 +6,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QFile>
-#include "rslobj/iterableobjectbase.h"
+#include "rslmodule/iterableobjectbase.h"
 
 class LinkField : public QObject
 {

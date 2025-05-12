@@ -554,6 +554,7 @@ void Task::runScriptTask()
             { "{Spelling}", QVariant::fromValue<QObject*>(dbSpelling.data()) },
             { "{Connection}", QVariant::fromValue<QObject*>(conn.data()) },
             { "{FmtTables}", QVariant::fromValue<QObject*>(pFmtTablesList.data()) },
+            { "{Funcs}", QVariant::fromValue<QObject*>(&ssm) },
         };
 
         SqlStringList SqlList(&sql);
