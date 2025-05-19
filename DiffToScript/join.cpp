@@ -381,6 +381,11 @@ Join *JoinTable::getParentJoin() const
     return nullptr;
 }
 
+BoolVector *JoinTable::getProcessedRecords()
+{
+    return &processedRecords;
+}
+
 JoinList *JoinTable::getJoinList()
 {
     return &joinList;

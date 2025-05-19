@@ -39,9 +39,15 @@ public:
 
     Q_INVOKABLE QString buildVariable(const ScriptTable* datTable);
     Q_INVOKABLE QStringList buildInsertFunctions(const ScriptTable* datTable);
+    Q_INVOKABLE QStringList dropInserFunctions();
+    Q_INVOKABLE QStringList getInserFunctionsNames();
+    Q_INVOKABLE void getInserFunction(const QString &name, QString &returnType, QString &fullname);
 
-    QVector<int> indexesOfKeyFields(const JoinTable *joinTable);
-    QVector<int> indexesOfUniqueIndex(const JoinTable *joinTable);
+    QVector<int> indexesOfKeyFields_(const JoinTable *joinTable);
+    QVector<int> indexesOfUniqueIndex_(const JoinTable *joinTable);
+
+    Q_INVOKABLE QVariantList indexesOfUniqueIndex(const JoinTable *joinTable);
+    Q_INVOKABLE QVariantList indexesOfKeyFields(const JoinTable *joinTable);
 
     Q_INVOKABLE void replaceForeignAutoinc(const JoinTable* joinTable, DatRecord *rec);
     Q_INVOKABLE int indexForeignAutoinc(const JoinTable* joinTable, const DatRecord *rec);
@@ -61,12 +67,15 @@ public:
     int buildChildStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
     int build(QStringList& sql, JoinTable* joinTable);
 
+    Q_INVOKABLE int stdBuildChildStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const int depth = 0);
+
     Q_INVOKABLE void dateSpelling(const JoinTable* joinTable, DatRecord *rec);
     Q_INVOKABLE void stringSpelling(const JoinTable* joinTable, DatRecord *rec);
 
     Q_INVOKABLE void checkDatFldsCount(QStringList& sql, JoinTable *joinTable);
 
     Q_INVOKABLE void toScript(const JoinTable* joinTable, DatRecord *rec);
+    Q_INVOKABLE QStringList disableEnableAutoIncTrigger(ScriptTable* datTable, bool enable = false, int depth = 1);
 
 private:
     QSharedPointer<DiffConnection> _connection;

@@ -9,6 +9,8 @@ import "difftoscript.mac", sql, ToolsRuntime, fmt;
 const GetKeyIDByPath_FuncName = "GetKeyIDByPath__";
 const InsertIntoRegparmEx_FuncName = "InsertIntoRegparmPath__";
 
+private var memdb;
+
 private macro GetOracleFindKeyIDTemplate()
     CaptureOutput;
 [    WITH path_parts AS (
@@ -21,7 +23,7 @@ private macro GetOracleFindKeyIDTemplate()
     SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, h.lvl + 1, h.full_path || '/' || t.T_NAME
     FROM dregparm_dbt t JOIN hierarchy h ON t.T_PARENTID = h.keyid
     WHERE UPPER(t.T_NAME) = UPPER((SELECT part FROM path_parts WHERE lvl = h.lvl + 1)) )
-    SELECT keyid INTO KeyID FROM hierarchy WHERE lvl = (SELECT MAX(lvl) FROM path_parts) AND UPPER(full_path) = UPPER(pPath);
+    SELECT keyid INTO v_dregparm_dbt_T_KEYID FROM hierarchy WHERE lvl = (SELECT MAX(lvl) FROM path_parts) AND UPPER(full_path) = UPPER(pPath);
 ];
     return StopCaptureOutput;
 end;
@@ -35,7 +37,7 @@ private macro GetPostgresFindKeyIDTemplate()
     UNION ALL
     SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, h.lvl + 1 FROM dregparm_dbt t JOIN hier h ON t.T_PARENTID = h.T_KEYID
     JOIN path_parts p ON p.lvl = h.lvl + 1 AND p.part = t.T_NAME)
-    SELECT T_KEYID INTO STRICT KeyID FROM hier WHERE lvl = (SELECT MAX(lvl) FROM path_parts);
+    SELECT T_KEYID INTO STRICT v_dregparm_dbt_T_KEYID FROM hier WHERE lvl = (SELECT MAX(lvl) FROM path_parts);
 ];
     return StopCaptureOutput;
 end;
@@ -57,29 +59,22 @@ private macro OpenTemporaryDBase()
     return db;
 end;
 
-private macro BuildPathString(memdb, parentid, name, getparent)
+private macro BuildPathString(keyid)
+    var currentkeyId = keyid;
     var pathParts = StringListEx();
 
-    pathParts.prepend(name);
-    var currentParentId = parentId;
-
-    while (currentParentId != 0)
+    while (currentkeyId != 0)
         var query = SqlQuery(memdb);
         query.prepare("SELECT T_NAME, T_PARENTID FROM dregparm_dbt WHERE T_KEYID = :id");
-        query.bindValue(":id", currentParentId);
+        query.bindValue(":id", currentkeyId);
 
         query.exec();
         query.next();
 
         var currentName = query.value("T_NAME");
-        currentParentId = Int(query.value("T_PARENTID"));
+        currentkeyId = Int(query.value("T_PARENTID"));
 
         pathParts.prepend(currentName);
-    end;
-
-    // получаем путь родителя переданной настройки
-    if (pathParts.size and getparent)
-        pathParts.removeLast();
     end;
 
     return pathParts.join("/");
@@ -89,13 +84,7 @@ private macro AppendCommonVariable(joinTable, depth)
     var VariableKeyID = "v_dregparm_dbt_T_KEYID " + {Spelling}.functionParamType(FmtType.LONG) + " := 0;";
 
     if ({Options}.isSetOracle)
-        var SpellingPostgres = DbSpellingPostgres();
-        {SqlStrings}.append("-- #conv-Oracle", depth + 1);
         {SqlStrings}.append(VariableKeyID, depth + 1);
-        {SqlStrings}.append("-- #conv-PG", depth + 1);
-        {SqlStrings}.append("--DECLARE", depth + 1);
-        {SqlStrings}.append("--KeyID " + SpellingPostgres.functionParamType(FmtType.LONG) + " := 0;", depth + 1);
-        {SqlStrings}.append("-- #conv-end", depth + 1);
     else
         {SqlStrings}.append("DECLARE", depth);
         {SqlStrings}.append("v_dregparm_dbt_T_KEYID " + {Spelling}.functionParamType(FmtType.LONG) + " := 0;", depth + 1);
@@ -148,7 +137,6 @@ private macro BuildInsertExFunction(joinTable, depth)
     {SqlStrings}.append("");
     {SqlStrings}.append("RETURN v_dregparm_dbt_T_KEYID;", depth + 1);
     {SqlStrings}.append(EndCreatePathFunc, depth);
-    {SqlStrings}.append("");
 end;
 
 private macro BuildFunctions(joinTable, depth)
@@ -190,23 +178,216 @@ private macro BuildFunctions(joinTable, depth)
     {SqlStrings}.append(EndCreateReplacePathFunc, depth);
     {SqlStrings}.append("");
 
-    BuildInsertExFunction(joinTable, depth);
+    if (joinTable.scriptTable.hasInserts)
+        BuildInsertExFunction(joinTable, depth);
+    end;
+
+    {SqlStrings}.append("");
+end;
+
+private macro buildInsertStatement(joinTable, recIndex)
+    var rec = joinTable.scriptTable.records.val(recIndex);
+
+    var KeyId = Int(rec.values[0]);
+    var pathfull = BuildPathString(KeyId);
+
+    //Определение автоинкрементного поля и замена на ноль
+    var autoIncIndex = {Funcs}.getAutoincIndex(joinTable.scriptTable);
+    if (autoIncIndex != -1)
+        rec.setVal(autoIncIndex, "0");
+    end;
+
+    var InsertFieldListEx = StringListEx();
+    InsertFieldListEx.fromOther(joinTable.scriptTable.realFields);
+
+    //var InsertFieldList = InsertFieldListEx.join(", ");
+
+    {Funcs}.replaceForeignAutoinc(joinTable, rec);
+    {Funcs}.dateSpelling(joinTable, rec);
+    {Funcs}.stringSpelling(joinTable, rec);
+
+    var i = 0;
+    var fields = StringListEx();
+    var variable = {Funcs}.buildVariableName(joinTable.scriptTable);
+
+    while (i < joinTable.scriptTable.fields.size)
+        fields.append(joinTable.scriptTable.fields.val(i).name);
+        i = i + 1;
+    end;
+
+    if (variable != "")
+        var tmpvalues = StringListEx();
+        tmpvalues.fromOther(rec.values);
+
+        tmpvalues.removeAt(autoIncIndex);
+
+        var path = BuildPathString(Int(tmpvalues.val(0)));
+        tmpvalues.removeFirst();
+        tmpvalues.prepend("'" + path + "'");
+
+        var values = tmpvalues.join(", ");
+
+        {SqlStrings}.append("-- Вставка настройки '" + pathfull + "'", 1);
+        var call = variable + " := "  + InsertIntoRegparmEx_FuncName + " (" + values + ");";
+        {SqlStrings}.append(call, 1);
+
+        if (autoIncIndex != -1)
+            {SqlStrings}.append("");
+
+            {SqlStrings}.append("IF " + variable + " <> -1 THEN", 1);
+
+            var ChildArray = TArray;
+            {Funcs}.stdBuildChildStatement(joinTable, ChildArray, recIndex);
+            {SqlStrings}.append(ChildArray, 1);
+
+            {SqlStrings}.append("END IF;", 1);
+        end;
+    end;
+end;
+
+private macro buildDeleteStatement(joinTable, recIndex)
+    var rec = joinTable.scriptTable.records.val(recIndex);
+
+    var KeyId = Int(rec.values[0]);
+    var pathfull = BuildPathString(KeyId);
+    var autoIncIndex = {Funcs}.getAutoincIndex(joinTable.scriptTable);
+    var autoIncField = joinTable.scriptTable.fields.val(autoIncIndex).name;
+    var variable = {Funcs}.buildVariableName(joinTable.scriptTable);
+
+    {Funcs}.replaceForeignAutoinc(joinTable, rec);
+
+    if (autoIncIndex != -1)
+        rec.setVal(autoIncIndex, variable);
+    end;
+
+    var where = StringListEx({Funcs}.buildWhere(joinTable, rec));
+    {SqlStrings}.append("-- Удаление настройки '" + pathfull + "'", 1);
+
+    var deletesql = strArg("DELETE FROM %1 WHERE %2 RETURNING %3 INTO %4;", 
+        joinTable.scriptTable.name, where.join(" AND "), autoIncField, variable);
+
+    {SqlStrings}.append(strArg("%1 := %2 ('%3');", variable, GetKeyIDByPath_FuncName, pathfull), 1);
+    {SqlStrings}.append(deletesql, 1);
+
+    if (autoIncIndex != -1)
+        var ChildArray = TArray;
+        {Funcs}.stdBuildChildStatement(joinTable, ChildArray, recIndex);
+        {SqlStrings}.append(ChildArray);
+    end;
+end;
+
+private macro buildUpdateStatement(joinTable, oldIndex, newIndex)
+    var oldRec = joinTable.scriptTable.records.val(oldIndex);
+    var newRec = joinTable.scriptTable.records.val(newIndex);
+
+    var KeyId = Int(newRec.values[0]);
+    var pathfull = BuildPathString(KeyId);
+
+    var i = 0;
+    var setList = StringListEx();
+    var modifiedValues = TArray();
+    var autoIncIndex = {Funcs}.getAutoincIndex(joinTable.scriptTable);
+    var variable = {Funcs}.buildVariableName(joinTable.scriptTable);
+    {Funcs}.toScript(joinTable, oldRec);
+
+    while (i < oldRec.values.size)
+        if (strCompare(oldRec.values[i], newRec.values[i], true) != 0)
+            modifiedValues[modifiedValues.size] = i;
+        end;
+        i = i + 1;
+    end;
+
+    {Funcs}.replaceForeignAutoinc(joinTable, newRec);
+    {Funcs}.dateSpelling(joinTable, newRec);
+    {Funcs}.stringSpelling(joinTable, newRec);
+
+    i = 0;
+    while (i < modifiedValues.size)
+        setList.append(joinTable.scriptTable.realFields[modifiedValues[i]] + " = " + newRec.values[modifiedValues[i]]);
+        i = i + 1;
+    end;
+
+    if (autoIncIndex != -1)
+        oldRec.setVal(autoIncIndex, variable);
+    end;
+    
+    var where = StringListEx({Funcs}.buildWhere(joinTable, oldRec));
+    if ((not setList.empty) and (variable != ""))
+        {SqlStrings}.append("-- Обновление настройки '" + pathfull + "'", 1);
+        {SqlStrings}.append(strArg("%1 := %2 ('%3');", variable, GetKeyIDByPath_FuncName, pathfull), 1);
+
+        var autoIncField = joinTable.scriptTable.fields.val(autoIncIndex).name;
+        var updatesql = strArg("UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;",
+            joinTable.scriptTable.name,
+            setList.join(", "),
+            where.join(" AND "),
+            autoIncField,
+            variable);
+        {SqlStrings}.append(updatesql, 1);
+
+        if (autoIncIndex != -1)
+            var ChildArray = TArray;
+            {Funcs}.stdBuildChildStatement(joinTable, ChildArray, newIndex);
+            {SqlStrings}.append(ChildArray);
+        end;
+    end;
+end;
+
+private macro buildStatement(joinTable, recIndex)
+    var nextRecIndex = recIndex + 1;
+
+    if (nextRecIndex > joinTable.scriptTable.records.size)
+        return nextRecIndex;
+    end;
+
+    var rec = joinTable.scriptTable.records.val(recIndex);
+    {Funcs}.toScript(joinTable, rec);
+
+    if (rec.lineType == ltInsert)
+        buildInsertStatement(joinTable, recIndex);
+        joinTable.processedRecords.setVal(recIndex, true);
+    elif (rec.lineType == ltDelete)
+        buildDeleteStatement(joinTable, recIndex);
+        joinTable.processedRecords.setVal(recIndex, true);
+    elif (rec.lineType == ltUpdate)
+        var newIndex = 0, oldIndex = 0;
+
+        if (joinTable.scriptTable.records.val(recIndex).lineUpdateType == lutOld)
+            oldIndex = recIndex;
+            newIndex = nextRecIndex;
+        else
+            oldIndex = nextRecIndex;
+            newIndex = recIndex;
+        end;
+
+        if (newIndex < joinTable.scriptTable.records.size)
+            {Funcs}.toScript(joinTable, joinTable.scriptTable.records.val(newIndex));
+            buildUpdateStatement(joinTable, oldIndex, newIndex);
+
+            joinTable.processedRecords.setVal(oldIndex, true);
+            joinTable.processedRecords.setVal(newIndex, true);
+        end;
+
+        nextRecIndex = nextRecIndex + 1;
+    end;
+
+    return nextRecIndex;
 end;
 
 macro GenSqlScrpt(joinTables)
     var joinTable = joinTables.getRoot();
 
-    var memdb = OpenTemporaryDBase();
+    memdb = OpenTemporaryDBase();
 
     if (not memdb)
         return;
     end;
 
-    var OracleFindKeyIDTemplate = GetOracleFindKeyIDTemplate();
-    /*var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
+    //var OracleFindKeyIDTemplate = GetOracleFindKeyIDTemplate();
+    var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
     if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable))
         return;
-    end;*/
+    end;
     debugbreak;
 
     if ({Spelling}.functionDeclare == FunctionBeforeBlocks)
@@ -220,6 +401,28 @@ macro GenSqlScrpt(joinTables)
 
     if ({Spelling}.functionDeclare == FunctionInDeclareBlock)
         BuildFunctions(joinTable, 1);
+    end;
+
+    {SqlStrings}.append({Spelling}.begin_);
+    DisableEnableAutoIncTrigger(joinTable);
+    {SqlStrings}.append("");
+
+    var recno = 0;
+    while (recno < joinTable.scriptTable.records.size)
+        var oldSize = {SqlStrings}.size;
+
+        recno = buildStatement(joinTable, recno);
+        
+        if ({SqlStrings}.size != oldSize)
+            {SqlStrings}.append("");
+        end;
+    end;
+
+    DisableEnableAutoIncTrigger(joinTable, true);
+    {SqlStrings}.append({Spelling}.end_);
+
+    if ({Spelling}.needDropFunctions)
+        {SqlStrings}.append({Funcs}.dropInserFunctions());
     end;
     /*{SqlStrings}.append({Spelling}.begin_);
     {SqlStrings}.append("-- " + BuildPathString(memdb, 6419, "ПРОВЕРКИ_ЗАМОРАЖИВАНИЯ"));

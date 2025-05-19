@@ -24,6 +24,7 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(JoinTable);
     REGISTER_DIFF_OBJ(JoinTableList);
     REGISTER_DIFF_OBJ(JoinTables);
+    REGISTER_DIFF_OBJ(BoolVector);
 
     REGISTER_DIFF_OBJ(IndexField);
     REGISTER_DIFF_OBJ(IndexFields);
@@ -77,6 +78,7 @@ void addRslObjects()
     ADDTORSL_DIFF_OBJ(JoinTable, false);
     ADDTORSL_DIFF_OBJ(JoinTableList, false);
     ADDTORSL_DIFF_OBJ(JoinTables, false);
+    ADDTORSL_DIFF_OBJ(BoolVector, false);
 
     ADDTORSL_DIFF_OBJ(IndexField, false);
     ADDTORSL_DIFF_OBJ(IndexFields, false);

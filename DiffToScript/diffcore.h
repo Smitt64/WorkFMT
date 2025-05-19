@@ -61,6 +61,8 @@ public:
     QString lineTypeStr() const;
     QString lineUpdateTypeStr() const;
 
+    Q_INVOKABLE void setVal(const int &index, const QString &value);
+
     QStringList values;
     LineType lineType;
     LineUpdateType lineUpdateType = lutNone;

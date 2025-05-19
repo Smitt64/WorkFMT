@@ -85,15 +85,25 @@ private:
 
 Q_DECLARE_OPAQUE_POINTER(Join)
 
+class BoolVector : public VectorIterableObject<bool>
+{
+    Q_OBJECT
+public:
+    BoolVector() = default;
+    virtual ~BoolVector() = default;
+};
+Q_DECLARE_OPAQUE_POINTER(BoolVector);
+
 class JoinTable : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(JoinList *joinList READ getJoinList CONSTANT)
     Q_PROPERTY(QStringList keyFields READ getKeyFields CONSTANT)
     Q_PROPERTY(ScriptTable *scriptTable READ getScriptTable CONSTANT)
+    Q_PROPERTY(BoolVector *processedRecords READ getProcessedRecords CONSTANT)
 public:
     ScriptTable* scriptTable;
-    QVector<bool> processedRecords;
+    BoolVector processedRecords;
     //DatTable* datTable;
 
     JoinList joinList;
@@ -108,6 +118,7 @@ public:
     JoinList *getJoinList();
     ScriptTable *getScriptTable();
     const QStringList &getKeyFields() const;
+    BoolVector *getProcessedRecords();
 };
 
 Q_DECLARE_OPAQUE_POINTER(JoinTable)

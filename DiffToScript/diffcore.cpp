@@ -87,6 +87,11 @@ QString DatRecord::lineUpdateTypeStr() const
     }
 }
 
+void DatRecord::setVal(const int &index, const QString &value)
+{
+    values[index] = value;
+}
+
 // ------------------------------------------------------------------------
 
 DatRecords::DatRecords() :

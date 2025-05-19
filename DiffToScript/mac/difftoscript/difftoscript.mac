@@ -41,3 +41,21 @@ macro CommentLines(lines)
         i = i + 1;
     end;
 end;
+
+macro DisableEnableAutoIncTrigger(joinTable, enable, depth)
+    var i = 0;
+
+    if (ValType(enable) == V_UNDEF)
+        enable = false;
+    end;
+
+    var lines = {Funcs}.disableEnableAutoIncTrigger(joinTable.scriptTable, enable, 0);
+    {SqlStrings}.append(lines, 1);
+
+    while (i < joinTable.joinList.size)
+        var idx = joinTable.joinList.val(i);
+        lines = {Funcs}.disableEnableAutoIncTrigger(idx.child.scriptTable, enable, 0);
+        {SqlStrings}.append(lines, 1);
+        i = i + 1;
+    end;
+end;
