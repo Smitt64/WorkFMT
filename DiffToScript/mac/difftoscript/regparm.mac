@@ -33,7 +33,7 @@ private macro GetPostgresFindKeyIDTemplate()
 [    WITH RECURSIVE path_parts AS (SELECT split_part(pPath, '/', n) AS part, n AS lvl 
     FROM generate_series(1, array_length(string_to_array(pPath, '/'), 1)) AS n), hier AS (
     SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, 1 AS lvl
-    FROM dregparm_dbt tWHERE t.T_NAME = (SELECT part FROM path_parts WHERE lvl = 1) AND t.T_PARENTID = 0 
+    FROM dregparm_dbt t WHERE t.T_NAME = (SELECT part FROM path_parts WHERE lvl = 1) AND t.T_PARENTID = 0 
     UNION ALL
     SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, h.lvl + 1 FROM dregparm_dbt t JOIN hier h ON t.T_PARENTID = h.T_KEYID
     JOIN path_parts p ON p.lvl = h.lvl + 1 AND p.part = t.T_NAME)
