@@ -133,6 +133,11 @@ QString getRules(TaskOptions optns)
 {
     QStringList rules;
 
+/*#ifndef _DEBUG
+    bool state = optns[ctoVerbose].isSet;
+#else
+    bool state = true;
+#endif*/
     bool state = optns[ctoVerbose].isSet;
     QString stateStr = state ? "true" : "false";
     rules.append("*.info=" + stateStr);

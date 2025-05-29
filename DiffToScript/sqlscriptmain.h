@@ -12,8 +12,17 @@
 
 typedef struct
 {
+    bool isBlob;
+    quint16 type;
+    QString name;
+}FuncParam;
+
+typedef struct
+{
     QString name, returnType;
     QString fullname;
+
+    QList<FuncParam> params;
 }InsertFunction;
 
 enum SqlScriptBuildErrors
@@ -24,6 +33,7 @@ enum SqlScriptBuildErrors
 
 extern QString Padding(int depth = 1);
 
+class FunctionInfo;
 class SqlScriptMain : public QObject
 {
     Q_OBJECT
@@ -40,8 +50,9 @@ public:
     Q_INVOKABLE QString buildVariable(const ScriptTable* datTable);
     Q_INVOKABLE QStringList buildInsertFunctions(const ScriptTable* datTable);
     Q_INVOKABLE QStringList dropInserFunctions();
+    Q_INVOKABLE QStringList dropInserFunctions(QObject *spelling);
     Q_INVOKABLE QStringList getInserFunctionsNames();
-    Q_INVOKABLE void getInserFunction(const QString &name, QString &returnType, QString &fullname);
+    //Q_INVOKABLE void getInserFunction(const QString &name, QString &returnType, QString &fullname);
 
     QVector<int> indexesOfKeyFields_(const JoinTable *joinTable);
     QVector<int> indexesOfUniqueIndex_(const JoinTable *joinTable);
@@ -81,7 +92,7 @@ private:
     QSharedPointer<DiffConnection> _connection;
     QSharedPointer<DbSpelling> _dbSpelling;
 
-    QMap<QString, InsertFunction> m_InsertFunctions;
+    QMap<QString, FunctionInfo*> m_InsertFunctions;
 };
 
 #endif // SQLSCRIPTMAIN_H

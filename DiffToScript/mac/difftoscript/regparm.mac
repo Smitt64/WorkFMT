@@ -10,6 +10,7 @@ const GetKeyIDByPath_FuncName = "GetKeyIDByPath__";
 const InsertIntoRegparmEx_FuncName = "InsertIntoRegparmPath__";
 
 private var memdb;
+private var FuncInfoList = TArray();
 
 private macro GetOracleFindKeyIDTemplate()
     CaptureOutput;
@@ -59,13 +60,13 @@ private macro OpenTemporaryDBase()
     return db;
 end;
 
-private macro BuildPathString(keyid)
+private macro BuildPathStringCommon(keyid, sql)
     var currentkeyId = keyid;
     var pathParts = StringListEx();
 
     while (currentkeyId != 0)
         var query = SqlQuery(memdb);
-        query.prepare("SELECT T_NAME, T_PARENTID FROM dregparm_dbt WHERE T_KEYID = :id");
+        query.prepare(sql);
         query.bindValue(":id", currentkeyId);
 
         query.exec();
@@ -78,6 +79,27 @@ private macro BuildPathString(keyid)
     end;
 
     return pathParts.join("/");
+end;
+
+private macro BuildPathString(keyid)
+    return BuildPathStringCommon(keyid, "SELECT T_NAME, T_PARENTID FROM dregparm_dbt WHERE T_KEYID = :id");
+end;
+
+private macro BuildPathStringDeleted(keyid)
+    var sql = "select * from (SELECT T_NAME, T_PARENTID, T_KEYID FROM dregparm_dbt " +
+        "union select T_NAME, T_PARENTID, T_KEYID FROM DREGPARM_DBT_CHANGE where t_change__ = 'D') WHERE T_KEYID = :id";
+
+    return BuildPathStringCommon(keyid, sql);
+end;
+
+private macro BuildPathStringUpdated(keyid)
+    var sql = "select * from (SELECT T_NAME, T_PARENTID, T_KEYID FROM dregparm_dbt " +
+        "union select T_NAME, T_PARENTID, T_KEYID FROM DREGPARM_DBT_CHANGE where t_change__ = 'O') WHERE T_KEYID = :id";
+
+    return BuildPathStringCommon(keyid, sql);
+end;
+
+private macro DropFunctions()
 end;
 
 private macro AppendCommonVariable(joinTable, depth)
@@ -95,22 +117,24 @@ private macro BuildInsertExFunction(joinTable, depth)
     var BeginCreatePathFunc = TArray;
     var EndCreatePathFunc = TArray;
 
+    var Function = FunctionInfo();
+    Function.functionName = InsertIntoRegparmEx_FuncName;
+    Function.returnType.paramType = FmtType.LONG;
+
     var ParamType = {Spelling}.functionParamType(FmtType.STRING);
     var ReturnType = {Spelling}.functionParamType(FmtType.LONG);
 
     var i = 2;
-    var FuncParams = StringListEx();
-    FuncParams.append("pPath in " + ParamType);
+    Function.addInputParam("pPath", FmtType.STRING);
 
     while (i < joinTable.scriptTable.realFields.size)
         var fld = joinTable.scriptTable.field(joinTable.scriptTable.realFields[i]);
-        FuncParams.append("p" + strToUpper(fld.undecorateName) + " in " + {Spelling}.functionParamType(fld.type));
+        Function.addInputParam("p" + strToUpper(fld.undecorateName), fld.type);
 
         i = i + 1;
     end;
 
-    {Spelling}.functionChunks(BeginCreatePathFunc, EndCreatePathFunc, 
-        InsertIntoRegparmEx_FuncName, FuncParams.join(", "), ReturnType);
+    Function.functionChunks({Spelling}, BeginCreatePathFunc, EndCreatePathFunc);
     BeginCreatePathFunc.size = 2;
 
     {SqlStrings}.append(BeginCreatePathFunc, depth);
@@ -118,12 +142,12 @@ private macro BuildInsertExFunction(joinTable, depth)
     AppendCommonVariable(joinTable, depth); // GetKeyIDByPath_FuncName
 
     i = 2;
-    FuncParams.clear();
     {SqlStrings}.append({Spelling}.begin_, depth);
     {SqlStrings}.append("v_dregparm_dbt_T_KEYID := " + GetKeyIDByPath_FuncName + " (pPath);", depth + 1);
     {SqlStrings}.append("");
     {SqlStrings}.append("IF v_dregparm_dbt_T_KEYID > 0 THEN ", depth + 1);
     
+    var FuncParams = StringListEx();
     FuncParams.append("v_dregparm_dbt_T_KEYID");
     while (i < joinTable.scriptTable.realFields.size)
         fld = joinTable.scriptTable.field(joinTable.scriptTable.realFields[i]);
@@ -137,15 +161,25 @@ private macro BuildInsertExFunction(joinTable, depth)
     {SqlStrings}.append("");
     {SqlStrings}.append("RETURN v_dregparm_dbt_T_KEYID;", depth + 1);
     {SqlStrings}.append(EndCreatePathFunc, depth);
+
+    FuncInfoList[FuncInfoList.size] = Function;
 end;
 
 private macro BuildFunctions(joinTable, depth)
     var BeginCreateReplacePathFunc = TArray;
     var EndCreateReplacePathFunc = TArray;
-    var ParamType = {Spelling}.functionParamType(FmtType.STRING);
-    var ReturnType = {Spelling}.functionParamType(FmtType.LONG);
-    {Spelling}.functionChunks(BeginCreateReplacePathFunc, EndCreateReplacePathFunc, 
-        GetKeyIDByPath_FuncName, "pPath in " + ParamType, ReturnType);
+
+    var Function = FunctionInfo();
+    Function.functionName = GetKeyIDByPath_FuncName;
+    Function.returnType.paramType = FmtType.LONG;
+    Function.addInputParam("pPath", FmtType.STRING);
+
+    /*var ParamType = {Spelling}.functionParamType(FmtType.STRING);
+    var ReturnType = {Spelling}.functionParamType(FmtType.LONG);*/
+
+    /*{Spelling}.functionChunks(BeginCreateReplacePathFunc, EndCreateReplacePathFunc, 
+        GetKeyIDByPath_FuncName, "pPath in " + ParamType, ReturnType);*/
+    Function.functionChunks({Spelling}, BeginCreateReplacePathFunc, EndCreateReplacePathFunc);
     BeginCreateReplacePathFunc.size = 2;
 
     {SqlStrings}.append({Funcs}.makeInsertFunctions(joinTable), depth);
@@ -183,6 +217,8 @@ private macro BuildFunctions(joinTable, depth)
     end;
 
     {SqlStrings}.append("");
+
+    FuncInfoList[FuncInfoList.size] = Function;
 end;
 
 private macro buildInsertStatement(joinTable, recIndex)
@@ -232,15 +268,15 @@ private macro buildInsertStatement(joinTable, recIndex)
         {SqlStrings}.append(call, 1);
 
         if (autoIncIndex != -1)
-            {SqlStrings}.append("");
-
-            {SqlStrings}.append("IF " + variable + " <> -1 THEN", 1);
-
             var ChildArray = TArray;
             {Funcs}.stdBuildChildStatement(joinTable, ChildArray, recIndex);
-            {SqlStrings}.append(ChildArray, 1);
 
-            {SqlStrings}.append("END IF;", 1);
+            if (ChildArray.size)
+                {SqlStrings}.append("");
+                {SqlStrings}.append("IF " + variable + " <> -1 THEN", 1);
+                {SqlStrings}.append(ChildArray, 1);
+                {SqlStrings}.append("END IF;", 1);
+            end;
         end;
     end;
 end;
@@ -249,7 +285,7 @@ private macro buildDeleteStatement(joinTable, recIndex)
     var rec = joinTable.scriptTable.records.val(recIndex);
 
     var KeyId = Int(rec.values[0]);
-    var pathfull = BuildPathString(KeyId);
+    var pathfull = BuildPathStringDeleted(KeyId);
     var autoIncIndex = {Funcs}.getAutoincIndex(joinTable.scriptTable);
     var autoIncField = joinTable.scriptTable.fields.val(autoIncIndex).name;
     var variable = {Funcs}.buildVariableName(joinTable.scriptTable);
@@ -383,11 +419,10 @@ macro GenSqlScrpt(joinTables)
         return;
     end;
 
-    //var OracleFindKeyIDTemplate = GetOracleFindKeyIDTemplate();
-    var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
-    if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable))
+    /*var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
+    if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable, true))
         return;
-    end;
+    end;*/
     debugbreak;
 
     if ({Spelling}.functionDeclare == FunctionBeforeBlocks)
@@ -418,13 +453,33 @@ macro GenSqlScrpt(joinTables)
         end;
     end;
 
+    var i = 0;
     DisableEnableAutoIncTrigger(joinTable, true);
     {SqlStrings}.append({Spelling}.end_);
 
     if ({Spelling}.needDropFunctions)
         {SqlStrings}.append({Funcs}.dropInserFunctions());
+
+        while (i < FuncInfoList.size)
+            {SqlStrings}.append(FuncInfoList[i].drop({Spelling}));
+            {SqlStrings}.append("/");
+            i = i + 1;
+        end;
+    else
+        var PgSpelling = DbSpellingPostgres();
+        var drops = {Funcs}.dropInserFunctions(PgSpelling);
+
+        {SqlStrings}.append("-- #conv-Oracle");
+        {SqlStrings}.append("-- #conv-PG");
+        CommentLines(drops);
+
+        while (i < FuncInfoList.size)
+            {SqlStrings}.append("-- " + FuncInfoList[i].drop(PgSpelling));
+            {SqlStrings}.append("--/");
+            i = i + 1;
+        end;
+
+        {SqlStrings}.append(drops);
+        {SqlStrings}.append("-- #conv-end");
     end;
-    /*{SqlStrings}.append({Spelling}.begin_);
-    {SqlStrings}.append("-- " + BuildPathString(memdb, 6419, "Ž‚…Šˆ_‡€ŒŽ€†ˆ‚€ˆŸ"));
-    {SqlStrings}.append({Spelling}.end_);*/
 end;

@@ -18,6 +18,9 @@ public:
     QString getExceptionName(const int &type) override;
     QString functionParamType(const qint16 &type) override;
 
+    QString getProcKeyWord(const bool &rettype) override;
+    QString getProcReturnKeyWord(const QString &returntype) override;
+
     void functionChunks(QStringList &BeginCreateReplace,
                         QStringList &EndCreateReplace,
                         const QString &name,

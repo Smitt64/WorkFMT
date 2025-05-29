@@ -5,6 +5,8 @@
 #include <QSqlQuery>
 #include <QTextCodec>
 #include <QTextStream>
+#include "dbspellingpostgres.h"
+#include "functioninfo.h"
 
 const QString PADDING = "  ";
 
@@ -67,7 +69,7 @@ QStringList SqlScriptMain::getInserFunctionsNames()
     return m_InsertFunctions.keys();
 }
 
-void SqlScriptMain::getInserFunction(const QString &name, QString &returnType, QString &fullname)
+/*void SqlScriptMain::getInserFunction(const QString &name, QString &returnType, QString &fullname)
 {
     if (m_InsertFunctions.contains(name))
     {
@@ -75,24 +77,29 @@ void SqlScriptMain::getInserFunction(const QString &name, QString &returnType, Q
         returnType = element.returnType;
         fullname = element.fullname;
     }
+}*/
+
+QStringList SqlScriptMain::dropInserFunctions(QObject *spelling)
+{
+    QStringList sql;
+
+    DbSpelling *spell = qobject_cast<DbSpelling*>(spelling);
+    QMapIterator<QString, FunctionInfo*> iter(m_InsertFunctions);
+    while (iter.hasNext())
+    {
+        iter.next();
+
+        QString func = iter.value()->toString(spell);
+        sql << spell->dropFunction(func)
+            << "/";
+    }
+
+    return sql;
 }
 
 QStringList SqlScriptMain::dropInserFunctions()
 {
-    QStringList sql;
-
-    QMapIterator<QString, InsertFunction> iter(m_InsertFunctions);
-    while (iter.hasNext())
-    {
-        iter.next();
-        sql << _dbSpelling->dropFunction(iter.value().name,
-                                         iter.value().fullname,
-                                         iter.value().returnType)
-            << "/"
-            << QString();
-    }
-
-    return sql;
+    return dropInserFunctions(_dbSpelling.data());
 }
 
 QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
@@ -106,9 +113,11 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
     undecorateTable.front() = undecorateTable.front().toUpper();
 
+    FunctionInfo *func = new FunctionInfo();
     QString name = QString("InsertInto%1__").arg(undecorateTable);
-    int autoIncIndex = getAutoincIndex(datTable);
+    func->setFunctionName(name);
 
+    int autoIncIndex = getAutoincIndex(datTable);
     if (autoIncIndex != -1)
     {
         QString autoIncField = datTable->fields[autoIncIndex]->name;
@@ -116,6 +125,8 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
         returnType = QString("%1.%2\%TYPE")
                 .arg(datTable->name.toUpper())
                 .arg(autoIncField);
+
+        func->returnType()->setUserType(returnType);
     }
 
     QString InsertFieldList;
@@ -144,6 +155,7 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     {
         if (i != autoIncIndex)
         {
+            FuncParam prm;
             QString undecorateFldName = datTable->realFields[i];
             if (undecorateFldName.mid(0, 2).toLower() == "t_")
                 undecorateFldName = undecorateFldName.mid(2);
@@ -158,6 +170,8 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
 
             if (datTable->fields[i]->isBlob())
                 paramType = _dbSpelling->blobTypeName(datTable->field(datTable->realFields[i])->type);
+
+            func->addInputParam(paramName, datTable->field(datTable->realFields[i])->type, datTable->fields[i]->isBlob());
 
             params += QString("%1 IN %2")
                     .arg(paramName)
@@ -296,7 +310,9 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     }
     function.append(EndCreateReplace);
 
-    m_InsertFunctions[datTable->name.toUpper()] = { name, returnType, fullFunctionName };
+    m_InsertFunctions[datTable->name.toUpper()] = func;
+
+    //QString tmp = func->toString(_dbSpelling.data());
 
     return function;
 }
@@ -536,7 +552,7 @@ int SqlScriptMain::buildInsertStatement(const JoinTable* joinTable, QStringList&
         //sql.append(QString(PADDING + "INSERT INTO %1 (%2) VALUES (%3) RETURNING %4 INTO %5;").arg(joinTable->scriptTable->name, names, values, autoIncField, variable));
         QString call = QString("%1 := %2 (%3);")
                 .arg(variable)
-                .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()].name)
+                .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()]->functionName())
                 .arg(values);
 
         sql.append(childPadding + Padding(1) + call);
@@ -546,7 +562,7 @@ int SqlScriptMain::buildInsertStatement(const JoinTable* joinTable, QStringList&
         QString values = rec->values.join(", ");
         //sql.append(QString(PADDING + "INSERT INTO %1 (%2) VALUES (%3);").arg(joinTable->scriptTable->name,  names, values));
         QString call = QString("%1 (%2);")
-                .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()].name)
+                .arg(m_InsertFunctions[joinTable->scriptTable->name.toUpper()]->functionName())
                 .arg(values);
 
         sql.append(childPadding + Padding(1) + _dbSpelling->callProcedure(call));
@@ -857,20 +873,32 @@ int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable)
 
     sql << _dbSpelling->getEnd() << "";
 
-    if (_dbSpelling->needDropFunctions())
+    if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
     {
-        QMapIterator<QString, InsertFunction> iter(m_InsertFunctions);
-        while (iter.hasNext())
-        {
-            iter.next();
-            sql << _dbSpelling->dropFunction(iter.value().name,
-                                             iter.value().fullname,
-                                             iter.value().returnType)
-                << "/"
-                << QString();
-        }
+        sql << "-- #conv-Oracle";
+        sql << "-- #conv-PG";
     }
-    //sql << sql.join("\n");
+
+    DbSpellingPostgres pgSpelling;
+    QMapIterator<QString, FunctionInfo*> iter(m_InsertFunctions);
+    while (iter.hasNext())
+    {
+        iter.next();
+
+        QString fullname = iter.value()->toString(&pgSpelling);
+        QString drop = pgSpelling.dropFunction(fullname);
+
+        if (!_dbSpelling->needDropFunctions())
+            drop.prepend("-- ");
+
+        if (!_dbSpelling->needDropFunctions())
+            sql << drop;
+        else
+            sql << drop << "/" << QString();
+    }
+
+    if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
+        sql << "-- #conv-end";
 
     return stat;
 }

@@ -11,6 +11,7 @@
 #include "fmttableslist.h"
 #include "recordparser.h"
 #include "rslexecutor.h"
+#include "functioninfo.h"
 
 #define REGISTER_DIFF_OBJ(Type) RegisterObjList::inst()->RegisterRslObject<Type>(GenInfoUseParentProps | GenInfoUseParentMeths)
 #define ADDTORSL_DIFF_OBJ(Type, CanCreate) RegisterObjList::inst()->AddObject<Type>(CanCreate)
@@ -37,6 +38,7 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(DiffTable);
     REGISTER_DIFF_OBJ(ScriptTable);
 
+    REGISTER_DIFF_OBJ(DbSpelling);
     REGISTER_DIFF_OBJ(DbSpellingOracle);
     REGISTER_DIFF_OBJ(DbSpellingPostgres);
 
@@ -48,6 +50,11 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(DiffConnection);
     REGISTER_DIFF_OBJ(FmtTablesList);
     REGISTER_DIFF_OBJ(RecordParser);
+
+    REGISTER_DIFF_OBJ(FunctionParamInfo);
+    REGISTER_DIFF_OBJ(FunctionParamInfoList);
+    REGISTER_DIFF_OBJ(FunctionInfo);
+    REGISTER_DIFF_OBJ(FunctionInfoList);
 }
 
 void addRslObjects()
@@ -103,4 +110,9 @@ void addRslObjects()
     ADDTORSL_DIFF_OBJ(DiffConnection, false);
     ADDTORSL_DIFF_OBJ(FmtTablesList, false);
     ADDTORSL_DIFF_OBJ(RecordParser, true);
+
+    ADDTORSL_DIFF_OBJ(FunctionParamInfo, true);
+    ADDTORSL_DIFF_OBJ(FunctionParamInfoList, true);
+    ADDTORSL_DIFF_OBJ(FunctionInfo, true);
+    ADDTORSL_DIFF_OBJ(FunctionInfoList, true);
 }

@@ -42,9 +42,11 @@ private:
     QStringList _errors;
 };
 
-class DiffTableInfo;
+class DiffTable;
 class SqlDatabase;
-extern QString diffCreateTableForSqlite(DiffTableInfo *table);
-extern bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffTableInfo *table);
+
+extern QString diffCreateTableForSqlite(DiffTable *table);
+extern QString diffCreateChangesTableForSqlite(DiffTable *table);
+extern bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffTable *table, bool changes = false);
 
 #endif // RECORDPARSER_H

@@ -68,6 +68,20 @@ QString DbSpellingOracle::functionParamType(const qint16 &type)
     return result;
 }
 
+QString DbSpellingOracle::getProcKeyWord(const bool &rettype)
+{
+    if (!rettype)
+        return "PROCEDURE ";
+
+    return "FUNCTION ";
+}
+
+QString DbSpellingOracle::getProcReturnKeyWord(const QString &returntype)
+{
+    return QString(" RETURN %1")
+            .arg(returntype);
+}
+
 void DbSpellingOracle::functionChunks(QStringList &BeginCreateReplace,
                                       QStringList &EndCreateReplace,
                                       const QString &name,

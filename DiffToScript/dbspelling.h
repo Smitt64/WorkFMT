@@ -41,7 +41,9 @@ public:
     Q_INVOKABLE virtual QString callProcedure(const QString &proc);
 
     virtual bool needDropFunctions() const;
-    Q_INVOKABLE virtual QString dropFunction(const QString &proc, const QString &fullproc, const QString &returnType) const;
+    Q_INVOKABLE virtual QString getProcKeyWord(const bool &rettype) = 0;
+    Q_INVOKABLE virtual QString getProcReturnKeyWord(const QString &returntype) = 0;
+    Q_INVOKABLE virtual QString dropFunction(const QString &fullproc) const;
     virtual int functionDeclare() const;
 
     Q_INVOKABLE virtual void functionChunks(QStringList &BeginCreateReplace,
@@ -53,6 +55,7 @@ public:
     virtual QStringList getDeclare() = 0;
     virtual QStringList getBegin() = 0;
     virtual QStringList getEnd() = 0;
+
 
     Q_INVOKABLE virtual QString blobTypeName(const int &type) = 0;
     Q_INVOKABLE virtual QString functionParamType(const qint16 &type) = 0;

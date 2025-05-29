@@ -32,6 +32,7 @@ SOURCES += \
     diffoptionsdlg.cpp \
     difftableinfo.cpp \
 #    difftoscripttest.cpp \
+    functioninfo.cpp \
     join.cpp \
     linespareser.cpp \
     linesparsermain.cpp \
@@ -83,6 +84,7 @@ HEADERS += \
     diffoptionsdlg.h \
     difftableinfo.h \
 #    difftoscripttest.h \
+    functioninfo.h \
     join.h \
     linespareser.h \
     linesparsermain.h \

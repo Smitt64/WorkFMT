@@ -98,6 +98,19 @@ int DbSpellingPostgres::functionDeclare() const
     return FunctionBeforeBlocks;
 }
 
+QString DbSpellingPostgres::getProcKeyWord(const bool &rettype)
+{
+    return "FUNCTION ";
+}
+
+QString DbSpellingPostgres::getProcReturnKeyWord(const QString &returntype)
+{
+    if (!returntype.isEmpty())
+        return QString(" RETURNS %1").arg(returntype);
+
+    return QString(" RETURNS VOID");
+}
+
 void DbSpellingPostgres::functionChunks(QStringList &BeginCreateReplace,
                                         QStringList &EndCreateReplace,
                                         const QString &name,
@@ -139,9 +152,7 @@ bool DbSpellingPostgres::needDropFunctions() const
     return true;
 }
 
-QString DbSpellingPostgres::dropFunction(const QString &proc,
-                                         const QString &fullproc,
-                                         const QString &returnType) const
+QString DbSpellingPostgres::dropFunction(const QString &fullproc) const
 {
     QString normal = fullproc;
     normal = normal.remove("FUNCTION ");

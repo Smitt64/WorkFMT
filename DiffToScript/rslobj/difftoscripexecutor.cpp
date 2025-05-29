@@ -16,10 +16,10 @@ static void Rsl_diffCreateTableForSqlite()
     if (GetFuncParamCount() != 1)
         ThrowParamCountError(1);
 
-    DiffTableInfo *table = GetFuncParam<DiffTableInfo*>(0);
+    DiffTable *table = GetFuncParam<DiffTable*>(0);
 
     if (!table)
-        ThrowParamTypeError<DiffTableInfo>(0);
+        ThrowParamTypeError<DiffTable>(0);
 
     QString sql = diffCreateTableForSqlite(table);
     SetReturnVal(sql);
@@ -32,6 +32,7 @@ static void Rsl_diffLoadDatToSqlite()
         prm_filename = 0,
         prm_Connection,
         prm_table,
+        prm_changes,
 
         prm_Max
     };
@@ -41,7 +42,8 @@ static void Rsl_diffLoadDatToSqlite()
 
     QString filename = GetFuncParam<QString>(prm_filename);
     SqlDatabase *Connection = GetFuncParam<SqlDatabase*>(prm_Connection);
-    DiffTableInfo *table = GetFuncParam<DiffTableInfo*>(prm_table);
+    DiffTable *table = GetFuncParam<DiffTable*>(prm_table);
+    bool changes = GetFuncParam<bool>(prm_changes);
 
     if (filename.isEmpty())
         ThrowParamTypeError<DiffTableInfo>(prm_filename);
@@ -50,9 +52,9 @@ static void Rsl_diffLoadDatToSqlite()
         ThrowParamTypeError<SqlDatabase>(prm_Connection);
 
     if (!table)
-        ThrowParamTypeError<DiffTableInfo>(prm_table);
+        ThrowParamTypeError<DiffTable>(prm_table);
 
-    bool hr = diffLoadDatToSqlite(filename, Connection, table);
+    bool hr = diffLoadDatToSqlite(filename, Connection, table, changes);
     SetReturnVal(hr);
 }
 
