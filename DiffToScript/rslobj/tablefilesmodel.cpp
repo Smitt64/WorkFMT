@@ -93,8 +93,8 @@ QVariant TableFilesModel::headerData(int section, Qt::Orientation orientation, i
 
     switch (section)
     {
-    case 0: return tr("Table (File)");
-    case 1: return tr("Selected");
+    case 0: return tr("Таблица (файл)");
+    case 1: return tr("Активна");
     default: return QVariant();
     }
 }

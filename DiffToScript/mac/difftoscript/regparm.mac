@@ -60,6 +60,24 @@ private macro OpenTemporaryDBase()
     return db;
 end;
 
+private macro CreatePathsTable()
+    var drop_query = SqlQuery(memdb);
+    drop_query.prepare("DROP TABLE IF EXISTS DREGPATHS_WRK");
+    drop_query.exec();
+
+    var query = SqlQuery(memdb);
+    query.prepare("CREATE TABLE DREGPATHS_WRK (T_KEYID INTEGER, T_PATH TEXT)");
+    query.exec();
+end;
+
+private macro AddToPathsTable(KeyId, Path)
+    var query = SqlQuery(memdb);
+    query.prepare("INSERT INTO DREGPATHS_WRK (T_KEYID, T_PATH) VALUES(:KeyID, :Path)");
+    query.bindValue(":KeyID", KeyId);
+    query.bindValue(":Path", Path);
+    query.exec();
+end;
+
 private macro BuildPathStringCommon(keyid, sql)
     var currentkeyId = keyid;
     var pathParts = StringListEx();
@@ -292,16 +310,18 @@ private macro buildDeleteStatement(joinTable, recIndex)
 
     {Funcs}.replaceForeignAutoinc(joinTable, rec);
 
-    if (autoIncIndex != -1)
+    if (autoIncIndex != -1) 
         rec.setVal(autoIncIndex, variable);
     end;
 
     var where = StringListEx({Funcs}.buildWhere(joinTable, rec));
+    {SqlStrings}.beginGroup(pathfull);
     {SqlStrings}.append("-- Удаление настройки '" + pathfull + "'", 1);
 
     var deletesql = strArg("DELETE FROM %1 WHERE %2 RETURNING %3 INTO %4;", 
         joinTable.scriptTable.name, where.join(" AND "), autoIncField, variable);
 
+    AddToPathsTable(KeyId, pathfull);
     {SqlStrings}.append(strArg("%1 := %2 ('%3');", variable, GetKeyIDByPath_FuncName, pathfull), 1);
     {SqlStrings}.append(deletesql, 1);
 
@@ -310,6 +330,7 @@ private macro buildDeleteStatement(joinTable, recIndex)
         {Funcs}.stdBuildChildStatement(joinTable, ChildArray, recIndex);
         {SqlStrings}.append(ChildArray);
     end;
+    {SqlStrings}.endGroup();
 end;
 
 private macro buildUpdateStatement(joinTable, oldIndex, newIndex)
@@ -317,7 +338,7 @@ private macro buildUpdateStatement(joinTable, oldIndex, newIndex)
     var newRec = joinTable.scriptTable.records.val(newIndex);
 
     var KeyId = Int(newRec.values[0]);
-    var pathfull = BuildPathString(KeyId);
+    var pathfull = BuildPathStringUpdated(KeyId);
 
     var i = 0;
     var setList = StringListEx();
@@ -347,10 +368,12 @@ private macro buildUpdateStatement(joinTable, oldIndex, newIndex)
         oldRec.setVal(autoIncIndex, variable);
     end;
     
+    {SqlStrings}.beginGroup(pathfull);
     var where = StringListEx({Funcs}.buildWhere(joinTable, oldRec));
     if ((not setList.empty) and (variable != ""))
         {SqlStrings}.append("-- Обновление настройки '" + pathfull + "'", 1);
         {SqlStrings}.append(strArg("%1 := %2 ('%3');", variable, GetKeyIDByPath_FuncName, pathfull), 1);
+        AddToPathsTable(KeyId, pathfull);
 
         var autoIncField = joinTable.scriptTable.fields.val(autoIncIndex).name;
         var updatesql = strArg("UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;",
@@ -367,6 +390,7 @@ private macro buildUpdateStatement(joinTable, oldIndex, newIndex)
             {SqlStrings}.append(ChildArray);
         end;
     end;
+    {SqlStrings}.endGroup();
 end;
 
 private macro buildStatement(joinTable, recIndex)
@@ -423,8 +447,8 @@ macro GenSqlScrpt(joinTables)
     if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable, true))
         return;
     end;*/
-    debugbreak;
 
+    CreatePathsTable();
     if ({Spelling}.functionDeclare == FunctionBeforeBlocks)
         BuildFunctions(joinTable, 0);
     end;
@@ -449,6 +473,21 @@ macro GenSqlScrpt(joinTables)
         recno = buildStatement(joinTable, recno);
         
         if ({SqlStrings}.size != oldSize)
+            {SqlStrings}.append("");
+        end;
+    end;
+
+    /*
+        Применить сохраненные группы настроек:
+        Удалять и обновлять надо в порядке убывания T_KEYID
+    */
+    var query = SqlQuery(memdb);
+    query.prepare("SELECT * FROM DREGPATHS_WRK ORDER BY T_KEYID DESC");
+
+    if (query.exec())
+        while (query.next())
+            var keypath = query.value("T_PATH");
+            {SqlStrings}.applyGroup(keypath);
             {SqlStrings}.append("");
         end;
     end;

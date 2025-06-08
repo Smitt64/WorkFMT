@@ -412,13 +412,13 @@ ScriptsPage::~ScriptsPage()
 void ScriptsPage::oracleScriptReady(const QString &data)
 {
     m_pOracle->appendPlainText(data);
-    m_pOracle->verticalScrollBar()->setValue(m_pOracle->verticalScrollBar()->maximum());
+    m_pOracle->verticalScrollBar()->setValue(m_pOracle->verticalScrollBar()->minimum());
 }
 
 void ScriptsPage::postgresScriptReady(const QString &data)
 {
     m_pPostgres->appendPlainText(data);
-    m_pPostgres->verticalScrollBar()->setValue(m_pPostgres->verticalScrollBar()->maximum());
+    m_pPostgres->verticalScrollBar()->setValue(m_pPostgres->verticalScrollBar()->minimum());
 }
 
 void ScriptsPage::finished()

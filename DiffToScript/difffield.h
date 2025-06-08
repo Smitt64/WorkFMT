@@ -68,6 +68,9 @@ class DiffField: public IndexField
     // Свойства для собственных полей DiffField
     Q_PROPERTY(QString typeName READ getTypeName CONSTANT)
     Q_PROPERTY(int size READ getSize CONSTANT)
+    Q_PROPERTY(bool isDate READ isDate CONSTANT)
+    Q_PROPERTY(bool isBlob READ isBlob CONSTANT)
+    Q_PROPERTY(bool isValid READ isValid CONSTANT)
 public:
     DiffField();
     DiffField(const QString& name, qint16 type, const QString& typeName, bool isAutoinc = false, bool isString = false);

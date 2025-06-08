@@ -55,14 +55,46 @@ SqlStringList& SqlStringList::append(const QStringList& strings)
     return *this;
 }*/
 
+void SqlStringList::clearGroup(const QString& name)
+{
+    m_Groups.remove(name);
+}
+
+void SqlStringList::beginGroup(const QString& name)
+{
+    m_CurrentGroup = name;
+
+    if (!m_Groups.contains(m_CurrentGroup))
+        m_Groups[m_CurrentGroup] = QStringList();
+}
+
+void SqlStringList::endGroup()
+{
+    m_CurrentGroup = QString();
+}
+
+void SqlStringList::applyGroup(const QString& name)
+{
+    if (!m_Groups.contains(name))
+        return;
+
+    QStringList lst = m_Groups[name];
+    SqlStringList::append(lst);
+}
+
 void SqlStringList::append(const QString& str, int depth)
 {
-    if (m_list)
+    QStringList *ptr = m_list;
+
+    if (!m_CurrentGroup.isEmpty())
+        ptr = &m_Groups[m_CurrentGroup];
+
+    if (ptr)
     {
         if (depth <= 0)
-            m_list->append(str);
+            ptr->append(str);
         else
-            m_list->append(Padding(depth) + str);
+            ptr->append(Padding(depth) + str);
 
         emit sizeChanged(m_list->size());
         emit linesChanged();
@@ -71,10 +103,15 @@ void SqlStringList::append(const QString& str, int depth)
 
 void SqlStringList::append(const QStringList& strings, int depth)
 {
-    if (m_list)
+    QStringList *ptr = m_list;
+
+    if (!m_CurrentGroup.isEmpty())
+        ptr = &m_Groups[m_CurrentGroup];
+
+    if (ptr)
     {
         if (depth <= 0)
-            m_list->append(strings);
+            ptr->append(strings);
         else
         {
             auto AddPadding = [=](QString &str) -> void
@@ -84,23 +121,13 @@ void SqlStringList::append(const QStringList& strings, int depth)
 
             QStringList tmp = strings;
             std::for_each(tmp.begin(), tmp.end(), AddPadding);
-            m_list->append(tmp);
+            ptr->append(tmp);
         }
 
         emit sizeChanged(m_list->size());
         emit linesChanged();
     }
 }
-
-/*SqlStringList& SqlStringList::operator<<(const QString& str)
-{
-    return append(str);
-}
-
-SqlStringList& SqlStringList::operator<<(const QStringList& strings)
-{
-    return append(strings);
-}*/
 
 QStringList SqlStringList::stringList() const
 {
@@ -118,7 +145,7 @@ QStringList SqlStringList::lines() const
 
     if (m_list)
     {
-        for (const QString& str : *m_list)
+        for (const QString& str : std::as_const(*m_list))
             result << str;
     }
 
@@ -133,4 +160,14 @@ QString SqlStringList::sqlText() const
 QStringList* SqlStringList::data() const
 {
     return m_list;
+}
+
+int SqlStringList::groupCount() const
+{
+    return m_Groups.keys().size();
+}
+
+QStringList SqlStringList::groups() const
+{
+    return m_Groups.keys();
 }

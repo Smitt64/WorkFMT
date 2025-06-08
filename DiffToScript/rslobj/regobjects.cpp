@@ -18,7 +18,6 @@
 
 void registerRslObjects()
 {
-    REGISTER_DIFF_OBJ(SqlStringList);
     REGISTER_DIFF_OBJ(JoinIndex);
     REGISTER_DIFF_OBJ(JoinList);
     REGISTER_DIFF_OBJ(Join);
@@ -27,23 +26,23 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(JoinTables);
     REGISTER_DIFF_OBJ(BoolVector);
 
-    REGISTER_DIFF_OBJ(IndexField);
-    REGISTER_DIFF_OBJ(IndexFields);
-    REGISTER_DIFF_OBJ(DiffField);
-    REGISTER_DIFF_OBJ(DiffFields);
-    REGISTER_DIFF_OBJ(DatIndex);
-    REGISTER_DIFF_OBJ(DatIndexes);
+    REGISTER_DIFF_OBJ(IndexField);// +
+    REGISTER_DIFF_OBJ(IndexFields);// +
+    REGISTER_DIFF_OBJ(DiffField);// +
+    REGISTER_DIFF_OBJ(DiffFields);// +
+    REGISTER_DIFF_OBJ(DatIndex);// +
+    REGISTER_DIFF_OBJ(DatIndexes);// +
 
-    REGISTER_DIFF_OBJ(DiffTableInfo);
-    REGISTER_DIFF_OBJ(DiffTable);
-    REGISTER_DIFF_OBJ(ScriptTable);
+    REGISTER_DIFF_OBJ(DiffTableInfo);// +
+    REGISTER_DIFF_OBJ(DiffTable);// +
+    REGISTER_DIFF_OBJ(ScriptTable);// +
 
-    REGISTER_DIFF_OBJ(DbSpelling);
-    REGISTER_DIFF_OBJ(DbSpellingOracle);
-    REGISTER_DIFF_OBJ(DbSpellingPostgres);
+    REGISTER_DIFF_OBJ(DbSpelling); // +
+    REGISTER_DIFF_OBJ(DbSpellingOracle);// +
+    REGISTER_DIFF_OBJ(DbSpellingPostgres);// +
 
-    REGISTER_DIFF_OBJ(DatRecord);
-    REGISTER_DIFF_OBJ(DatRecords);
+    REGISTER_DIFF_OBJ(DatRecord);// +
+    REGISTER_DIFF_OBJ(DatRecords);// +
     REGISTER_DIFF_OBJ(TaskOptionsContainer);
     REGISTER_DIFF_OBJ(SqlStringList);
     REGISTER_DIFF_OBJ(SqlScriptMain);
@@ -51,10 +50,10 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(FmtTablesList);
     REGISTER_DIFF_OBJ(RecordParser);
 
-    REGISTER_DIFF_OBJ(FunctionParamInfo);
-    REGISTER_DIFF_OBJ(FunctionParamInfoList);
-    REGISTER_DIFF_OBJ(FunctionInfo);
-    REGISTER_DIFF_OBJ(FunctionInfoList);
+    REGISTER_DIFF_OBJ(FunctionParamInfo);// +
+    REGISTER_DIFF_OBJ(FunctionParamInfoList);// +
+    REGISTER_DIFF_OBJ(FunctionInfo);// +
+    REGISTER_DIFF_OBJ(FunctionInfoList);// +
 }
 
 void addRslObjects()

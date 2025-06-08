@@ -29,7 +29,7 @@ public:
     void loadFromFmt(FmtTable* fmtTable, const QString &datfilename = QString()); //TODO replace FmtTable to QString
     void InitUniqFields(TableLinks* tableLink);
 
-    DatIndex *firstUniq(bool skipAutoInc) const;
+    Q_INVOKABLE DatIndex *firstUniq(bool skipAutoInc) const;
 
     Q_INVOKABLE DiffField *field(const QString &name) const;
     Q_INVOKABLE DiffFields *missingFldInDat() const;
