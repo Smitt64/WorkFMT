@@ -443,10 +443,10 @@ macro GenSqlScrpt(joinTables)
         return;
     end;
 
-    /*var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
+    var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
     if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable, true))
         return;
-    end;*/
+    end;
 
     CreatePathsTable();
     if ({Spelling}.functionDeclare == FunctionBeforeBlocks)
