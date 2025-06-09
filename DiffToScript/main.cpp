@@ -6,6 +6,8 @@
 #include "cmdparser.h"
 #include "taskoptions.h"
 #include "difftoscripttest.h"
+#include "difflogging.h"
+#include "toolsruntime.h"
 #include <QMessageBox>
 #include <QFileInfo>
 //#include <QApplication>
@@ -15,7 +17,7 @@
 #include <QCommandLineParser>
 #include <QTest>
 #include <qloggingcategory.h>
-
+#include <rsscript/registerobjlist.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -28,6 +30,22 @@ int main(int argc, char *argv[])
     return 0;
 #endif*/
 
+    toolLoggingCategoryListAdd(logDiff());
+    toolLoggingCategoryListAdd(logLinesParser());
+    toolLoggingCategoryListAdd(logScriptTable());
+    toolLoggingCategoryListAdd(logDatTable());
+    toolLoggingCategoryListAdd(logRecordParser());
+    toolLoggingCategoryListAdd(logLinesParserMain());
+    toolLoggingCategoryListAdd(logTableLinks());
+    toolLoggingCategoryListAdd(logJoin());
+    toolLoggingCategoryListAdd(logSqlScriptMain());
+    toolLoggingCategoryListAdd(logJoinTable());
+    toolLoggingCategoryListAdd(logJoinTables());
+    toolLoggingCategoryListAdd(logTask());
+
+    rslAddStaticMacroDir(".\\mac\\difftoscript");
+    registerRslObjects();
+
     if (argc > 1)
     {
         QFileInfo current(QCoreApplication::applicationFilePath());
@@ -35,13 +53,13 @@ int main(int argc, char *argv[])
         QApplication::addLibraryPath(current.path() + "\\sqldrivers");
         QApplication::addLibraryPath(current.path() + "\\platforms");
 
-        CmdParser cmdParser(&app);
-        CommandLineParseResult result = cmdParser.parse();
+        CmdParser cmdParser;
+        CommandLineParseResult result = cmdParser.parse(&app);
 
         Task *pTask = new Task();
         if (result.statusCode == CommandLineParseResult::Status::Error)
         {
-            QTextStream(stdout) << result.errorString <<Qt::endl;
+            QTextStream(stdout) << result.errorString << Qt::endl;
             return 1;
         }
         QObject::connect(pTask, &Task::finished, &app, [&app, &pTask]()

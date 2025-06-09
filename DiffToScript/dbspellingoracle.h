@@ -5,11 +5,9 @@
 
 class DbSpellingOracle : public DbSpelling
 {
+    Q_OBJECT
 public:
-    //explicit OracleSpelling(QObject *parent = nullptr);
-
-    // DbSpelling interface
-public:
+    Q_INVOKABLE DbSpellingOracle();
     QString toDate(const QString& value) override;
     QStringList getDeclare() override;
     QStringList getBegin() override;
@@ -17,8 +15,11 @@ public:
     QString toBlob(const QString& value) override;
     QString blobTypeName(const int &type) override;
 
-    QString getExceptionName(const ExcceptionType &type) override;
+    QString getExceptionName(const int &type) override;
     QString functionParamType(const qint16 &type) override;
+
+    QString getProcKeyWord(const bool &rettype) override;
+    QString getProcReturnKeyWord(const QString &returntype) override;
 
     void functionChunks(QStringList &BeginCreateReplace,
                         QStringList &EndCreateReplace,

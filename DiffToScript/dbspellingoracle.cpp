@@ -2,6 +2,12 @@
 #include "fmtcore.h"
 #include "sqlscriptmain.h"
 
+DbSpellingOracle::DbSpellingOracle() :
+    DbSpelling()
+{
+
+}
+
 QString DbSpellingOracle::toDate(const QString& value)
 {
     QString tmp = value;
@@ -38,7 +44,7 @@ QString DbSpellingOracle::blobTypeName(const int &type)
     return BlobFieldTypeOraString(type);
 }
 
-QString DbSpellingOracle::getExceptionName(const ExcceptionType &type)
+QString DbSpellingOracle::getExceptionName(const int &type)
 {
     QString result;
 
@@ -46,6 +52,9 @@ QString DbSpellingOracle::getExceptionName(const ExcceptionType &type)
     {
     case ExceptDupValOnIndex:
         result = "DUP_VAL_ON_INDEX";
+        break;
+    case ExceptNoDataFound:
+        result = "NO_DATA_FOUND";
         break;
     }
 
@@ -57,6 +66,20 @@ QString DbSpellingOracle::functionParamType(const qint16 &type)
     QString result = fmtOracleDecl(type);
     result = funcDeclType(result);
     return result;
+}
+
+QString DbSpellingOracle::getProcKeyWord(const bool &rettype)
+{
+    if (!rettype)
+        return "PROCEDURE ";
+
+    return "FUNCTION ";
+}
+
+QString DbSpellingOracle::getProcReturnKeyWord(const QString &returntype)
+{
+    return QString(" RETURN %1")
+            .arg(returntype);
 }
 
 void DbSpellingOracle::functionChunks(QStringList &BeginCreateReplace,

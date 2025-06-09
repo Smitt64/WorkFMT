@@ -1,7 +1,11 @@
 #include "recordparser.h"
 #include "fmtfield.h"
 #include "fmtcore.h"
+#include "difftableinfo.h"
+#include <QTextStream>
 #include <QRegExp>
+#include <QSql>
+#include <rslmodule/sql/sqldatabase.h>
 
 RecordParser::RecordParser(DiffFields* diffFields, const QStringList &realFields, QObject *parent) :
     QObject(parent),
@@ -11,13 +15,12 @@ RecordParser::RecordParser(DiffFields* diffFields, const QStringList &realFields
 
 }
 
-DiffField RecordParser::field(const QString &name)
+DiffField *RecordParser::field(const QString &name)
 {
-    DiffFields::const_iterator iter = std::find_if(_diffFields->cbegin(),
-                                                   _diffFields->cend(),
-                                                   [name](const DiffField &fld) -> bool
+    auto iter = std::find_if(_diffFields->cbegin(), _diffFields->cend(),
+                                                   [name](const DiffField *fld) -> bool
     {
-        if (!fld.name.compare(name, Qt::CaseInsensitive))
+        if (!fld->name.compare(name, Qt::CaseInsensitive))
             return true;
 
         return false;
@@ -26,7 +29,7 @@ DiffField RecordParser::field(const QString &name)
     if (iter != _diffFields->cend())
         return *iter;
 
-    return DiffField();
+    return nullptr;
 }
 
 bool RecordParser::parseRecord(QString line)
@@ -39,13 +42,13 @@ bool RecordParser::parseRecord(QString line)
 
     for (int i = 0; i < _realFields.count(); ++i)
     {
-        DiffField fld = field(_realFields[i]);
+        DiffField *fld = field(_realFields[i]);
 
-        if (fld.isValid())
+        if (fld->isValid())
         {
             QString value;
             bool success = true;
-            if (fld.isString)
+            if (fld->isString)
             {
                 if ((success = parseString(is, value)))
                     _values.push_back(value);
@@ -61,18 +64,16 @@ bool RecordParser::parseRecord(QString line)
                 success = false;
 
             if (success == false)
-            {
-                _errors.append("\tError. Field number = " + QString::number(i + 1) + ", name = " + fld.name);
-            }
+                _errors.append("\tError. Field number = " + QString::number(i + 1) + ", name = " + fld->name);
 
             is.read(1);
             readCnt++;
         }
         else
         {
-            if (fld.isDate())
+            if (fld->isDate())
                 _values.push_back(QString("TO_DATE('01.01.0001', 'dd.mm.yyyy')"));
-            else if (fld.isString)
+            else if (fld->isString)
                 _values.push_back(QString("CHR(1)"));
             else
                 _values.push_back(QString("0"));
@@ -172,5 +173,254 @@ bool RecordParser::parseValue(QTextStream &is, QString &value)
         value += c;
         ++pos;
     }
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+
+QString diffGetTypeStringForSqlite(const quint16 &type)
+{
+    QString fldtype;
+
+    switch(type)
+    {
+    case fmtt_INT:
+    case fmtt_LONG:
+    case fmtt_BIGINT:
+        fldtype = "INTEGER";
+        break;
+    case fmtt_FLOAT:
+    case fmtt_DOUBLE:
+        fldtype = "REAL";
+        break;
+    case fmtt_MONEY:
+    case fmtt_NUMERIC:
+        fldtype = "NUMERIC";
+        break;
+    default:
+        fldtype = "TEXT";
+        break;
+    }
+
+    return fldtype;
+}
+
+// ---------------------------------------------------------------------------
+
+QString diffCreateTableForSqlite(DiffTable *table)
+{
+    QString sql;
+    QTextStream ss(&sql);
+    ss << "CREATE TABLE " << table->name.toUpper() << " (" << Qt::endl;
+
+    bool fFirst = true;
+    for (const QString &fld : qAsConst(table->realFields))
+    {
+        DiffField *dfld = table->field(fld);
+
+        if (!fFirst)
+            ss << "," << Qt::endl;
+
+        ss << fld.toUpper() << " ";
+
+        if (dfld)
+            ss << diffGetTypeStringForSqlite(dfld->type);
+        else
+            ss << "TEXT";
+
+        fFirst = false;
+    }
+
+    ss << ")";
+
+    return sql;
+}
+
+QString diffCreateChangesTableForSqlite(DiffTable *table)
+{
+    QString sql;
+    QTextStream ss(&sql);
+    ss << "CREATE TABLE " << table->name.toUpper() << "_CHANGE (" << Qt::endl;
+
+    ss << "t_id__ INTEGER PRIMARY KEY AUTOINCREMENT";
+
+    for (const QString &fld : qAsConst(table->realFields))
+    {
+        DiffField *dfld = table->field(fld);
+        ss << "," << Qt::endl << fld.toUpper() << " ";
+
+        if (dfld)
+            ss << diffGetTypeStringForSqlite(dfld->type);
+        else
+            ss << "TEXT";
+    }
+
+    ss << "," << Qt::endl << "t_change__ TEXT";
+    ss << ")";
+
+    return sql;
+}
+
+// ---------------------------------------------------------------------------
+
+void diffLoadChangesToSqlite(SqlDatabase *Connection, DiffTable *table)
+{
+    QString err;
+    QSqlQuery query(Connection->database());
+    query.prepare(QString("DROP TABLE IF EXISTS %1_CHANGE").arg(table->name));
+    ExecuteQuery(&query);
+
+    QString CreateTableSql = diffCreateChangesTableForSqlite(table);
+    query.prepare(QString(CreateTableSql));
+
+    if (ExecuteQuery(&query, &err))
+        return;
+
+    QStringList params(table->realFields);
+    std::transform(table->realFields.begin(), table->realFields.end(), params.begin(),
+                   [](const QString &value) { return QString(":") + value; });
+    params.append(":change");
+
+    QString insertsql = QString("insert into %1_CHANGE(%2) values(%3)")
+            .arg(table->name)
+            .arg(table->realFields.join(",") + ",t_change__")
+            .arg(params.join(","));
+
+    for (int recno = 0; recno < table->records.count(); recno ++)
+    {
+        DatRecord *rec = table->records[recno];
+        QStringList values = rec->values;
+
+        switch(rec->lineType)
+        {
+        case ltInsert:
+            values.append("I");
+            break;
+        case ltDelete:
+            values.append("D");
+            break;
+        case ltUpdate:
+            if (rec->lineUpdateType == lutOld)
+                values.append("O");
+            else
+                values.append("N");
+            break;
+        }
+
+        QSqlQuery insert(Connection->database());
+        insert.prepare(insertsql);
+
+        for (int i = 0; i < table->realFields.size(); i++)
+        {
+            QString value = values[i];
+            DiffField *field = table->field(table->realFields[i]);
+
+            if (field->isString)
+            {
+                value = value.mid(1, value.size() - 2);
+
+                if (value == QChar(1) || value == QChar(2))
+                    value = QString();
+            }
+
+            insert.bindValue(params[i], value);
+        }
+
+        insert.bindValue(params.last(), values.last());
+
+        ExecuteQuery(&insert, &err);
+        qDebug() << err;
+    }
+}
+
+bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffTable *table, bool changes)
+{
+    if (!Connection || !Connection->isOpen())
+        return false;
+
+    QSqlQuery query(Connection->database());
+    query.prepare(QString("DROP TABLE IF EXISTS %1").arg(table->name));
+    ExecuteQuery(&query);
+
+    QString CreateTableSql = diffCreateTableForSqlite(table);
+    query.prepare(QString(CreateTableSql));
+
+    if (ExecuteQuery(&query))
+        return false;
+
+    for (DatIndex *index : table->indexes)
+    {
+        QString indexsql = "CREATE ";
+
+        if (index->isUnique)
+            indexsql += "UNIQUE ";
+
+        indexsql += "INDEX " + index->name + " ON " + table->name + "(" + index->fields.fields().join(",") + ")";
+
+        QSqlQuery indexquery(Connection->database());
+        indexquery.prepare(indexsql);
+        ExecuteQuery(&indexquery);
+    }
+
+    QFile f(filename);
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+
+    QStringList params(table->realFields);
+    std::transform(table->realFields.begin(), table->realFields.end(), params.begin(),
+                   [](const QString &value) { return QString(":") + value; });
+
+    QString insertsql = QString("insert into %1(%2) values(%3)")
+            .arg(table->name)
+            .arg(table->realFields.join(","))
+            .arg(params.join(","));
+
+    QScopedPointer<RecordParser> parser(new RecordParser(&table->fields, table->realFields));
+
+    bool IsDataSection = false;
+    QTextStream stream(&f);
+    stream.setCodec("IBM 866");
+
+    while (!stream.atEnd())
+    {
+        QString line = stream.readLine();
+
+        if (!IsDataSection)
+        {
+            if (line.contains("BEGINDATA", Qt::CaseInsensitive))
+                IsDataSection = true;
+        }
+        else
+        {
+            if (parser->parseRecord(line))
+            {
+                QSqlQuery insert(Connection->database());
+                insert.prepare(insertsql);
+
+                QStringList values = parser->getValues();
+                for (int i = 0; i < table->realFields.size(); i++)
+                {
+                    QString value = values[i];
+                    DiffField *field = table->field(table->realFields[i]);
+
+                    if (field->isString)
+                    {
+                        value = value.mid(1, value.size() - 2);
+
+                        if (value == QChar(1) || value == QChar(2))
+                            value = QString();
+                    }
+
+                    insert.bindValue(params[i], value);
+                }
+
+                ExecuteQuery(&insert);
+            }
+        }
+    }
+
+    if (changes)
+        diffLoadChangesToSqlite(Connection, table);
+
     return true;
 }

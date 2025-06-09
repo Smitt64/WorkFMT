@@ -93,7 +93,7 @@ bool LinesParserMain::parseTableName(QTextStream &is)
     return true;
 }
 
-bool LinesParserMain::parseDoc(QTextStream &is, ScriptTable &dt)
+bool LinesParserMain::parseDoc(QTextStream &is, ScriptTable *dt)
 {
     int cnt = 0;
     QString line;
@@ -110,12 +110,12 @@ bool LinesParserMain::parseDoc(QTextStream &is, ScriptTable &dt)
         else if (!_linesInsertParser.isNull() && token == _linesInsertParser->getToken())
         {
             qCInfo(logLinesParserMain) << "Start parse lines for insert";
-            _linesInsertParser->parseLines(is, _lines, &dt);
+            _linesInsertParser->parseLines(is, _lines, dt);
         }
         else if (!_linesDeleteParser.isNull() && token == _linesDeleteParser->getToken())
         {
             qCInfo(logLinesParserMain) << "Start parse lines for delete";
-            _linesDeleteParser->parseLines(is, _lines, &dt);
+            _linesDeleteParser->parseLines(is, _lines, dt);
         }
         else if (token == "Index: ") // Началась следующая таблица
         {

@@ -7,6 +7,7 @@
 class ActionPage;
 class ConnactionPage;
 class ScriptsPage;
+class QMenu;
 class DiffWizard : public QWizard
 {
     Q_OBJECT
@@ -30,6 +31,8 @@ private:
     ScriptsPage *m_pScriptsPage;
 
     QMap<QString, QVariant> m_Fields;
+
+    QMenu *m_pHelpMenu;
 };
 
 #endif // DIFFWIZARD_H

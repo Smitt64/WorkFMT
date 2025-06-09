@@ -10,6 +10,7 @@
 #include "taskoptions.h"
 
 class TableLinks;
+class QSettings;
 class Task : public QObject
 {
     Q_OBJECT
@@ -33,6 +34,7 @@ signals:
     void finished();
 
 private:
+    QString tableMacro(const QString &table);
     void showAppInfo(QTextStream& os);
     void makeInputBuff(QString& buff, const TaskOptions& optns);
     void makeOutputStream(QTextStream& os, const TaskOptions& optns);
@@ -40,11 +42,15 @@ private:
     int m_Result;
 };
 
-extern QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLinks);
+QSharedPointer<QSettings> diffGetSettings();
+
+extern QStringList GetClearedFiles(const QStringList &files, QList<TableLinks *> &tableLinks);
 extern QStringList GetNormalFileList(const QStringList files,
-                                     const QList<TableLinks> &tableLinks,
+                                     const QList<TableLinks *> &tableLinks,
                                      std::function<void(const QString &file)> userfunc);
 
 extern void generateUpdateScript(const QByteArray &jsonData, QTextStream &stream, int indentSpaces = 4);
+extern void registerRslObjects();
+extern void addRslObjects();
 
 #endif // TASK_H

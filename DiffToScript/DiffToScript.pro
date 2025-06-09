@@ -2,7 +2,7 @@ QT       += core gui sql testlib xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17
 CONFIG   += console
 CONFIG   += force_debug_info
 
@@ -25,21 +25,31 @@ SOURCES += \
     dbspellingpostgres.cpp \
     diffconnection.cpp \
     diffconnection.cpp \
+    diffcore.cpp \
     difffield.cpp \
     difflogging.cpp \
     diffmodeparser.cpp \
+    diffoptionsdlg.cpp \
     difftableinfo.cpp \
-    difftoscripttest.cpp \
+#    difftoscripttest.cpp \
+    functioninfo.cpp \
     join.cpp \
     linespareser.cpp \
     linesparsermain.cpp \
     main.cpp \
     mainwindow.cpp \
     recordparser.cpp \
+    rslobj/difftoscripexecutor.cpp \
+    rslobj/fmttableslist.cpp \
+    rslobj/regobjects.cpp \
+    rslobj/sqlstringlist.cpp \
+    rslobj/tablefilesmodel.cpp \
+    rslobj/taskoptionscontainer.cpp \
     scripttable.cpp \
     sqlscriptmain.cpp \
     streamcontrol.cpp \
     tablelinks.cpp \
+    tablemacoptionspage.cpp \
     tablestree.cpp \
     task.cpp \
     taskoptions.cpp \
@@ -71,17 +81,25 @@ HEADERS += \
     difffield.h \
     difflogging.h \
     diffmodeparser.h \
+    diffoptionsdlg.h \
     difftableinfo.h \
-    difftoscripttest.h \
+#    difftoscripttest.h \
+    functioninfo.h \
     join.h \
     linespareser.h \
     linesparsermain.h \
     mainwindow.h \
     recordparser.h \
+    rslobj/difftoscripexecutor.h \
+    rslobj/fmttableslist.h \
+    rslobj/sqlstringlist.h \
+    rslobj/tablefilesmodel.h \
+    rslobj/taskoptionscontainer.h \
     scripttable.h \
     sqlscriptmain.h \
     streamcontrol.h \
     tablelinks.h \
+    tablemacoptionspage.h \
     tablestree.h \
     task.h \
     taskoptions.h \
@@ -97,6 +115,7 @@ HEADERS += \
 
 FORMS += \
     mainwindow.ui \
+    tablemacoptionspage.ui \
     wizard/actionpage.ui \
     wizard/connactionpage.ui \
     wizard/scriptspage.ui \
@@ -116,7 +135,6 @@ DEPENDPATH += $$PWD/../FmtLib
 INCLUDEPATH += $$PWD/../FmtLib/h
 DEPENDPATH += $$PWD/../FmtLib/h
 
-
 QMAKE_CFLAGS += -FS
 QMAKE_CXXFLAGS += -FS
 
@@ -124,5 +142,26 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/To
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
 else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
 
-INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime $$PWD/../ToolsRuntimeProj/ToolsRuntime/optionsdlg
 DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+
+OTHER_FILES += \
+    $$PWD/mac
+
+defineTest(copyToDestDir) {
+    files = $$1
+    dir = $$2
+    # replace slashes in destination path for Windows
+    win32:dir ~= s,/,\\,g
+
+    for(file, files) {
+        # replace slashes in source path for Windows
+        win32:file ~= s,/,\\,g
+        QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$shell_quote($$file) $$shell_quote($$dir) $$escape_expand(\\n\\t)
+    }
+
+    export(QMAKE_POST_LINK)
+}
+
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../DiffToScript/debug/mac)

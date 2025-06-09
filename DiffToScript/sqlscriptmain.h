@@ -12,8 +12,17 @@
 
 typedef struct
 {
+    bool isBlob;
+    quint16 type;
+    QString name;
+}FuncParam;
+
+typedef struct
+{
     QString name, returnType;
     QString fullname;
+
+    QList<FuncParam> params;
 }InsertFunction;
 
 enum SqlScriptBuildErrors
@@ -22,54 +31,68 @@ enum SqlScriptBuildErrors
     SqlBuildError_FieldComposition = 1000,
 };
 
-QString Padding(int depth = 1);
+extern QString Padding(int depth = 1);
 
-class SqlScriptMain
+class FunctionInfo;
+class SqlScriptMain : public QObject
 {
+    Q_OBJECT
 public:
     SqlScriptMain(QSharedPointer<DbSpelling>& dbSpelling, QSharedPointer<DiffConnection> connection);
 
-    QString undecorateTableName(const QString &name) const;
-    QStringList makeVariables(JoinTable* joinTable);
-    QStringList makeInsertFunctions(JoinTable* joinTable);
+    Q_INVOKABLE QString undecorateTableName(const QString &name) const;
+    Q_INVOKABLE QStringList makeVariables(JoinTable* joinTable);
+    Q_INVOKABLE QStringList makeInsertFunctions(JoinTable* joinTable);
 
-    QString buildVariableName(const ScriptTable* datTable);
-    int getAutoincIndex(const ScriptTable* datTable);
+    Q_INVOKABLE QString buildVariableName(const ScriptTable* datTable);
+    Q_INVOKABLE int getAutoincIndex(const ScriptTable* datTable);
 
-    QString buildVariable(const ScriptTable* datTable);
-    QStringList buildInsertFunctions(const ScriptTable* datTable);
+    Q_INVOKABLE QString buildVariable(const ScriptTable* datTable);
+    Q_INVOKABLE QStringList buildInsertFunctions(const ScriptTable* datTable);
+    Q_INVOKABLE QStringList dropInserFunctions();
+    Q_INVOKABLE QStringList dropInserFunctions(QObject *spelling);
+    Q_INVOKABLE QStringList getInserFunctionsNames();
+    //Q_INVOKABLE void getInserFunction(const QString &name, QString &returnType, QString &fullname);
 
-    QVector<int> indexesOfKeyFields(const JoinTable *joinTable);
-    QVector<int> indexesOfUniqueIndex(const JoinTable *joinTable);
+    QVector<int> indexesOfKeyFields_(const JoinTable *joinTable);
+    QVector<int> indexesOfUniqueIndex_(const JoinTable *joinTable);
 
-    void replaceForeignAutoinc(const JoinTable* joinTable, DatRecord& rec);
-    int indexForeignAutoinc(const JoinTable* joinTable, const DatRecord& rec);
-    int getForeignReplaceField(const JoinTable* joinTable, DatRecord& rec);
+    Q_INVOKABLE QVariantList indexesOfUniqueIndex(const JoinTable *joinTable);
+    Q_INVOKABLE QVariantList indexesOfKeyFields(const JoinTable *joinTable);
 
-    QStringList buildWhere(const JoinTable* joinTable, const DatRecord& rec);
-    int buildInsertStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
-    int buildDeleteStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex);
-    int buildUpdateStatement(QTextStream &os, const JoinTable *joinTable, QStringList &sql, int recIndex, int newIndex);
-    int buildStatement(QTextStream& os, JoinTable* joinTable,
+    Q_INVOKABLE void replaceForeignAutoinc(const JoinTable* joinTable, DatRecord *rec);
+    Q_INVOKABLE int indexForeignAutoinc(const JoinTable* joinTable, const DatRecord *rec);
+    Q_INVOKABLE int getForeignReplaceField(const JoinTable* joinTable, DatRecord& rec);
+
+    Q_INVOKABLE QStringList buildWhere(const JoinTable* joinTable, const DatRecord *rec);
+
+    int buildInsertStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
+    int buildDeleteStatement(const JoinTable* joinTable, QStringList& sql, int recIndex);
+    int buildUpdateStatement(const JoinTable *joinTable, QStringList &sql, int recIndex, int newIndex);
+    int buildStatement(JoinTable* joinTable,
                        QStringList& sql,
                        int recIndex,
                        Join *childJoin = nullptr,
                        const QStringList &ParentValuesByIndex = QStringList(),
                        const QString &childPadding = QString());
-    int buildChildStatement(QTextStream& os, const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
-    int build(QTextStream& os, JoinTable* joinTable);
+    int buildChildStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
+    int build(QStringList& sql, JoinTable* joinTable);
 
-    void dateSpelling(const JoinTable* joinTable, DatRecord& rec);
-    void stringSpelling(const JoinTable* joinTable, DatRecord& rec);
+    Q_INVOKABLE int stdBuildChildStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const int depth = 0);
 
-    void checkDatFldsCount(QStringList& sql, JoinTable *joinTable);
+    Q_INVOKABLE void dateSpelling(const JoinTable* joinTable, DatRecord *rec);
+    Q_INVOKABLE void stringSpelling(const JoinTable* joinTable, DatRecord *rec);
 
-    void toScript(const JoinTable* joinTable, DatRecord& rec);
+    Q_INVOKABLE void checkDatFldsCount(QStringList& sql, JoinTable *joinTable);
+
+    Q_INVOKABLE void toScript(const JoinTable* joinTable, DatRecord *rec);
+    Q_INVOKABLE QStringList disableEnableAutoIncTrigger(ScriptTable* datTable, bool enable = false, int depth = 1);
+
 private:
     QSharedPointer<DiffConnection> _connection;
     QSharedPointer<DbSpelling> _dbSpelling;
 
-    QMap<QString, InsertFunction> m_InsertFunctions;
+    QMap<QString, FunctionInfo*> m_InsertFunctions;
 };
 
 #endif // SQLSCRIPTMAIN_H

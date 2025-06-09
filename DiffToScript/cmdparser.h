@@ -1,9 +1,7 @@
 #ifndef CMDPARSER_H
 #define CMDPARSER_H
+
 #include <map>
-
-#include <QApplication>
-
 #include "taskoptions.h"
 
 struct CommandLineParseResult
@@ -18,15 +16,15 @@ struct CommandLineParseResult
     QString errorString;
 };
 
+class QApplication;
 class CmdParser
 {
 public:
-    CmdParser(QApplication* app);
-    CommandLineParseResult parse();
+    CmdParser();
+    CommandLineParseResult parse(QApplication* app);
+    CommandLineParseResult parse(const QStringList &arguments);
     std::map<CmdTaskOption, QString> argumentWithValue;
     TaskOptions opts;
-private:
-    QApplication* _app;
 };
 
 #endif // CMDPARSER_H

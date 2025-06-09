@@ -1,12 +1,18 @@
 #include "cmdparser.h"
+#include <QApplication>
 #include <QCommandLineParser>
 
-CmdParser::CmdParser(QApplication* app): _app(app)
+CmdParser::CmdParser()
 {
     std::fill(opts.begin(), opts.end(), TaskOption{false, ""});
 }
 
-CommandLineParseResult CmdParser::parse()
+CommandLineParseResult CmdParser::parse(QApplication* app)
+{
+    return parse(app->arguments());
+}
+
+CommandLineParseResult CmdParser::parse(const QStringList &arguments)
 {
     const QString oracleParm = "ora";
     const QString postgresParm = "pg";
@@ -87,9 +93,9 @@ CommandLineParseResult CmdParser::parse()
 
     const QCommandLineOption helpOption = parser.addHelpOption();
 
-    parser.process(*_app);
+    parser.process(arguments);
 
-    if (!parser.parse(QCoreApplication::arguments()))
+    if (!parser.parse(arguments))
         return { Status::Error, parser.errorText() };
 
     if (parser.isSet(helpOption))

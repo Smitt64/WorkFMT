@@ -91,22 +91,22 @@ void DiffToScriptTest::caseParseStringField()
     QTextStream is(&input);
 
     DiffFields dfs;                                     //autoinc   string
-    dfs.append(DiffField {"f_int",      0,  "INT",      true,       false});    //fmtt_INT = 0
-    dfs.append(DiffField {"f_long",     1,  "LONG",     false,      false});    //fmtt_LONG = 1
-    dfs.append(DiffField {"f_float",    2,  "FLOAT",    false,      false});    //fmtt_FLOAT = 2
-    dfs.append(DiffField {"f_double",   4,  "DOUBLE",   false,      false});    //fmtt_DOUBLE = 4
+    dfs.append(new DiffField {"f_int",      0,  "INT",      true,       false});    //fmtt_INT = 0
+    dfs.append(new DiffField {"f_long",     1,  "LONG",     false,      false});    //fmtt_LONG = 1
+    dfs.append(new DiffField {"f_float",    2,  "FLOAT",    false,      false});    //fmtt_FLOAT = 2
+    dfs.append(new DiffField {"f_double",   4,  "DOUBLE",   false,      false});    //fmtt_DOUBLE = 4
 //    dfs.append(DiffField {"f     ",     6,  "???",      false,      false});    //???             Сейчас в таблицах не используется
-    dfs.append(DiffField {"f_string",   7,  "STRING",   false,      true });     //fmtt_STRING = 7
+    dfs.append(new DiffField {"f_string",   7,  "STRING",   false,      true });     //fmtt_STRING = 7
 //    dfs.append(DiffField {"f_snr",      8,  "SNR",      false,      false});    //fmtt_SNR = 8    Сейчас в таблицах не используется
-    dfs.append(DiffField {"f_date",     9,  "DATE",     false,      false});    //fmtt_DATE = 9
-    dfs.append(DiffField {"f_time",     10, "TIME",     false,      false});    //fmtt_TIME = 10
-    dfs.append(DiffField {"f_chr",      12, "CHR",      false,      true });     //fmtt_CHR = 12
-    dfs.append(DiffField {"f_uchr",     13, "UCHR",     false,      true });     //fmtt_UCHR = 13
-    dfs.append(DiffField {"f_numeric",  25, "NUMERIC",  false,      false});     //fmtt_NUMERIC = 25
+    dfs.append(new DiffField {"f_date",     9,  "DATE",     false,      false});    //fmtt_DATE = 9
+    dfs.append(new DiffField {"f_time",     10, "TIME",     false,      false});    //fmtt_TIME = 10
+    dfs.append(new DiffField {"f_chr",      12, "CHR",      false,      true });     //fmtt_CHR = 12
+    dfs.append(new DiffField {"f_uchr",     13, "UCHR",     false,      true });     //fmtt_UCHR = 13
+    dfs.append(new DiffField {"f_numeric",  25, "NUMERIC",  false,      false});     //fmtt_NUMERIC = 25
 
     QStringList realFields;
     for (auto fld : dfs)
-        realFields.append(fld.name);
+        realFields.append(fld->name);
 
     RecordParser rp(&dfs, realFields);
     QVERIFY(rp.parseRecord(input));
@@ -133,9 +133,10 @@ void DiffToScriptTest::caseParseStringField()
     dt.name = "table";
     dt.fields = dfs;
 
-    IndexFields fields;
-    fields.append({"f_int", false});
-    DatIndex index{"INX0", fields, true};
+    //IndexFields fields;
+    //fields.append(new IndexField({"f_int", 0, false, false }));
+    DatIndex *index = new DatIndex{"INX0", true};
+    index->fields.append(new IndexField({"f_int", 0, false, false }));
 
     dt.indexes.append(index);
     dt.InitUniqFields(&tableLinks);
@@ -266,18 +267,19 @@ void DiffToScriptTest::caseDoubleInsert()
 
         if (datTable.name.toLower() == "dopusymhist_dbt")
         {
-            datTables[0].fields.fieldByName("t_name").isString = true; // Почему-то из xml не правильно тип считывается.
+            datTables[0].fields.fieldByName("t_name")->isString = true; // Почему-то из xml не правильно тип считывается.
 
-            DatIndex indx;
-            indx.isUnique = true;
-            indx.fields.append({"T_OFRRECID", false});
-            indx.fields.append({"T_STARTDATE", false});
+            DatIndex *indx = new DatIndex();
+            indx->isUnique = true;
+            indx->fields.append(new IndexField({"T_OFRRECID", 0, false, false}));
+            indx->fields.append(new IndexField({"T_STARTDATE", 0, false, false}));
 
             datTables[0].indexes.append(indx);
         }
+
         if (datTable.name.toLower() == "dopusymb_dbt")
         {
-            datTables[1].fields.fieldByName("T_RECID").isAutoinc = true; //из xml не подгружается автоинеремент
+            datTables[1].fields.fieldByName("T_RECID")->isAutoinc = true; //из xml не подгружается автоинеремент
         }
 
         mainParser.parseDoc(is, datTable);
@@ -289,8 +291,8 @@ void DiffToScriptTest::caseDoubleInsert()
     QCOMPARE(datTables[0].name.toLower(), "dopusymhist_dbt");
     QCOMPARE(datTables[1].name.toLower(), "dopusymb_dbt");
 
-    QCOMPARE(datTables[0].records[0].values.count(), 3);
-    QCOMPARE(datTables[1].records[0].values.count(), 8);
+    QCOMPARE(datTables[0].records[0]->values.count(), 3);
+    QCOMPARE(datTables[1].records[0]->values.count(), 8);
 
     QCOMPARE(datTables[0].records.count(), 5);
     QCOMPARE(datTables[1].records.count(), 4);

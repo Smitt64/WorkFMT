@@ -23,6 +23,7 @@ public:
     ~ScriptsPage();
 
     virtual void initializePage() Q_DECL_OVERRIDE;
+    virtual bool isComplete() const Q_DECL_OVERRIDE;
 
 public slots:
     void oracleScriptReady(const QString &data);
@@ -31,13 +32,13 @@ public slots:
 
 private:
     Ui::ScriptsPage *ui;
-
     ErrorsModel *m_Errors;
 
     //QSplitter *m_pSplitter;
     QTabWidget *m_pTabWidget;
     CodeEditor *m_pOracle, *m_pPostgres;
 
+    bool m_Finished;
     Highlighter *m_pOracleHighlighter, *m_pPostgresHighlighter;
 };
 

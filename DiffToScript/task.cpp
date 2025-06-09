@@ -27,6 +27,13 @@
 #include <QDomElement>
 #include "qloggingcategory.h"
 #include "diffmodeparser.h"
+#include "rslobj/tablefilesmodel.h"
+#include "rslobj/difftoscripexecutor.h"
+#include "rslobj/sqlstringlist.h"
+#include <rsscript/registerobjlist.hpp>
+#include "rslobj/taskoptionscontainer.h"
+#include "rslobj/fmttableslist.h"
+#include <QSettings>
 
 QString serializeNormalPathsToJson(const QList<QStringList>& chunks)
 {
@@ -66,6 +73,14 @@ QString serializeNormalPathsToXml(const QList<QStringList>& chunks)
     return doc.toString();
 }
 
+QSharedPointer<QSettings> diffGetSettings()
+{
+    QDir settingsDir = QDir(qApp->applicationDirPath());
+
+    QSharedPointer<QSettings> pSettings(new QSettings(settingsDir.absoluteFilePath("difftoscript.ini"), QSettings::IniFormat));
+    return pSettings;
+}
+
 // ------------------------------------------------------------------
 
 Task::Task(QObject *parent) :
@@ -85,29 +100,31 @@ void Task::showAppInfo(QTextStream& os) {
     os << "App dir: " << QApplication::applicationDirPath() << Qt::endl;
 }
 
-void getFmtInfo(QTextStream& os, const ScriptTable& datTable)
+void getFmtInfo(QTextStream& os, ScriptTable *datTable)
 {
     FmtInit();
-    os << "-- Table: " << datTable.name << Qt::endl;
+    os << "-- Table: " << datTable->name << Qt::endl;
 
-    for (int i = 0; i < datTable.indexes.count(); ++i)
+    for (int i = 0; i < datTable->indexes.count(); ++i)
     {
-        os << QString("-- index[%1].name = '%2' (%3)").arg(QString::number(i), datTable.indexes[i].name, datTable.indexes[i].isUnique?"unique":"") << Qt::endl;
-        for (const IndexField& field: datTable.indexes[i].fields)
-            os << "--\t" << field.name << Qt::endl;
+        os << QString("-- index[%1].name = '%2' (%3)").arg(QString::number(i), datTable->indexes[i]->name, datTable->indexes[i]->isUnique?"unique":"") << Qt::endl;
+        for (IndexField* field: datTable->indexes[i]->fields)
+            os << "--\t" << field->name << Qt::endl;
     }
 
     os << "-- Fields:" << Qt::endl;
-    for (int i = 0; i < datTable.fields.count(); ++i)
+    for (int i = 0; i < datTable->fields.count(); ++i)
     {
-        const DiffField& fld = datTable.fields[i];
+        const DiffField* fld = datTable->fields[i];
         os << QString("--\t%1 %2 %3").arg(
                   QString::number(i + 1).rightJustified(2, '0'),
-                  fld.name,
-                  fld.typeName
+                  fld->name,
+                  fld->typeName
                   );
-        if (fld.isAutoinc)
+
+        if (fld->isAutoinc)
             os << " (autoinc) ";
+
         os << Qt::endl;
     }    
 }
@@ -116,6 +133,11 @@ QString getRules(TaskOptions optns)
 {
     QStringList rules;
 
+/*#ifndef _DEBUG
+    bool state = optns[ctoVerbose].isSet;
+#else
+    bool state = true;
+#endif*/
     bool state = optns[ctoVerbose].isSet;
     QString stateStr = state ? "true" : "false";
     rules.append("*.info=" + stateStr);
@@ -129,9 +151,12 @@ QString getRules(TaskOptions optns)
 
 QString getPrimaryKey(const DatIndexes& indexes)
 {
-    for (const DatIndex& index: indexes)
-        if (index.isUnique && index.fields.count() == 1 && index.fields[0].isAutoinc)
-            return index.fields[0].name;
+    for (DatIndex *index: indexes)
+    {
+        if (index->isUnique && index->fields.count() == 1 && index->fields[0]->isAutoinc)
+            return index->fields[0]->name;
+    }
+
     return "";
 }
 
@@ -139,21 +164,21 @@ DatRecords::iterator parseUpdateBlock(int indexPrimaryKey, DatRecords::iterator 
 {
     DatRecords::iterator it = first;
 
-    for (;it != last && it->lineType == ltUpdate; ++it)
+    for (;it != last && (*it)->lineType == ltUpdate; ++it)
     {
-        if (it->lineUpdateType == lutOld)
+        if ((*it)->lineUpdateType == lutOld)
         {
             DatRecords::iterator next = it + 1;
 
-            if (next != last && next->lineUpdateType == lutNew)
+            if (next != last && (*next)->lineUpdateType == lutNew)
             {
-                if (it->values[indexPrimaryKey] != next->values[indexPrimaryKey])
+                if ((*it)->values[indexPrimaryKey] != (*next)->values[indexPrimaryKey])
                 {
-                    it->lineType = ltDelete;
-                    it->lineUpdateType = lutOld;
+                    (*it)->lineType = ltDelete;
+                    (*it)->lineUpdateType = lutOld;
 
-                    next->lineType = ltInsert;
-                    next->lineUpdateType = lutNew;
+                    (*next)->lineType = ltInsert;
+                    (*next)->lineUpdateType = lutNew;
                     it ++;
                 }
             }
@@ -194,8 +219,9 @@ void parseUpdateRecords(DatTable& datTable)
     DatRecords::iterator it = datTable.records.begin();
     while (it != datTable.records.end())
     {
-        if (it->lineType != ltUpdate)
+        if ((*it)->lineType != ltUpdate)
             ++it;
+
         it = parseUpdateBlock(indexPrimaryKey, it, datTable.records.end());
     }
 }
@@ -266,7 +292,7 @@ void Task::runNormalPathsTask()
 
     QStringList paths = array.split(";");
 
-    QList<TableLinks> tableLinks;
+    QList<TableLinks*> tableLinks;
     QStringList filesCleared = GetClearedFiles(paths, tableLinks);
 
     QList<QStringList> chunks;
@@ -274,11 +300,11 @@ void Task::runNormalPathsTask()
     if (!filesCleared.isEmpty())
         chunks.append(filesCleared);
 
-    for (const TableLinks &tableLink : qAsConst(tableLinks))
+    for (const TableLinks *tableLink : qAsConst(tableLinks))
     {
         QStringList::ConstIterator file = std::find_if(paths.begin(), paths.end(), [=](const QString &f)
         {
-            return f.contains(tableLink.tableName, Qt::CaseInsensitive);
+            return f.contains(tableLink->tableName, Qt::CaseInsensitive);
         });
 
         QStringList chunk;
@@ -286,11 +312,11 @@ void Task::runNormalPathsTask()
         if (file != paths.cend())
             chunk.append("!" + (*file));
 
-        for (const Link &childlnk : qAsConst(tableLink.links))
+        for (const Link *childlnk : qAsConst(tableLink->links))
         {
             file = std::find_if(paths.begin(), paths.end(), [=](const QString &f)
             {
-                return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+                return f.contains(childlnk->tableName, Qt::CaseInsensitive);
             });
 
             if (file != paths.cend())
@@ -401,9 +427,10 @@ void Task::runScriptTask()
 
     QString curDir = QFileInfo(QCoreApplication::applicationFilePath()).path();
 
-    QVector<ScriptTable> datTables;
-    QVector<TableLinks> tableLinks;
+    QVector<ScriptTable*> datTables;
+    TableLinksList tableLinks;
 
+    QScopedPointer<FmtTablesList> pFmtTablesList(new FmtTablesList());
     QSharedPointer<DiffConnection> conn;
 
     if (optns[ctoConnectionString].isSet)
@@ -429,28 +456,30 @@ void Task::runScriptTask()
             return;
         }
 
-        tableLinks.append(TableLinks());
-        TableLinks& tableLink = tableLinks.back();
+        tableLinks.append(new TableLinks());
+        TableLinks *tableLink = tableLinks.back();
         QString fileName = toolFullFileNameFromDir(QString("relations/%1.json")
                                                        .arg(linesParser.getLines({ltTable})[0].toLower()));
 
         if (QFile::exists(fileName))
         {
-            tableLink.loadLinks(fileName);
+            tableLink->loadLinks(fileName);
             qCInfo(logTask) << "Json from" << fileName << "loaded";
         }
         else
         {
             qCWarning(logTask) << "File not exist: " << fileName;
-            tableLink.tableName = linesParser.getLines({ltTable})[0].toLower();
+            tableLink->tableName = linesParser.getLines({ltTable})[0].toLower();
         }
 
-        datTables.append(ScriptTable());
+        datTables.append(new ScriptTable());
 
-        ScriptTable& datTable= datTables.back();
+        ScriptTable *datTable = datTables.back();
 
-        FmtTable fmtTable(conn->getConnection());
-        if (!fmtTable.load(linesParser.getLines({ltTable})[0].toLower()))
+        FmtTable *fmtTable = new FmtTable(conn->getConnection());
+        pFmtTablesList->append(fmtTable);
+
+        if (!fmtTable->load(linesParser.getLines({ltTable})[0].toLower()))
         {
             QString tableName = linesParser.getLines({ltTable})[0].toLower();
             qCWarning(logTask) << QString("Error. fmtTable was not loaded. Table name = '%1'").arg(linesParser.getLines({ltTable})[0]);
@@ -465,21 +494,21 @@ void Task::runScriptTask()
             QFileInfo fi(optns[ctoDatFile].value);
 
             QDir datdir = fi.absoluteDir();
-            datfilepath = datdir.absoluteFilePath(QString("%1.dat").arg(fmtTable.name().toUpper()));
+            datfilepath = datdir.absoluteFilePath(QString("%1.dat").arg(fmtTable->name().toUpper()));
         }
 
-        datTable.loadFromFmt(&fmtTable, datfilepath);
-        datTable.InitUniqFields(&tableLink);
-        qCInfo(logTask) << "Fields of" << datTable.name << "loaded. Count =" << datTable.fields.count();
+        datTable->loadFromFmt(fmtTable, datfilepath);
+        datTable->InitUniqFields(tableLink);
+        qCInfo(logTask) << "Fields of" << datTable->name << "loaded. Count =" << datTable->fields.count();
 
         if (optns[ctoTableInfo].isSet)
             getFmtInfo(os, datTable);
 
-        if (datTable.errorCount() > 0)
+        if (datTable->errorCount() > 0)
         {
             if (!optns[ctoTableInfo].isSet) //чтобы повторно не выводилось
                 getFmtInfo(os, datTable);
-            for (const QString& err: datTable.getErrors())
+            for (const QString& err: datTable->getErrors())
                 os << err << Qt::endl;
         }
 
@@ -489,8 +518,8 @@ void Task::runScriptTask()
                         << "delete -" << linesParser.linesCount({ltDelete})
                         << "update -" << linesParser.linesCount({ltUpdate});
 
-        datTable.loadData(linesParser.getParsedLines());
-        qCInfo(logTask) << "Records of" << datTable.name << "loaded. Count =" << datTable.records.count();
+        datTable->loadData(linesParser.getParsedLines());
+        qCInfo(logTask) << "Records of" << datTable->name << "loaded. Count =" << datTable->records.count();
 
         is->device()->waitForReadyRead(-1);
     }
@@ -498,8 +527,8 @@ void Task::runScriptTask()
     JoinTables joinTables;
     for (int i = 0; i < datTables.count(); ++i)
     {
-        joinTables.add(&datTables[i], tableLinks[i]);
-        qCInfo(logTask) << "Added " << datTables[i].name << "to JoinTables list.";
+        joinTables.add(datTables[i], tableLinks[i]);
+        qCInfo(logTask) << "Added " << datTables[i]->name << "to JoinTables list.";
     }
 
     QSharedPointer<DbSpelling> dbSpelling;
@@ -509,8 +538,53 @@ void Task::runScriptTask()
         dbSpelling.reset(new DbSpellingOracle());
 
     SqlScriptMain ssm(dbSpelling, conn);
+    QString macroname = tableMacro(joinTables.getRoot()->scriptTable->name);
 
-    qInfo(logTask) << "Start sql building.";
-    m_Result = ssm.build(os, joinTables.getRoot());
+    QStringList sql;
+    if (macroname.isEmpty())
+    {
+        qInfo(logTask) << "Start sql building.";
+        m_Result = ssm.build(sql, joinTables.getRoot());
+
+        os << sql.join("\n");
+    }
+    else
+    {
+        QScopedPointer<SqlStringList> pSqlStringList(new SqlStringList(&sql));
+        QScopedPointer<TaskOptionsContainer> pTaskOptionsContainer(new TaskOptionsContainer(optns));
+        RslGlobalsMap Globals =
+        {
+            { "{Options}", QVariant::fromValue<QObject*>(pTaskOptionsContainer.data()) },
+            { "{SqlStrings}", QVariant::fromValue<QObject*>(pSqlStringList.data()) },
+            { "{Spelling}", QVariant::fromValue<QObject*>(dbSpelling.data()) },
+            { "{Connection}", QVariant::fromValue<QObject*>(conn.data()) },
+            { "{FmtTables}", QVariant::fromValue<QObject*>(pFmtTablesList.data()) },
+            { "{Funcs}", QVariant::fromValue<QObject*>(&ssm) },
+        };
+
+        SqlStringList SqlList(&sql);
+        DiffToScripExecutor executor;
+        executor.setGlobalsVariables(Globals);
+        executor.setJoinTables(&joinTables);
+        executor.playRep(macroname);
+
+        os << sql.join("\n");
+    }
+
+    qDeleteAll(datTables);
+
+    // Удаляется деструктором объекта IterableObject
+    //qDeleteAll(tableLinks);
 }
 
+QString Task::tableMacro(const QString &table)
+{
+    QSharedPointer<QSettings> settings = diffGetSettings();
+    TableFilesModel model(settings.data());
+
+    rslObjList()->applyMacroDirs();
+    QStringList inc = rslObjList()->incDirs().split(";");
+    model.loadFromDirectories(inc);
+
+    return model.getSelectedFileForTable(table);
+}

@@ -72,3 +72,8 @@ bool ConnactionPage::validatePage()
     info.close();
     return true;
 }
+
+void ConnactionPage::initializePage()
+{
+    ui->connectionsTree->setCurrentIndex(QModelIndex());
+}

@@ -25,7 +25,7 @@ void ScriptTable::loadData(const ParsedLines& lines)
         {
             if (recParser.parseRecord(line.value))
             {
-                records.append({recParser.getValues(), line.lineType, line.lineUpdateType});
+                records.append(recParser.getValues(), line.lineType, line.lineUpdateType);
                 qCInfo(logScriptTable) << "Record added: " << recParser.getValues().join("m");
             }
             else
@@ -51,43 +51,52 @@ bool ScriptTable::containsAny(const QString& str, const QStringList& stringList)
     return false;
 }
 
-QString ScriptTable::getPrimaryKey(const DatIndexes& indexes)
+QString ScriptTable::getPrimaryKey(DatIndexes *indexes)
 {
-    for (const DatIndex& index: indexes)
-        if (index.isUnique && index.fields.count() == 1 && index.fields[0].isAutoinc)
-            return index.fields[0].name;
+    for (const DatIndex *index: *indexes)
+    {
+        if (index->isUnique && index->fields.count() == 1 && index->fields[0]->isAutoinc)
+            return index->fields[0]->name;
+    }
+
     return "";
+}
+
+QString ScriptTable::getPrimaryKey()
+{
+    return getPrimaryKey(&indexes);
 }
 
 DatRecords::iterator ScriptTable::parseUpdateBlock(int indexPrimaryKey, DatRecords::iterator first, DatRecords::iterator last)
 {
     DatRecords::iterator it = first;
 
-    for(;it != last && it->lineType == ltUpdate && it->lineUpdateType == lutOld; ++it);
-    for(;it != last && it->lineType == ltUpdate && it->lineUpdateType == lutNew; ++it);
+    for(;it != last && (*it)->lineType == ltUpdate && (*it)->lineUpdateType == lutOld; ++it);
+    for(;it != last && (*it)->lineType == ltUpdate && (*it)->lineUpdateType == lutNew; ++it);
     last = it;
 
     DatRecords::iterator mid = first + (last - first) / 2;
 
     for (;mid != last; ++first, ++mid)
     {
-        if (first->values[indexPrimaryKey] != mid->values[indexPrimaryKey])
+        if ((*first)->values[indexPrimaryKey] != (*mid)->values[indexPrimaryKey])
         {
-            first->lineType = ltDelete;
-            first->lineUpdateType = lutOld;
+            (*first)->lineType = ltDelete;
+            (*first)->lineUpdateType = lutOld;
 
-            mid->lineType = ltInsert;
-            mid->lineUpdateType = lutNew;
+            (*mid)->lineType = ltInsert;
+            (*mid)->lineUpdateType = lutNew;
 
-            qCInfo(logScriptTable) << "Line type changed for primary key " << first->values[indexPrimaryKey];
+            qCInfo(logScriptTable) << "Line type changed for primary key " << (*first)->values[indexPrimaryKey];
         }
     }
+
     return last;
 }
 
 void ScriptTable::parseUpdateRecords(ScriptTable& datTable)
 {
-    QString primaryKeyField = getPrimaryKey(datTable.indexes);
+    QString primaryKeyField = datTable.getPrimaryKey();
     if (primaryKeyField == "")
         return;
 
@@ -98,22 +107,44 @@ void ScriptTable::parseUpdateRecords(ScriptTable& datTable)
     DatRecords::iterator it = datTable.records.begin();
     while (it != datTable.records.end())
     {
-        if (it->lineType != ltUpdate)
+        if ((*it)->lineType != ltUpdate)
             ++it;
         else
             it = parseUpdateBlock(indexPrimaryKey, it, datTable.records.end());
     }
+
     qCInfo(logScriptTable) << "Parsing update records is done.";
 }
 
 bool ScriptTable::hasInserts() const
 {
-    for (const DatRecord &rec : records)
+    for (const DatRecord *rec : records)
     {
-        if (rec.lineType == ltInsert)
+        if (rec->lineType == ltInsert)
             return true;
     }
 
     return false;
 }
 
+bool ScriptTable::hasUpdates() const
+{
+    for (const DatRecord *rec : records)
+    {
+        if (rec->lineType == ltUpdate)
+            return true;
+    }
+
+    return false;
+}
+
+bool ScriptTable::hasDeleteions() const
+{
+    for (const DatRecord *rec : records)
+    {
+        if (rec->lineType == ltDelete)
+            return true;
+    }
+
+    return false;
+}

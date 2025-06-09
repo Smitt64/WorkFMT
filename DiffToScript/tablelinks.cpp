@@ -15,14 +15,14 @@ const char TAG_LINK_PARENT_FIELD_NAMES[] = "parent_fld_names";
 const char TAG_LINK_CHILD_FIELD[] = "field";
 const char TAG_LINK_PARENT_FIELD[] = "parentField";
 
-void TableLinks::setChildTable(const TableLinks& tableLinks)
+void TableLinks::setChildTable(TableLinks *tableLinks)
 {
     _childTables.append(tableLinks);
 }
 
-const QList<TableLinks>& TableLinks::getChildTable() const
+TableLinksList *TableLinks::getChildTable()
 {
-    return _childTables;
+    return &_childTables;
 }
 
 QJsonObject TableLinks::toJson()
@@ -93,6 +93,33 @@ void TableLinks::saveLinks(QString fileName)
     f.write(doc.toJson());
 }
 
+const QString &TableLinks::getTableName() const
+{
+    return tableName;
+}
+
+const QStringList &TableLinks::getIndex() const
+{
+    return index;
+}
+
+Links *TableLinks::getLinks()
+{
+    return &links;
+}
+
+// ----------------------------------------------------------------------------------------
+
+const QString &Link::getTableName() const
+{
+    return tableName;
+}
+
+LinkFieldList *Link::getFields()
+{
+    return &fields;
+}
+
 QJsonObject Link::toJson()
 {
     QJsonObject json;
@@ -103,11 +130,12 @@ QJsonObject Link::toJson()
     QJsonArray jsonFields;
     QJsonArray jsonParentFields;
 
-    for (LinkField& field: fields)
+    for (LinkField *field: fields)
     {
-        jsonFields.append(field.field);
-        jsonParentFields.append(field.parentField);
+        jsonFields.append(field->field);
+        jsonParentFields.append(field->parentField);
     }
+
     json.insert(TAG_LINK_FIELD_NAMES, jsonFields);
     json.insert(TAG_LINK_PARENT_FIELD_NAMES, jsonParentFields);
 
@@ -121,11 +149,13 @@ bool Link::fromJson(QJsonObject jsonObj)
         qCWarning(logTableLinks) << TAG_LINK_TABLE_NAME << "not loaded.";
         return false;
     }
+
     if (jsonObj[TAG_LINK_FIELD_NAMES].isNull())
     {
         qCWarning(logTableLinks) << TAG_LINK_FIELD_NAMES << "not loaded.";
         return false;
     }
+
     if (jsonObj[TAG_LINK_PARENT_FIELD_NAMES].isNull())
     {
         qCWarning(logTableLinks) << TAG_LINK_PARENT_FIELD_NAMES << "not loaded.";
@@ -138,11 +168,12 @@ bool Link::fromJson(QJsonObject jsonObj)
 
     for (int i = 0; i < jsonFields.count(); ++i)
     {
-        LinkField linkField;
-        linkField.field = jsonFields[i].toString();
-        linkField.parentField = jsonParentFields[i].toString();
+        LinkField *linkField = new LinkField();
+        linkField->field = jsonFields[i].toString();
+        linkField->parentField = jsonParentFields[i].toString();
         fields.append(linkField);
     }
+
     qCInfo(logTableLinks) << TAG_LINK_PARENT_FIELD_NAMES << "loaded.";
     return true;
 }
@@ -152,42 +183,50 @@ bool operator==(const Link &a, const Link& b)
     return (b.fields == a.fields && b.tableName == a.tableName);
 }
 
+// ----------------------------------------------------------------------------------------
+
 QJsonArray Links::toJson()
 {
     QJsonArray jsonArr;
     for (auto it = begin(); it != end(); ++it)
-        jsonArr.append(it->toJson());
+        jsonArr.append((*it)->toJson());
 
     return jsonArr;
 }
 
 void Links::fromJson(QJsonArray jsonArray)
 {
-    for (QJsonValue value: jsonArray)
+    for (const QJsonValue &value: jsonArray)
     {
-        Link link;
-        link.fromJson(value.toObject());
+        Link *link = new Link();
+        link->fromJson(value.toObject());
         append(link);
     }
 }
 
-const Link &Links::getByTableParentName(QString name) const
+const Link *Links::getByTableParentName(QString name) const
 {
-    for (const Link& link: *this)
-        if (link.tableName.toLower() == name.toLower())
+    for (const Link *link: *this)
+    {
+        if (link->tableName.toLower() == name.toLower())
             return link;
+    }
+
     Q_ASSERT(false);
 }
 
 int Links::getIndexByChildTableName(QString name) const
 {
     for (int i = 0; i < count(); ++i)
-        if ((*this)[i].tableName.toLower() == name.toLower())
+    {
+        if ((*this)[i]->tableName.toLower() == name.toLower())
             return i;
+    }
+
     return -1;
 }
 
-bool operator==(const Links &a, const Links &b)
+/*bool operator==(const Links &a, const Links &b)
 {
     for (const Link& link: b)
     {
@@ -195,11 +234,35 @@ bool operator==(const Links &a, const Links &b)
             return false;
     }
     return b.count() == a.count();
-}
+}*/
 
 bool operator==(const TableLinks& a, const TableLinks& b)
 {
     return (a.index == b.index && a.links == b.links && a.tableName == b.tableName);
+}
+
+// ----------------------------------------------------------------------------------------
+
+LinkField::LinkField(QObject* parent)
+    : QObject(parent)
+{
+
+}
+
+LinkField::LinkField(const QString& field, const QString& parentField, QObject* parent)
+    : QObject(parent),
+      field(field),
+      parentField(parentField)
+{
+
+}
+
+LinkField::LinkField(const LinkField& other)
+    : QObject(other.parent()),  // Копируем только parent
+      field(other.field),
+      parentField(other.parentField)
+{
+
 }
 
 QJsonObject LinkField::toJson()
@@ -216,7 +279,17 @@ void LinkField::fromJson(QJsonObject jsonObj)
     parentField = jsonObj[TAG_LINK_PARENT_FIELD].toString();
 }
 
-bool operator==(const LinkField& a, const LinkField& b)
+/*bool operator==(const LinkField& a, const LinkField& b)
 {
     return (a.field == b.field && a.parentField == b.parentField);
+}*/
+
+const QString &LinkField::getField() const
+{
+    return field;
+}
+
+const QString &LinkField::getParentField() const
+{
+    return parentField;
 }

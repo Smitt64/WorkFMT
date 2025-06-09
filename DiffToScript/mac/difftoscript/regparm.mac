@@ -1,0 +1,524 @@
+/*
+$Author: Serpkov
+$Description: Макрос генерации скрипта для таблиц dregparm_dbt и dregval_dbt
+$Table: dregparm_dbt
+*/
+
+import "difftoscript.mac", sql, ToolsRuntime, fmt;
+
+const GetKeyIDByPath_FuncName = "GetKeyIDByPath__";
+const InsertIntoRegparmEx_FuncName = "InsertIntoRegparmPath__";
+
+private var memdb;
+private var FuncInfoList = TArray();
+
+private macro GetOracleFindKeyIDTemplate()
+    CaptureOutput;
+[    WITH path_parts AS (
+    SELECT REGEXP_SUBSTR(pPath, '[^/]+', 1, LEVEL) AS part, LEVEL AS lvl
+    FROM dual CONNECT BY REGEXP_SUBSTR(pPath, '[^/]+', 1, LEVEL) IS NOT NULL), 
+    hierarchy(keyid, parentid, name, lvl, full_path) AS (
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, 1, t.T_NAME
+    FROM dregparm_dbt t WHERE UPPER(t.T_NAME) = UPPER((SELECT part FROM path_parts WHERE lvl = 1)) AND t.T_PARENTID = 0
+    UNION ALL
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, h.lvl + 1, h.full_path || '/' || t.T_NAME
+    FROM dregparm_dbt t JOIN hierarchy h ON t.T_PARENTID = h.keyid
+    WHERE UPPER(t.T_NAME) = UPPER((SELECT part FROM path_parts WHERE lvl = h.lvl + 1)) )
+    SELECT keyid INTO v_dregparm_dbt_T_KEYID FROM hierarchy WHERE lvl = (SELECT MAX(lvl) FROM path_parts) AND UPPER(full_path) = UPPER(pPath);
+];
+    return StopCaptureOutput;
+end;
+
+private macro GetPostgresFindKeyIDTemplate()
+    CaptureOutput;
+[    WITH RECURSIVE path_parts AS (SELECT split_part(pPath, '/', n) AS part, n AS lvl 
+    FROM generate_series(1, array_length(string_to_array(pPath, '/'), 1)) AS n), hier AS (
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, 1 AS lvl
+    FROM dregparm_dbt t WHERE t.T_NAME = (SELECT part FROM path_parts WHERE lvl = 1) AND t.T_PARENTID = 0 
+    UNION ALL
+    SELECT t.T_KEYID, t.T_PARENTID, t.T_NAME, h.lvl + 1 FROM dregparm_dbt t JOIN hier h ON t.T_PARENTID = h.T_KEYID
+    JOIN path_parts p ON p.lvl = h.lvl + 1 AND p.part = t.T_NAME)
+    SELECT T_KEYID INTO STRICT v_dregparm_dbt_T_KEYID FROM hier WHERE lvl = (SELECT MAX(lvl) FROM path_parts);
+];
+    return StopCaptureOutput;
+end;
+
+private macro GetTemporaryDBaseName(debugmode)
+    if (debugmode)
+        var dir = IoDir(ToolsRuntime.applicationDirPath());
+        return dir.absoluteFilePath("DiffToScript_debug.sqlite");
+    end;
+
+    return ":memory:";
+end;
+
+private macro OpenTemporaryDBase()
+    var db = SqlDatabase("QSQLITE");
+    db.databaseName = GetTemporaryDBaseName(true);
+    db.open();
+
+    return db;
+end;
+
+private macro CreatePathsTable()
+    var drop_query = SqlQuery(memdb);
+    drop_query.prepare("DROP TABLE IF EXISTS DREGPATHS_WRK");
+    drop_query.exec();
+
+    var query = SqlQuery(memdb);
+    query.prepare("CREATE TABLE DREGPATHS_WRK (T_KEYID INTEGER, T_PATH TEXT)");
+    query.exec();
+end;
+
+private macro AddToPathsTable(KeyId, Path)
+    var query = SqlQuery(memdb);
+    query.prepare("INSERT INTO DREGPATHS_WRK (T_KEYID, T_PATH) VALUES(:KeyID, :Path)");
+    query.bindValue(":KeyID", KeyId);
+    query.bindValue(":Path", Path);
+    query.exec();
+end;
+
+private macro BuildPathStringCommon(keyid, sql)
+    var currentkeyId = keyid;
+    var pathParts = StringListEx();
+
+    while (currentkeyId != 0)
+        var query = SqlQuery(memdb);
+        query.prepare(sql);
+        query.bindValue(":id", currentkeyId);
+
+        query.exec();
+        query.next();
+
+        var currentName = query.value("T_NAME");
+        currentkeyId = Int(query.value("T_PARENTID"));
+
+        pathParts.prepend(currentName);
+    end;
+
+    return pathParts.join("/");
+end;
+
+private macro BuildPathString(keyid)
+    return BuildPathStringCommon(keyid, "SELECT T_NAME, T_PARENTID FROM dregparm_dbt WHERE T_KEYID = :id");
+end;
+
+private macro BuildPathStringDeleted(keyid)
+    var sql = "select * from (SELECT T_NAME, T_PARENTID, T_KEYID FROM dregparm_dbt " +
+        "union select T_NAME, T_PARENTID, T_KEYID FROM DREGPARM_DBT_CHANGE where t_change__ = 'D') WHERE T_KEYID = :id";
+
+    return BuildPathStringCommon(keyid, sql);
+end;
+
+private macro BuildPathStringUpdated(keyid)
+    var sql = "select * from (SELECT T_NAME, T_PARENTID, T_KEYID FROM dregparm_dbt " +
+        "union select T_NAME, T_PARENTID, T_KEYID FROM DREGPARM_DBT_CHANGE where t_change__ = 'O') WHERE T_KEYID = :id";
+
+    return BuildPathStringCommon(keyid, sql);
+end;
+
+private macro DropFunctions()
+end;
+
+private macro AppendCommonVariable(joinTable, depth)
+    var VariableKeyID = "v_dregparm_dbt_T_KEYID " + {Spelling}.functionParamType(FmtType.LONG) + " := 0;";
+
+    if ({Options}.isSetOracle)
+        {SqlStrings}.append(VariableKeyID, depth + 1);
+    else
+        {SqlStrings}.append("DECLARE", depth);
+        {SqlStrings}.append("v_dregparm_dbt_T_KEYID " + {Spelling}.functionParamType(FmtType.LONG) + " := 0;", depth + 1);
+    end;
+end;
+
+private macro BuildInsertExFunction(joinTable, depth)
+    var BeginCreatePathFunc = TArray;
+    var EndCreatePathFunc = TArray;
+
+    var Function = FunctionInfo();
+    Function.functionName = InsertIntoRegparmEx_FuncName;
+    Function.returnType.paramType = FmtType.LONG;
+
+    var ParamType = {Spelling}.functionParamType(FmtType.STRING);
+    var ReturnType = {Spelling}.functionParamType(FmtType.LONG);
+
+    var i = 2;
+    Function.addInputParam("pPath", FmtType.STRING);
+
+    while (i < joinTable.scriptTable.realFields.size)
+        var fld = joinTable.scriptTable.field(joinTable.scriptTable.realFields[i]);
+        Function.addInputParam("p" + strToUpper(fld.undecorateName), fld.type);
+
+        i = i + 1;
+    end;
+
+    Function.functionChunks({Spelling}, BeginCreatePathFunc, EndCreatePathFunc);
+    BeginCreatePathFunc.size = 2;
+
+    {SqlStrings}.append(BeginCreatePathFunc, depth);
+
+    AppendCommonVariable(joinTable, depth); // GetKeyIDByPath_FuncName
+
+    i = 2;
+    {SqlStrings}.append({Spelling}.begin_, depth);
+    {SqlStrings}.append("v_dregparm_dbt_T_KEYID := " + GetKeyIDByPath_FuncName + " (pPath);", depth + 1);
+    {SqlStrings}.append("");
+    {SqlStrings}.append("IF v_dregparm_dbt_T_KEYID > 0 THEN ", depth + 1);
+    
+    var FuncParams = StringListEx();
+    FuncParams.append("v_dregparm_dbt_T_KEYID");
+    while (i < joinTable.scriptTable.realFields.size)
+        fld = joinTable.scriptTable.field(joinTable.scriptTable.realFields[i]);
+        FuncParams.append("p" + strToUpper(fld.undecorateName));
+        i = i + 1;
+    end;
+
+    {SqlStrings}.append("v_dregparm_dbt_T_KEYID := InsertIntoRegparm__ (" + FuncParams.join(", ") + ");", depth + 2);
+
+    {SqlStrings}.append("END IF;", depth + 1);
+    {SqlStrings}.append("");
+    {SqlStrings}.append("RETURN v_dregparm_dbt_T_KEYID;", depth + 1);
+    {SqlStrings}.append(EndCreatePathFunc, depth);
+
+    FuncInfoList[FuncInfoList.size] = Function;
+end;
+
+private macro BuildFunctions(joinTable, depth)
+    var BeginCreateReplacePathFunc = TArray;
+    var EndCreateReplacePathFunc = TArray;
+
+    var Function = FunctionInfo();
+    Function.functionName = GetKeyIDByPath_FuncName;
+    Function.returnType.paramType = FmtType.LONG;
+    Function.addInputParam("pPath", FmtType.STRING);
+
+    /*var ParamType = {Spelling}.functionParamType(FmtType.STRING);
+    var ReturnType = {Spelling}.functionParamType(FmtType.LONG);*/
+
+    /*{Spelling}.functionChunks(BeginCreateReplacePathFunc, EndCreateReplacePathFunc, 
+        GetKeyIDByPath_FuncName, "pPath in " + ParamType, ReturnType);*/
+    Function.functionChunks({Spelling}, BeginCreateReplacePathFunc, EndCreateReplacePathFunc);
+    BeginCreateReplacePathFunc.size = 2;
+
+    {SqlStrings}.append({Funcs}.makeInsertFunctions(joinTable), depth);
+    {SqlStrings}.append(BeginCreateReplacePathFunc, depth);
+    
+    AppendCommonVariable(joinTable, depth);    
+    {SqlStrings}.append({Spelling}.begin_, depth);
+
+    var sql;
+    if ({Options}.isSetOracle)
+        sql = GetOracleFindKeyIDTemplate();
+
+        {SqlStrings}.append("-- #conv-Oracle", depth + 1);
+        {SqlStrings}.append(sql, depth);
+        {SqlStrings}.append("-- #conv-PG", depth + 1);
+
+        sql = GetPostgresFindKeyIDTemplate();
+        CommentLines(sql);
+        {SqlStrings}.append(sql, depth);
+
+        {SqlStrings}.append("-- #conv-end", depth + 1);
+    else
+        sql = GetPostgresFindKeyIDTemplate();
+        {SqlStrings}.append(sql, depth);
+    end;
+
+    {SqlStrings}.append("RETURN v_dregparm_dbt_T_KEYID;", depth + 1);
+    {SqlStrings}.append("EXCEPTION WHEN " + {Spelling}.getExceptionName(ExceptNoDataFound) + " THEN RETURN -1;", depth);
+     
+    {SqlStrings}.append(EndCreateReplacePathFunc, depth);
+    {SqlStrings}.append("");
+
+    if (joinTable.scriptTable.hasInserts)
+        BuildInsertExFunction(joinTable, depth);
+    end;
+
+    {SqlStrings}.append("");
+
+    FuncInfoList[FuncInfoList.size] = Function;
+end;
+
+private macro buildInsertStatement(joinTable, recIndex)
+    var rec = joinTable.scriptTable.records.val(recIndex);
+
+    var KeyId = Int(rec.values[0]);
+    var pathfull = BuildPathString(KeyId);
+
+    //Определение автоинкрементного поля и замена на ноль
+    var autoIncIndex = {Funcs}.getAutoincIndex(joinTable.scriptTable);
+    if (autoIncIndex != -1)
+        rec.setVal(autoIncIndex, "0");
+    end;
+
+    var InsertFieldListEx = StringListEx();
+    InsertFieldListEx.fromOther(joinTable.scriptTable.realFields);
+
+    //var InsertFieldList = InsertFieldListEx.join(", ");
+
+    {Funcs}.replaceForeignAutoinc(joinTable, rec);
+    {Funcs}.dateSpelling(joinTable, rec);
+    {Funcs}.stringSpelling(joinTable, rec);
+
+    var i = 0;
+    var fields = StringListEx();
+    var variable = {Funcs}.buildVariableName(joinTable.scriptTable);
+
+    while (i < joinTable.scriptTable.fields.size)
+        fields.append(joinTable.scriptTable.fields.val(i).name);
+        i = i + 1;
+    end;
+
+    if (variable != "")
+        var tmpvalues = StringListEx();
+        tmpvalues.fromOther(rec.values);
+
+        tmpvalues.removeAt(autoIncIndex);
+
+        var path = BuildPathString(Int(tmpvalues.val(0)));
+        tmpvalues.removeFirst();
+        tmpvalues.prepend("'" + path + "'");
+
+        var values = tmpvalues.join(", ");
+
+        {SqlStrings}.append("-- Вставка настройки '" + pathfull + "'", 1);
+        var call = variable + " := "  + InsertIntoRegparmEx_FuncName + " (" + values + ");";
+        {SqlStrings}.append(call, 1);
+
+        if (autoIncIndex != -1)
+            var ChildArray = TArray;
+            {Funcs}.stdBuildChildStatement(joinTable, ChildArray, recIndex);
+
+            if (ChildArray.size)
+                {SqlStrings}.append("");
+                {SqlStrings}.append("IF " + variable + " <> -1 THEN", 1);
+                {SqlStrings}.append(ChildArray, 1);
+                {SqlStrings}.append("END IF;", 1);
+            end;
+        end;
+    end;
+end;
+
+private macro buildDeleteStatement(joinTable, recIndex)
+    var rec = joinTable.scriptTable.records.val(recIndex);
+
+    var KeyId = Int(rec.values[0]);
+    var pathfull = BuildPathStringDeleted(KeyId);
+    var autoIncIndex = {Funcs}.getAutoincIndex(joinTable.scriptTable);
+    var autoIncField = joinTable.scriptTable.fields.val(autoIncIndex).name;
+    var variable = {Funcs}.buildVariableName(joinTable.scriptTable);
+
+    {Funcs}.replaceForeignAutoinc(joinTable, rec);
+
+    if (autoIncIndex != -1) 
+        rec.setVal(autoIncIndex, variable);
+    end;
+
+    var where = StringListEx({Funcs}.buildWhere(joinTable, rec));
+    {SqlStrings}.beginGroup(pathfull);
+    {SqlStrings}.append("-- Удаление настройки '" + pathfull + "'", 1);
+
+    var deletesql = strArg("DELETE FROM %1 WHERE %2 RETURNING %3 INTO %4;", 
+        joinTable.scriptTable.name, where.join(" AND "), autoIncField, variable);
+
+    AddToPathsTable(KeyId, pathfull);
+    {SqlStrings}.append(strArg("%1 := %2 ('%3');", variable, GetKeyIDByPath_FuncName, pathfull), 1);
+    {SqlStrings}.append(deletesql, 1);
+
+    if (autoIncIndex != -1)
+        var ChildArray = TArray;
+        {Funcs}.stdBuildChildStatement(joinTable, ChildArray, recIndex);
+        {SqlStrings}.append(ChildArray);
+    end;
+    {SqlStrings}.endGroup();
+end;
+
+private macro buildUpdateStatement(joinTable, oldIndex, newIndex)
+    var oldRec = joinTable.scriptTable.records.val(oldIndex);
+    var newRec = joinTable.scriptTable.records.val(newIndex);
+
+    var KeyId = Int(newRec.values[0]);
+    var pathfull = BuildPathStringUpdated(KeyId);
+
+    var i = 0;
+    var setList = StringListEx();
+    var modifiedValues = TArray();
+    var autoIncIndex = {Funcs}.getAutoincIndex(joinTable.scriptTable);
+    var variable = {Funcs}.buildVariableName(joinTable.scriptTable);
+    {Funcs}.toScript(joinTable, oldRec);
+
+    while (i < oldRec.values.size)
+        if (strCompare(oldRec.values[i], newRec.values[i], true) != 0)
+            modifiedValues[modifiedValues.size] = i;
+        end;
+        i = i + 1;
+    end;
+
+    {Funcs}.replaceForeignAutoinc(joinTable, newRec);
+    {Funcs}.dateSpelling(joinTable, newRec);
+    {Funcs}.stringSpelling(joinTable, newRec);
+
+    i = 0;
+    while (i < modifiedValues.size)
+        setList.append(joinTable.scriptTable.realFields[modifiedValues[i]] + " = " + newRec.values[modifiedValues[i]]);
+        i = i + 1;
+    end;
+
+    if (autoIncIndex != -1)
+        oldRec.setVal(autoIncIndex, variable);
+    end;
+    
+    {SqlStrings}.beginGroup(pathfull);
+    var where = StringListEx({Funcs}.buildWhere(joinTable, oldRec));
+    if ((not setList.empty) and (variable != ""))
+        {SqlStrings}.append("-- Обновление настройки '" + pathfull + "'", 1);
+        {SqlStrings}.append(strArg("%1 := %2 ('%3');", variable, GetKeyIDByPath_FuncName, pathfull), 1);
+        AddToPathsTable(KeyId, pathfull);
+
+        var autoIncField = joinTable.scriptTable.fields.val(autoIncIndex).name;
+        var updatesql = strArg("UPDATE %1 SET %2 WHERE %3 RETURNING %4 INTO %5;",
+            joinTable.scriptTable.name,
+            setList.join(", "),
+            where.join(" AND "),
+            autoIncField,
+            variable);
+        {SqlStrings}.append(updatesql, 1);
+
+        if (autoIncIndex != -1)
+            var ChildArray = TArray;
+            {Funcs}.stdBuildChildStatement(joinTable, ChildArray, newIndex);
+            {SqlStrings}.append(ChildArray);
+        end;
+    end;
+    {SqlStrings}.endGroup();
+end;
+
+private macro buildStatement(joinTable, recIndex)
+    var nextRecIndex = recIndex + 1;
+
+    if (nextRecIndex > joinTable.scriptTable.records.size)
+        return nextRecIndex;
+    end;
+
+    var rec = joinTable.scriptTable.records.val(recIndex);
+    {Funcs}.toScript(joinTable, rec);
+
+    if (rec.lineType == ltInsert)
+        buildInsertStatement(joinTable, recIndex);
+        joinTable.processedRecords.setVal(recIndex, true);
+    elif (rec.lineType == ltDelete)
+        buildDeleteStatement(joinTable, recIndex);
+        joinTable.processedRecords.setVal(recIndex, true);
+    elif (rec.lineType == ltUpdate)
+        var newIndex = 0, oldIndex = 0;
+
+        if (joinTable.scriptTable.records.val(recIndex).lineUpdateType == lutOld)
+            oldIndex = recIndex;
+            newIndex = nextRecIndex;
+        else
+            oldIndex = nextRecIndex;
+            newIndex = recIndex;
+        end;
+
+        if (newIndex < joinTable.scriptTable.records.size)
+            {Funcs}.toScript(joinTable, joinTable.scriptTable.records.val(newIndex));
+            buildUpdateStatement(joinTable, oldIndex, newIndex);
+
+            joinTable.processedRecords.setVal(oldIndex, true);
+            joinTable.processedRecords.setVal(newIndex, true);
+        end;
+
+        nextRecIndex = nextRecIndex + 1;
+    end;
+
+    return nextRecIndex;
+end;
+
+macro GenSqlScrpt(joinTables)
+    var joinTable = joinTables.getRoot();
+
+    memdb = OpenTemporaryDBase();
+
+    if (not memdb)
+        return;
+    end;
+
+    var datfname = GetDatFileNameForTable(joinTable.scriptTable.name);
+    if (not diffLoadDatToSqlite(datfname, memdb, joinTable.scriptTable, true))
+        return;
+    end;
+
+    CreatePathsTable();
+    if ({Spelling}.functionDeclare == FunctionBeforeBlocks)
+        BuildFunctions(joinTable, 0);
+    end;
+
+    {SqlStrings}.append({Spelling}.declare);
+
+    var variables = {Funcs}.makeVariables(joinTable);
+    {SqlStrings}.append(variables);
+
+    if ({Spelling}.functionDeclare == FunctionInDeclareBlock)
+        BuildFunctions(joinTable, 1);
+    end;
+
+    {SqlStrings}.append({Spelling}.begin_);
+    DisableEnableAutoIncTrigger(joinTable);
+    {SqlStrings}.append("");
+
+    var recno = 0;
+    while (recno < joinTable.scriptTable.records.size)
+        var oldSize = {SqlStrings}.size;
+
+        recno = buildStatement(joinTable, recno);
+        
+        if ({SqlStrings}.size != oldSize)
+            {SqlStrings}.append("");
+        end;
+    end;
+
+    /*
+        Применить сохраненные группы настроек:
+        Удалять и обновлять надо в порядке убывания T_KEYID
+    */
+    var query = SqlQuery(memdb);
+    query.prepare("SELECT * FROM DREGPATHS_WRK ORDER BY T_KEYID DESC");
+
+    if (query.exec())
+        while (query.next())
+            var keypath = query.value("T_PATH");
+            {SqlStrings}.applyGroup(keypath);
+            {SqlStrings}.append("");
+        end;
+    end;
+
+    var i = 0;
+    DisableEnableAutoIncTrigger(joinTable, true);
+    {SqlStrings}.append({Spelling}.end_);
+
+    if ({Spelling}.needDropFunctions)
+        {SqlStrings}.append({Funcs}.dropInserFunctions());
+
+        while (i < FuncInfoList.size)
+            {SqlStrings}.append(FuncInfoList[i].drop({Spelling}));
+            {SqlStrings}.append("/");
+            i = i + 1;
+        end;
+    else
+        var PgSpelling = DbSpellingPostgres();
+        var drops = {Funcs}.dropInserFunctions(PgSpelling);
+
+        {SqlStrings}.append("-- #conv-Oracle");
+        {SqlStrings}.append("-- #conv-PG");
+        CommentLines(drops);
+
+        while (i < FuncInfoList.size)
+            {SqlStrings}.append("-- " + FuncInfoList[i].drop(PgSpelling));
+            {SqlStrings}.append("--/");
+            i = i + 1;
+        end;
+
+        {SqlStrings}.append(drops);
+        {SqlStrings}.append("-- #conv-end");
+    end;
+end;

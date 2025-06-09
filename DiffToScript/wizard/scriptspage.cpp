@@ -7,6 +7,7 @@
 #include "diffwizard.h"
 #include "tablelinks.h"
 #include "task.h"
+#include "cmdparser.h"
 #include "svnlogmodel.h"
 #include "errorsmodel.h"
 #include <QTabBar>
@@ -20,6 +21,7 @@
 #include <QScrollBar>
 #include <QTabWidget>
 #include <limits>
+#include <QAbstractButton>
 
 enum
 {
@@ -45,7 +47,7 @@ void GenerateOperation::setErrorsBuf(ErrorsModel *err)
     m_Errors = err;
 }
 
-QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLinks)
+QStringList GetClearedFiles(const QStringList &files, QList<TableLinks*> &tableLinks)
 {
     QStringList filesCleared = files;
 
@@ -56,15 +58,15 @@ QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLi
 
         if (QFile::exists(fileName))
         {
-            tableLinks.append(TableLinks());
-            TableLinks& tableLink = tableLinks.back();
-            tableLink.loadLinks(fileName);
+            tableLinks.append(new TableLinks());
+            TableLinks *tableLink = tableLinks.back();
+            tableLink->loadLinks(fileName);
 
-            for (const Link &childlnk : qAsConst(tableLink.links))
+            for (const Link *childlnk : qAsConst(tableLink->links))
             {
                 QStringList::ConstIterator pos = std::find_if(files.begin(), files.end(), [=](const QString &f)
                 {
-                    return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+                    return f.contains(childlnk->tableName, Qt::CaseInsensitive);
                 });
 
                 if (pos != files.end())
@@ -79,16 +81,16 @@ QStringList GetClearedFiles(const QStringList &files, QList<TableLinks> &tableLi
 }
 
 QStringList GetNormalFileList(const QStringList files,
-                              const QList<TableLinks> &tableLinks,
+                              const QList<TableLinks*> &tableLinks,
                               std::function<void(const QString &file)> userfunc)
 {
     QStringList normalfiles;
 
-    for (const TableLinks &tableLink : qAsConst(tableLinks))
+    for (const TableLinks *tableLink : qAsConst(tableLinks))
     {
         QStringList::ConstIterator file = std::find_if(files.begin(), files.end(), [=](const QString &f)
         {
-            return f.contains(tableLink.tableName, Qt::CaseInsensitive);
+            return f.contains(tableLink->tableName, Qt::CaseInsensitive);
         });
 
         if (file != files.end())
@@ -103,11 +105,11 @@ QStringList GetNormalFileList(const QStringList files,
                 args.append(QString("%1/%2").arg(info["url"], *file));*/
         }
 
-        for (const Link &childlnk : qAsConst(tableLink.links))
+        for (Link *childlnk : qAsConst(tableLink->links))
         {
             file = std::find_if(files.begin(), files.end(), [=](const QString &f)
             {
-                return f.contains(childlnk.tableName, Qt::CaseInsensitive);
+                return f.contains(childlnk->tableName, Qt::CaseInsensitive);
             });
 
             if (file != files.end())
@@ -143,7 +145,7 @@ void GenerateOperation::run()
 
     SvnInfoMap info = SvnGetRepoInfo(Path);
 
-    QList<TableLinks> tableLinks;
+    TableLinksList tableLinks;
     bool IsUnicode = m_pWzrd->field("IsUnicode").toBool();
     QStringList files = m_pWzrd->userField("Files").toStringList();
     QStringList filesCleared = GetClearedFiles(files, tableLinks);
@@ -253,10 +255,16 @@ void GenerateOperation::run()
 
         if (f.open(QIODevice::ReadOnly))
         {
-            QTextStream ostream(&f);
-            ostream.setCodec("IBM 866");
-            ostream.seek(0);
+            QByteArray data = f.readAll();
 
+            QTextStream ostream(&f);
+
+            if (!data.contains("Execution finished with errors"))
+                ostream.setCodec("IBM 866");
+            else
+                ostream.setCodec("Windows-1251");
+
+            ostream.seek(0);
             result = ostream.readAll();
             f.close();
         }
@@ -279,6 +287,7 @@ void GenerateOperation::run()
         result.close();
 
         QStringList arg = argtmpl;
+        arg.prepend("DiffToScript.exe");
         arg << "--input"
             <<tmp.fileName()
            << "--output"
@@ -287,12 +296,14 @@ void GenerateOperation::run()
            << "--dat"
            << QDir::toNativeSeparators(datfilename);
 
-        int ExitCode = CoreStartProcess(proc.data(), "DiffToScript.exe", arg, true, true
-#ifdef _DEBUG
-                                        ,std::numeric_limits<int>::max()
-#endif
-                                        );
+        CmdParser cmdParser;
+        cmdParser.parse(arg);
 
+        QScopedPointer<Task> pTask(new Task());
+        pTask->optns = cmdParser.opts;
+        pTask->run();
+
+        /*int ExitCode = pTask->result();
         if (ExitCode)
         {
             QByteArray errdata = proc->readAllStandardError();
@@ -330,7 +341,7 @@ void GenerateOperation::run()
                                           ErrorsModel::TypeInfo);
                 }
             }
-        }
+        }*/
 
         resultStr = GetResult(result.fileName());
         return resultStr;
@@ -373,6 +384,7 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
     m_Errors = new ErrorsModel();
     m_pOracle = new CodeEditor(this);
     m_pPostgres = new CodeEditor(this);
+    m_Finished = false;
 
     m_pTabWidget = new QTabWidget(this);
     layout()->addWidget(m_pTabWidget);
@@ -388,6 +400,8 @@ ScriptsPage::ScriptsPage(QWidget *parent) :
 
     ToolApplyHighlighter(m_pOracle, HighlighterSql);
     ToolApplyHighlighter(m_pPostgres, HighlighterSql);
+
+    setCommitPage(true);
 }
 
 ScriptsPage::~ScriptsPage()
@@ -398,17 +412,21 @@ ScriptsPage::~ScriptsPage()
 void ScriptsPage::oracleScriptReady(const QString &data)
 {
     m_pOracle->appendPlainText(data);
-    m_pOracle->verticalScrollBar()->setValue(m_pOracle->verticalScrollBar()->maximum());
+    m_pOracle->verticalScrollBar()->setValue(m_pOracle->verticalScrollBar()->minimum());
 }
 
 void ScriptsPage::postgresScriptReady(const QString &data)
 {
     m_pPostgres->appendPlainText(data);
-    m_pPostgres->verticalScrollBar()->setValue(m_pPostgres->verticalScrollBar()->maximum());
+    m_pPostgres->verticalScrollBar()->setValue(m_pPostgres->verticalScrollBar()->minimum());
 }
 
 void ScriptsPage::finished()
 {
+    m_Finished = true;
+    wizard()->button(QWizard::CustomButton2)->setVisible(true);
+    emit completeChanged();
+
     if (m_Errors->isEmpty())
         return;
 
@@ -438,6 +456,7 @@ void ScriptsPage::initializePage()
         m_pTabWidget->tabBar()->setVisible(true);
     }
 
+    m_Finished = false;
     m_pOracle->clear();
     m_pPostgres->clear();
     m_Errors->clear();
@@ -447,7 +466,12 @@ void ScriptsPage::initializePage()
 
     connect(oper, &GenerateOperation::oracleScriptReady, this, &ScriptsPage::oracleScriptReady);
     connect(oper, &GenerateOperation::postgresScriptReady, this, &ScriptsPage::postgresScriptReady);
-    connect(oper, &GenerateOperation::finished, this, &ScriptsPage::finished);
+    connect(oper, SIGNAL(finished()), this, SLOT(finished()), Qt::QueuedConnection);
 
     QThreadPool::globalInstance()->start(oper);
+}
+
+bool ScriptsPage::isComplete() const
+{
+    return m_Finished;
 }

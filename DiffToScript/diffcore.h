@@ -6,6 +6,8 @@
 #include <QPair>
 #include <QMap>
 #include <QStringList>
+#include <QVariant>
+#include "rslmodule/iterableobjectbase.h"
 
 enum LineType
 {
@@ -33,58 +35,57 @@ struct ParsedLine
 
 using ParsedLines = QMap<QStringList, ParsedLine>;
 
-struct DatRecord
+class DatRecord : public QObject
 {
-    QStringList values;
-    LineType lineType;
+    Q_OBJECT
+    Q_PROPERTY(int size READ size CONSTANT)
+    Q_PROPERTY(int lineType READ getLineType CONSTANT)
+    Q_PROPERTY(int lineUpdateType READ getLineUpdateType CONSTANT)
+    Q_PROPERTY(QString lineTypeStr READ lineTypeStr CONSTANT)
+    Q_PROPERTY(QString lineUpdateTypeStr READ lineUpdateTypeStr CONSTANT)
+    Q_PROPERTY(QStringList values READ getValues CONSTANT)
+public:
+    DatRecord();
+    DatRecord(const DatRecord& other);
+    DatRecord(const QStringList& vals,
+              LineType lType,
+              LineUpdateType luType = lutNone,
+              QObject* parent = nullptr);
+
+    DatRecord& operator=(const DatRecord& other);
+
+    int size() const;
+    const QStringList &getValues() const;
+    int getLineType() const;
+    int getLineUpdateType() const;
     QString lineTypeStr() const;
     QString lineUpdateTypeStr() const;
+
+    Q_INVOKABLE void setVal(const int &index, const QString &value);
+
+    QStringList values;
+    LineType lineType;
     LineUpdateType lineUpdateType = lutNone;
 };
 
-inline QString DatRecord::lineTypeStr() const
+class DatRecords : public VectorIterableObject<DatRecord*>
 {
-    switch (lineType) {
-    case ltDelete:
-        return "Delete";
-    case ltInsert:
-        return "Insert";
-    case ltUpdate:
-        return "Update";
-    default:
-        return "";
-    }
-}
+    Q_OBJECT
+public:
+    DatRecords();
+    DatRecords(const DatRecords& other);
+    DatRecords& operator=(const DatRecords& other);
 
-inline QString DatRecord::lineUpdateTypeStr() const
-{
-    switch (lineUpdateType) {
-    case lutNew:
-        return "New";
-    case lutOld:
-        return "Old";
-    case lutNone:
-        return "Nan";
-    default:
-        return "";
-    }
-}
+    // Получить запись по индексу
+    Q_INVOKABLE const DatRecord *record(int index) const;
 
-struct DatRecords : public QVector<DatRecord>
-{
+    void append(const QStringList& values, LineType lineType, LineUpdateType updateType = lutNone);
+
     QVector<QStringList> getRecords(std::initializer_list<LineType> types);
+    Q_INVOKABLE QVariantList getRecords(const QVariantList &types);
 };
 
-inline QVector<QStringList> DatRecords::getRecords(std::initializer_list<LineType> types)
-{
-    QVector<QStringList> v;
-    for (const DatRecord& rec: (*this))
-        for (const LineType& type: types)
-            if (type == rec.lineType)
-            {
-                v.append(rec.values);
-            }
-    return v;
-}
+Q_DECLARE_OPAQUE_POINTER(DatRecord);
+Q_DECLARE_OPAQUE_POINTER(DatRecords);
 
 #endif // DIFFCORE_H

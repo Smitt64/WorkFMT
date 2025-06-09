@@ -2,7 +2,8 @@
 #include "fmtcore.h"
 #include "sqlscriptmain.h"
 
-DbSpellingPostgres::DbSpellingPostgres()
+DbSpellingPostgres::DbSpellingPostgres() :
+    DbSpelling()
 {
 
 }
@@ -58,7 +59,7 @@ QString DbSpellingPostgres::toDate(const QString& value)
     return "glob_func.to_timestamp_immutable('" + tmp + "', 'DD-MM-YYY')";
 }
 
-QString DbSpellingPostgres::getExceptionName(const ExcceptionType &type)
+QString DbSpellingPostgres::getExceptionName(const int &type)
 {
     QString result;
 
@@ -66,6 +67,9 @@ QString DbSpellingPostgres::getExceptionName(const ExcceptionType &type)
     {
     case ExceptDupValOnIndex:
         result = "UNIQUE_VIOLATION";
+        break;
+    case ExceptNoDataFound:
+        result = "NO_DATA_FOUND";
         break;
     }
 
@@ -89,9 +93,22 @@ QString DbSpellingPostgres::functionParamType(const qint16 &type)
     return result;
 }
 
-DbSpelling::FunctionDeclarePos DbSpellingPostgres::functionDeclare() const
+int DbSpellingPostgres::functionDeclare() const
 {
     return FunctionBeforeBlocks;
+}
+
+QString DbSpellingPostgres::getProcKeyWord(const bool &rettype)
+{
+    return "FUNCTION ";
+}
+
+QString DbSpellingPostgres::getProcReturnKeyWord(const QString &returntype)
+{
+    if (!returntype.isEmpty())
+        return QString(" RETURNS %1").arg(returntype);
+
+    return QString(" RETURNS VOID");
 }
 
 void DbSpellingPostgres::functionChunks(QStringList &BeginCreateReplace,
@@ -135,9 +152,7 @@ bool DbSpellingPostgres::needDropFunctions() const
     return true;
 }
 
-QString DbSpellingPostgres::dropFunction(const QString &proc,
-                                         const QString &fullproc,
-                                         const QString &returnType) const
+QString DbSpellingPostgres::dropFunction(const QString &fullproc) const
 {
     QString normal = fullproc;
     normal = normal.remove("FUNCTION ");

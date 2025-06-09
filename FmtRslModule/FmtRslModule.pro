@@ -8,7 +8,7 @@ RCC_DIR = build
 TEMPLATE = lib
 DEFINES += FMTRSLMODULE_LIBRARY
 
-CONFIG += c++11
+CONFIG += c++17
 
 DISTFILES += RslToolsRuntimeModule.json
 
