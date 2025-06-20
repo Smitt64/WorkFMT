@@ -129,6 +129,17 @@ void FunctionInfo::setFunctionName(const QString &name)
         m_FunctionName = name;
 }
 
+QString FunctionInfo::scheme() const
+{
+    return m_Scheme;
+}
+
+void FunctionInfo::setScheme(const QString &name)
+{
+    if (m_Scheme != name)
+        m_Scheme = name;
+}
+
 FunctionParamInfo *FunctionInfo::returnType()
 {
     return &m_ReturnType;
@@ -171,18 +182,29 @@ void FunctionInfo::functionChunks(DbSpelling *spelling, QStringList &BeginCreate
     spelling->functionChunks(BeginCreateReplace, EndCreateReplace, m_FunctionName, params, returnType);
 }
 
-QString FunctionInfo::drop(DbSpelling *spelling)
+QString FunctionInfo::drop(DbSpelling *spelling, const QString &scheme)
 {
-    QString fullname = toString(spelling);
+    QString fullname = toString(spelling, scheme);
     return spelling->dropFunction(fullname);
 }
 
-QString FunctionInfo::toString(DbSpelling *spelling)
+QString FunctionInfo::toString(DbSpelling *spelling, const QString &scheme)
 {
     QString declaration;
 
     bool retType = !m_ReturnType.userType().isEmpty() || m_ReturnType.paramType();
     declaration += spelling->getProcKeyWord(retType);
+
+    if (!m_Scheme.isEmpty() || !scheme.isEmpty())
+    {
+        if (!scheme.isEmpty())
+            declaration += scheme + ".";
+        else
+        {
+            if (!m_Scheme.isEmpty())
+                declaration += m_Scheme + ".";
+        }
+    }
 
     declaration += m_FunctionName + " (" + m_InputParams.toString(spelling) + ") ";
 

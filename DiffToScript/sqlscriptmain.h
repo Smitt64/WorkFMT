@@ -6,24 +6,10 @@
 #include "join.h"
 #include "dbspelling.h"
 #include "diffconnection.h"
+#include "taskoptions.h"
 #include <QSharedPointer>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-
-typedef struct
-{
-    bool isBlob;
-    quint16 type;
-    QString name;
-}FuncParam;
-
-typedef struct
-{
-    QString name, returnType;
-    QString fullname;
-
-    QList<FuncParam> params;
-}InsertFunction;
 
 enum SqlScriptBuildErrors
 {
@@ -49,8 +35,8 @@ public:
 
     Q_INVOKABLE QString buildVariable(const ScriptTable* datTable);
     Q_INVOKABLE QStringList buildInsertFunctions(const ScriptTable* datTable);
-    Q_INVOKABLE QStringList dropInserFunctions();
-    Q_INVOKABLE QStringList dropInserFunctions(QObject *spelling);
+    Q_INVOKABLE QStringList dropInserFunctions(const QString &scheme = QString());
+    Q_INVOKABLE QStringList dropInserFunctions(QObject *spelling, const QString &scheme = QString());
     Q_INVOKABLE QStringList getInserFunctionsNames();
     //Q_INVOKABLE void getInserFunction(const QString &name, QString &returnType, QString &fullname);
 
@@ -76,7 +62,7 @@ public:
                        const QStringList &ParentValuesByIndex = QStringList(),
                        const QString &childPadding = QString());
     int buildChildStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const QString &childPadding = QString());
-    int build(QStringList& sql, JoinTable* joinTable);
+    int build(QStringList& sql, JoinTable* joinTable, const TaskOptions &opts);
 
     Q_INVOKABLE int stdBuildChildStatement(const JoinTable* joinTable, QStringList& sql, int recIndex, const int depth = 0);
 

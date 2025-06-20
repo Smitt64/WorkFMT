@@ -544,7 +544,7 @@ void Task::runScriptTask()
     if (macroname.isEmpty())
     {
         qInfo(logTask) << "Start sql building.";
-        m_Result = ssm.build(sql, joinTables.getRoot());
+        m_Result = ssm.build(sql, joinTables.getRoot(), optns);
 
         os << sql.join("\n");
     }

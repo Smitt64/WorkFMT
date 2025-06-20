@@ -15,6 +15,8 @@
 #include <QSettings>
 #include "task.h"
 #include "diffoptionsdlg.h"
+#include <QLibrary>
+#include <QDebug>
 
 DiffWizard::DiffWizard(QWidget *parent) :
     QWizard(parent)
@@ -57,6 +59,36 @@ DiffWizard::DiffWizard(QWidget *parent) :
 
     setButtonText(QWizard::CustomButton1, tr("Параметры"));
     setButtonText(QWizard::CustomButton2, tr("Рестарт"));
+
+    /*QLibrary lib("PgConvWrapper.dll");
+    lib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+
+    if (!lib.load())
+        qDebug() << "!lib.load()";
+    else
+    {
+        typedef void (*ConvertFuncPtr)(const wchar_t* Sql, wchar_t** PgSql, wchar_t** Error, wchar_t** Tail);
+        //ConvertFuncPtr func = (ConvertFuncPtr)lib.resolve("?convertSqlOraToPg@@YA?AV?$basic_string@_WU?$char_traits@_W@std@@V?$allocator@_W@2@@std@@ABV12@@Z");
+        ConvertFuncPtr func = (ConvertFuncPtr)lib.resolve("convertSqlOraToPg");
+
+        if (!func)
+            qDebug() << "!func";
+        else
+        {
+            wchar_t *PgSql = nullptr;
+            wchar_t *Error = nullptr;
+            wchar_t *Tail = nullptr;
+            std::wstring sql = L"DROP FUNCTION InsertIntoRegparmPath__ (pPath IN VARCHAR, pNAME IN VARCHAR, pTYPE IN INTEGER, pGLOBAL IN CHAR, pDESCRIPTION IN VARCHAR, pSECURITY IN CHAR, pISBRANCH IN CHAR, pTEMPLATE IN VARCHAR);";
+            func(sql.c_str(), &PgSql, &Error, &Tail);
+            qDebug() << "PgSql:" << QString::fromWCharArray(PgSql);
+            qDebug() << "Error:" << QString::fromWCharArray(Error);
+            qDebug() << "Tail:" << QString::fromWCharArray(Tail);
+
+            free(PgSql);
+            free(Error);
+            free(Tail);
+        }
+    }*/
 
     connect(aboutAction, &QAction::triggered, [=]()
     {

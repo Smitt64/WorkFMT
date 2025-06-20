@@ -28,3 +28,14 @@ TableMacOptionsPage::~TableMacOptionsPage()
 {
     delete ui;
 }
+
+int TableMacOptionsPage::save()
+{
+    m_pModel->saveSelection();
+    return 0;
+}
+
+void TableMacOptionsPage::restore()
+{
+    m_pModel->restoreSelection();
+}

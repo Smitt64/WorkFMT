@@ -1,0 +1,14 @@
+#ifndef VERSIONSQLCONVERTER___H
+#define VERSIONSQLCONVERTER___H
+
+
+  #define SQL_CONVERTER_BUILD_CX 8918
+  #define SQL_CONVERTER_BUILD_CX_STR "Application build number: 8918"
+  #define SQL_CONVERTER_MAJOR_VER 0
+  #define SQL_CONVERTER_MINOR_VER 0
+  #define SQL_CONVERTER_PATH_VER 0
+  #define SQL_CONVERTER_INFO_VER_STR "SqlConverter version: 0.0.0 (8918)"
+
+	
+
+#endif

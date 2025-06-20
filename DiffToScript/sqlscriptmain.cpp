@@ -79,7 +79,7 @@ QStringList SqlScriptMain::getInserFunctionsNames()
     }
 }*/
 
-QStringList SqlScriptMain::dropInserFunctions(QObject *spelling)
+QStringList SqlScriptMain::dropInserFunctions(QObject *spelling, const QString &scheme)
 {
     QStringList sql;
 
@@ -89,17 +89,16 @@ QStringList SqlScriptMain::dropInserFunctions(QObject *spelling)
     {
         iter.next();
 
-        QString func = iter.value()->toString(spell);
-        sql << spell->dropFunction(func)
-            << "/";
+        QString func = iter.value()->toString(spell, scheme);
+        sql << spell->dropFunction(func);
     }
 
     return sql;
 }
 
-QStringList SqlScriptMain::dropInserFunctions()
+QStringList SqlScriptMain::dropInserFunctions(const QString &scheme)
 {
-    return dropInserFunctions(_dbSpelling.data());
+    return dropInserFunctions(_dbSpelling.data(), scheme);
 }
 
 QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
@@ -155,7 +154,6 @@ QStringList SqlScriptMain::buildInsertFunctions(const ScriptTable* datTable)
     {
         if (i != autoIncIndex)
         {
-            FuncParam prm;
             QString undecorateFldName = datTable->realFields[i];
             if (undecorateFldName.mid(0, 2).toLower() == "t_")
                 undecorateFldName = undecorateFldName.mid(2);
@@ -579,8 +577,9 @@ int SqlScriptMain::buildDeleteStatement(const JoinTable *joinTable, QStringList 
 
     QStringList where = buildWhere(joinTable, rec);
 
+    // RETURNING %3 INTO для delete не переваривается конвертором
     //Проверка наличия автоинкрементного поля, чтобы потом сохранить его в переменную sql
-    QString variable = buildVariableName(joinTable->scriptTable);
+    /*QString variable = buildVariableName(joinTable->scriptTable);
     if (variable != "")
     {
         //Получение имени автоинкрементного поля
@@ -589,7 +588,7 @@ int SqlScriptMain::buildDeleteStatement(const JoinTable *joinTable, QStringList 
 
         sql.append(QString(PADDING + "DELETE FROM %1 WHERE %2 RETURNING %3 INTO %4;").arg(joinTable->scriptTable->name,  where.join(" AND "), autoIncField, variable));
     }
-    else
+    else*/
         sql.append(QString(PADDING + "DELETE FROM %1 WHERE %2;").arg(joinTable->scriptTable->name,  where.join(" AND ")));
 
     return ++recIndex;
@@ -802,7 +801,7 @@ void SqlScriptMain::checkDatFldsCount(QStringList& sql, JoinTable* joinTable)
         CheckFlds(*childJoin->child->scriptTable);
 }
 
-int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable)
+int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable, const TaskOptions &opts)
 {
     int stat = 0;
     if (!joinTable)
@@ -875,7 +874,9 @@ int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable)
 
     if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
     {
+        sql << "begin";
         sql << "-- #conv-Oracle";
+        sql << Padding() + "null;";
         sql << "-- #conv-PG";
     }
 
@@ -885,20 +886,28 @@ int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable)
     {
         iter.next();
 
-        QString fullname = iter.value()->toString(&pgSpelling);
+        QString scheme;
+        if (!_dbSpelling->needDropFunctions())
+            scheme = "&usr_name&";
+
+        QString fullname = iter.value()->toString(&pgSpelling, scheme);
         QString drop = pgSpelling.dropFunction(fullname);
 
         if (!_dbSpelling->needDropFunctions())
+        {
             drop.prepend("-- ");
-
-        if (!_dbSpelling->needDropFunctions())
             sql << drop;
+        }
         else
             sql << drop << "/" << QString();
     }
 
     if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
+    {
         sql << "-- #conv-end";
+        sql << "end;";
+        sql << "/";
+    }
 
     return stat;
 }
@@ -1004,17 +1013,3 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
             rec->values[i] = _dbSpelling->toBlob(rec->values[i]);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

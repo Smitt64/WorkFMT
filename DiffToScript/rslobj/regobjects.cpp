@@ -18,13 +18,13 @@
 
 void registerRslObjects()
 {
-    REGISTER_DIFF_OBJ(JoinIndex);
-    REGISTER_DIFF_OBJ(JoinList);
-    REGISTER_DIFF_OBJ(Join);
-    REGISTER_DIFF_OBJ(JoinTable);
-    REGISTER_DIFF_OBJ(JoinTableList);
-    REGISTER_DIFF_OBJ(JoinTables);
-    REGISTER_DIFF_OBJ(BoolVector);
+    REGISTER_DIFF_OBJ(JoinIndex);// +
+    REGISTER_DIFF_OBJ(JoinList);// +
+    REGISTER_DIFF_OBJ(Join);// +
+    REGISTER_DIFF_OBJ(JoinTable);// +
+    REGISTER_DIFF_OBJ(JoinTableList);// +
+    REGISTER_DIFF_OBJ(JoinTables);// +
+    REGISTER_DIFF_OBJ(BoolVector);// +
 
     REGISTER_DIFF_OBJ(IndexField);// +
     REGISTER_DIFF_OBJ(IndexFields);// +
@@ -44,7 +44,7 @@ void registerRslObjects()
     REGISTER_DIFF_OBJ(DatRecord);// +
     REGISTER_DIFF_OBJ(DatRecords);// +
     REGISTER_DIFF_OBJ(TaskOptionsContainer);
-    REGISTER_DIFF_OBJ(SqlStringList);
+    REGISTER_DIFF_OBJ(SqlStringList);// +
     REGISTER_DIFF_OBJ(SqlScriptMain);
     REGISTER_DIFF_OBJ(DiffConnection);
     REGISTER_DIFF_OBJ(FmtTablesList);

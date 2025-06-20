@@ -1,5 +1,21 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
+    <version ver="1.0.1.2">
+        <fix>Убрана конструкция &quot;RETURNING INTO&quot; из инструкции &quot;DELETE FROM&quot;</fix>
+        <fix>Исправлены &quot;DROP FUNCTION&quot; в ветке конвертации для &quot;Oracle&quot;</fix>
+        <fix>Исправлено формирование имени настройки для таблицы &quot;dregparm_dbt&quot; если обновлялось наименование</fix>
+        <fix>Исправлена ошибка, не позволяющая отключать в настройках использование макроов для таблиц</fix>
+    </version>
+    <version ver="1.0.1.1">
+        <add>Добавлена возможность писать скрипты генерации для отдельных таблиц на rsl</add>
+        <add>Добавлена кнопка &quot;Reset&quot; на последней странице мастера, перезапускающая wizzard с начала</add>
+        <add>Добавлены &quot;drop function&quot; для &quot;PostgreSQL&quot;</add>
+        <add>Добавлены ссылки на статьи confluence в раздел &quot;Справка&quot;</add>
+        <add>Добавлен раздел с настройками</add>
+        <add>Добавлен макрос генерации для таблицы &quot;dregparm_dbt&quot;</add>
+        <fix>Исправлено добавление лишних записей в секцию &quot;update&quot;</fix>
+        <fix>Исправлено дублирование ключей в условиях &quot;where&quot;</fix>
+    </version>
     <version ver="1.0.0.11">
         <add>Добавлен суффикс &quot;__&quot; к наименованим функций вставки записей в таблицу, во избежание пересечений с рукописными функциями</add>
     </version>

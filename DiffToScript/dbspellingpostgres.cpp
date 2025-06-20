@@ -89,6 +89,12 @@ QString DbSpellingPostgres::callProcedure(const QString &proc)
 QString DbSpellingPostgres::functionParamType(const qint16 &type)
 {
     QString result = fmtPostgresDecl(type);
+          // numeric
+    if (type == fmtt_INT || type == fmtt_LONG || type == fmtt_BIGINT || type == fmtt_MONEY  || type == fmtt_NUMERIC)
+        result = "numeric";
+    else if (type == fmtt_FLOAT || type == fmtt_DOUBLE)
+        result = "float";
+
     result = funcDeclType(result);
     return result;
 }

@@ -54,7 +54,7 @@ end;
 
 private macro OpenTemporaryDBase()
     var db = SqlDatabase("QSQLITE");
-    db.databaseName = GetTemporaryDBaseName(true);
+    db.databaseName = GetTemporaryDBaseName(false);
     db.open();
 
     return db;
@@ -111,13 +111,10 @@ private macro BuildPathStringDeleted(keyid)
 end;
 
 private macro BuildPathStringUpdated(keyid)
-    var sql = "select * from (SELECT T_NAME, T_PARENTID, T_KEYID FROM dregparm_dbt " +
-        "union select T_NAME, T_PARENTID, T_KEYID FROM DREGPARM_DBT_CHANGE where t_change__ = 'O') WHERE T_KEYID = :id";
-
+    var sql = "select * from (select * from (SELECT T_NAME, T_PARENTID, T_KEYID, 2 t_order FROM dregparm_dbt " +
+        "union select T_NAME, T_PARENTID, T_KEYID, 1 t_order FROM DREGPARM_DBT_CHANGE where t_change__ = 'O') WHERE T_KEYID = :id) order by t_order";
+        
     return BuildPathStringCommon(keyid, sql);
-end;
-
-private macro DropFunctions()
 end;
 
 private macro AppendCommonVariable(joinTable, depth)
@@ -192,11 +189,6 @@ private macro BuildFunctions(joinTable, depth)
     Function.returnType.paramType = FmtType.LONG;
     Function.addInputParam("pPath", FmtType.STRING);
 
-    /*var ParamType = {Spelling}.functionParamType(FmtType.STRING);
-    var ReturnType = {Spelling}.functionParamType(FmtType.LONG);*/
-
-    /*{Spelling}.functionChunks(BeginCreateReplacePathFunc, EndCreateReplacePathFunc, 
-        GetKeyIDByPath_FuncName, "pPath in " + ParamType, ReturnType);*/
     Function.functionChunks({Spelling}, BeginCreateReplacePathFunc, EndCreateReplacePathFunc);
     BeginCreateReplacePathFunc.size = 2;
 
@@ -318,8 +310,8 @@ private macro buildDeleteStatement(joinTable, recIndex)
     {SqlStrings}.beginGroup(pathfull);
     {SqlStrings}.append("-- Удаление настройки '" + pathfull + "'", 1);
 
-    var deletesql = strArg("DELETE FROM %1 WHERE %2 RETURNING %3 INTO %4;", 
-        joinTable.scriptTable.name, where.join(" AND "), autoIncField, variable);
+    var deletesql = strArg("DELETE FROM %1 WHERE %2;", 
+        joinTable.scriptTable.name, where.join(" AND "));
 
     AddToPathsTable(KeyId, pathfull);
     {SqlStrings}.append(strArg("%1 := %2 ('%3');", variable, GetKeyIDByPath_FuncName, pathfull), 1);
@@ -506,19 +498,28 @@ macro GenSqlScrpt(joinTables)
         end;
     else
         var PgSpelling = DbSpellingPostgres();
-        var drops = {Funcs}.dropInserFunctions(PgSpelling);
+        var drops = {Funcs}.dropInserFunctions(PgSpelling, "&usr_name&");
 
+        {SqlStrings}.append("begin");
         {SqlStrings}.append("-- #conv-Oracle");
+        {SqlStrings}.append("null;", 1);
         {SqlStrings}.append("-- #conv-PG");
-        CommentLines(drops);
 
-        while (i < FuncInfoList.size)
-            {SqlStrings}.append("-- " + FuncInfoList[i].drop(PgSpelling));
-            {SqlStrings}.append("--/");
+        while (i < drops.size)
+            if (drops[i] != "/")
+                {SqlStrings}.append("-- " + drops[i]);
+            end;
             i = i + 1;
         end;
 
-        {SqlStrings}.append(drops);
+        i = 0;
+        while (i < FuncInfoList.size)
+            {SqlStrings}.append("-- " + FuncInfoList[i].drop(PgSpelling, "&usr_name&"));
+            i = i + 1;
+        end;
+
         {SqlStrings}.append("-- #conv-end");
+        {SqlStrings}.append("end;");
+        {SqlStrings}.append("/");
     end;
 end;

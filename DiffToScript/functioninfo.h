@@ -70,6 +70,7 @@ class FunctionInfo : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(FunctionInfo)
     Q_PROPERTY(QString functionName READ functionName WRITE setFunctionName CONSTANT)
+    Q_PROPERTY(QString scheme READ scheme WRITE setScheme CONSTANT)
     Q_PROPERTY(FunctionParamInfo *returnType READ returnType CONSTANT)
     Q_PROPERTY(FunctionParamInfoList *inputParams READ inputParams CONSTANT)
 public:
@@ -78,6 +79,9 @@ public:
     QString functionName() const;
     void setFunctionName(const QString &name);
 
+    QString scheme() const;
+    void setScheme(const QString &name);
+
     FunctionParamInfo *returnType();
 
     FunctionParamInfoList *inputParams();
@@ -85,11 +89,12 @@ public:
     void addInputParam(FunctionParamInfo *param);
 
     Q_INVOKABLE void clearInputParams();
-    Q_INVOKABLE QString toString(DbSpelling *spelling);
+    Q_INVOKABLE QString toString(DbSpelling *spelling, const QString &scheme = QString());
     Q_INVOKABLE void functionChunks(DbSpelling *spelling, QStringList &BeginCreateReplace, QStringList &EndCreateReplace);
-    Q_INVOKABLE QString drop(DbSpelling *spelling);
+    Q_INVOKABLE QString drop(DbSpelling *spelling, const QString &scheme = QString());
+
 private:
-    QString m_FunctionName;
+    QString m_FunctionName, m_Scheme;
     FunctionParamInfo m_ReturnType;
     FunctionParamInfoList m_InputParams;
 };

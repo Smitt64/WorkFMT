@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.7.6">
+        <fix>Исправлено падение при сохранении записи;</fix>
+    </version>
     <version ver="1.0.7.5">
         <add>Добавлена возможность сравнения структур таблиц;</add>
         <add>Добавлены нове скрипты для генерации;</add>

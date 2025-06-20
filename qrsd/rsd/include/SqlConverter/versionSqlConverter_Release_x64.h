@@ -1,0 +1,14 @@
+#ifndef VERSIONSQLCONVERTER_RELEASE_X64_H
+#define VERSIONSQLCONVERTER_RELEASE_X64_H
+
+
+  #define SQL_CONVERTER_BUILD_CX 9136
+  #define SQL_CONVERTER_BUILD_CX_STR "Application build number: 9136"
+  #define SQL_CONVERTER_MAJOR_VER 0
+  #define SQL_CONVERTER_MINOR_VER 0
+  #define SQL_CONVERTER_PATH_VER 2
+  #define SQL_CONVERTER_INFO_VER_STR "SqlConverter version: 0.0.2 (9136)"
+
+	
+
+#endif

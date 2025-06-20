@@ -217,7 +217,7 @@ void TableFilesModel::restoreSelection()
             // Если есть сохраненное значение - устанавливаем только для нужного файла
             file.isChecked = (savedFile == file.fileName);
         }
-        else if (!processedTables.contains(tableLower))
+        /*else if (!processedTables.contains(tableLower))
         {
             // Если это первая встреча таблицы и нет сохраненного значения - выбираем первый файл
             file.isChecked = true;
@@ -225,7 +225,7 @@ void TableFilesModel::restoreSelection()
 
             // Сохраняем выбор по умолчанию
             m_settings->setValue(tableLower, file.fileName);
-        }
+        }*/
         else
             file.isChecked = false;
     }
@@ -240,13 +240,14 @@ void TableFilesModel::saveSelection()
         return;
 
     m_settings->beginGroup("macrofile");
-    m_settings->remove(""); // Очищаем предыдущие значения
 
     // Сохраняем только выбранные файлы
     for (const TableFile &file : qAsConst(m_files))
     {
         if (file.isChecked)
             m_settings->setValue(file.tableName.toLower(), file.fileName);
+        else
+            m_settings->setValue(file.tableName.toLower(), QString());
     }
 
     m_settings->endGroup();
