@@ -33,6 +33,7 @@
 #include "windowactionsregistry.h"
 #include "rslexecutors/toolbaractionexecutor.h"
 #include "widgets/guiconverterdlg.h"
+#include "widgets/sqlconvertordlg.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QFileDialog>
@@ -199,6 +200,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOptions, SIGNAL(triggered(bool)), SLOT(OptionsAction()));
     connect(ui->action_GuiConverter,SIGNAL(triggered(bool)), SLOT(StartGuiConverter()));
     connect(ui->actionDiffTables,SIGNAL(triggered(bool)), SLOT(CompareTables()));
+    connect(ui->actionConvertSql,SIGNAL(triggered(bool)), SLOT(onSqlconerter()));
 
     ui->actionQuery->setVisible(false);
     connect(ui->actionQuery, SIGNAL(triggered(bool)), SLOT(OnCreateQuery()));
@@ -1654,4 +1656,16 @@ void MainWindow::StartGuiConverter()
             QMessageBox::critical(this, tr("GuiConverter"), err);
         }
     }
+}
+
+void MainWindow::onSqlconerter()
+{
+    ConnectionInfo *connection = currentConnection();
+
+    SqlConvertorDlg dlg(this);
+
+    if (connection)
+        dlg.setUserName(connection->user());
+
+    dlg.exec();
 }

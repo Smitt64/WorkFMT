@@ -17,7 +17,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-ORACONV_API void convertSqlOraToPg(const wchar_t* Sql, wchar_t** PgSql, wchar_t** Error, wchar_t** Tail);
+ORACONV_API void convertSqlOraToPg(const wchar_t* Sql, const wchar_t* User, wchar_t** PgSql, wchar_t** Error, wchar_t** Tail);
 #ifdef __cplusplus
 }
 #endif

@@ -24,7 +24,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 // ------------------------------------------------------------------
 
-std::wstring convertSqlOraToPgCommon(const std::wstring& Sql, std::wstring *Error, std::wstring* Tail)
+std::wstring convertSqlOraToPgCommon(const std::wstring& Sql, const std::wstring& User, std::wstring *Error, std::wstring* Tail)
 {//e_pglib e_odbc
   OraSqlParser::sp_t opar = OraSqlParser::make(e_pglib, e_func_arg_out_as_procedure);
 
@@ -36,10 +36,14 @@ std::wstring convertSqlOraToPgCommon(const std::wstring& Sql, std::wstring *Erro
   std::locale loc866_ = gen("ru_RU.cp866");
 
   SOraPgParam* paramSp = opar->takeParam().get();
-  paramSp->setUserParam(boost::locale::conv::to_utf<wchar_t>("USER", loc1251_).c_str(),
+  paramSp->setUserParam(
+    boost::locale::conv::to_utf<wchar_t>("USER", loc1251_).c_str(),
     boost::locale::conv::to_utf<wchar_t>("INDX", loc1251_).c_str(),
     boost::locale::conv::to_utf<wchar_t>("CHECK_DB_TEST_ZH", loc1251_).c_str()
   );
+
+  if (!User.empty())
+    paramSp->setUserName(User.c_str());
 
   paramSp->loadConvException("pgsql_cfg\\ora_to_pg_exception_replacer.txt", "ru_RU.cp866");
   paramSp->sysTableReplacer()->load("pgsql_cfg\\ora_to_pg_sys_table_replacer.txt", "ru_RU.cp866");
@@ -104,14 +108,14 @@ static void StdWSTR_ToWCharT(std::wstring &src, wchar_t** dst)
   wcscpy_s((*dst), len, src.c_str());
 }
 
-ORACONV_API void convertSqlOraToPg(const wchar_t* Sql, wchar_t** PgSql, wchar_t** Error, wchar_t** Tail)
+ORACONV_API void convertSqlOraToPg(const wchar_t* Sql, const wchar_t* User, wchar_t** PgSql, wchar_t** Error, wchar_t** Tail)
 {
   if (!PgSql)
     return;
 
   std::wstring error;
   std::wstring tail;
-  std::wstring result = convertSqlOraToPgCommon(Sql, &error, &tail);
+  std::wstring result = convertSqlOraToPgCommon(Sql, User, &error, &tail);
 
   StdWSTR_ToWCharT(result, PgSql);
   StdWSTR_ToWCharT(error, Error);

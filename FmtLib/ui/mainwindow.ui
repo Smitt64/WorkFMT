@@ -57,6 +57,7 @@
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
+    <addaction name="separator"/>
     <addaction name="actionDebug"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -94,6 +95,8 @@
     <addaction name="menuUpdateScripts"/>
     <addaction name="separator"/>
     <addaction name="action_Diff_to_Script"/>
+    <addaction name="separator"/>
+    <addaction name="actionConvertSql"/>
     <addaction name="separator"/>
     <addaction name="actionMassOp"/>
     <addaction name="actionQuery"/>
@@ -516,6 +519,11 @@
    </property>
    <property name="text">
     <string>Сравнить структуры</string>
+   </property>
+  </action>
+  <action name="actionConvertSql">
+   <property name="text">
+    <string>Конвертировать скрипт</string>
    </property>
   </action>
  </widget>

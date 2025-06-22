@@ -70,6 +70,7 @@ SOURCES += \
     src/widgets/fmtsegmentflagsdlg.cpp \
     src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
+    src/widgets/sqlconvertordlg.cpp \
     src/widgets/tablestructsqldlg.cpp \
     src/windowslistdlg.cpp \
     src/core/fmtlib.cpp \
@@ -184,6 +185,7 @@ FORMS += \
     src/widgets/comparefmt/compareparamspage.ui \
     src/widgets/comparefmt/compareselecttablepage.ui \
     src/widgets/guiconverterdlg.ui \
+    src/widgets/sqlconvertordlg.ui \
     src/widgets/tablestructsqldlg.ui \
     ui/connactionpage.ui \
     ui/gensqltemplatedlg.ui \
@@ -361,6 +363,7 @@ HEADERS += \
     h/recentconnectionlist.h \
     h/tnsnames.h \
     src/widgets/guiconverterdlg.h \
+    src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp

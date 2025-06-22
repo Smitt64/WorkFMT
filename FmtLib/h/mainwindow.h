@@ -100,6 +100,7 @@ private slots:
     void StartGuiConverter();
     void onUserActionTriggered();
     void on_actionDebug_triggered();
+    void onSqlconerter();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
