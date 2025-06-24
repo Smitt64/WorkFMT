@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
+    <version ver="1.0.1.3">
+        <fix>Исправлена ошибка генерации скриптов по данным из новых dat файлов для таблиц, у которых нет уникальных индексов</fix>
+    </version>
     <version ver="1.0.1.2">
         <fix>Убрана конструкция &quot;RETURNING INTO&quot; из инструкции &quot;DELETE FROM&quot;</fix>
         <fix>Исправлены &quot;DROP FUNCTION&quot; в ветке конвертации для &quot;Oracle&quot;</fix>
