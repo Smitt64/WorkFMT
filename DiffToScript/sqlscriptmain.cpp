@@ -687,13 +687,16 @@ int SqlScriptMain::buildStatement(JoinTable* joinTable,
             buildChildStatement(joinTable, sql, recIndex, childPadding);
         else
         {
-            QString variable = buildVariableName(joinTable->scriptTable);
-            sql.append(childPadding + Padding(1) + QString("IF %1 <> -1 THEN")
-                       .arg(variable));
+            if (!joinTable->joinList.isEmpty())
+            {
+                QString variable = buildVariableName(joinTable->scriptTable);
+                sql.append(childPadding + Padding(1) + QString("IF %1 <> -1 THEN")
+                           .arg(variable));
 
-            buildChildStatement(joinTable, sql, recIndex, childPadding + Padding(1));
+                buildChildStatement(joinTable, sql, recIndex, childPadding + Padding(1));
 
-            sql.append(Padding(1) + "END IF;");
+                sql.append(Padding(1) + "END IF;");
+            }
         }
     }
     else if (rec->lineType == ltDelete)
@@ -872,13 +875,20 @@ int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable, const TaskOptio
 
     sql << _dbSpelling->getEnd() << "";
 
-    if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
+    /*if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
     {
+        sql << "-- #conv-Oracle";
+        sql << "DEFINE usr_name = 'DummyUser';";
+        sql << "-- #conv-PG";
+        sql << "-- #conv-end";
+
+        sql << "";
+
         sql << "begin";
         sql << "-- #conv-Oracle";
         sql << Padding() + "null;";
         sql << "-- #conv-PG";
-    }
+    }*/
 
     DbSpellingPostgres pgSpelling;
     QMapIterator<QString, FunctionInfo*> iter(m_InsertFunctions);
@@ -886,28 +896,31 @@ int SqlScriptMain::build(QStringList &sql, JoinTable* joinTable, const TaskOptio
     {
         iter.next();
 
-        QString scheme;
+        /*QString scheme;
         if (!_dbSpelling->needDropFunctions())
-            scheme = "&usr_name&";
+            scheme = "&usr_name&";*/
 
-        QString fullname = iter.value()->toString(&pgSpelling, scheme);
+        QString fullname = iter.value()->toString(&pgSpelling/*, scheme*/);
         QString drop = pgSpelling.dropFunction(fullname);
 
-        if (!_dbSpelling->needDropFunctions())
+        /*if (!_dbSpelling->needDropFunctions())
         {
             drop.prepend("-- ");
             sql << drop;
         }
         else
+            sql << drop << "/" << QString();*/
+
+        if (_dbSpelling->needDropFunctions())
             sql << drop << "/" << QString();
     }
 
-    if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
+    /*if (!_dbSpelling->needDropFunctions() && !m_InsertFunctions.isEmpty())
     {
         sql << "-- #conv-end";
         sql << "end;";
         sql << "/";
-    }
+    }*/
 
     return stat;
 }
@@ -961,21 +974,26 @@ void SqlScriptMain::toScript(const JoinTable *joinTable, DatRecord *rec)
     for (QString& s: rec->values)
     {
         QString tmp = "'"; tmp += QChar(1); tmp += "'";
-        if (s == tmp) {
-            s = "CHR(1)";
+        if (s == tmp)
+        {
+            s = QString("%1(1)").arg(_dbSpelling->chr());
             continue;
         }
+
         tmp = "'"; tmp += QChar(2); tmp += "'";
-        if (s == tmp) {
-            s = "CHR(0)";
+        if (s == tmp)
+        {
+            s = QString("%1(0)").arg(_dbSpelling->chr());
             continue;
         }
-        if (s == QChar(1)) {
-            s = "CHR(1)";
+        else if (s == QChar(1))
+        {
+            s = QString("%1(1)").arg(_dbSpelling->chr());
             continue;
         }
-        if (s == QChar(2)) {
-            s = "CHR(0)";
+        else if (s == QChar(2))
+        {
+            s = QString("%1(0)").arg(_dbSpelling->chr());
             continue;
         }
     }
@@ -998,15 +1016,24 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
         }
         else if (type == fmtt_CHR || type == fmtt_UCHR)
         {
-            if (rec->values[i].isEmpty() || rec->values[i].at(0) == QChar(0) || rec->values[i].at(0) == QChar(2))
+            if (rec->values[i].isEmpty() || rec->values[i].at(0) == QChar(0) || rec->values[i].at(0) == QChar(2) || rec->values[i] == "''")
             {
                 rec->values[i] = QString("%1(0)")
                         .arg(_dbSpelling->chr());
             }
-            else if (rec->values[i].size() == 3 && rec->values[i].at(1) == QChar(2))
+            else if (rec->values[i].size() == 3)
             {
-                rec->values[i] = QString("%1(0)")
-                        .arg(_dbSpelling->chr());
+                if (rec->values[i].at(1) == QChar(2))
+                {
+                    rec->values[i] = QString("%1(0)")
+                            .arg(_dbSpelling->chr());
+                }
+                else
+                {
+                    rec->values[i] = QString("%1(%2)")
+                            .arg(_dbSpelling->chr())
+                            .arg((int)rec->values[i].at(1).toLatin1());
+                }
             }
         }
         else if (isBlobType(fld->typeName))

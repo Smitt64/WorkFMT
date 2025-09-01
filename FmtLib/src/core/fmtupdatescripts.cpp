@@ -1,6 +1,7 @@
 #include "fmtcore.h"
 #include "fmtapplication.h"
 #include "ErrorsModel.h"
+#include "toolsruntime.h"
 #include "fmttable.h"
 #include "fmtfield.h"
 #include "errordlg.h"
@@ -146,40 +147,15 @@ QString FmtGenTriggersScrip(ConnectionInfo *connection, const QString &table, bo
     if (triggers.isEmpty())
         return QString();
 
-    stream << "DECLARE" << Qt::endl;
-    stream << "\tTYPE nested_type IS TABLE OF VARCHAR2(150);" << Qt::endl;
-    stream << "\tupgrade_object nested_type;" << Qt::endl;
-    stream << "BEGIN" << Qt::endl;
-    stream << "\tupgrade_object := nested_type" << Qt::endl;
-    stream << "\t(" << Qt::endl;
+    std::transform(triggers.begin(), triggers.end(), triggers.begin(),
+                   [](const QString &s) { return "'" + s + "'"; });
 
-    for (const QString &trigger : triggers)
-    {
-        stream << QString("\t\t'%1'").arg(trigger);
+    QString filename = disable ? "://addfld_disable_trigger_tmpl.sql" : "://addfld_enable_trigger_tmpl.sql";
+    QString tmpl = toolReadTextFileContent(filename);
 
-        if (trigger != triggers.last())
-            stream << "," << Qt::endl;
-        else
-            stream << Qt::endl;
-    }
-
-    stream << "\t);" << Qt::endl << Qt::endl;
-    stream << "\tFOR i IN upgrade_object.FIRST .. upgrade_object.LAST LOOP" << Qt::endl;
-    stream << "\t\tBEGIN" << Qt::endl;
-    if (disable)
-        stream << "\t\t\tEXECUTE IMMEDIATE 'ALTER TRIGGER ' || upgrade_object(i) || ' DISABLE';" << Qt::endl;
-    else
-    {
-        stream << "\t\t\tEXECUTE IMMEDIATE 'ALTER TRIGGER ' || upgrade_object(i) || ' COMPILE';" << Qt::endl;
-        stream << "\t\t\tEXECUTE IMMEDIATE 'ALTER TRIGGER ' || upgrade_object(i) || ' ENABLE';" << Qt::endl;
-    }
-    stream << "\t\EXCEPTION" << Qt::endl;
-    stream << "\t\t\tWHEN OTHERS THEN NULL;" << Qt::endl;
-    stream << "\t\tEND;" << Qt::endl;
-    stream << "\tEND LOOP;" << Qt::endl;
-    stream << "\tupgrade_object.DELETE;" << Qt::endl;
-    stream << "END;" << Qt::endl;
-    stream << "/" << Qt::endl;
+    QString ora = triggers.join(",\n\t\t");
+    QString pg = triggers.join(",\n--\t\t");
+    str = tmpl.arg(ora, pg, table.toUpper()) + "\n";
 
     return str;
 }

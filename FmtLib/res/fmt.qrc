@@ -122,5 +122,7 @@
         <file alias="append_host_ace">sql/append_host_ace.sql</file>
         <file>img/main.cpl_14_500-4.png</file>
         <file>img/SychronizeListHS.png</file>
+        <file alias="addfld_disable_trigger_tmpl.sql">sql/addfld_disable_trigger_tmpl.sql</file>
+        <file alias="addfld_enable_trigger_tmpl.sql">sql/addfld_enable_trigger_tmpl.sql</file>
     </qresource>
 </RCC>

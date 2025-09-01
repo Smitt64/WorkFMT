@@ -94,6 +94,7 @@ SOURCES += \
     src/widgets/tablesdockwidget.cpp \
     src/widgets/tablesselectwidget.cpp \
     src/widgets/treecombobox.cpp \
+    src/wizards/RichTextToInsertWizard/richtexttoinsertwizard.cpp \
     src/wizards/exporttoxmlwizard.cpp \
     src/wizards/expresultpage.cpp \
     src/wizards/expsettingspage.cpp \
@@ -364,7 +365,8 @@ HEADERS += \
     h/tnsnames.h \
     src/widgets/guiconverterdlg.h \
     src/widgets/sqlconvertordlg.h \
-    src/widgets/tablestructsqldlg.h
+    src/widgets/tablestructsqldlg.h \
+    src/wizards/RichTextToInsertWizard/richtexttoinsertwizard.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin
