@@ -98,6 +98,23 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QRadioButton" name="radioXml">
+         <property name="text">
+          <string>С записью fmt из другой бд к которой нет подключения</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../res/fmt.qrc">
+           <normaloff>:/img/base_cylinder_Gray.png</normaloff>:/img/base_cylinder_Gray.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

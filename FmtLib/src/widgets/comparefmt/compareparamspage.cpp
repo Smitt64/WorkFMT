@@ -16,6 +16,7 @@ CompareParamsPage::CompareParamsPage(QWidget *parent) :
     m_pGroup->addButton(ui->radioText, 0);
     m_pGroup->addButton(ui->radioTable, 1);
     m_pGroup->addButton(ui->radioConnection, 2);
+    m_pGroup->addButton(ui->radioXml, 3);
 
     registerField("Action", fakeBtn, "value");
 
@@ -39,6 +40,8 @@ int CompareParamsPage::nextId() const
         return CompareFmtWizard::PageSelectTable;
     else if (ui->radioConnection->isChecked())
         return CompareFmtWizard::PageConnection;
+    else if (ui->radioXml->isChecked())
+        return CompareFmtWizard::PageCompareXml;
 
     return -1;
 }

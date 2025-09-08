@@ -57,6 +57,7 @@ SOURCES += \
     src/widgets/comparefmt/comparefmtwizard.cpp \
     src/widgets/comparefmt/compareparamspage.cpp \
     src/widgets/comparefmt/compareselecttablepage.cpp \
+    src/widgets/comparefmt/comparexmlpage.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
     src/widgets/guiconverterdlg.cpp \
@@ -179,6 +180,7 @@ FORMS += \
     src/widgets/comparefmt/comparefmtviewtab.ui \
     src/widgets/comparefmt/compareparamspage.ui \
     src/widgets/comparefmt/compareselecttablepage.ui \
+    src/widgets/comparefmt/comparexmlpage.ui \
     src/widgets/guiconverterdlg.ui \
     src/widgets/sqlconvertordlg.ui \
     src/widgets/tablestructsqldlg.ui \
@@ -317,6 +319,7 @@ HEADERS += \
     src/widgets/comparefmt/comparefmtwizard.h \
     src/widgets/comparefmt/compareparamspage.h \
     src/widgets/comparefmt/compareselecttablepage.h \
+    src/widgets/comparefmt/comparexmlpage.h \
     src/widgets/editcontent/fmteditcontentdialog.h \
     src/widgets/connectionwzardpage/connactionpage.h \
     h/datelineedit.h \

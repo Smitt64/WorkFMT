@@ -10,6 +10,7 @@ typedef struct
     QString name, comment;
     qint16 type;
     qint16 size;
+    qint32 offset;
 }FmtFldElement;
 
 typedef struct
@@ -21,6 +22,7 @@ typedef struct
 typedef QVector<FmtFldElement> FmtFldElementVector;
 
 class FmtTable;
+class QXmlStreamReader;
 class FmtTableCompareModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -49,13 +51,18 @@ public:
 
     void setLists(FmtTable *table, const QString &cppcstruct);
     void setLists(FmtTable *table1, FmtTable *table2);
+    void setLists(FmtTable *table1, const FmtFldElementVector &table2);
+    void setLists(const FmtFldElementVector &table1, const FmtFldElementVector &table2);
 
     static void readFmtTable(FmtTable *table, FmtFldElementVector &vec);
     static void readTableStruct(const QString &cppcstruct, FmtFldElementVector &vec);
 
+    static bool parseFieldsFromXml(const QString &xmlContent, FmtFldElementVector &fields);
+
 private:
     void makeCompareData(const FmtFldElementVector &mine, const FmtFldElementVector &theirs);
     static QString extractComments(const QString& structCode, int fieldEndPos);
+    static bool parseFieldElement(QXmlStreamReader &xml, FmtFldElement &field);
 
     bool isAddition(const FmtTableCompareElement &row) const;
     bool isDeleton(const FmtTableCompareElement &row) const;

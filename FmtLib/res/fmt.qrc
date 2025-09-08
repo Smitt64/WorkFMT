@@ -124,5 +124,8 @@
         <file>img/SychronizeListHS.png</file>
         <file alias="addfld_disable_trigger_tmpl.sql">sql/addfld_disable_trigger_tmpl.sql</file>
         <file alias="addfld_enable_trigger_tmpl.sql">sql/addfld_enable_trigger_tmpl.sql</file>
+        <file>img/base_cylinder_Gray.png</file>
+        <file alias="dump_fmt_to_xml_ora.sql">sql/dump_fmt_to_xml_ora.sql</file>
+        <file alias="dump_fmt_to_xml_pg.sql">sql/dump_fmt_to_xml_pg.sql</file>
     </qresource>
 </RCC>

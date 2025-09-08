@@ -2,6 +2,7 @@
 #define COMPAREFMTVIEWTAB_H
 
 #include <QMainWindow>
+#include "src/core/fmttablecomparemodel.h"
 
 #define VIEW_TABLE_MODE 1
 #define VIEW_TREE_MODE 2
@@ -26,6 +27,7 @@ public:
 
     void setLists(FmtTable *table, const QString &cppcstruct);
     void setLists(FmtTable *table1, FmtTable *table2);
+    void setLists(FmtTable *table1, const FmtFldElementVector &table2);
 
 private:
     Ui::CompareFmtViewTab *ui;

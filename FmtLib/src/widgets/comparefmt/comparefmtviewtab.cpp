@@ -68,3 +68,8 @@ void CompareFmtViewTab::setLists(FmtTable *table1, FmtTable *table2)
 {
     m_pModel->setLists(table1, table2);
 }
+
+void CompareFmtViewTab::setLists(FmtTable *table1, const FmtFldElementVector &table2)
+{
+    m_pModel->setLists(table1, table2);
+}

@@ -274,13 +274,19 @@ void FmtField::load(const QSqlRecord &rec)
     m_Comment = rec.value(FmtField::fld_Comment).toString();
 }
 
-QString FmtField::undecorateName() const
+QString FmtField::undecorateName(const QString &fld)
 {
-    QString str = name();
+    QString str = fld;
 
     if (str.mid(0, 2).toLower() == "t_")
         str = str.mid(2);
+
     return str;
+}
+
+QString FmtField::undecorateName() const
+{
+    return undecorateName(name());
 }
 
 qint32 FmtField::offset() const

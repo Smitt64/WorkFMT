@@ -37,6 +37,7 @@
 #include "fmtapplication.h"
 #include "src/widgets/tablestructsqldlg.h"
 #include "widgets/comparefmt/comparefmtwizard.h"
+#include "src/core/fmttablecomparemodel.h"
 #include "wizards/RichTextToInsertWizard/richtexttoinsertwizard.h"
 #include <QtWidgets>
 #include <QClipboard>
@@ -1162,6 +1163,14 @@ void FmtWorkWindow::CompareStruct()
             tbl.load(SelectedTable);
 
             tabView->setLists(pTable.data(), &tbl);
+        }
+        else if (Action == CompareFmtWizard::CompareXml)
+        {
+            QString SelectedTable = dlg.field("XmlDump").toString();
+
+            FmtFldElementVector table2;
+            FmtTableCompareModel::parseFieldsFromXml(SelectedTable, table2);
+            tabView->setLists(pTable.data(), table2);
         }
 
         int tab = ui->tabWidget->addTab(tabView, tr("Результат сравнения"));

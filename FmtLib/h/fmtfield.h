@@ -71,6 +71,8 @@ public:
     QString comment() const;
     QString undecorateName() const;
 
+    static QString undecorateName(const QString &fld);
+
     qint32 offset() const;
     qint16 index() const;
     qint32 typeIndex() const;
@@ -97,7 +99,7 @@ signals:
     void sizeChanged(quint32);
     void typeChanged(quint32);
 
-public slots:    
+public slots:
     QString getOraName() const;
     QString getOraDecl() const;
     QString getOraTypeName() const;

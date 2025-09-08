@@ -8,6 +8,7 @@ class CompareCppStructPage;
 class ConnectionInfo;
 class CompareSelectTablePage;
 class ConnactionPage;
+class CompareXmlPage;
 class CompareFmtWizard : public QWizard
 {
     Q_OBJECT
@@ -16,7 +17,8 @@ public:
     {
         CompareStruct = 0,
         CompareTable,
-        CompareConnection
+        CompareConnection,
+        CompareXml
     };
 
     enum Pages
@@ -24,13 +26,15 @@ public:
         PageParams = 0,
         PageStruct,
         PageConnection,
-        PageSelectTable
+        PageSelectTable,
+        PageCompareXml
     };
 
     CompareFmtWizard(ConnectionInfo *connection, QWidget *parent = nullptr);
     virtual ~CompareFmtWizard();
 
     QString structString() const;
+    QString xmlDumpString() const;
     ConnectionInfo *connection();
 
 private:
@@ -38,6 +42,8 @@ private:
     CompareCppStructPage *m_CodePage;
     ConnactionPage *m_pConnectionPage;
     CompareSelectTablePage *m_pSeltablePage;
+
+    CompareXmlPage *m_XmlCodePage;
 
     ConnectionInfo *m_Connection;
 };

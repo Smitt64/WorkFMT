@@ -132,6 +132,19 @@ void FmtTableCompareModel::setLists(FmtTable *table1, FmtTable *table2)
     makeCompareData(tablevec, structvec);
 }
 
+void FmtTableCompareModel::setLists(FmtTable *table1, const FmtFldElementVector &table2)
+{
+    FmtFldElementVector tablevec;
+    readFmtTable(table1, tablevec);
+
+    makeCompareData(tablevec, table2);
+}
+
+void FmtTableCompareModel::setLists(const FmtFldElementVector &table1, const FmtFldElementVector &table2)
+{
+    makeCompareData(table1, table2);
+}
+
 void FmtTableCompareModel::readFmtTable(FmtTable *table, FmtFldElementVector &vec)
 {
     for (int i = 0; i < table->fieldsCount(); i++)
@@ -143,6 +156,7 @@ void FmtTableCompareModel::readFmtTable(FmtTable *table, FmtFldElementVector &ve
         elem.comment = fld->comment();
         elem.size = fld->size();
         elem.type = fld->type();
+        elem.offset = fld->offset();
 
         vec.append(elem);
     }
@@ -197,6 +211,7 @@ void FmtTableCompareModel::readTableStruct(const QString &cppcstruct, FmtFldElem
     {
         QRegularExpressionMatch match = it.next();
         FmtFldElement info;
+        info.offset = -1;
 
         // Обработка типа
         QString type = match.captured(1).trimmed();
@@ -289,4 +304,59 @@ void FmtTableCompareModel::makeCompareData(const FmtFldElementVector &mine, cons
         m_data.append(row);
     }
     endResetModel();
+}
+
+bool FmtTableCompareModel::parseFieldsFromXml(const QString &xmlContent, FmtFldElementVector &fields)
+{
+    QXmlStreamReader xml(xmlContent);
+    fields.clear();
+
+    while (!xml.atEnd() && !xml.hasError())
+    {
+        QXmlStreamReader::TokenType token = xml.readNext();
+
+        if (token == QXmlStreamReader::StartElement && xml.name() == QLatin1String("Field"))
+        {
+            FmtFldElement field;
+            if (parseFieldElement(xml, field))
+                fields.append(field);
+        }
+    }
+
+    if (xml.hasError())
+    {
+        qWarning() << "XML parsing error:" << xml.errorString();
+        return false;
+    }
+
+    return true;
+}
+
+bool FmtTableCompareModel::parseFieldElement(QXmlStreamReader &xml, FmtFldElement &field)
+{
+    while (!xml.atEnd() && !xml.hasError())
+    {
+        QXmlStreamReader::TokenType token = xml.readNext();
+
+        if (token == QXmlStreamReader::EndElement && xml.name() == QLatin1String("Field"))
+            break;
+
+        if (token == QXmlStreamReader::StartElement)
+        {
+            if (xml.name() == QLatin1String("Name"))
+                field.name = FmtField::undecorateName(xml.readElementText());
+            else if (xml.name() == QLatin1String("Comment"))
+                field.comment = xml.readElementText();
+            else if (xml.name() == QLatin1String("Type"))
+                field.type = xml.readElementText().toShort();
+            else if (xml.name() == QLatin1String("Size"))
+                field.size = xml.readElementText().toShort();
+            else if (xml.name() == QLatin1String("Offset"))
+                field.offset = xml.readElementText().toInt();
+            else
+                xml.skipCurrentElement();
+        }
+    }
+
+    return !field.name.isEmpty();
 }
