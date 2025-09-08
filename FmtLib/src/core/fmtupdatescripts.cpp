@@ -36,11 +36,11 @@ static QString Simplify(QString line)
 
 void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<FmtField*> flds, const QSharedPointer<FmtTable> &pTable)
 {
-    stream << "DECLARE " << endl;
-    stream << "    e_object_exists EXCEPTION;" << endl;
-    stream << "    PRAGMA EXCEPTION_INIT(e_object_exists, -955); " << endl;
-    stream << "BEGIN" << endl;
-    stream << "    EXECUTE IMMEDIATE " << endl;
+    stream << "DECLARE " << Qt::endl;
+    stream << "    e_object_exists EXCEPTION;" << Qt::endl;
+    stream << "    PRAGMA EXCEPTION_INIT(e_object_exists, -955); " << Qt::endl;
+    stream << "BEGIN" << Qt::endl;
+    stream << "    EXECUTE IMMEDIATE " << Qt::endl;
 
     QStringList lines = block.split(QRegExp("\n|\r\n|\r"));
     for (int i = 0; i < lines.count(); i++)
@@ -51,14 +51,14 @@ void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<F
         {
             stream << "        '" << str << "'";
             if (i != lines.count() - 1)
-                stream << " || " << endl;
+                stream << " || " << Qt::endl;
         }
     }
-    stream << ";" << endl;
+    stream << ";" << Qt::endl;
 
     if (!pTable.isNull())
     {
-        stream << endl;
+        stream << Qt::endl;
 
         QSqlDriver *driver = pTable->connection()->driver();
 
@@ -70,12 +70,12 @@ void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<F
         fld.setValue(comment);
         stream << QString("\tEXECUTE IMMEDIATE %1;")
                   .arg(driver->formatValue(fld, true))
-               << endl;
+               << Qt::endl;
     }
 
     if (!flds.isEmpty())
     {
-        stream << endl;
+        stream << Qt::endl;
         QString tableName = flds[0]->table()->name().toUpper();
         QSqlDriver *driver = flds[0]->table()->connection()->driver();
         foreach (const FmtField *pfld, flds) {
@@ -89,33 +89,33 @@ void WrapSqlBlockObjectExists(QTextStream &stream, const QString &block, QList<F
             fld.setValue(comment);
             stream << QString("\tEXECUTE IMMEDIATE %1;")
                       .arg(driver->formatValue(fld, true))
-                   << endl;
+                   << Qt::endl;
         }
     }
 
-    stream << endl;
-    stream << "EXCEPTION " << endl;
-    stream << "    WHEN e_object_exists THEN NULL; " << endl;
-    stream << "END;" << endl;
-    stream << "/" << endl;
+    stream << Qt::endl;
+    stream << "EXCEPTION " << Qt::endl;
+    stream << "    WHEN e_object_exists THEN NULL; " << Qt::endl;
+    stream << "END;" << Qt::endl;
+    stream << "/" << Qt::endl;
 }
 
 static void FmtGenUpdateDeleteColumnScriptField(QTextStream &stream, FmtField *fld)
 {
     FmtTable *pTable = fld->table();
-    stream << "DECLARE" << endl;
-    stream << "\te_col_not_exist EXCEPTION;" << endl;
-    stream << "\tPRAGMA EXCEPTION_INIT (e_col_not_exist, -904);" << endl;
-    stream << "BEGIN" << endl;
+    stream << "DECLARE" << Qt::endl;
+    stream << "\te_col_not_exist EXCEPTION;" << Qt::endl;
+    stream << "\tPRAGMA EXCEPTION_INIT (e_col_not_exist, -904);" << Qt::endl;
+    stream << "BEGIN" << Qt::endl;
 
     stream << QString("\tEXECUTE IMMEDIATE 'ALTER TABLE %1 DROP (%2)';")
               .arg(pTable->name().toUpper())
               .arg(fld->name().toUpper())
-           << endl;
+           << Qt::endl;
 
-    stream << "EXCEPTION WHEN e_col_not_exist THEN NULL;" << endl;
-    stream << "END;" << endl;
-    stream << "/" << endl;
+    stream << "EXCEPTION WHEN e_col_not_exist THEN NULL;" << Qt::endl;
+    stream << "END;" << Qt::endl;
+    stream << "/" << Qt::endl;
 }
 
 QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table)
@@ -180,7 +180,7 @@ QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds)
 
     foreach (const FmtField *fld, flds) {
         FmtGenUpdateDeleteColumnScriptField(stream, (FmtField*)fld);
-        stream << endl;
+        stream << Qt::endl;
     }
     return str;
 }
@@ -195,32 +195,35 @@ QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds)
 
     stream << FmtGenTriggersScrip(flds, true) << Qt::endl;
 
-    stream << "DECLARE" << endl;
-    stream << "\te_col_exist EXCEPTION;" << endl;
-    stream << "\tPRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << endl;
-    stream << "BEGIN" << endl;
-    stream << QString("\tEXECUTE IMMEDIATE 'ALTER TABLE %1 ADD ( ' || ").arg(tableName) << endl;
+    stream << "DECLARE" << Qt::endl;
+    stream << "\te_col_exist EXCEPTION;" << Qt::endl;
+    stream << "\tPRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
+    stream << "BEGIN" << Qt::endl;
+
+    stream << QString("\t-- Такой вариант намного быстрее, чем делать update") << Qt::endl;
+    stream << QString("\tEXECUTE IMMEDIATE 'ALTER TABLE %1 ADD ( ' || ").arg(tableName) << Qt::endl;
 
     foreach (const FmtField *fld, flds) {
-        stream << "\t\t\t" << QString("'%1 %2").arg(fld->name().toUpper(), fld->getOraDecl());
+        stream << "\t\t\t" << QString("'%1 %2 DEFAULT %3").arg(fld->name().toUpper(), fld->getOraDecl(), fld->getOraDefaultVal());
+
         if (fld != flds.last())
             stream << ",";
-        stream << "' ||" << endl;
+        stream << "' ||" << Qt::endl;
     }
-    stream << "\t\t')';" << endl;
-    stream << endl;
-    stream << QString("\tEXECUTE IMMEDIATE 'UPDATE %1 SET ' || ").arg(tableName) << endl;
+    stream << "\t\t')';" << Qt::endl;
+    stream << Qt::endl;
+
+    stream << QString("\tEXECUTE IMMEDIATE 'ALTER TABLE %1 MODIFY (' || ").arg(tableName) << Qt::endl;
 
     foreach (const FmtField *fld, flds) {
-        stream << "\t\t\t" << QString("'%1 = %2").arg(fld->name().toUpper(), fld->getOraDefaultVal());
-        if (fld != flds.last())
-        {
-            stream << ",";
-            stream << "' ||" << endl;
-        }
+        stream << "\t\t\t" << QString("'%1 DEFAULT NULL").arg(fld->name().toUpper());
 
+        if (fld != flds.last())
+            stream << ",";
+        stream << "' ||" << Qt::endl;
     }
-    stream << "';" << endl << endl;
+    stream << "\t\t')';" << Qt::endl;
+    stream << Qt::endl;
 
     QSqlDriver *driver = flds[0]->table()->connection()->driver();
     foreach (const FmtField *pfld, flds) {
@@ -234,13 +237,13 @@ QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds)
         fld.setValue(comment);
         stream << QString("\tEXECUTE IMMEDIATE %1;")
                   .arg(driver->formatValue(fld, true))
-               << endl;
+               << Qt::endl;
     }
-    stream << "" << endl;
+    stream << "" << Qt::endl;
 
-    stream << "EXCEPTION WHEN e_col_exist THEN NULL;" << endl;
-    stream << "END;" << endl;
-    stream << "/" << endl;
+    stream << "EXCEPTION WHEN e_col_exist THEN NULL;" << Qt::endl;
+    stream << "END;" << Qt::endl;
+    stream << "/" << Qt::endl;
 
     QString triggers = FmtGenTriggersScrip(flds, false);
 
@@ -258,19 +261,19 @@ QString FmtGenModifyColumnScript(QList<FmtField*> flds)
     QString str, tableName = flds[0]->table()->name().toUpper();
     QTextStream stream(&str, QIODevice::WriteOnly);
 
-    stream << "DECLARE" << endl;
-    stream << "\te_col_exist EXCEPTION;" << endl;
-    stream << "\tPRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << endl;
-    stream << "BEGIN" << endl;
-    stream << QString("\tEXECUTE IMMEDIATE 'ALTER TABLE %1 MODIFY ( ' || ").arg(tableName) << endl;
+    stream << "DECLARE" << Qt::endl;
+    stream << "\te_col_exist EXCEPTION;" << Qt::endl;
+    stream << "\tPRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
+    stream << "BEGIN" << Qt::endl;
+    stream << QString("\tEXECUTE IMMEDIATE 'ALTER TABLE %1 MODIFY ( ' || ").arg(tableName) << Qt::endl;
 
     foreach (const FmtField *fld, flds) {
         stream << "\t\t\t" << QString("'%1 %2").arg(fld->name().toUpper(), fld->getOraDecl());
         if (fld != flds.last())
             stream << ",";
-        stream << "' ||" << endl;
+        stream << "' ||" << Qt::endl;
     }
-    stream << "\t\t')';" << endl << endl;
+    stream << "\t\t')';" << Qt::endl << Qt::endl;
 
     QSqlDriver *driver = flds[0]->table()->connection()->driver();
     foreach (const FmtField *pfld, flds) {
@@ -284,13 +287,13 @@ QString FmtGenModifyColumnScript(QList<FmtField*> flds)
         fld.setValue(comment);
         stream << QString("\tEXECUTE IMMEDIATE %1;")
                   .arg(driver->formatValue(fld, true))
-               << endl;
+               << Qt::endl;
     }
-    stream << "" << endl;
+    stream << "" << Qt::endl;
 
-    stream << "EXCEPTION WHEN e_col_exist THEN NULL;" << endl;
-    stream << "END;" << endl;
-    stream << "/" << endl;
+    stream << "EXCEPTION WHEN e_col_exist THEN NULL;" << Qt::endl;
+    stream << "END;" << Qt::endl;
+    stream << "/" << Qt::endl;
     return str;
 }
 

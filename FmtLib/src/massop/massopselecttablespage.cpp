@@ -22,6 +22,11 @@ MassOpSelectTablesPage::~MassOpSelectTablesPage()
 
 }
 
+void MassOpSelectTablesPage::setSingleSelectionMode(bool single)
+{
+    pSeletTables->setSingleSelectionMode(single);
+}
+
 bool MassOpSelectTablesPage::AddFunc(const QString &str)
 {
     MassOperationWizard *pWizard = qobject_cast<MassOperationWizard*>(wizard());
@@ -37,7 +42,11 @@ bool MassOpSelectTablesPage::RemoveFunc(const QString &str)
 void MassOpSelectTablesPage::initializePage()
 {
     MassOperationWizard *pWizard = qobject_cast<MassOperationWizard*>(wizard());
-    setTitle(tr("Выбор таблиц: %1").arg(pWizard->selectedOpeation()));
-    pWizard->initInterface();
-    //QString interfaceName = pWizard->selectedInterface();
+
+    if (pWizard)
+    {
+        setTitle(tr("Выбор таблиц: %1").arg(pWizard->selectedOpeation()));
+        pWizard->initInterface();
+        //QString interfaceName = pWizard->selectedInterface();
+    }
 }

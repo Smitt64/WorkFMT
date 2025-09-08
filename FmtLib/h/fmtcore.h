@@ -179,7 +179,7 @@ FMTLIBSHARED_EXPORT QString fmtCppStructDbBaseTypeName(const qint16 &Type);
 FMTLIBSHARED_EXPORT QString fmtRslTypeName(const qint16 &Type);
 FMTLIBSHARED_EXPORT QString fmtRslValueName(const qint16 &Type);
 FMTLIBSHARED_EXPORT bool fmtTypeCanHaveCustomSize(const qint16 &Type);
-FMTLIBSHARED_EXPORT QString fmtGetOraDefaultVal(const qint16 &Type, const int &size);
+FMTLIBSHARED_EXPORT QString fmtGetOraDefaultVal(const qint16 &Type, const int &size, bool escaped = true);
 FMTLIBSHARED_EXPORT QString fmtGetPgDefaultVal(const qint16 &Type, const int &size);
 
 FMTLIBSHARED_EXPORT quint32 fmtTypeIndexForId(const quint32 &id);

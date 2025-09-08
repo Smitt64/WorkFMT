@@ -15,16 +15,7 @@ MOC_DIR = build
 OBJECTS_DIR = build
 RCC_DIR = build
 
-#QMAKE_LFLAGS_RELEASE += /MAP
-#QMAKE_CFLAGS_RELEASE += /Zi /FC /Gy
-#QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF
-#QMAKE_CFLAGS_RELEASE    = /O2 /MD /Zi
-#QMAKE_LFLAGS_RELEASE    = /INCREMENTAL:NO /DEBUG /OPT:REF /OPT:ICF
-#QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
-#QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-
 DEFINES += FMTLIB_LIBRARY QT_DEPRECATED_WARNINGS QT_LOGGING_DEBUG FMTLIB_ABOUT_EXCEPTION
-#DEFINES += FMT_RSD_DRIVER
 
 INCLUDEPATH += ./h
 INCLUDEPATH += .
@@ -94,6 +85,8 @@ SOURCES += \
     src/widgets/tablesdockwidget.cpp \
     src/widgets/tablesselectwidget.cpp \
     src/widgets/treecombobox.cpp \
+    src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.cpp \
+    src/wizards/RichTextToInsertWizard/fmtsourcemodel.cpp \
     src/wizards/RichTextToInsertWizard/richtexttoinsertwizard.cpp \
     src/wizards/exporttoxmlwizard.cpp \
     src/wizards/expresultpage.cpp \
@@ -168,7 +161,8 @@ SOURCES += \
     src/massop/destribcreate/massdestribparamspage.cpp \
     src/massop/destribcreate/massdestribparammodel.cpp \
     src/massop/destribcreate/massdestribitemparamdelegate.cpp \
-    src/tnsnames.cpp
+    src/tnsnames.cpp \
+    src/wizards/richtextpage.cpp
 
 unix {
     target.path = /usr/lib
@@ -188,6 +182,8 @@ FORMS += \
     src/widgets/guiconverterdlg.ui \
     src/widgets/sqlconvertordlg.ui \
     src/widgets/tablestructsqldlg.ui \
+    src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.ui \
+    src/wizards/richtextpage.ui \
     ui/connactionpage.ui \
     ui/gensqltemplatedlg.ui \
     src/massop/destribcreate/massdestribprogress.ui \
@@ -366,7 +362,10 @@ HEADERS += \
     src/widgets/guiconverterdlg.h \
     src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h \
-    src/wizards/RichTextToInsertWizard/richtexttoinsertwizard.h
+    src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.h \
+    src/wizards/RichTextToInsertWizard/fmtsourcemodel.h \
+    src/wizards/RichTextToInsertWizard/richtexttoinsertwizard.h \
+    src/wizards/richtextpage.h
 
 INCLUDEPATH += $$PWD/../FmtDbgHelp
 target.path = $$PWD/../bin

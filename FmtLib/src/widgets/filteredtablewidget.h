@@ -2,7 +2,7 @@
 #define FILTEREDTABLEWIDGET_H
 
 #include <QWidget>
-#include <QTableView>
+#include <QAbstractItemView>
 #include <QVBoxLayout>
 
 class FilteredControlHandler
@@ -12,13 +12,15 @@ public:
     virtual ~FilteredControlHandler() { }
 };
 
+
+class QHeaderView;
 class ColumnAlignedLayout;
 class FilteredTableWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit FilteredTableWidget(QWidget *parent = nullptr);
-    void setTableView(QTableView *table);
+    void setView(QAbstractItemView *table, QHeaderView *horizontalHeader);
 
     void setController(FilteredControlHandler *controller);
 
@@ -28,7 +30,7 @@ private slots:
 
 private:
     ColumnAlignedLayout *pTableFitersLayout;
-    QTableView *pTable;
+    QAbstractItemView *pTable;
     QVBoxLayout *pLayout;
     FilteredControlHandler *pCotroller;
     bool m_recreateAll;

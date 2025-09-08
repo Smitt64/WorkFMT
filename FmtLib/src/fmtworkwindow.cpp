@@ -37,6 +37,7 @@
 #include "fmtapplication.h"
 #include "src/widgets/tablestructsqldlg.h"
 #include "widgets/comparefmt/comparefmtwizard.h"
+#include "wizards/RichTextToInsertWizard/richtexttoinsertwizard.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -100,7 +101,7 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     pTableView->setHorizontalHeader(pTableHeaderDelegate);
-    pFilteredTableView->setTableView(pTableView);
+    pFilteredTableView->setView(pTableView, pTableView->horizontalHeader());
 
     ui->tabWidget->widget(0)->layout()->addWidget(pFilteredTableView);
 
@@ -182,6 +183,8 @@ void FmtWorkWindow::SetupActionsMenu()
     m_unloadDbf = pActionsMenu->addAction(tr("Выгрузить содержимое в *.dat"));
     m_loadDbf = pActionsMenu->addAction(tr("Загрузить содержимое из *.dat"));
     pActionsMenu->addSeparator();
+    m_ImportFromTable = pActionsMenu->addAction(tr("Скрипт загрузки содержимого"));
+    pActionsMenu->addSeparator();
     /*m_ImportData = pActionsMenu->addAction(QIcon(":/img/ImportContent.png"), tr("Загрузить данные"));
     pActionsMenu->addSeparator();*/
     m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
@@ -226,6 +229,7 @@ void FmtWorkWindow::SetupActionsMenu()
     connect(m_CheckAction, SIGNAL(triggered(bool)), SLOT(CheckAction()));
     connect(m_pCompareFmt, SIGNAL(triggered(bool)), SLOT(CompareStruct()));
     connect(ui->compareBtn, SIGNAL(clicked()), SLOT(CompareStruct()));
+    connect(m_ImportFromTable, SIGNAL(triggered(bool)), SLOT(ImportFromTable()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 
     connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
@@ -1163,4 +1167,10 @@ void FmtWorkWindow::CompareStruct()
         int tab = ui->tabWidget->addTab(tabView, tr("Результат сравнения"));
         ui->tabWidget->setCurrentIndex(tab);
     }
+}
+
+void FmtWorkWindow::ImportFromTable()
+{
+    RichTextToInsertWizard wzrd(pTable.data(), this);
+    wzrd.exec();
 }

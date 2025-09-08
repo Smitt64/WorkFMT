@@ -65,6 +65,7 @@ TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *pare
 
     horizontalLayout->addWidget(dstListView);
     pUserAddDlg = Q_NULLPTR;
+    m_SingleSelection = false;
 
     setLayout(horizontalLayout);
 
@@ -75,6 +76,15 @@ TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *pare
 
     connect(sourceList->listView(), &QListView::doubleClicked, this, &TablesSelectWidget::doubleAddClicked);
     connect(dstListView, &QListView::doubleClicked, this, &TablesSelectWidget::doubleRemoveClicked);
+
+    connect(sourceList->selection(), &QItemSelectionModel::selectionChanged,
+            this, &TablesSelectWidget::updateButtonsState);
+    connect(dstListView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &TablesSelectWidget::updateButtonsState);
+    connect(pDstModel, &QStandardItemModel::rowsRemoved,
+            this, &TablesSelectWidget::updateButtonsState);
+    connect(pDstModel, &QStandardItemModel::rowsInserted,
+            this, &TablesSelectWidget::updateButtonsState);
 }
 
 void TablesSelectWidget::addButtonPressed()
@@ -107,6 +117,8 @@ void TablesSelectWidget::addButtonPressed()
         QApplication::processEvents();
     }
     dlg.setValue(indexList.size());
+
+    updateButtonsState();
 }
 
 void TablesSelectWidget::removeButtonPressed()
@@ -154,13 +166,21 @@ void TablesSelectWidget::removeButtonPressed()
     }
 
     dlg.setValue(indexList.size());
+
+    updateButtonsState();
 }
 
 void TablesSelectWidget::CopyToDstList(const QModelIndex &index)
 {
+    if (m_SingleSelection && pDstModel->rowCount() > 0)
+        return;
+
     QString table = index.data(Qt::UserRole).toString();
     if (pAddFunc && pAddFunc(table))
     {
+        if (m_SingleSelection)
+            clearSelected();
+
         QStandardItem *item = new QStandardItem();
         item->setData(index.data(Qt::DisplayRole), Qt::DisplayRole);
         item->setData(index.data(Qt::DecorationRole), Qt::DecorationRole);
@@ -168,6 +188,8 @@ void TablesSelectWidget::CopyToDstList(const QModelIndex &index)
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         pDstModel->appendRow(item);
         emit tableAdded(table);
+        emit selectionChanged();
+        updateButtonsState();
     }
 }
 
@@ -273,6 +295,8 @@ bool TablesSelectWidget::userAddTable(const QString &table)
 void TablesSelectWidget::clearSelected()
 {
     pDstModel->clear();
+    emit selectionChanged();
+    updateButtonsState();
 }
 
 int TablesSelectWidget::tablesCount() const
@@ -312,4 +336,74 @@ void TablesSelectWidget::doubleAddClicked(const QModelIndex &index)
 void TablesSelectWidget::doubleRemoveClicked(const QModelIndex &index)
 {
     removeButtonPressed();
+}
+
+void TablesSelectWidget::setSingleSelectionMode(bool single)
+{
+    m_SingleSelection = single;
+    if (single)
+    {
+        dstListView->setSelectionMode(QAbstractItemView::SingleSelection);
+        sourceList->setSelectionMode(QAbstractItemView::SingleSelection);
+    }
+    else
+    {
+        dstListView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        sourceList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    }
+    updateButtonsState();
+}
+
+QPushButton* TablesSelectWidget::getButton(int buttonType) const
+{
+    switch (buttonType)
+    {
+    case AddButton: return addButton;
+    case AddAllButton: return addAllButton;
+    case RemoveButton: return removeButton;
+    case RemoveAllButton: return removeAllButton;
+    default: return Q_NULLPTR;
+    }
+}
+
+void TablesSelectWidget::addTable(const QString &tableName)
+{
+    if (m_SingleSelection)
+        clearSelected();
+
+    QStandardItem *item = new QStandardItem();
+    item->setData(tableName, Qt::DisplayRole);
+    item->setData(QIcon(":/table"), Qt::DecorationRole);
+    item->setData(tableName, Qt::UserRole);
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    pDstModel->appendRow(item);
+    emit tableAdded(tableName);
+    emit selectionChanged();
+    updateButtonsState();
+}
+
+void TablesSelectWidget::updateButtonsState()
+{
+    // В режиме одной таблицы скрываем кнопки массового добавления/удаления
+    if (m_SingleSelection)
+    {
+        addAllButton->setVisible(false);
+        removeAllButton->setVisible(false);
+        hLine->setVisible(false);
+    }
+    else
+    {
+        addAllButton->setVisible(true);
+        removeAllButton->setVisible(true);
+        hLine->setVisible(true);
+    }
+
+    // Обновляем состояние кнопок в зависимости от выбора
+    bool hasSourceSelection = sourceList->selection()->hasSelection();
+    bool hasDestSelection = dstListView->selectionModel()->hasSelection();
+    bool hasDestItems = pDstModel->rowCount() > 0;
+
+    addButton->setEnabled(hasSourceSelection && (!m_SingleSelection || pDstModel->rowCount() == 0));
+    removeButton->setEnabled(hasDestSelection);
+    removeAllButton->setEnabled(hasDestItems);
 }

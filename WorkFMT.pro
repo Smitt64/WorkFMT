@@ -6,6 +6,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    ChangeNote \
     DiffToScript \
     DumpTool \
     FmtLib \

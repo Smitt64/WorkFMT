@@ -180,3 +180,7 @@ qrsd/PgConvWrapper/PgConvWrapper/Release/PgConvWrapper.log
 qrsd/PgConvWrapper/PgConvWrapper/Release/PgConvWrapper.pch
 
 qrsd/PgConvWrapper/PgConvWrapper/Release/PgConvWrapper.vcxproj.FileListAbsolute.txt
+
+qrsd/PgConvWrapper/PgConvWrapper/x64/Debug/PgConvWrapper.tlog/
+
+qrsd/PgConvWrapper/PgConvWrapper/x64/Debug/

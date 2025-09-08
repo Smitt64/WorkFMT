@@ -123,6 +123,7 @@ private slots:
     void CamelCaseAction();
     void CheckAction();
     void TableObjects();
+    void ImportFromTable();
 
     void onUserActionTriggered();
 
@@ -158,7 +159,7 @@ private:
 
     QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu, *pUserActionsMenu;
     QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_MassRemoveFields;
-    QAction *m_unloadDbf, *m_loadDbf, *m_ImportData;
+    QAction *m_unloadDbf, *m_loadDbf, *m_ImportData, *m_ImportFromTable;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript, *m_pCompareFmt;

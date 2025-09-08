@@ -16,6 +16,13 @@ class FMTLIBSHARED_EXPORT TablesSelectWidget : public QWidget
 {
     Q_OBJECT
 public:
+    enum
+    {
+        AddButton,
+        AddAllButton,
+        RemoveButton,
+        RemoveAllButton
+    };
     explicit TablesSelectWidget(ConnectionInfo *connection, QWidget *parent = Q_NULLPTR);
     void setAddFunc(TablesSelectAddFunc func);
     void setRemFunc(TablesSelectRemFunc func);
@@ -24,6 +31,10 @@ public:
     bool userAddTable(const QString &table);
     void endAddTables();
 
+    void setSingleSelectionMode(bool single);
+    QPushButton* getButton(int buttonType) const;
+    void addTable(const QString &tableName);
+
     void clearSelected();
 
     int tablesCount() const;
@@ -31,6 +42,7 @@ public:
 
 signals:
     void tableAdded(const QString &name);
+    void selectionChanged();
 
 private slots:
     void addButtonPressed();
@@ -45,6 +57,8 @@ protected:
 
 private:
     void CopyToDstList(const QModelIndex &index);
+    void updateButtonsState();
+
     QHBoxLayout *horizontalLayout;
     TablesDockWidget *sourceList;
     QVBoxLayout *verticalLayout;
@@ -63,6 +77,7 @@ private:
 
     QProgressDialog *pUserAddDlg;
     int m_UserAddIndex;
+    bool m_SingleSelection;
 };
 
 #endif // TABLESSELECTWIDGET_H

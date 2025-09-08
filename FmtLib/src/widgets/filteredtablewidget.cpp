@@ -19,15 +19,15 @@ FilteredTableWidget::FilteredTableWidget(QWidget *parent) :
     pLayout->addLayout(pTableFitersLayout);
 }
 
-void FilteredTableWidget::setTableView(QTableView *table)
+void FilteredTableWidget::setView(QAbstractItemView *table, QHeaderView *horizontalHeader)
 {
     pTable = table;
-    pTableFitersLayout->setTableColumnsToTrack(pTable->horizontalHeader());
+    pTableFitersLayout->setTableColumnsToTrack(horizontalHeader);
     pLayout->addWidget(table);
 
-    connect(pTable->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), SLOT(invalidateAlignedLayout()));
+    connect(horizontalHeader, SIGNAL(sectionResized(int,int,int)), SLOT(invalidateAlignedLayout()));
     connect(pTable->horizontalScrollBar(), SIGNAL(valueChanged(int)), SLOT(invalidateAlignedLayout()));
-    connect(pTable->horizontalHeader(), SIGNAL(sectionCountChanged(int,int)), SLOT(onSectionCountChanged(int,int)));
+    connect(horizontalHeader, SIGNAL(sectionCountChanged(int,int)), SLOT(onSectionCountChanged(int,int)));
 }
 
 void FilteredTableWidget::invalidateAlignedLayout()

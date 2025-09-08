@@ -13,11 +13,11 @@ public:
     MassOpSelectTablesPage(ConnectionInfo *info, QWidget *parent = Q_NULLPTR);
     virtual ~MassOpSelectTablesPage();
 
-    bool AddFunc(const QString &str);
-    bool RemoveFunc(const QString &str);
+    virtual bool AddFunc(const QString &str);
+    virtual bool RemoveFunc(const QString &str);
 
     virtual void initializePage() Q_DECL_OVERRIDE;
-
+    void setSingleSelectionMode(bool single);
 
 private:
     TablesSelectWidget *pSeletTables;
