@@ -2,6 +2,7 @@
 #define RICHTEXTTOINSERTWIZARD_H
 
 #include <QWizard>
+#include <QVariant>
 
 class ConnectionInfo;
 class QTextDocument;
@@ -9,6 +10,8 @@ class MassOpSelectTablesPage;
 class FmtTable;
 class RichTextPage;
 class FmtImportFldSourcePage;
+class ExistsConditionPage;
+class RichTextToInsertResultPage;
 class RichTextToInsertWizard : public QWizard
 {
     Q_OBJECT
@@ -19,6 +22,9 @@ public:
     bool addTables(const QString &str);
     bool removeTables(const QString &str);
 
+    bool firstAsHeader() const { return field("FirstAsHeader").toBool(); }
+    QMap<int, QString> fieldMapping() const;
+
     FmtTable *table() const;
     QTextDocument *document();
 
@@ -27,6 +33,8 @@ private:
     MassOpSelectTablesPage *m_pSelectTables;
     RichTextPage *m_pRichTextPage;
     FmtImportFldSourcePage *m_pSourcePage;
+    ExistsConditionPage *m_pExistsConditionPage;
+    RichTextToInsertResultPage *m_pResultPage;
 
     QTextDocument *m_pRichText;
     FmtTable *m_pTable;

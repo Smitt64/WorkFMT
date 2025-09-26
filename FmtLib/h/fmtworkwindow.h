@@ -137,7 +137,7 @@ private:
     void setupUndoRedo();
     void setupFind();
     void SetUnclosableSystemTabs();
-    int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList);
+    int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget = nullptr);
     void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
     void AddCppCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
     void SetupActionsMenu();

@@ -22,6 +22,7 @@ public:
     explicit FmtImportFldSourcePage(QWidget *parent = nullptr);
     ~FmtImportFldSourcePage();
 
+    FmtSourceModel *sourceModel();
     virtual void initializePage() Q_DECL_OVERRIDE;
 
 private:

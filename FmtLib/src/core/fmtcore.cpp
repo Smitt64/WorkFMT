@@ -1566,7 +1566,7 @@ void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidg
     }
 }
 
-int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
+int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent, QWidget *userwidget)
 {
     int stat = 0;
 
@@ -1587,6 +1587,9 @@ int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*
                         << FmtFildsModel::fld_TypeIndex);
     dlg.setColumnWidth(FmtFildsModel::fld_Name, 150);
 
+    if (userwidget)
+        ((QVBoxLayout*)dlg.layout())->insertWidget(0, userwidget);
+
     QPushButton *allSelect = dlg.dialogButtonBox()->addButton(QObject::tr("Выбрать всё"), QDialogButtonBox::ActionRole);
     QPushButton *allDeSelect = dlg.dialogButtonBox()->addButton(QObject::tr("Снять всё"), QDialogButtonBox::ActionRole);
 
@@ -1603,9 +1606,9 @@ int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*
     return stat;
 }
 
-int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent)
+int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent, QWidget *userwidget)
 {
-    return SelectTableFieldsDlg(pTable.data(), title, pFldList, parent);
+    return SelectTableFieldsDlg(pTable.data(), title, pFldList, parent, userwidget);
 }
 
 void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote)

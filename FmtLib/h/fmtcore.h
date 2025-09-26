@@ -244,7 +244,10 @@ FMTLIBSHARED_EXPORT QString FmtGenTriggersScrip(QList<FmtField*> flds, bool disa
 FMTLIBSHARED_EXPORT QStringList FmtGenGetTriggers(ConnectionInfo *connection, const QString &table);
 
 FMTLIBSHARED_EXPORT QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds);
+
 FMTLIBSHARED_EXPORT QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds);
+FMTLIBSHARED_EXPORT QString FmtGenUpdateAddColumnScriptOld(QList<FmtField*> flds);
+
 FMTLIBSHARED_EXPORT QString FmtGenModifyColumnScript(QList<FmtField*> flds);
 QString FmtGenUpdateCreateTableScript(QSharedPointer<FmtTable> pTable);
 QString FmtGenInsertTemplateSqlScript(QList<FmtField*> flds);
@@ -257,8 +260,8 @@ FMTLIBSHARED_EXPORT QString ReadTextFileContent(const QString &filename);
 FMTLIBSHARED_EXPORT int CloneFmtFromConnection(QSqlDatabase &source, QSqlDatabase &dest, QWidget *parent);
 FMTLIBSHARED_EXPORT bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg = false, QWidget *parent = Q_NULLPTR);
 
-FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR);
-FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR);
+FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR, QWidget *userwidget = Q_NULLPTR);
+FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR, QWidget *userwidget = Q_NULLPTR);
 
 FMTLIBSHARED_EXPORT void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote = '"');
 

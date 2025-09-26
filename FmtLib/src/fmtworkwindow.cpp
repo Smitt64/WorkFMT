@@ -46,6 +46,7 @@
 #include <QTemporaryFile>
 #include <QProgressDialog>
 #include <QDirIterator>
+#include <QSpacerItem>
 
 FmtFieldsTableViewFilterController::FmtFieldsTableViewFilterController(FmtFieldsDelegate *delegate) :
     pDelegate(delegate)
@@ -736,9 +737,9 @@ void FmtWorkWindow::TabCloseRequested(int index)
     ui->tabWidget->removeTab(index);
 }
 
-int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList)
+int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget)
 {
-    return SelectTableFieldsDlg(pTable, title, pFldList, this);
+    return SelectTableFieldsDlg(pTable, title, pFldList, this, userwidget);
 }
 
 void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
@@ -787,9 +788,34 @@ void FmtWorkWindow::GenDeleteFiledsScript()
 void FmtWorkWindow::GenAddFiledsScript()
 {
     QList<FmtField*> FldList;
-    if (SelectTableFieldsDailog(tr("Выбор полей для скрипта обновления"), &FldList) == QDialog::Accepted)
+
+    bool newAlg = true;
+    QWidget *containert = new QWidget();
+    QHBoxLayout *layout = new QHBoxLayout(containert);
+    layout->setMargin(0);
+
+    QRadioButton *newAlgRadio = new QRadioButton(tr("Использовать DEFAULT для полей"));
+    QRadioButton *oldAlgRadio = new QRadioButton(tr("Обновлять значения после создания полей (UPDATE)"));
+
+    newAlgRadio->setChecked(true);
+    layout->addWidget(newAlgRadio);
+    layout->addWidget(oldAlgRadio);
+    containert->setLayout(layout);
+
+    connect(newAlgRadio, &QRadioButton::toggled, [&newAlg](bool value)
     {
-        QString code = FmtGenUpdateAddColumnScript(FldList);
+        newAlg = value;
+    });
+
+    if (SelectTableFieldsDailog(tr("Выбор полей для скрипта обновления"), &FldList, containert) == QDialog::Accepted)
+    {
+        QString code;
+
+        if (newAlg)
+            code = FmtGenUpdateAddColumnScript(FldList);
+        else
+            code = FmtGenUpdateAddColumnScriptOld(FldList);
+
         AddSqlCodeTab(tr("Скрипт добавления полей"), code);
     }
 }

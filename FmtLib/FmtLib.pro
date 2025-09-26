@@ -86,8 +86,11 @@ SOURCES += \
     src/widgets/tablesdockwidget.cpp \
     src/widgets/tablesselectwidget.cpp \
     src/widgets/treecombobox.cpp \
+    src/wizards/RichTextToInsertWizard/existsconditionpage.cpp \
     src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.cpp \
     src/wizards/RichTextToInsertWizard/fmtsourcemodel.cpp \
+    src/wizards/RichTextToInsertWizard/richtexttoinsertresultpage.cpp \
+    src/wizards/RichTextToInsertWizard/richtexttoinsertrun.cpp \
     src/wizards/RichTextToInsertWizard/richtexttoinsertwizard.cpp \
     src/wizards/exporttoxmlwizard.cpp \
     src/wizards/expresultpage.cpp \
@@ -184,6 +187,7 @@ FORMS += \
     src/widgets/guiconverterdlg.ui \
     src/widgets/sqlconvertordlg.ui \
     src/widgets/tablestructsqldlg.ui \
+    src/wizards/RichTextToInsertWizard/existsconditionpage.ui \
     src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.ui \
     src/wizards/richtextpage.ui \
     ui/connactionpage.ui \
@@ -365,8 +369,11 @@ HEADERS += \
     src/widgets/guiconverterdlg.h \
     src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h \
+    src/wizards/RichTextToInsertWizard/existsconditionpage.h \
     src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.h \
     src/wizards/RichTextToInsertWizard/fmtsourcemodel.h \
+    src/wizards/RichTextToInsertWizard/richtexttoinsertresultpage.h \
+    src/wizards/RichTextToInsertWizard/richtexttoinsertrun.h \
     src/wizards/RichTextToInsertWizard/richtexttoinsertwizard.h \
     src/wizards/richtextpage.h
 

@@ -94,10 +94,13 @@ void SourceComboBoxDelegate::updateEditorGeometry(QWidget *editor,
 
 QStringList SourceComboBoxDelegate::sourceNames(const qint16 &Type, const int &size, const qint16 &Count)
 {
-    QStringList lst({"NULL"});
+    QStringList lst({"sql:NULL"});
 
     if (Type == fmtt_CHR || Type == fmtt_UCHR)
-        lst.prepend("CHR(88)");
+        lst.prepend("sql:CHR(88)");
+
+    if (Type == fmtt_INT || Type == fmtt_LONG || Type == fmtt_BIGINT)
+        lst.prepend("func:nextval");
 
     lst.prepend(fmtGetOraDefaultVal(Type, size, false));
 
@@ -146,6 +149,11 @@ FmtImportFldSourcePage::FmtImportFldSourcePage(QWidget *parent)
 FmtImportFldSourcePage::~FmtImportFldSourcePage()
 {
     delete ui;
+}
+
+FmtSourceModel *FmtImportFldSourcePage::sourceModel()
+{
+    return m_pModel;
 }
 
 void FmtImportFldSourcePage::initializePage()

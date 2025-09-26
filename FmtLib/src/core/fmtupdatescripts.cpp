@@ -185,6 +185,71 @@ QString FmtGenUpdateDeleteColumnScript(QList<FmtField*> flds)
     return str;
 }
 
+QString FmtGenUpdateAddColumnScriptOld(QList<FmtField*> flds)
+{
+    if (flds.isEmpty())
+        return QString();
+
+    QString str, tableName = flds[0]->table()->name().toUpper();
+    QTextStream stream(&str, QIODevice::WriteOnly);
+
+    stream << FmtGenTriggersScrip(flds, true) << Qt::endl;
+
+    stream << "DECLARE" << Qt::endl;
+    stream << "\te_col_exist EXCEPTION;" << Qt::endl;
+    stream << "\tPRAGMA EXCEPTION_INIT (e_col_exist, -01430);" << Qt::endl;
+    stream << "BEGIN" << Qt::endl;
+    stream << QString("\tEXECUTE IMMEDIATE 'ALTER TABLE %1 ADD ( ' || ").arg(tableName) << Qt::endl;
+
+    foreach (const FmtField *fld, flds) {
+        stream << "\t\t\t" << QString("'%1 %2").arg(fld->name().toUpper(), fld->getOraDecl());
+        if (fld != flds.last())
+            stream << ",";
+        stream << "' ||" << Qt::endl;
+    }
+    stream << "\t\t')';" << Qt::endl;
+    stream << Qt::endl;
+    stream << QString("\tEXECUTE IMMEDIATE 'UPDATE %1 SET ' || ").arg(tableName) << Qt::endl;
+
+    foreach (const FmtField *fld, flds) {
+        stream << "\t\t\t" << QString("'%1 = %2").arg(fld->name().toUpper(), fld->getOraDefaultVal());
+        if (fld != flds.last())
+        {
+            stream << ",";
+            stream << "' ||" << Qt::endl;
+        }
+
+    }
+    stream << "';" << Qt::endl << Qt::endl;
+
+    QSqlDriver *driver = flds[0]->table()->connection()->driver();
+    foreach (const FmtField *pfld, flds) {
+        QSqlField fld;
+        fld.setType(QVariant::String);
+        fld.setValue(pfld->comment());
+
+        QString comment = QString("COMMENT ON COLUMN %1.%2 IS %3").arg(tableName)
+                              .arg(pfld->name().toUpper())
+                              .arg(driver->formatValue(fld, true));
+        fld.setValue(comment);
+        stream << QString("\tEXECUTE IMMEDIATE %1;")
+                      .arg(driver->formatValue(fld, true))
+               << Qt::endl;
+    }
+    stream << "" << Qt::endl;
+
+    stream << "EXCEPTION WHEN e_col_exist THEN NULL;" << Qt::endl;
+    stream << "END;" << Qt::endl;
+    stream << "/" << Qt::endl;
+
+    QString triggers = FmtGenTriggersScrip(flds, false);
+
+    if (!triggers.isEmpty())
+        stream << Qt::endl << FmtGenTriggersScrip(flds, false) << Qt::endl;
+
+    return str;
+}
+
 QString FmtGenUpdateAddColumnScript(QList<FmtField*> flds)
 {
     if (flds.isEmpty())
