@@ -23,9 +23,20 @@ public:
 
         fld_Count
     };
+
+    enum class VcsType
+    {
+        Auto,  // Автоматическое определение
+        Svn,
+        Git,
+        None   // VCS не обнаружена
+    };
     explicit SvnSatatusModel(QObject *parent = nullptr);
     virtual ~SvnSatatusModel();
 
+    void setVcsType(VcsType type);
+    VcsType currentVcsType() const;
+    QString currentPath() const;
     void setPath(const QString &path, const QString &revision);
 
     virtual QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -38,6 +49,12 @@ public:
 private:
     QList<SvnSatatusElement> m_Elements;
     QString m_Path;
+    VcsType m_VcsType;
+
+    VcsType detectVcsType(const QString &path);
+    void setPathSvn(const QString &path, const QString &revision);
+    void setPathGit(const QString &path, const QString &revision);
+    QString gitStatusToAction(const QString &gitStatus);
 };
 
 #endif // SVNSATATUSMODEL_H

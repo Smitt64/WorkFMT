@@ -3,6 +3,7 @@
 #include "svnsatatusmodel.h"
 #include "diffwizard.h"
 #include "svnlogdlg.h"
+#include <toolsruntime.h>
 #include <selectfolderdlg.h>
 #include <QButtonGroup>
 #include <QSpinBox>
@@ -177,6 +178,13 @@ void ActionPage::on_selFolderBtn_clicked()
         ui->pathEdit->setText(filderDir.selectedPath());
         m_pModel->setPath(ui->pathEdit->text(), ui->revisionEdit->text());
         emit completeChanged();
+
+        VcsType type = toolDetectVcsType(ui->pathEdit->text());
+
+        if (type == VcsType::Git)
+            ui->versIcon->setPixmap(QPixmap("://res/gitlogo.svg"));
+        else
+            ui->versIcon->setPixmap(QPixmap("://res/svnlogo.svg"));
     }
 }
 

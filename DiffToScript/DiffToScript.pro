@@ -165,3 +165,6 @@ defineTest(copyToDestDir) {
 
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../DiffToScript/debug/mac)
+
+RESOURCES += \
+    res.qrc

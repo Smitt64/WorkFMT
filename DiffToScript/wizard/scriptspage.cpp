@@ -130,6 +130,97 @@ QStringList GetNormalFileList(const QStringList files,
     return files;
 }
 
+SvnSatatusModel::VcsType detectVcsType(const QString &path)
+{
+    QDir dir(path);
+
+    // Проверяем наличие каталога .git
+    if (dir.exists(".git"))
+    {
+        return SvnSatatusModel::VcsType::Git;
+    }
+
+    // Проверяем наличие каталога .svn
+    if (dir.exists(".svn"))
+    {
+        return SvnSatatusModel::VcsType::Svn;
+    }
+
+    // Рекурсивно проверяем родительские каталоги для Git
+    QString currentPath = path;
+    while (!currentPath.isEmpty() && QDir(currentPath).exists())
+    {
+        QDir currentDir(currentPath);
+        if (currentDir.exists(".git"))
+        {
+            return SvnSatatusModel::VcsType::Git;
+        }
+
+        // Для SVN проверяем только текущий каталог (не рекурсивно)
+        if (currentPath == path && currentDir.exists(".svn"))
+        {
+            return SvnSatatusModel::VcsType::Svn;
+        }
+
+        // Поднимаемся на уровень выше
+        QString parentPath = QDir(currentPath).absolutePath();
+        if (parentPath == currentPath) // Достигли корня
+            break;
+
+        currentPath = QDir(currentPath).absoluteFilePath("..");
+        if (currentPath == parentPath) // Достигли корня
+            break;
+    }
+
+    return SvnSatatusModel::VcsType::None;
+}
+
+QByteArray getGitDiff(const QString &path, const QString &file, const QString &revision)
+{
+    QProcess proc;
+    proc.setWorkingDirectory(path);
+
+    QStringList args = {"diff"};
+
+    if (!revision.isEmpty())
+    {
+        // Для Git показываем diff между коммитом и его родителем
+        args.append(revision + "^!"); // ^! означает сам коммит и его родителя
+    }
+    else
+    {
+        // Для рабочей директории показываем diff с HEAD
+        args.append("HEAD");
+    }
+
+    args.append(file);
+
+    CoreStartProcess(&proc, "git.exe", args, true, true);
+    return proc.readAllStandardOutput();
+}
+
+QByteArray getSvnDiff(const QString &path, const QString &file, const QString &revision, const SvnInfoMap &info)
+{
+    QProcess proc;
+    proc.setWorkingDirectory(path);
+
+    QStringList args = {"diff"};
+
+    if (!revision.isEmpty())
+    {
+        args.append("-c");
+        args.append(revision);
+    }
+
+    if (revision.isEmpty())
+        args.append(file);
+    else
+        args.append(QString("%1/%2").arg(info["url"], file));
+
+    CoreStartProcess(&proc, "svn.exe", args, true, true);
+    return proc.readAllStandardOutput();
+}
+
 // --delete --insert --update --cs "CONNSTRING=dsn=THOR_DB12DEV1;user id=SERP_3188;password=SERP_3188" --input diff.txt
 void GenerateOperation::run()
 {
@@ -143,7 +234,12 @@ void GenerateOperation::run()
     bool OraScript = m_pWzrd->field("OraScript").toBool();
     bool PgScript = m_pWzrd->field("PgScript").toBool();
 
-    SvnInfoMap info = SvnGetRepoInfo(Path);
+    // Автоматически определяем тип VCS
+    VcsType vcsType = toolDetectVcsType(Path);
+
+    SvnInfoMap info;
+    if (vcsType == VcsType::Svn)
+        info = SvnGetRepoInfo(Path);
 
     TableLinksList tableLinks;
     bool IsUnicode = m_pWzrd->field("IsUnicode").toBool();
@@ -155,47 +251,37 @@ void GenerateOperation::run()
 
     if (!Revision.isEmpty())
     {
-        args.append("-c");
-        args.append(Revision);
+        if (vcsType == VcsType::Svn)
+        {
+            args.append("-c");
+            args.append(Revision);
+        }
+        else
+        {
+            // Для Git показываем diff между коммитом и его родителем
+            args.append(Revision + "^!"); // ^! означает сам коммит и его родителя
+        }
+    }
+    else
+    {
+        if (vcsType == VcsType::Git)
+            args.append("HEAD");
     }
 
-    /*for (const TableLinks &tableLink : qAsConst(tableLinks))
+    QString lastFile;
+    GetNormalFileList(files, tableLinks, [&lastFile, vcsType, &args, &Revision, &info](const QString &strfile)
     {
-        QStringList::iterator file = std::find_if(files.begin(), files.end(), [=](const QString &f)
-        {
-            return f.contains(tableLink.tableName, Qt::CaseInsensitive);
-        });
-
-        if (file != files.end())
+        if (vcsType == VcsType::Svn)
         {
             if (Revision.isEmpty())
-                args.append(*file);
+                args.append(strfile);
             else
-                args.append(QString("%1/%2").arg(info["url"], *file));
+                args.append(QString("%1/%2").arg(info["url"], strfile));
         }
-
-        for (const Link &childlnk : qAsConst(tableLink.links))
-        {
-            file = std::find_if(files.begin(), files.end(), [=](const QString &f)
-            {
-                return f.contains(childlnk.tableName, Qt::CaseInsensitive);
-            });
-
-            if (file != files.end())
-            {
-                if (Revision.isEmpty())
-                    args.append(*file);
-                else
-                    args.append(QString("%1/%2").arg(info["url"], *file));
-            }
-        }
-    }*/
-    GetNormalFileList(files, tableLinks, [&args, &Revision, &info](const QString &strfile)
-    {
-        if (Revision.isEmpty())
-            args.append(strfile);
         else
-            args.append(QString("%1/%2").arg(info["url"], strfile));
+            args.append(strfile);
+
+        lastFile = strfile;
     });
 
     //if (Action == ActionByLocalDiff)
@@ -205,9 +291,12 @@ void GenerateOperation::run()
             QScopedPointer<QProcess> proc(new QProcess);
             proc->setWorkingDirectory(Path);
 
-            CoreStartProcess(proc.data(), "svn.exe", args, true, true);
+            if (vcsType == VcsType::Svn)
+                CoreStartProcess(proc.data(), "svn.exe", args, true, true);
+            else
+                CoreStartProcess(proc.data(), "git.exe", args, true, true);
 
-            DiffData[args.at(1)] = proc->readAllStandardOutput();
+            DiffData[/*args.at(1)*/lastFile] = proc->readAllStandardOutput();
         }
     }
 
@@ -215,22 +304,41 @@ void GenerateOperation::run()
     {
         args = QStringList { "diff" };
 
-        if (!Revision.isEmpty())
+        if (vcsType == VcsType::Svn)
         {
-            args.append("-c");
-            args.append(Revision);
+            if (!Revision.isEmpty())
+            {
+                args.append("-c");
+                args.append(Revision);
+            }
+        }
+        else
+        {
+            // Для Git показываем diff между коммитом и его родителем
+            if (!Revision.isEmpty())
+                args.append(Revision + "^!"); // ^! означает сам коммит и его родителя
         }
 
-        if (Revision.isEmpty())
-            args.append(file);
+        if (vcsType == VcsType::Svn)
+        {
+            if (Revision.isEmpty())
+                args.append(file);
+            else
+                args.append(QString("%1/%2").arg(info["url"], file));
+        }
         else
-            args.append(QString("%1/%2").arg(info["url"], file));
+        {
+            args.append(file);
+        }
         //args.append(info["url"]);
 
         QScopedPointer<QProcess> proc(new QProcess);
         proc->setWorkingDirectory(Path);
 
-        CoreStartProcess(proc.data(), "svn.exe", args, true, true);
+        if (vcsType == VcsType::Svn)
+            CoreStartProcess(proc.data(), "svn.exe", args, true, true);
+        else
+            CoreStartProcess(proc.data(), "git.exe", args, true, true);
 
         DiffData[file] = proc->readAllStandardOutput();
     }

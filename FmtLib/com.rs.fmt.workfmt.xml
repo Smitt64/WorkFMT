@@ -1,5 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+	<version ver="1.0.7.9">
+        <add>Плановая доработка;</add>
+    </version>
     <version ver="1.0.7.8">
         <add>Добавлена секция для PostgreSQL в скрипт добавления полей;</add>
     </version>

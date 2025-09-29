@@ -3,6 +3,7 @@
 #include <QProcess>
 #include <QDomDocument>
 #include <QFileIconProvider>
+#include <QRegularExpression>
 
 SvnInfoMap SvnGetRepoInfo(const QString &path)
 {
@@ -36,7 +37,7 @@ SvnInfoMap SvnGetRepoInfo(const QString &path)
 // -----------------------------------------
 
 SvnLogModel::SvnLogModel(QObject *parent) :
-    QAbstractTableModel(parent)
+    QAbstractTableModel(parent), m_VcsType(SvnSatatusModel::VcsType::Auto)
 {
     m_Limit = 100;
 }
@@ -106,6 +107,11 @@ const SvnLogElement &SvnLogModel::element(const int &row) const
     return m_Elements[row];
 }
 
+void SvnLogModel::setVcsType(SvnSatatusModel::VcsType type)
+{
+    m_VcsType = type;
+}
+
 void SvnLogModel::setPath(const QString &path, const QString &url)
 {
     m_Path = path;
@@ -123,16 +129,78 @@ void SvnLogModel::refresh()
     beginResetModel();
     m_Elements.clear();
 
+    SvnSatatusModel::VcsType actualVcsType = m_VcsType;
+
+    // Если установлен авторежим, определяем тип VCS автоматически
+    if (m_VcsType == SvnSatatusModel::VcsType::Auto)
+    {
+        actualVcsType = detectVcsType(m_Path);
+    }
+
+    if (actualVcsType == SvnSatatusModel::VcsType::Svn)
+    {
+        refreshSvn();
+    }
+    else if (actualVcsType == SvnSatatusModel::VcsType::Git)
+    {
+        refreshGit();
+    }
+
+    endResetModel();
+}
+
+SvnSatatusModel::VcsType SvnLogModel::detectVcsType(const QString &path)
+{
+    QDir dir(path);
+
+    // Проверяем наличие каталога .git
+    if (dir.exists(".git"))
+    {
+        return SvnSatatusModel::VcsType::Git;
+    }
+
+    // Проверяем наличие каталога .svn
+    if (dir.exists(".svn"))
+    {
+        return SvnSatatusModel::VcsType::Svn;
+    }
+
+    // Рекурсивно проверяем родительские каталоги для Git
+    QString currentPath = path;
+    while (!currentPath.isEmpty() && QDir(currentPath).exists())
+    {
+        QDir currentDir(currentPath);
+        if (currentDir.exists(".git"))
+        {
+            return SvnSatatusModel::VcsType::Git;
+        }
+
+        // Для SVN проверяем только текущий каталог (не рекурсивно)
+        if (currentPath == path && currentDir.exists(".svn"))
+        {
+            return SvnSatatusModel::VcsType::Svn;
+        }
+
+        // Поднимаемся на уровень выше
+        QString parentPath = QDir(currentPath).absolutePath();
+        if (parentPath == currentPath) // Достигли корня
+            break;
+
+        currentPath = QDir(currentPath).absoluteFilePath("..");
+        if (currentPath == parentPath) // Достигли корня
+            break;
+    }
+
+    return SvnSatatusModel::VcsType::None;
+}
+
+void SvnLogModel::refreshSvn()
+{
     QProcess proc;
     proc.setWorkingDirectory(m_Path);
 
     QStringList args = {"log", "--xml"};
 
-    /*if (!m_Limit.isNull())
-    {
-        args.append("--limit");
-        args.append(m_Limit.toString());
-    }*/
     if (m_From.isValid() && m_To.isValid())
     {
         args.append("-r");
@@ -179,14 +247,70 @@ void SvnLogModel::refresh()
         }
         n = n.nextSibling();
     }
+}
 
-    endResetModel();
+void SvnLogModel::refreshGit()
+{
+    QProcess proc;
+    proc.setWorkingDirectory(m_Path);
+
+    QStringList args = {"log", "--pretty=format:%H|%an|%ad|%s", "--date=iso"};
+
+    // Добавляем ограничение по количеству коммитов
+    if (!m_From.isValid() || !m_To.isValid())
+    {
+        args.append("--max-count");
+        args.append(m_Limit.toString());
+    }
+
+    // Добавляем фильтр по дате если указан
+    if (m_From.isValid() && m_To.isValid())
+    {
+        args.append("--since");
+        args.append(m_From.toString("yyyy-MM-dd"));
+        args.append("--until");
+        args.append(m_To.toString("yyyy-MM-dd 23:59:59"));
+    }
+
+    CoreStartProcess(&proc, "git.exe", args, true, true, 30000, true);
+
+    QByteArray data = proc.readAllStandardOutput();
+    QString output = QString::fromUtf8(data);
+    QStringList lines = output.split('\n', Qt::SkipEmptyParts);
+
+    int revisionCounter = 1;
+
+    for (const QString &line : lines)
+    {
+        if (line.trimmed().isEmpty()) continue;
+
+        QStringList parts = line.split('|');
+        if (parts.size() >= 4)
+        {
+            SvnLogElement element;
+            // Для Git используем последовательные номера как ревизии
+            element.revision = revisionCounter++;
+            element.author = parts[1];
+            element.date = QDateTime::fromString(parts[2], Qt::ISODate);
+            element.message = parts[3];
+
+            // Извлекаем SCR номер из сообщения если есть
+            QRegularExpression scrRegex("SCR#(\\d+)");
+            QRegularExpressionMatch match = scrRegex.match(element.message);
+            if (match.hasMatch())
+            {
+                element.scr = match.captured(1);
+            }
+
+            m_Elements.append(element);
+        }
+    }
 }
 
 // ----------------------------------------------------------------------
 
 SvnLogItemsModel::SvnLogItemsModel(QObject *parent) :
-    QAbstractTableModel(parent)
+    QAbstractTableModel(parent), m_VcsType(SvnSatatusModel::VcsType::Auto)
 {
 }
 
@@ -225,12 +349,16 @@ QVariant SvnLogItemsModel::data(const QModelIndex &index, int role) const
         {
             const QString action = m_Elements[index.row()].action;
 
-            if (!action.compare("A", Qt::CaseInsensitive))
+            if (!action.compare("A", Qt::CaseInsensitive) || !action.compare("added", Qt::CaseInsensitive))
                 return "Added";
-            else if (!action.compare("M", Qt::CaseInsensitive))
+            else if (!action.compare("M", Qt::CaseInsensitive) || !action.compare("modified", Qt::CaseInsensitive))
                 return "Modified";
-            else if (!action.compare("D", Qt::CaseInsensitive))
+            else if (!action.compare("D", Qt::CaseInsensitive) || !action.compare("deleted", Qt::CaseInsensitive))
                 return "Deleted";
+            else if (!action.compare("R", Qt::CaseInsensitive) || !action.compare("renamed", Qt::CaseInsensitive))
+                return "Renamed";
+            else
+                return action;
         }
     }
     else if (role == Qt::DecorationRole)
@@ -271,6 +399,11 @@ const SvnLogInfoElement &SvnLogItemsModel::element(const int &row) const
     return m_Elements[row];
 }
 
+void SvnLogItemsModel::setVcsType(SvnSatatusModel::VcsType type)
+{
+    m_VcsType = type;
+}
+
 void SvnLogItemsModel::setPath(const QString &path, const QString &url)
 {
     m_Path = path;
@@ -282,6 +415,51 @@ void SvnLogItemsModel::refresh(const QString &revision)
     beginResetModel();
     m_Elements.clear();
 
+    SvnSatatusModel::VcsType actualVcsType = m_VcsType;
+
+    if (m_VcsType == SvnSatatusModel::VcsType::Auto)
+    {
+        actualVcsType = detectVcsType(m_Path);
+    }
+
+    if (actualVcsType == SvnSatatusModel::VcsType::Svn)
+    {
+        refreshSvn(revision);
+    }
+    else if (actualVcsType == SvnSatatusModel::VcsType::Git)
+    {
+        refreshGit(revision);
+    }
+
+    endResetModel();
+}
+
+SvnSatatusModel::VcsType SvnLogItemsModel::detectVcsType(const QString &path)
+{
+    // Та же логика определения, что и в SvnLogModel
+    QDir dir(path);
+
+    if (dir.exists(".git")) return SvnSatatusModel::VcsType::Git;
+    if (dir.exists(".svn")) return SvnSatatusModel::VcsType::Svn;
+
+    QString currentPath = path;
+    while (!currentPath.isEmpty() && QDir(currentPath).exists())
+    {
+        QDir currentDir(currentPath);
+        if (currentDir.exists(".git")) return SvnSatatusModel::VcsType::Git;
+        if (currentPath == path && currentDir.exists(".svn")) return SvnSatatusModel::VcsType::Svn;
+
+        QString parentPath = QDir(currentPath).absolutePath();
+        if (parentPath == currentPath) break;
+        currentPath = QDir(currentPath).absoluteFilePath("..");
+        if (currentPath == parentPath) break;
+    }
+
+    return SvnSatatusModel::VcsType::None;
+}
+
+void SvnLogItemsModel::refreshSvn(const QString &revision)
+{
     QProcess proc;
     proc.setWorkingDirectory(m_Path);
 
@@ -306,7 +484,6 @@ void SvnLogItemsModel::refresh(const QString &revision)
             SvnLogInfoElement element;
             element.path = e.text().remove(m_Url).mid(1);
             element.kind = e.attribute("kind");
-
             element.action = e.attribute("action");
 
             if (!element.path.isEmpty())
@@ -314,6 +491,63 @@ void SvnLogItemsModel::refresh(const QString &revision)
         }
         n = n.nextSibling();
     }
+}
 
-    endResetModel();
+void SvnLogItemsModel::refreshGit(const QString &revision)
+{
+    QProcess proc;
+    proc.setWorkingDirectory(m_Path);
+
+    // Для Git используем хеш коммита или относительную ссылку (HEAD~1 и т.д.)
+    QString commitHash = revision;
+
+    // Если передан числовой номер (как в SVN), конвертируем в Git хеш
+    if (revision.toInt() > 0)
+    {
+        // Получаем хеш коммита по порядковому номеру
+        QStringList args = {"log", "--reverse", "--pretty=format:%H", "--max-count", revision};
+        QProcess hashProc;
+        hashProc.setWorkingDirectory(m_Path);
+        CoreStartProcess(&hashProc, "git.exe", args, true, true, 30000, true);
+
+        QStringList hashes = QString::fromUtf8(hashProc.readAllStandardOutput()).split('\n', Qt::SkipEmptyParts);
+        if (hashes.size() >= revision.toInt())
+        {
+            commitHash = hashes[revision.toInt() - 1];
+        }
+        else
+        {
+            commitHash = "HEAD"; // fallback
+        }
+    }
+
+    // Получаем изменения для конкретного коммита
+    QStringList args = {"show", "--name-status", "--pretty=format:", commitHash};
+    CoreStartProcess(&proc, "git.exe", args, true, true, 30000, true);
+
+    QByteArray data = proc.readAllStandardOutput();
+    QString output = QString::fromUtf8(data);
+    QStringList lines = output.split('\n', Qt::SkipEmptyParts);
+
+    for (const QString &line : lines)
+    {
+        if (line.trimmed().isEmpty()) continue;
+
+        // Формат: "M\tfile.txt"
+        QRegularExpression regex("^(\\w+)\\t(.+)$");
+        QRegularExpressionMatch match = regex.match(line);
+
+        if (match.hasMatch())
+        {
+            SvnLogInfoElement element;
+            element.action = match.captured(1).toLower();
+            element.path = match.captured(2);
+
+            // Определяем тип (файл или директория)
+            QFileInfo fi(QDir(m_Path).absoluteFilePath(element.path));
+            element.kind = fi.isDir() ? "dir" : "file";
+
+            m_Elements.append(element);
+        }
+    }
 }

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/gitlogo.svg</file>
+        <file>res/svnlogo.svg</file>
+    </qresource>
+</RCC>

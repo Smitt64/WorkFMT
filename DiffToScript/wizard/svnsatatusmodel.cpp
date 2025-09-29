@@ -8,7 +8,8 @@
 #include <QDomElement>
 
 SvnSatatusModel::SvnSatatusModel(QObject *parent) :
-    QAbstractTableModel(parent)
+    QAbstractTableModel(parent),
+    m_VcsType(VcsType::Auto)
 {
 
 }
@@ -61,10 +62,88 @@ const SvnSatatusElement &SvnSatatusModel::element(const int &row) const
 
 void SvnSatatusModel::setPath(const QString &path, const QString &revision)
 {
-    SvnInfoMap info = SvnGetRepoInfo(path);
-    m_Path = path;
     beginResetModel();
     m_Elements.clear();
+    m_Path = path;
+
+    VcsType actualVcsType = m_VcsType;
+
+    // Если установлен авторежим, определяем тип VCS автоматически
+    if (m_VcsType == VcsType::Auto)
+    {
+        actualVcsType = detectVcsType(path);
+    }
+
+    if (actualVcsType == VcsType::Svn)
+    {
+        setPathSvn(path, revision);
+    }
+    else if (actualVcsType == VcsType::Git)
+    {
+        setPathGit(path, revision);
+    }
+    else
+    {
+        // Если VCS не обнаружена, очищаем модель
+        m_Elements.clear();
+    }
+
+    endResetModel();
+}
+
+void SvnSatatusModel::setVcsType(VcsType type)
+{
+    m_VcsType = type;
+}
+
+SvnSatatusModel::VcsType SvnSatatusModel::detectVcsType(const QString &path)
+{
+    QDir dir(path);
+
+    // Проверяем наличие каталога .git
+    if (dir.exists(".git"))
+    {
+        return VcsType::Git;
+    }
+
+    // Проверяем наличие каталога .svn
+    if (dir.exists(".svn"))
+    {
+        return VcsType::Svn;
+    }
+
+    // Рекурсивно проверяем родительские каталоги для Git
+    QString currentPath = path;
+    while (!currentPath.isEmpty() && QDir(currentPath).exists())
+    {
+        QDir currentDir(currentPath);
+        if (currentDir.exists(".git"))
+        {
+            return VcsType::Git;
+        }
+
+        // Для SVN проверяем только текущий каталог (не рекурсивно)
+        if (currentPath == path && currentDir.exists(".svn"))
+        {
+            return VcsType::Svn;
+        }
+
+        // Поднимаемся на уровень выше
+        QString parentPath = QDir(currentPath).absolutePath();
+        if (parentPath == currentPath) // Достигли корня
+            break;
+
+        currentPath = QDir(currentPath).absoluteFilePath("..");
+        if (currentPath == parentPath) // Достигли корня
+            break;
+    }
+
+    return VcsType::None;
+}
+
+void SvnSatatusModel::setPathSvn(const QString &path, const QString &revision)
+{
+    SvnInfoMap info = SvnGetRepoInfo(path);
 
     QProcess proc;
     proc.setWorkingDirectory(m_Path);
@@ -161,6 +240,108 @@ void SvnSatatusModel::setPath(const QString &path, const QString &revision)
             n = n.nextSibling();
         }
     }
+}
 
-    endResetModel();
+void SvnSatatusModel::setPathGit(const QString &path, const QString &revision)
+{
+    QProcess proc;
+    proc.setWorkingDirectory(m_Path);
+
+    QStringList args;
+
+    if (!revision.isEmpty())
+    {
+        // Показываем изменения для конкретного коммита
+        args << "show" << "--name-status" << "--pretty=format:" << revision;
+    }
+    else
+    {
+        // Показываем изменения в рабочей директории (только модифицированные файлы)
+        args << "status" << "--porcelain";
+    }
+
+    CoreStartProcess(&proc, "git.exe", args, true, true, 30000, true);
+
+    QByteArray data = proc.readAllStandardOutput();
+    QString output = QString::fromUtf8(data);
+    QStringList lines = output.split('\n', Qt::SkipEmptyParts);
+
+    QDir main(m_Path);
+
+    for (const QString &line : lines)
+    {
+        if (line.trimmed().isEmpty()) continue;
+
+        SvnSatatusElement element;
+
+        if (!revision.isEmpty())
+        {
+            // Формат git show: "M\tfile.txt"
+            QRegularExpression regex("^(\\w+)\\t(.+)$");
+            QRegularExpressionMatch match = regex.match(line);
+
+            if (match.hasMatch())
+            {
+                QString status = match.captured(1);
+                QString filePath = match.captured(2);
+
+                element.action = gitStatusToAction(status);
+                element.path = filePath;
+                element.fullpath = main.absoluteFilePath(filePath);
+
+                QFileInfo fi(element.fullpath);
+                element.filename = fi.completeBaseName();
+
+                m_Elements.append(element);
+            }
+        }
+        else
+        {
+            // Формат git status --porcelain: " M file.txt"
+            if (line.length() >= 4)
+            {
+                QString status = line.mid(0, 2).trimmed();
+                QString filePath = line.mid(3).trimmed();
+
+                // Показываем только измененные файлы (не новые, не удаленные)
+                if (status == "M" || status == "MM") // Modified
+                {
+                    element.action = "modified";
+                    element.path = filePath;
+                    element.fullpath = main.absoluteFilePath(filePath);
+
+                    QFileInfo fi(element.fullpath);
+                    element.filename = fi.completeBaseName();
+
+                    m_Elements.append(element);
+                }
+            }
+        }
+    }
+}
+
+QString SvnSatatusModel::gitStatusToAction(const QString &gitStatus)
+{
+    static QHash<QString, QString> statusMap = {
+        {"M", "modified"},
+        {"A", "added"},
+        {"D", "deleted"},
+        {"R", "renamed"},
+        {"C", "copied"},
+        {"U", "updated"},
+        {"?", "untracked"},
+        {"!", "ignored"}
+    };
+
+    return statusMap.value(gitStatus, gitStatus);
+}
+
+SvnSatatusModel::VcsType SvnSatatusModel::currentVcsType() const
+{
+    return m_VcsType;
+}
+
+QString SvnSatatusModel::currentPath() const
+{
+    return m_Path;
 }

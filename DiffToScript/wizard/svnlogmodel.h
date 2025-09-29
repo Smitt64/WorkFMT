@@ -3,6 +3,7 @@
 
 #include <QAbstractTableModel>
 #include <QDateTime>
+#include "svnsatatusmodel.h"
 
 typedef struct
 {
@@ -38,6 +39,8 @@ public:
     explicit SvnLogModel(QObject *parent = nullptr);
     virtual ~SvnLogModel();
 
+    void setVcsType(SvnSatatusModel::VcsType type);
+
     void setPath(const QString &path, const QString &url);
     void setDateRange(const QDate &from, const QDate &to);
 
@@ -53,6 +56,10 @@ public slots:
     void refresh();
 
 private:
+    SvnSatatusModel::VcsType m_VcsType;
+    SvnSatatusModel::VcsType detectVcsType(const QString &path);
+    void refreshSvn();
+    void refreshGit();
     QList<SvnLogElement> m_Elements;
     QString m_Path, m_Url;
 
@@ -76,6 +83,7 @@ public:
     explicit SvnLogItemsModel(QObject *parent = nullptr);
     virtual ~SvnLogItemsModel();
 
+    void setVcsType(SvnSatatusModel::VcsType type);
     void setPath(const QString &path, const QString &url);
 
     virtual QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -90,6 +98,10 @@ public slots:
     void refresh(const QString &revision);
 
 private:
+    SvnSatatusModel::VcsType m_VcsType;
+    SvnSatatusModel::VcsType detectVcsType(const QString &path);
+    void refreshSvn(const QString &revision);
+    void refreshGit(const QString &revision);
     QList<SvnLogInfoElement> m_Elements;
     QString m_Path, m_Url;
 };

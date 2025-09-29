@@ -79,6 +79,10 @@ QString LinesParserMain::lookToken(QTextStream& is)
     if(lookToken(is, token, pos))
         return token;
 
+    token = "diff --";
+    if(lookToken(is, token, pos))
+        return "Index: ";
+
     return "";
 }
 

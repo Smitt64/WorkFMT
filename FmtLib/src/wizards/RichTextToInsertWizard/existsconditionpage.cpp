@@ -311,7 +311,7 @@ ExistsConditionPage::ExistsConditionPage(QWidget *parent)
 
     ToolApplyHighlighter(ui->plainTextEdit, HighlighterSql);
 
-    ui->plainTextEdit->setCompleter(completer);
+   // ui->plainTextEdit->setCompleter(completer);
     connect(m_pGroup, &QButtonGroup::idClicked, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
 }
 
