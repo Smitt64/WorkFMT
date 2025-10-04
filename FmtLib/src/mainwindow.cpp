@@ -380,10 +380,8 @@ void MainWindow::ImpDirAction()
     if (!current)
         return;
 
-#ifndef _DEBUG
-    if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
+    if (!CheckConnectionType(current, { ConnectionInfo::CON_ORA, ConnectionInfo::CON_POSTGRESQL }, true, this))
         return;
-#endif
 
     FmtImpExpWrp imp(current, this);
     QString dir = QFileDialog::getExistingDirectory(this, tr("Импорт каталога"), imp.lastImportDir());
@@ -419,10 +417,8 @@ void MainWindow::ImportAction()
     if (!current)
         return;
 
-#ifndef _DEBUG
-    if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
+    if (!CheckConnectionType(current, { ConnectionInfo::CON_ORA, ConnectionInfo::CON_POSTGRESQL }, true, this))
         return;
-#endif
 
     FmtImpExpWrp imp(current, this);
     QStringList files = QFileDialog::getOpenFileNames(this, tr("Импорт файлов"), imp.lastImportDir(), "Xml файлы(*.xml)");
@@ -783,10 +779,8 @@ void MainWindow::actionExportTableXml()
     if (!current)
         return;
 
-#ifndef QT_DEBUG
-    if (!CheckConnectionType(current, ConnectionInfo::CON_ORA, true, this))
+    if (!CheckConnectionType(current, { ConnectionInfo::CON_ORA, ConnectionInfo::CON_POSTGRESQL }, true, this))
         return;
-#endif
 
     QString table = actionExport->data().toString();
 

@@ -1001,6 +1001,11 @@ void SqlScriptMain::toScript(const JoinTable *joinTable, DatRecord *rec)
 
 void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
 {
+    QTextCodec *codec866 = QTextCodec::codecForName("IBM 866");
+
+    if (!codec866)
+        codec866 = QTextCodec::codecForName("CP866");
+
     for (int i = 0; i < joinTable->scriptTable->realFields.count(); ++i)
     {
         DiffField *fld = joinTable->scriptTable->field(joinTable->scriptTable->realFields[i]);
@@ -1030,9 +1035,13 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
                 }
                 else
                 {
+                    QChar ch = rec->values[i].at(1);
+                    QString unicodeStr(ch);
+                    QByteArray encoded = codec866->fromUnicode(unicodeStr);
+
                     rec->values[i] = QString("%1(%2)")
                             .arg(_dbSpelling->chr())
-                            .arg((int)rec->values[i].at(1).toLatin1());
+                            .arg((int)static_cast<unsigned char>(encoded.at(0)));
                 }
             }
         }

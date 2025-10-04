@@ -77,7 +77,7 @@ QString GenSqlTemplateDlg::sqlTemplate() const
                 stream << ", ";
         }
 
-        stream << ")";
+        stream << ");";
     };
 
     auto baseUpdateFunc = [&stream](QSharedPointer<FmtTable> Table, const QList<FmtField*> &FldList, const QList<FmtField*> &OtherFldList, bool UseDefaults = true) -> void
@@ -203,7 +203,7 @@ QString GenSqlTemplateDlg::sqlTemplate() const
                 stream << ", ";
         }
 
-        stream << ")";
+        stream << ");";
     }
     else if (templ == sqlInsertWithPlaceholders)
         baseInsertPlaceholders(pTable, m_FldList);
@@ -224,10 +224,12 @@ QString GenSqlTemplateDlg::sqlTemplate() const
     else if (templ == sqlUpdateWithDefaults)
     {
         baseUpdateFunc(pTable, m_FldList, m_OtherFldList);
+        stream << ";";
     }
     else if (templ == sqlUpdateWithPlaceholders)
     {
         baseUpdateFunc(pTable, m_FldList, m_OtherFldList, false);
+        stream << ";";
     }
     else if (templ == sqlUpdateForRsdCommand)
     {

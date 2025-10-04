@@ -39,6 +39,7 @@
 #include "widgets/comparefmt/comparefmtwizard.h"
 #include "src/core/fmttablecomparemodel.h"
 #include "wizards/RichTextToInsertWizard/richtexttoinsertwizard.h"
+#include "toolsqlconverter.h"
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -742,7 +743,7 @@ int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*
     return SelectTableFieldsDlg(pTable, title, pFldList, this, userwidget);
 }
 
-void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
+void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap, bool AddConvertButton)
 {
     CodeEditor *editor = new CodeEditor();
     ToolApplyHighlighter(editor, HighlighterSql);
@@ -755,7 +756,57 @@ void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, boo
     if (WordWrap)
         editor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
 
-    int tab = ui->tabWidget->addTab(editor, title);
+    QWidget *tabWidget = new QWidget();
+    QVBoxLayout *tabLayout = new QVBoxLayout(tabWidget);
+    tabLayout->setContentsMargins(0, 0, 0, 0);
+    tabLayout->setSpacing(0);
+
+    if (AddConvertButton)
+    {
+        QWidget *buttonWidget = new QWidget();
+        QHBoxLayout *buttonLayout = new QHBoxLayout(buttonWidget);
+        buttonLayout->setContentsMargins(5, 5, 5, 5);
+        buttonLayout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+
+        QPushButton *convertButton = new QPushButton("Конвертировать в PostgreSQL");
+        //convertButton->setFixedSize(120, 30);
+        convertButton->setStyleSheet(
+                    "QPushButton {"
+                    "    background-color: #4CAF50;"
+                    "    color: white;"
+                    "    border: none;"
+                    "    border-radius: 4px;"
+                    "    font-weight: bold;"
+                    "    padding: 5px;"
+                    "}"
+                    "QPushButton:hover {"
+                    "    background-color: #45a049;"
+                    "}"
+                    "QPushButton:pressed {"
+                    "    background-color: #3d8b40;"
+                    "}"
+                    );
+
+        // Подключаем сигнал конвертации
+        connect(convertButton, &QPushButton::clicked, [this, editor, title]()
+        {
+            SqlConversionResult result = convertSql(editor->toPlainText(), pTable->connection()->user());
+
+            QString sql = result.result;
+
+            if (!result.error.isEmpty())
+                sql = result.error;
+
+            AddSqlCodeTab(QString("%1 (PostgreSQL)").arg(title), sql, true, false, false);
+        });
+
+        buttonLayout->addWidget(convertButton);
+        tabLayout->addWidget(buttonWidget);
+    }
+
+    tabLayout->addWidget(editor);
+
+    int tab = ui->tabWidget->addTab(tabWidget, title);
     if (OpenTab) ui->tabWidget->setCurrentIndex(tab);
 }
 

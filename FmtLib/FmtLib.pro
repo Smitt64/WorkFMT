@@ -86,6 +86,7 @@ SOURCES += \
     src/widgets/tablesdockwidget.cpp \
     src/widgets/tablesselectwidget.cpp \
     src/widgets/treecombobox.cpp \
+    src/wizards/MassCompareTables/fmttablecollection.cpp \
     src/wizards/RichTextToInsertWizard/existsconditionpage.cpp \
     src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.cpp \
     src/wizards/RichTextToInsertWizard/fmtsourcemodel.cpp \
@@ -369,6 +370,7 @@ HEADERS += \
     src/widgets/guiconverterdlg.h \
     src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h \
+    src/wizards/MassCompareTables/fmttablecollection.h \
     src/wizards/RichTextToInsertWizard/existsconditionpage.h \
     src/wizards/RichTextToInsertWizard/fmtimportfldsourcepage.h \
     src/wizards/RichTextToInsertWizard/fmtsourcemodel.h \
@@ -408,3 +410,5 @@ defineTest(copyToDestDir) {
 
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../WorkFMT/debug/mac)
+
+OTHER_FILES += com.rs.fmt.workfmt.xml

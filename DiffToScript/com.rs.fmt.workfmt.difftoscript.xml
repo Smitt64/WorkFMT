@@ -1,8 +1,11 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
-	<version ver="1.0.1.7">
-		<add>Добавлена поддержка git репозиториев</add>
-	</version>
+    <version ver="1.0.1.8">
+        <fix>Исправлена ошибка генерации символьных полей по их коду</fix>
+    </version>
+    <version ver="1.0.1.7">
+        <add>Добавлена поддержка git репозиториев</add>
+    </version>
     <version ver="1.0.1.6">
         <fix>Исправлено не корректное добавление инструкции &quot;if then&quot; для таблиц с автоинкрементом, если для таблицы нет связанных записей</fix>
         <fix>Испралено использование функции CHR в режиме генерации для &quot;PostgreSQL&quot;</fix>

@@ -1,6 +1,10 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
-	<version ver="1.0.7.9">
+    <version ver="1.0.8.1">
+        <add>Добавлена кнопка &quot;Конвертировать в PostgreSQL&quot; для вкладок с кодом sql на форме редактирования записи fmt словаря;</add>
+        <fix>Разблокированы команды &quot;Импорт из xml файлов&quot;, &quot;Импорт xml из каталога&quot; и &quot;Экспорт в xml файл&quot; для подключений к PostgreSQL;</fix>
+    </version>
+    <version ver="1.0.7.9">
         <add>Плановая доработка;</add>
     </version>
     <version ver="1.0.7.8">

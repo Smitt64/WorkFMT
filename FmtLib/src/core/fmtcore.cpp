@@ -1445,6 +1445,19 @@ bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg, Q
     return hr;
 }
 
+bool CheckConnectionType(ConnectionInfo *pInfo, const QList<int> &Type, bool ShowMsg, QWidget *parent)
+{
+    bool hr = true;
+    if (!Type.contains(pInfo->type()))
+    {
+        hr = false;
+
+        if (ShowMsg)
+            QMessageBox::information(parent, QObject::tr("Информация"), QObject::tr("Это действие не доступно для данного вида подключения"));
+    }
+    return hr;
+}
+
 QString FmtCapitalizeField(const QString &undecoratedfield, bool force)
 {
     if (!settings()->value("AutoCamelCase", true).toBool() && !force)

@@ -168,3 +168,5 @@ copyToDestDir($$OTHER_FILES, $$OUT_PWD/../DiffToScript/debug/mac)
 
 RESOURCES += \
     res.qrc
+
+OTHER_FILES += com.rs.fmt.workfmt.difftoscript.xml res/difftoscript.rc
