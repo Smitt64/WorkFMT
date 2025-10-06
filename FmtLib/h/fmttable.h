@@ -216,6 +216,7 @@ private:
     void FillIndex();
     /// @private
     void init();
+    int RemoveByID(const qint32 &id);
     /// @private
     int RemoveTrn();
     /// @private

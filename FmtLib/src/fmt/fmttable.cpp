@@ -1162,19 +1162,20 @@ Qt::ItemFlags FmtTable::flags(const QModelIndex &index) const
     return Qt::ItemIsEditable | Qt::ItemIsEnabled;
 }
 
-int FmtTable::RemoveTrn()
+int FmtTable::RemoveByID(const qint32 &id)
 {
     int stat = 0;
+
     QSqlQuery qkeys(this->db);
     qkeys.prepare("delete from FMT_KEYS where T_FMTID = ?");
-    qkeys.bindValue(0, this->m_Id);
+    qkeys.bindValue(0, id);
 
     stat = ExecuteQuery(&qkeys);
     if (!stat)
     {
         QSqlQuery qflds(this->db);
         qflds.prepare("delete from FMT_FIELDS where T_FMTID = ?");
-        qflds.bindValue(0, this->m_Id);
+        qflds.bindValue(0, id);
         stat = ExecuteQuery(&qflds);
     }
 
@@ -1182,11 +1183,16 @@ int FmtTable::RemoveTrn()
     {
         QSqlQuery qtbl(this->db);
         qtbl.prepare("delete from FMT_NAMES where T_ID = ?");
-        qtbl.bindValue(0, this->m_Id);
+        qtbl.bindValue(0, id);
         stat = ExecuteQuery(&qtbl);
     }
 
     return stat;
+}
+
+int FmtTable::RemoveTrn()
+{
+    return RemoveByID(this->m_Id);
 }
 
 int FmtTable::removeFmtTable()
@@ -1343,27 +1349,32 @@ int FmtTable::SaveTrn()
         qtbl.prepare("insert into FMT_NAMES values(?,?,?,?,?,?,?,?,?)");
 
         m_Id = FindFirstEmptyID();
-        qtbl.bindValue(prm++, m_Id);
-        qtbl.bindValue(prm++, m_Name);
-        qtbl.bindValue(prm++, m_CacheSize);
-        qtbl.bindValue(prm++, m_Owner);
-        qtbl.bindValue(prm++, m_Comment);
-        qtbl.bindValue(prm++, m_PkIDx);
-        qtbl.bindValue(prm++, m_BlobType);
-        qtbl.bindValue(prm++, m_BlobLen);
-        qtbl.bindValue(prm++, m_Flags);
-
-        stat = ExecuteQuery(&qtbl);
+        stat = RemoveByID(m_Id);
 
         if (!stat)
         {
-            foreach (FmtField *fld, m_pFields)
+            qtbl.bindValue(prm++, m_Id);
+            qtbl.bindValue(prm++, m_Name);
+            qtbl.bindValue(prm++, m_CacheSize);
+            qtbl.bindValue(prm++, m_Owner);
+            qtbl.bindValue(prm++, m_Comment);
+            qtbl.bindValue(prm++, m_PkIDx);
+            qtbl.bindValue(prm++, m_BlobType);
+            qtbl.bindValue(prm++, m_BlobLen);
+            qtbl.bindValue(prm++, m_Flags);
+
+            stat = ExecuteQuery(&qtbl);
+        }
+
+        if (!stat)
+        {
+            for (FmtField *fld : qAsConst(m_pFields))
             {
                 if (!stat)
                     stat = fld->save();
             }
 
-            foreach (FmtIndex *idx, m_pIndeces)
+            for (FmtIndex *idx : qAsConst(m_pIndeces))
             {
                 if (!stat)
                     stat = idx->save();
