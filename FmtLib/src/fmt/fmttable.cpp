@@ -1486,6 +1486,9 @@ QString FmtTable::generateCreateTableSql()
 
 QString FmtTable::getCommentSql()
 {
+    if (m_Comment.isEmpty())
+        return QString();
+
     QSqlDriver *driver = connection()->driver();
     QSqlField fld;
     fld.setType(QVariant::String);
