@@ -76,7 +76,7 @@ void RichTextToInsertResultPage::generatePlsqlCode()
     QTextDocument *document = wizard->document();
     FmtTable *table = wizard->table();
     bool firstAsHeader = wizard->firstAsHeader();
-    QMap<int, QString> fieldMapping = wizard->fieldMapping();
+    QMap<QString, QString> fieldMapping = wizard->fieldMapping(); // изменился тип
 
     if (!document || !table)
     {

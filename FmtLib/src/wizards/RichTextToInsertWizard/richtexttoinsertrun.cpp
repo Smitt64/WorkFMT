@@ -13,8 +13,7 @@
 #include "connectioninfo.h"
 
 RichTextToInsertRun::RichTextToInsertRun(QObject *parent)
-    : QObject{parent},
-    QRunnable()
+    : QObject{parent}, QRunnable()
 {
 }
 
@@ -31,29 +30,12 @@ void RichTextToInsertRun::run()
     emit finished(plsqlBlock);
 }
 
-void RichTextToInsertRun::setData(QTextDocument *document, FmtTable *table, bool firstRowAsHeader, const QMap<int, QString> &fieldMapping)
+void RichTextToInsertRun::setData(QTextDocument *document, FmtTable *table, bool firstRowAsHeader, const QMap<QString, QString> &fieldMapping)
 {
     m_pDocument = document;
     m_pTable = table;
     m_bFirstRowAsHeader = firstRowAsHeader;
     m_FieldMapping = fieldMapping;
-
-    qDebug() << "=== DEBUG: setData called ===";
-    qDebug() << "First row as header:" << m_bFirstRowAsHeader;
-    qDebug() << "Field mapping contents:";
-    for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
-    {
-        qDebug() << "  Key:" << it.key() << "Value:" << it.value();
-    }
-
-    if (m_pTable) {
-        qDebug() << "Table fields:";
-        const QList<FmtField*> &fields = m_pTable->getFieldsList();
-        for (FmtField *field : fields)
-        {
-            qDebug() << "  -" << field->name() << "(undecorated:" << field->undecorateName() << ")";
-        }
-    }
 }
 
 QString RichTextToInsertRun::generatePlsqlBlock()
@@ -108,46 +90,59 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
 {
     QString declaration;
 
-    QMap<QString, QString> parameters;
-    QList<int> columnMappings;
+    QMap<int, QString> columnParameters;
 
-    qDebug() << "=== DEBUG: Generating function declaration ===";
-    qDebug() << "Field mapping contents:";
     for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
     {
-        qDebug() << "  Key:" << it.key() << "Value:" << it.value();
-        if (it.key() >= 0)
+        QString source = it.value();
+
+        if (source.startsWith("COLUMN|"))
         {
-            parameters[it.value()] = "VARCHAR2";
-            columnMappings << it.key();
+            QString columnStr = source.mid(7);
+            bool ok;
+            int columnIndex = columnStr.toInt(&ok);
+
+            if (ok && columnIndex >= 0)
+            {
+                if (!columnParameters.contains(columnIndex))
+                {
+                    QString paramName = "p_col" + QString::number(columnIndex + 1);
+                    columnParameters[columnIndex] = paramName;
+                }
+            }
         }
     }
 
-    qDebug() << "Parameters for function:" << parameters.keys();
-    qDebug() << "Column mappings:" << columnMappings;
-
-    if (parameters.isEmpty())
-        return declaration;
-
-    declaration += QString("    PROCEDURE %1(\n").arg(functionName);
-
-    int paramCount = 0;
-    for (auto it = parameters.begin(); it != parameters.end(); ++it)
+    if (columnParameters.isEmpty())
     {
-        QString paramName = it.key().toLower();
-        QString paramType = it.value();
+        declaration += "    PROCEDURE " + functionName + "\n";
+    }
+    else
+    {
+        declaration += QString("    PROCEDURE %1(\n").arg(functionName);
 
-        declaration += QString("        %1 IN %2").arg(paramName).arg(paramType);
+        int paramCount = 0;
+        QList<int> columns = columnParameters.keys();
+        std::sort(columns.begin(), columns.end());
 
-        if (paramCount < parameters.size() - 1)
-            declaration += ",\n";
-        else
-            declaration += "\n";
+        for (int col : columns)
+        {
+            QString paramName = columnParameters[col];
+            QString paramType = "VARCHAR2";
 
-        paramCount++;
+            declaration += QString("        %1 IN %2").arg(paramName).arg(paramType);
+
+            if (paramCount < columns.size() - 1)
+                declaration += ",\n";
+            else
+                declaration += "\n";
+
+            paramCount++;
+        }
+
+        declaration += "    )\n";
     }
 
-    declaration += "    )\n";
     declaration += "    IS\n";
 
     QString nextvalVars = generateNextvalVariables();
@@ -161,9 +156,9 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
     QString nextvalInit = generateNextvalInitialization();
     declaration += nextvalInit;
 
-    declaration += generateInsertStatement(parameters.keys());
+    declaration += generateInsertStatement(columnParameters);
 
-    declaration += generateExceptionHandler();
+    declaration += generateExceptionHandler(columnParameters);
 
     declaration += "    END " + functionName + ";\n";
 
@@ -174,77 +169,14 @@ QString RichTextToInsertRun::generateNextvalVariables()
 {
     QString variables;
 
-    QSet<QString> nextvalFields;
-
     for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
     {
-        if (it.key() < 0)
+        QString source = it.value();
+
+        if ((source.startsWith("FUNC|") || source.startsWith("VAL|")) &&
+            source.contains("nextval", Qt::CaseInsensitive))
         {
-            QStringList parts = it.value().split("|");
-
-            if (parts.size() >= 2)
-            {
-                QString fieldName = parts[1];
-                QString value = parts.size() > 2 ? parts[2] : "NULL";
-
-                if (value.compare("nextval", Qt::CaseInsensitive) == 0)
-                {
-                    nextvalFields.insert(fieldName);
-                }
-            }
-        }
-    }
-
-    for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
-    {
-        if (it.key() >= 0)
-        {
-            QString fieldName = it.value();
-
-            QTextTable *table = findTableInDocument();
-            if (table)
-            {
-                int startRow = m_bFirstRowAsHeader ? 1 : 0;
-                for (int row = startRow; row < table->rows(); ++row)
-                {
-                    QString cellValue = getRawCellValue(table, row, it.key());
-
-                    if (cellValue.compare("nextval", Qt::CaseInsensitive) == 0)
-                    {
-                        nextvalFields.insert(fieldName);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    QTextTable *table = findTableInDocument();
-    if (table)
-    {
-        int startRow = m_bFirstRowAsHeader ? 1 : 0;
-        for (int row = startRow; row < table->rows(); ++row)
-        {
-            for (int col = 0; col < table->columns(); ++col)
-            {
-                QString rawValue = getRawCellValue(table, row, col);
-                if (rawValue.compare("nextval", Qt::CaseInsensitive) == 0)
-                {
-                    QString fieldName = m_FieldMapping.value(col);
-                    if (!fieldName.isEmpty())
-                    {
-                        nextvalFields.insert(fieldName);
-                    }
-                }
-            }
-        }
-    }
-
-    for (const QString &fieldName : nextvalFields)
-    {
-        if (!fieldName.isEmpty())
-        {
-            variables += QString("        %1_seq NUMBER;\n").arg(fieldName.toLower());
+            variables += QString("        %1_seq NUMBER;\n").arg(it.key().toLower());
         }
     }
 
@@ -255,72 +187,13 @@ QString RichTextToInsertRun::generateNextvalInitialization()
 {
     QString init;
 
-    QSet<QString> nextvalFields;
-
     for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
     {
-        if (it.key() < 0)
-        {
-            QStringList parts = it.value().split("|");
-            if (parts.size() >= 2)
-            {
-                QString fieldName = parts[1];
-                QString value = parts.size() > 2 ? parts[2] : "NULL";
+        QString fieldName = it.key();
+        QString source = it.value();
 
-                if (value.compare("nextval", Qt::CaseInsensitive) == 0)
-                {
-                    nextvalFields.insert(fieldName);
-                }
-            }
-        }
-    }
-
-    for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
-    {
-        if (it.key() >= 0)
-        {
-            QString fieldName = it.value();
-            QTextTable *table = findTableInDocument();
-            if (table)
-            {
-                int startRow = m_bFirstRowAsHeader ? 1 : 0;
-                for (int row = startRow; row < table->rows(); ++row)
-                {
-                    QString cellValue = getRawCellValue(table, row, it.key());
-                    if (cellValue.compare("nextval", Qt::CaseInsensitive) == 0)
-                    {
-                        nextvalFields.insert(fieldName);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    QTextTable *table = findTableInDocument();
-    if (table)
-    {
-        int startRow = m_bFirstRowAsHeader ? 1 : 0;
-        for (int row = startRow; row < table->rows(); ++row)
-        {
-            for (int col = 0; col < table->columns(); ++col)
-            {
-                QString rawValue = getRawCellValue(table, row, col);
-                if (rawValue.compare("nextval", Qt::CaseInsensitive) == 0)
-                {
-                    QString fieldName = m_FieldMapping.value(col);
-                    if (!fieldName.isEmpty())
-                    {
-                        nextvalFields.insert(fieldName);
-                    }
-                }
-            }
-        }
-    }
-
-    for (const QString &fieldName : nextvalFields)
-    {
-        if (!fieldName.isEmpty())
+        if ((source.startsWith("FUNC|") || source.startsWith("VAL|")) &&
+            source.contains("nextval", Qt::CaseInsensitive))
         {
             init += QString("        SELECT NVL(MAX(%1), 0) + 1 INTO %2_seq FROM %3;\n")
             .arg(fieldName)
@@ -332,103 +205,76 @@ QString RichTextToInsertRun::generateNextvalInitialization()
     return init;
 }
 
-QString RichTextToInsertRun::generateInsertStatement(const QStringList &fieldNames)
+QString RichTextToInsertRun::generateInsertStatement(const QMap<int, QString> &columnParameters)
 {
     QString insert = "        INSERT INTO " + m_pTable->name() + " (";
 
     QStringList fields;
     QStringList values;
 
-    qDebug() << "=== DEBUG: Generating INSERT statement ===";
-    qDebug() << "Field names from parameters:" << fieldNames;
-
-    // Поля из параметров функции
-    for (const QString &fieldName : fieldNames)
-    {
-        FmtField *field = findFieldByName(fieldName);
-        QString actualFieldName = field ? field->name() : fieldName;
-
-        qDebug() << "Parameter field:" << fieldName << "-> Actual field:" << actualFieldName << "Field found:" << (field != nullptr);
-
-        fields << actualFieldName;
-        values << fieldName.toLower();
-    }
-
-    qDebug() << "=== DEBUG: Processing negative mappings ===";
-
-    // Дополнительные поля из маппинга (с отрицательными ключами)
     for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
     {
-        if (it.key() < 0)
+        QString fieldName = it.key();
+        QString source = it.value();
+        FmtField *field = findFieldByName(fieldName);
+
+        if (!field)
+            continue;
+
+        fields << fieldName;
+
+        if (source.startsWith("COLUMN|"))
         {
-            QStringList parts = it.value().split("|");
-            qDebug() << "Negative mapping key:" << it.key() << "value:" << it.value() << "parts:" << parts;
+            QString columnStr = source.mid(7);
+            bool ok;
+            int columnIndex = columnStr.toInt(&ok);
 
-            if (parts.size() >= 2)
+            if (ok && columnIndex >= 0 && columnParameters.contains(columnIndex))
             {
-                QString fieldName = parts[1];
-                QString value = parts.size() > 2 ? parts[2] : "NULL";
-
-                FmtField *field = findFieldByName(fieldName);
-                QString actualFieldName = field ? field->name() : fieldName;
-
-                qDebug() << "  Field:" << fieldName << "-> Actual:" << actualFieldName << "Value:" << value << "Field found:" << (field != nullptr);
-
-                fields << actualFieldName;
-
-                if (field)
-                {
-                    if (value.compare("sql:NULL", Qt::CaseInsensitive) == 0)
-                    {
-                        values << "NULL";
-                        qDebug() << "    -> NULL value";
-                    }
-                    else if (value.compare("nextval", Qt::CaseInsensitive) == 0)
-                    {
-                        values << QString("%1_seq").arg(fieldName.toLower());
-                        qDebug() << "    -> nextval variable:" << QString("%1_seq").arg(fieldName.toLower());
-                    }
-                    else if (parts[0] == "SQL" || parts[0] == "FUNC")
-                    {
-                        values << value;
-                        qDebug() << "    -> SQL/FUNC value:" << value;
-                    }
-                    else
-                    {
-                        QString formattedValue = formatValueForField(value, field);
-                        values << formattedValue;
-                        qDebug() << "    -> Formatted value:" << formattedValue;
-                    }
-                }
-                else
-                {
-                    qDebug() << "    -> Field not found, using basic formatting";
-                    if (value.compare("sql:NULL", Qt::CaseInsensitive) == 0)
-                    {
-                        values << "NULL";
-                    }
-                    else if (value.compare("nextval", Qt::CaseInsensitive) == 0)
-                    {
-                        values << QString("%1_seq").arg(fieldName.toLower());
-                    }
-                    else if (parts[0] == "SQL" || parts[0] == "FUNC")
-                    {
-                        values << value;
-                    }
-                    else
-                    {
-                        QString escapedValue = value;
-                        escapedValue.replace("'", "''");
-                        values << "'" + escapedValue + "'";
-                    }
-                }
+                QString paramName = columnParameters[columnIndex];
+                values << paramName;
+            }
+            else
+            {
+                values << "NULL";
             }
         }
+        else if (source.startsWith("SQL|"))
+        {
+            QString sqlValue = source.mid(4);
+            values << sqlValue;
+        }
+        else if (source.startsWith("FUNC|"))
+        {
+            QString funcValue = source.mid(5);
+            if (funcValue.compare("nextval", Qt::CaseInsensitive) == 0)
+            {
+                values << QString("%1_seq").arg(fieldName.toLower());
+            }
+            else
+            {
+                values << funcValue;
+            }
+        }
+        else if (source.startsWith("VAL|"))
+        {
+            QString valValue = source.mid(4);
+            if (valValue.compare("nextval", Qt::CaseInsensitive) == 0)
+            {
+                values << QString("%1_seq").arg(fieldName.toLower());
+            }
+            else
+            {
+                QString formattedValue = formatValueForField(valValue, field);
+                values << formattedValue;
+            }
+        }
+        else
+        {
+            QString formattedValue = formatValueForField(source, field);
+            values << formattedValue;
+        }
     }
-
-    qDebug() << "=== DEBUG: Final fields and values ===";
-    qDebug() << "Fields:" << fields;
-    qDebug() << "Values:" << values;
 
     insert += fields.join(", ") + ")\n";
     insert += "        VALUES (" + values.join(", ") + ");\n\n";
@@ -436,7 +282,7 @@ QString RichTextToInsertRun::generateInsertStatement(const QStringList &fieldNam
     return insert;
 }
 
-QString RichTextToInsertRun::generateExceptionHandler()
+QString RichTextToInsertRun::generateExceptionHandler(const QMap<int, QString> &columnParameters)
 {
     QString exceptionHandler;
 
@@ -447,19 +293,13 @@ QString RichTextToInsertRun::generateExceptionHandler()
     exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Трассировка: ' || DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;\n";
     exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Параметры записи: ';\n";
 
-    QMap<QString, QString> parameters;
-    for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
-    {
-        if (it.key() >= 0)
-        {
-            parameters[it.value()] = "VARCHAR2";
-        }
-    }
-
     int paramCount = 0;
-    for (auto it = parameters.begin(); it != parameters.end(); ++it)
+    QList<int> columns = columnParameters.keys();
+    std::sort(columns.begin(), columns.end());
+
+    for (int col : columns)
     {
-        QString paramName = it.key().toLower();
+        QString paramName = columnParameters[col];
         if (paramCount == 0) {
             exceptionHandler += QString("            v_error_msg := v_error_msg || '%1=' || %2;\n")
             .arg(paramName).arg(paramName);
@@ -468,17 +308,6 @@ QString RichTextToInsertRun::generateExceptionHandler()
             .arg(paramName).arg(paramName);
         }
         paramCount++;
-    }
-
-    // Добавляем диагностику для определения проблемного индекса
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Диагностика:';\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Проверьте уникальные индексы и ограничения:';\n";
-
-    // Получаем список уникальных индексов таблицы
-    if (m_pTable && m_pTable->hasUniqueIndexes()) {
-        exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Возможные проблемные индексы:';\n";
-        // Здесь можно добавить логику для вывода конкретных индексов
-        // но для этого нужен доступ к метаданным таблицы
     }
 
     exceptionHandler += "            DBMS_OUTPUT.PUT_LINE(v_error_msg);\n";
@@ -490,41 +319,47 @@ QString RichTextToInsertRun::generateExceptionHandler()
 
 QString RichTextToInsertRun::generateFunctionCall(int row, QTextTable *table, const QString &functionName)
 {
-    QString call = QString("    %1(").arg(functionName);
+    QString call;
 
     QStringList parameters;
+    QMap<int, QString> columnParameters;
 
-    QList<int> columnMappings;
     for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
     {
-        if (it.key() >= 0)
+        QString source = it.value();
+        if (source.startsWith("COLUMN|"))
         {
-            columnMappings << it.key();
+            QString columnStr = source.mid(7);
+            bool ok;
+            int columnIndex = columnStr.toInt(&ok);
+            if (ok && columnIndex >= 0)
+            {
+                QString paramName = "p_col" + QString::number(columnIndex + 1);
+                if (!columnParameters.contains(columnIndex))
+                {
+                    columnParameters[columnIndex] = paramName;
+                }
+            }
         }
     }
 
-    std::sort(columnMappings.begin(), columnMappings.end());
+    QList<int> columns = columnParameters.keys();
+    std::sort(columns.begin(), columns.end());
 
-    for (int col : columnMappings)
+    for (int col : columns)
     {
-        QString rawValue = getRawCellValue(table, row, col);
-        QString fieldName = m_FieldMapping.value(col);
-        FmtField *field = findFieldByName(fieldName);
-
-        QString cellValue;
-        if (rawValue.compare("nextval", Qt::CaseInsensitive) == 0 && field)
-        {
-            cellValue = QString("%1_seq").arg(fieldName.toLower());
-        }
-        else
-        {
-            cellValue = getCellValue(table, row, col);
-        }
-
+        QString cellValue = getCellValue(table, row, col);
         parameters << cellValue;
     }
 
-    call += parameters.join(", ") + ");\n";
+    if (parameters.isEmpty())
+    {
+        call = QString("    %1;\n").arg(functionName);
+    }
+    else
+    {
+        call = QString("    %1(%2);\n").arg(functionName).arg(parameters.join(", "));
+    }
 
     return call;
 }
@@ -544,17 +379,22 @@ QString RichTextToInsertRun::getCellValue(QTextTable *table, int row, int col)
     if (text.isEmpty())
         return "NULL";
 
-    QString fieldName = m_FieldMapping.value(col);
-    FmtField *field = findFieldByName(fieldName);
-
-    if (field)
-    {
-        return formatValueForField(text, field);
-    }
-
     QString escapedValue = text;
     escapedValue.replace("'", "''");
     return "'" + escapedValue + "'";
+}
+
+QString RichTextToInsertRun::getRawCellValue(QTextTable *table, int row, int col)
+{
+    QTextTableCell cell = table->cellAt(row, col);
+    if (!cell.isValid())
+        return QString();
+
+    QTextCursor cursor(m_pDocument);
+    cursor.setPosition(cell.firstCursorPosition().position());
+    cursor.setPosition(cell.lastCursorPosition().position(), QTextCursor::KeepAnchor);
+
+    return cursor.selectedText().trimmed();
 }
 
 FmtField* RichTextToInsertRun::findFieldByName(const QString &fieldName)
@@ -564,34 +404,14 @@ FmtField* RichTextToInsertRun::findFieldByName(const QString &fieldName)
 
     const QList<FmtField*> &fields = m_pTable->getFieldsList();
 
-    qDebug() << "=== DEBUG: Searching for field:" << fieldName;
-    qDebug() << "Available fields in table:";
-    for (FmtField *field : fields)
-    {
-        qDebug() << "  -" << field->name() << "(undecorated:" << field->undecorateName() << ")";
-    }
-
-    // Сначала ищем точное совпадение по имени
     for (FmtField *field : fields)
     {
         if (field->name().compare(fieldName, Qt::CaseInsensitive) == 0)
         {
-            qDebug() << "  Found by exact name match";
             return field;
         }
     }
 
-    // Затем ищем по undecorateName
-    for (FmtField *field : fields)
-    {
-        if (field->undecorateName().compare(fieldName, Qt::CaseInsensitive) == 0)
-        {
-            qDebug() << "  Found by undecorateName match";
-            return field;
-        }
-    }
-
-    qDebug() << "  Field not found!";
     return nullptr;
 }
 
@@ -823,17 +643,4 @@ QDateTime RichTextToInsertRun::parseDateTime(const QString &dateTimeString)
     }
 
     return QDateTime();
-}
-
-QString RichTextToInsertRun::getRawCellValue(QTextTable *table, int row, int col)
-{
-    QTextTableCell cell = table->cellAt(row, col);
-    if (!cell.isValid())
-        return QString();
-
-    QTextCursor cursor(m_pDocument);
-    cursor.setPosition(cell.firstCursorPosition().position());
-    cursor.setPosition(cell.lastCursorPosition().position(), QTextCursor::KeepAnchor);
-
-    return cursor.selectedText().trimmed();
 }
