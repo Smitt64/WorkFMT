@@ -35,15 +35,13 @@ RichTextToInsertWizard::RichTextToInsertWizard(ConnectionInfo *info, QWidget *pa
     QWizard(parent, flags),
     m_pTable(nullptr)
 {
-    //m_pTable = new FmtTable(info, this);
     Init(info);
 }
 
 RichTextToInsertWizard::RichTextToInsertWizard(FmtTable *Table, QWidget *parent, Qt::WindowFlags flags) :
-    QWizard(parent, flags)
+    QWizard(parent, flags),
+    m_pTable(Table)
 {
-    m_pTable = Table;
-
     Init(m_pTable->connection());
 }
 
@@ -80,7 +78,6 @@ bool RichTextToInsertWizard::addTables(const QString &str)
         return false;
 
     m_Tables.append(str);
-
     return true;
 }
 
@@ -100,9 +97,9 @@ QTextDocument *RichTextToInsertWizard::document()
     return m_pRichText;
 }
 
-QMap<int, QString> RichTextToInsertWizard::fieldMapping() const
+QMap<QString, QString> RichTextToInsertWizard::fieldMapping() const
 {
-    QMap<int, QString> mapping;
+    QMap<QString, QString> mapping;
 
     if (!m_pSourcePage || !m_pTable)
         return mapping;
@@ -130,9 +127,11 @@ QMap<int, QString> RichTextToInsertWizard::fieldMapping() const
             source = model->data(sourceIndex, Qt::DisplayRole).toString();
         }
 
-        QString fieldName = field->undecorateName();
+        QString fieldName = field->name(); // Используем настоящее имя поля из БД
 
-        // Анализируем тип источника
+        // Ключ = имя поля в БД таблице
+        // Значение = источник данных
+
         if (source.startsWith("{column_") && source.endsWith("}"))
         {
             // Колонка Word документа
@@ -142,25 +141,25 @@ QMap<int, QString> RichTextToInsertWizard::fieldMapping() const
 
             if (ok && columnIndex >= 0)
             {
-                mapping[columnIndex] = fieldName;
+                mapping[fieldName] = QString("COLUMN|%1").arg(columnIndex);
             }
         }
         else if (source.startsWith("sql:"))
         {
             // SQL выражение
             QString sqlValue = source.mid(4);
-            mapping[-fieldIndex - 1000] = QString("SQL|%1|%2").arg(fieldName).arg(sqlValue);
+            mapping[fieldName] = QString("SQL|%1").arg(sqlValue);
         }
         else if (source.startsWith("func:"))
         {
             // Функция
             QString funcValue = source.mid(5);
-            mapping[-fieldIndex - 2000] = QString("FUNC|%1|%2").arg(fieldName).arg(funcValue);
+            mapping[fieldName] = QString("FUNC|%1").arg(funcValue);
         }
         else
         {
             // Простое значение или выражение
-            mapping[-fieldIndex - 3000] = QString("VAL|%1|%2").arg(fieldName).arg(source);
+            mapping[fieldName] = QString("VAL|%1").arg(source);
         }
     }
 
