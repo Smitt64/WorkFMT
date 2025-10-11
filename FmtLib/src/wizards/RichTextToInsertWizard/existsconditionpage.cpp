@@ -8,6 +8,7 @@
 #include <QIcon>
 #include <QButtonGroup>
 #include <QCompleter>
+#include <functional>
 
 class FmtIndexTreeItem
 {
@@ -48,7 +49,7 @@ public:
 
     int columnCount() const
     {
-        return 1; // Only one column for display
+        return 1;
     }
 
     QVariant data(int column) const
@@ -91,10 +92,12 @@ private:
     QList<FmtIndexTreeItem*> m_children;
 };
 
+// -------------------------------------------------------------------------------------
+
 FmtIndexTreeModel::FmtIndexTreeModel(FmtTable *table, QObject *parent)
-    : QAbstractItemModel(parent), m_table(table)
+    : QAbstractItemModel(parent), m_table(table), m_selectedIndex(nullptr)
 {
-    m_rootItem = new FmtIndexTreeItem(); // Используем конструктор по умолчанию
+    m_rootItem = new FmtIndexTreeItem();
     setupModelData();
 }
 
@@ -108,7 +111,7 @@ void FmtIndexTreeModel::setupModelData()
     beginResetModel();
 
     delete m_rootItem;
-    m_rootItem = new FmtIndexTreeItem(); // Конструктор по умолчанию для корня
+    m_rootItem = new FmtIndexTreeItem();
 
     if (m_table)
     {
@@ -118,7 +121,6 @@ void FmtIndexTreeModel::setupModelData()
             FmtIndexTreeItem *indexItem = new FmtIndexTreeItem(index, m_rootItem);
             m_rootItem->appendChild(indexItem);
 
-            // Добавляем сегменты как дочерние элементы
             for (int j = 0; j < index->segmentsCount(); ++j)
             {
                 FmtSegment *segment = index->segment(j);
@@ -183,7 +185,7 @@ int FmtIndexTreeModel::rowCount(const QModelIndex &parent) const
 int FmtIndexTreeModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 1; // Только одна колонка для отображения
+    return 1;
 }
 
 QVariant FmtIndexTreeModel::data(const QModelIndex &index, int role) const
@@ -203,7 +205,6 @@ QVariant FmtIndexTreeModel::data(const QModelIndex &index, int role) const
     {
         if (item->isIndex())
         {
-            // Иконка для индекса
             if (item->index()->isPrimary())
                 return QIcon(":/img/PrimaryKeyHS.png");
             else
@@ -211,18 +212,61 @@ QVariant FmtIndexTreeModel::data(const QModelIndex &index, int role) const
         }
         else if (item->isSegment())
         {
-            // Иконка для сегмента (поля)
             return QIcon(":/img/FieldHS.png");
         }
     }
+    else if (role == Qt::CheckStateRole && item->isIndex())
+    {
+        return (item->index() == m_selectedIndex) ? Qt::Checked : Qt::Unchecked;
+    }
     else if (role == Qt::UserRole)
     {
-        // Возвращаем указатель для идентификации типа
         if (item->isIndex()) return "index";
         if (item->isSegment()) return "segment";
     }
 
     return QVariant();
+}
+
+bool FmtIndexTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (!index.isValid() || role != Qt::CheckStateRole)
+        return false;
+
+    FmtIndexTreeItem *item = static_cast<FmtIndexTreeItem*>(index.internalPointer());
+    if (!item || !item->isIndex())
+        return false;
+
+    if (value.toInt() == Qt::Checked)
+    {
+        // Снимаем выделение с предыдущего индекса
+        if (m_selectedIndex && m_selectedIndex != item->index())
+        {
+            QModelIndex previousIndex = findIndexForIndex(m_selectedIndex);
+            if (previousIndex.isValid())
+            {
+                m_selectedIndex = nullptr;
+                emit dataChanged(previousIndex, previousIndex, {Qt::CheckStateRole});
+            }
+        }
+
+        // Устанавливаем новый выбранный индекс
+        m_selectedIndex = item->index();
+        emit dataChanged(index, index, {Qt::CheckStateRole});
+        emit selectionChanged(m_selectedIndex);
+    }
+    else
+    {
+        // Снимаем выделение
+        if (m_selectedIndex == item->index())
+        {
+            m_selectedIndex = nullptr;
+            emit dataChanged(index, index, {Qt::CheckStateRole});
+            emit selectionChanged(nullptr);
+        }
+    }
+
+    return true;
 }
 
 Qt::ItemFlags FmtIndexTreeModel::flags(const QModelIndex &index) const
@@ -234,11 +278,14 @@ Qt::ItemFlags FmtIndexTreeModel::flags(const QModelIndex &index) const
     if (!item || item->isRoot())
         return Qt::NoItemFlags;
 
-    // Разрешаем выбор только индексов (не сегментов)
+    Qt::ItemFlags flags = Qt::ItemIsEnabled;
+
     if (item->isIndex())
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-    else
-        return Qt::ItemIsEnabled; // Сегменты нельзя выбирать
+    {
+        flags |= Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
+    }
+
+    return flags;
 }
 
 FmtIndex* FmtIndexTreeModel::getIndex(const QModelIndex &index) const
@@ -253,7 +300,6 @@ FmtIndex* FmtIndexTreeModel::getIndex(const QModelIndex &index) const
     if (item->isIndex())
         return item->index();
 
-    // Если это сегмент, возвращаем родительский индекс
     if (item->isSegment() && item->parent() && !item->parent()->isRoot())
         return item->parent()->index();
 
@@ -286,12 +332,74 @@ FmtIndexTreeItem *FmtIndexTreeModel::getItem(const QModelIndex &index) const
     return static_cast<FmtIndexTreeItem*>(index.internalPointer());
 }
 
+QModelIndex FmtIndexTreeModel::findIndexForIndex(FmtIndex *index) const
+{
+    if (!index || !m_rootItem)
+        return QModelIndex();
+
+    std::function<QModelIndex(FmtIndexTreeItem*, int)> findRecursive;
+    findRecursive = [&](FmtIndexTreeItem *parentItem, int row) -> QModelIndex {
+        for (int i = 0; i < parentItem->childCount(); ++i)
+        {
+            FmtIndexTreeItem *childItem = parentItem->child(i);
+            if (childItem->isIndex() && childItem->index() == index)
+            {
+                return createIndex(i, 0, childItem);
+            }
+
+            QModelIndex found = findRecursive(childItem, i);
+            if (found.isValid())
+                return found;
+        }
+        return QModelIndex();
+    };
+
+    return findRecursive(m_rootItem, 0);
+}
+
+FmtIndex* FmtIndexTreeModel::getSelectedIndex() const
+{
+    return m_selectedIndex;
+}
+
+QModelIndex FmtIndexTreeModel::getSelectedIndexModelIndex() const
+{
+    return findIndexForIndex(m_selectedIndex);
+}
+
+void FmtIndexTreeModel::setSelectedIndex(const QModelIndex &index)
+{
+    if (!index.isValid())
+        return;
+
+    FmtIndexTreeItem *item = static_cast<FmtIndexTreeItem*>(index.internalPointer());
+    if (!item || !item->isIndex())
+        return;
+
+    setData(index, Qt::Checked, Qt::CheckStateRole);
+}
+
+void FmtIndexTreeModel::clearSelection()
+{
+    if (m_selectedIndex)
+    {
+        QModelIndex previousIndex = findIndexForIndex(m_selectedIndex);
+        if (previousIndex.isValid())
+        {
+            m_selectedIndex = nullptr;
+            emit dataChanged(previousIndex, previousIndex, {Qt::CheckStateRole});
+            emit selectionChanged(nullptr);
+        }
+    }
+}
+
 // -------------------------------------------------------------------------------------
 
 ExistsConditionPage::ExistsConditionPage(QWidget *parent)
     : QWizardPage(parent)
     , ui(new Ui::ExistsConditionPage),
-    m_pModel(nullptr)
+    m_pModel(nullptr),
+    m_pGroup(nullptr)
 {
     ui->setupUi(this);
     ui->radioButton->setChecked(true);
@@ -311,8 +419,15 @@ ExistsConditionPage::ExistsConditionPage(QWidget *parent)
 
     ToolApplyHighlighter(ui->plainTextEdit, HighlighterSql);
 
-   // ui->plainTextEdit->setCompleter(completer);
+    // Настройка treeView для работы с checkbox'ами
+    ui->treeView->setEditTriggers(QAbstractItemView::CurrentChanged);
+    ui->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    // Подключаем обработчики
+    connect(ui->treeView, &QTreeView::activated, this, &ExistsConditionPage::onTreeViewActivated);
     connect(m_pGroup, &QButtonGroup::idClicked, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
+    connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, &ExistsConditionPage::onCustomConditionChanged);
 }
 
 ExistsConditionPage::~ExistsConditionPage()
@@ -320,11 +435,35 @@ ExistsConditionPage::~ExistsConditionPage()
     delete ui;
 }
 
+void ExistsConditionPage::onTreeViewActivated(const QModelIndex &index)
+{
+    if (!m_pModel)
+        return;
+
+    if (m_pModel->isIndex(index))
+    {
+        Qt::CheckState currentState = static_cast<Qt::CheckState>(
+            index.data(Qt::CheckStateRole).toInt());
+
+        Qt::CheckState newState = (currentState == Qt::Checked) ? Qt::Unchecked : Qt::Checked;
+        m_pModel->setData(index, newState, Qt::CheckStateRole);
+    }
+}
+
+void ExistsConditionPage::onSelectionChanged(FmtIndex* selectedIndex)
+{
+    // Можно добавить дополнительную логику при изменении выбора
+    Q_UNUSED(selectedIndex);
+}
+
+void ExistsConditionPage::onCustomConditionChanged()
+{
+    // Обработка изменения пользовательского условия
+}
+
 void ExistsConditionPage::initializePage()
 {
     RichTextToInsertWizard *wzrd = qobject_cast<RichTextToInsertWizard*>(wizard());
-
-    ui->treeView->setModel(m_pModel);
 
     if (m_pModel)
     {
@@ -332,9 +471,31 @@ void ExistsConditionPage::initializePage()
         m_pModel = nullptr;
     }
 
-    if (wzrd->table())
+    if (wzrd && wzrd->table())
+    {
         m_pModel = new FmtIndexTreeModel(wzrd->table(), this);
+        connect(m_pModel, &FmtIndexTreeModel::selectionChanged,
+                this, &ExistsConditionPage::onSelectionChanged);
+    }
 
     ui->treeView->setModel(m_pModel);
-    ui->treeView->expandAll();
+    if (m_pModel)
+    {
+        ui->treeView->expandAll();
+    }
+}
+
+FmtIndex* ExistsConditionPage::getSelectedIndex() const
+{
+    return m_pModel ? m_pModel->getSelectedIndex() : nullptr;
+}
+
+QString ExistsConditionPage::getCustomCondition() const
+{
+    return ui->plainTextEdit->toPlainText().trimmed();
+}
+
+bool ExistsConditionPage::useCustomCondition() const
+{
+    return ui->radioButton_2->isChecked();
 }

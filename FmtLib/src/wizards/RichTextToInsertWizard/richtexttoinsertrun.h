@@ -9,7 +9,7 @@
 class FmtTable;
 class FmtField;
 class QTextTable;
-
+class FmtIndex;
 class RichTextToInsertRun : public QObject, public QRunnable
 {
     Q_OBJECT
@@ -21,6 +21,7 @@ public:
     void run() override;
 
     void setData(QTextDocument *document, FmtTable *table, bool firstRowAsHeader, const QMap<QString, QString> &fieldMapping);
+    void setExistsCondition(FmtIndex *index, const QString &customCondition, bool useCustomCondition);
 
 signals:
     void finished(const QString &plsqlCode);
@@ -39,6 +40,11 @@ private:
     QString generateNextvalVariables();
     QString generateNextvalInitialization();
     QString generateExceptionHandler(const QMap<int, QString> &columnParameters);
+    QString generateUpdateStatement(const QMap<int, QString> &columnParameters);
+
+    // Проверка существования
+    QString generateExistsCondition();
+    QString generateIndexCondition(FmtIndex *index);
 
     // Вспомогательные методы
     QString getCellValue(QTextTable *table, int row, int col);
@@ -53,10 +59,17 @@ private:
     QDateTime parseDateTime(const QString &dateTimeString);
 
 private:
+    bool isDefaultValue(const QString &value, FmtField *field);
+
     QTextDocument *m_pDocument = nullptr;
     FmtTable *m_pTable = nullptr;
     bool m_bFirstRowAsHeader = false;
-    QMap<QString, QString> m_FieldMapping; // поле БД -> источник данных
+    QMap<QString, QString> m_FieldMapping;
+
+    // Данные для проверки существования
+    FmtIndex *m_existsIndex = nullptr;
+    QString m_customExistsCondition;
+    bool m_useCustomCondition = false;
 };
 
 #endif // RICHTEXTTOINSERTRUN_H

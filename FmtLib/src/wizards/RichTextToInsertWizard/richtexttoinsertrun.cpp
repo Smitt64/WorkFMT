@@ -9,7 +9,9 @@
 #include <QSet>
 #include "fmttable.h"
 #include "fmtfield.h"
+#include "fmtindex.h"
 #include "fmtcore.h"
+#include "fmtsegment.h"
 #include "connectioninfo.h"
 
 RichTextToInsertRun::RichTextToInsertRun(QObject *parent)
@@ -119,7 +121,8 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
     }
     else
     {
-        declaration += QString("    PROCEDURE %1(\n").arg(functionName);
+        declaration += QString("    PROCEDURE %1\n").arg(functionName);
+        declaration += "    (\n";
 
         int paramCount = 0;
         QList<int> columns = columnParameters.keys();
@@ -130,12 +133,10 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
             QString paramName = columnParameters[col];
             QString paramType = "VARCHAR2";
 
-            declaration += QString("        %1 IN %2").arg(paramName).arg(paramType);
-
-            if (paramCount < columns.size() - 1)
-                declaration += ",\n";
+            if (paramCount == columns.size() - 1)
+                declaration += QString("        %1 IN %2\n").arg(paramName).arg(paramType);
             else
-                declaration += "\n";
+                declaration += QString("        %1 IN %2,\n").arg(paramName).arg(paramType);
 
             paramCount++;
         }
@@ -145,8 +146,13 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
 
     declaration += "    IS\n";
 
+    declaration += "    IS\n";
+
     QString nextvalVars = generateNextvalVariables();
-    declaration += nextvalVars;
+    if (!nextvalVars.isEmpty())
+    {
+        declaration += nextvalVars;
+    }
 
     declaration += "        v_row_num NUMBER;\n";
     declaration += "        v_error_msg VARCHAR2(4000);\n";
@@ -154,12 +160,31 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
     declaration += "    BEGIN\n";
 
     QString nextvalInit = generateNextvalInitialization();
-    declaration += nextvalInit;
+    if (!nextvalInit.isEmpty())
+    {
+        declaration += nextvalInit;
+    }
 
-    declaration += generateInsertStatement(columnParameters);
+    // Добавляем проверку существования записи
+    QString existsCondition = generateExistsCondition();
+    if (!existsCondition.isEmpty())
+    {
+        declaration += existsCondition;
+        declaration += "        IF v_row_num > 0 THEN\n";
+        declaration += "            -- Запись существует, выполняем UPDATE\n";
+        declaration += generateUpdateStatement(columnParameters);
+        declaration += "        ELSE\n";
+        declaration += "            -- Запись не существует, выполняем INSERT\n";
+        declaration += generateInsertStatement(columnParameters);
+        declaration += "        END IF;\n\n";
+    }
+    else
+    {
+        // Без проверки существования - только INSERT
+        declaration += generateInsertStatement(columnParameters);
+    }
 
     declaration += generateExceptionHandler(columnParameters);
-
     declaration += "    END " + functionName + ";\n";
 
     return declaration;
@@ -209,75 +234,104 @@ QString RichTextToInsertRun::generateInsertStatement(const QMap<int, QString> &c
 {
     QString insert = "        INSERT INTO " + m_pTable->name() + " (";
 
+    // Получаем поля в порядке из FmtTable
     QStringList fields;
-    QStringList values;
-
-    for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
+    if (m_pTable)
     {
-        QString fieldName = it.key();
-        QString source = it.value();
-        FmtField *field = findFieldByName(fieldName);
-
-        if (!field)
-            continue;
-
-        fields << fieldName;
-
-        if (source.startsWith("COLUMN|"))
+        const QList<FmtField*> &tableFields = m_pTable->getFieldsList();
+        for (FmtField *field : tableFields)
         {
-            QString columnStr = source.mid(7);
-            bool ok;
-            int columnIndex = columnStr.toInt(&ok);
-
-            if (ok && columnIndex >= 0 && columnParameters.contains(columnIndex))
-            {
-                QString paramName = columnParameters[columnIndex];
-                values << paramName;
-            }
-            else
-            {
-                values << "NULL";
-            }
-        }
-        else if (source.startsWith("SQL|"))
-        {
-            QString sqlValue = source.mid(4);
-            values << sqlValue;
-        }
-        else if (source.startsWith("FUNC|"))
-        {
-            QString funcValue = source.mid(5);
-            if (funcValue.compare("nextval", Qt::CaseInsensitive) == 0)
-            {
-                values << QString("%1_seq").arg(fieldName.toLower());
-            }
-            else
-            {
-                values << funcValue;
-            }
-        }
-        else if (source.startsWith("VAL|"))
-        {
-            QString valValue = source.mid(4);
-            if (valValue.compare("nextval", Qt::CaseInsensitive) == 0)
-            {
-                values << QString("%1_seq").arg(fieldName.toLower());
-            }
-            else
-            {
-                QString formattedValue = formatValueForField(valValue, field);
-                values << formattedValue;
-            }
-        }
-        else
-        {
-            QString formattedValue = formatValueForField(source, field);
-            values << formattedValue;
+            fields << field->name();
         }
     }
 
     insert += fields.join(", ") + ")\n";
-    insert += "        VALUES (" + values.join(", ") + ");\n\n";
+    insert += "        VALUES (\n";
+
+    // Генерируем значения в том же порядке, что и поля
+    QStringList values;
+    for (int i = 0; i < fields.size(); ++i)
+    {
+        const QString &fieldName = fields[i];
+        QString value;
+        bool isLastField = (i == fields.size() - 1);
+
+        if (!m_FieldMapping.contains(fieldName))
+        {
+            // Если поля нет в маппинге, используем NULL
+            value = "NULL";
+        }
+        else
+        {
+            QString source = m_FieldMapping[fieldName];
+            FmtField *field = findFieldByName(fieldName);
+
+            if (!field)
+            {
+                value = "NULL";
+            }
+            else if (source.startsWith("COLUMN|"))
+            {
+                QString columnStr = source.mid(7);
+                bool ok;
+                int columnIndex = columnStr.toInt(&ok);
+
+                if (ok && columnIndex >= 0 && columnParameters.contains(columnIndex))
+                {
+                    value = columnParameters[columnIndex];
+                }
+                else
+                {
+                    value = "NULL";
+                }
+            }
+            else if (source.startsWith("SQL|"))
+            {
+                value = source.mid(4);
+            }
+            else if (source.startsWith("FUNC|"))
+            {
+                QString funcValue = source.mid(5);
+                if (funcValue.compare("nextval", Qt::CaseInsensitive) == 0)
+                {
+                    value = QString("%1_seq").arg(fieldName.toLower());
+                }
+                else
+                {
+                    value = funcValue;
+                }
+            }
+            else if (source.startsWith("VAL|"))
+            {
+                QString valValue = source.mid(4);
+                if (valValue.compare("nextval", Qt::CaseInsensitive) == 0)
+                {
+                    value = QString("%1_seq").arg(fieldName.toLower());
+                }
+                else
+                {
+                    value = formatValueForField(valValue, field);
+                }
+            }
+            else
+            {
+                value = formatValueForField(source, field);
+            }
+        }
+
+        // Формируем строку: значение + запятая (если не последнее) + комментарий
+        QString line = "            " + value;
+        if (!isLastField)
+        {
+            line += ",";
+        }
+        line += " -- " + fieldName;
+
+        values << line;
+    }
+
+    insert += values.join("\n") + "\n";
+    insert += "        );\n\n";
 
     return insert;
 }
@@ -312,7 +366,32 @@ QString RichTextToInsertRun::generateExceptionHandler(const QMap<int, QString> &
 
     exceptionHandler += "            DBMS_OUTPUT.PUT_LINE(v_error_msg);\n";
     exceptionHandler += "            -- RAISE; -- раскомментировать, если нужно прервать выполнение\n";
-    exceptionHandler += "            -- NULL; -- оставить, если нужно продолжить выполнение после ошибки\n";
+    exceptionHandler += "            -- NULL; -- оставить, если нужно продолжить выполнение после ошибки\n\n";
+
+    // Добавляем обработку OTHERS
+    exceptionHandler += "        WHEN OTHERS THEN\n";
+    exceptionHandler += "            v_error_msg := 'Неизвестная ошибка при вставке записи';\n";
+    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Код ошибки: ' || SQLCODE;\n";
+    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Сообщение: ' || SQLERRM;\n";
+    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Трассировка: ' || DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;\n";
+    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Параметры записи: ';\n";
+
+    paramCount = 0;
+    for (int col : columns)
+    {
+        QString paramName = columnParameters[col];
+        if (paramCount == 0) {
+            exceptionHandler += QString("            v_error_msg := v_error_msg || '%1=' || %2;\n")
+            .arg(paramName).arg(paramName);
+        } else {
+            exceptionHandler += QString("            v_error_msg := v_error_msg || ', %1=' || %2;\n")
+            .arg(paramName).arg(paramName);
+        }
+        paramCount++;
+    }
+
+    exceptionHandler += "            DBMS_OUTPUT.PUT_LINE(v_error_msg);\n";
+    exceptionHandler += "            RAISE; -- повторно вызываем исключение для прерывания выполнения\n";
 
     return exceptionHandler;
 }
@@ -379,9 +458,91 @@ QString RichTextToInsertRun::getCellValue(QTextTable *table, int row, int col)
     if (text.isEmpty())
         return "NULL";
 
-    QString escapedValue = text;
-    escapedValue.replace("'", "''");
-    return "'" + escapedValue + "'";
+    // Список проблемных символов для замены на CHR()
+    static const QVector<QPair<QChar, int>> specialChars = {
+        {'"', 34},   // Двойная кавычка
+        {'&', 38},   // Амперсанд (подстановка переменных)
+        {'%', 37},   // Процент (может влиять на LIKE)
+        {'_', 95},   // Подчеркивание (может влиять на LIKE)
+        {'\'', 39},  // Одиночная кавычка (экранируется отдельно)
+        {'<', 60},   // Меньше (может влиять на XML)
+        {'>', 62},   // Больше (может влиять на XML)
+        {'\\', 92}   // Обратный слеш (экранирование)
+    };
+
+    // Проверяем, есть ли проблемные символы
+    bool hasSpecialChars = false;
+    for (const auto &specialChar : specialChars) {
+        if (text.contains(specialChar.first)) {
+            hasSpecialChars = true;
+            break;
+        }
+    }
+
+    // Если нет специальных символов, просто экранируем одиночные кавычки
+    if (!hasSpecialChars)
+    {
+        text.replace("'", "''");
+        return "'" + text + "'";
+    }
+
+    // Обрабатываем текст со специальными символами
+    QString result;
+    QString currentSegment;
+
+    for (int i = 0; i < text.length(); ++i)
+    {
+        QChar ch = text[i];
+        bool isSpecialChar = false;
+        int charCode = 0;
+
+        // Проверяем, является ли символ специальным
+        for (const auto &specialChar : specialChars) {
+            if (ch == specialChar.first) {
+                isSpecialChar = true;
+                charCode = specialChar.second;
+                break;
+            }
+        }
+
+        if (isSpecialChar)
+        {
+            // Если накопился сегмент до специального символа - добавляем его
+            if (!currentSegment.isEmpty())
+            {
+                currentSegment.replace("'", "''");
+                if (result.isEmpty())
+                    result = "'" + currentSegment + "'";
+                else
+                    result += " || '" + currentSegment + "'";
+                currentSegment.clear();
+            }
+
+            // Добавляем CHR для специального символа
+            QString chrCall = "CHR(" + QString::number(charCode) + ")";
+
+            if (result.isEmpty())
+                result = chrCall;
+            else
+                result += " || " + chrCall;
+        }
+        else
+        {
+            currentSegment += ch;
+        }
+    }
+
+    // Добавляем оставшийся сегмент после последнего специального символа
+    if (!currentSegment.isEmpty())
+    {
+        currentSegment.replace("'", "''");
+        if (result.isEmpty())
+            result = "'" + currentSegment + "'";
+        else
+            result += " || '" + currentSegment + "'";
+    }
+
+    return result;
 }
 
 QString RichTextToInsertRun::getRawCellValue(QTextTable *table, int row, int col)
@@ -643,4 +804,317 @@ QDateTime RichTextToInsertRun::parseDateTime(const QString &dateTimeString)
     }
 
     return QDateTime();
+}
+
+void RichTextToInsertRun::setExistsCondition(FmtIndex *index, const QString &customCondition, bool useCustomCondition)
+{
+    m_existsIndex = index;
+    m_customExistsCondition = customCondition;
+    m_useCustomCondition = useCustomCondition;
+}
+
+QString RichTextToInsertRun::generateExistsCondition()
+{
+    if (m_useCustomCondition && m_customExistsCondition.isEmpty())
+        return QString();
+
+    if (!m_useCustomCondition && !m_existsIndex)
+        return QString();
+
+    QString condition;
+
+    if (m_useCustomCondition)
+    {
+        // Пользовательское условие
+        condition = "        -- Проверка существования записи по пользовательскому условию\n";
+        condition += "        SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
+        condition += "        WHERE " + m_customExistsCondition + ";\n\n";
+    }
+    else if (m_existsIndex)
+    {
+        // Условие по выбранному индексу
+        condition = "        -- Проверка существования записи по индексу: " + m_existsIndex->name() + "\n";
+        condition += "        SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
+        condition += "        WHERE " + generateIndexCondition(m_existsIndex) + ";\n\n";
+    }
+
+    return condition;
+}
+
+QString RichTextToInsertRun::generateIndexCondition(FmtIndex *index)
+{
+    if (!index)
+        return QString();
+
+    QStringList conditions;
+
+    // Получаем все сегменты индекса
+    for (int i = 0; i < index->segmentsCount(); ++i)
+    {
+        FmtSegment *segment = index->segment(i);
+        if (!segment || !segment->field())
+            continue;
+
+        FmtField *field = segment->field();
+        QString fieldName = field->name();
+
+        // Ищем источник данных для этого поля
+        QString fieldValue;
+        if (m_FieldMapping.contains(fieldName))
+        {
+            QString source = m_FieldMapping[fieldName];
+
+            if (source.startsWith("COLUMN|"))
+            {
+                // Данные из колонки Word - используем параметр функции
+                QString columnStr = source.mid(7);
+                bool ok;
+                int columnIndex = columnStr.toInt(&ok);
+
+                if (ok && columnIndex >= 0)
+                {
+                    // Находим имя параметра для этой колонки
+                    for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
+                    {
+                        if (it.value() == source)
+                        {
+                            fieldValue = it.key().toLower();
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (source.startsWith("SQL|"))
+            {
+                fieldValue = source.mid(4);
+            }
+            else if (source.startsWith("FUNC|"))
+            {
+                QString funcValue = source.mid(5);
+                if (funcValue.compare("nextval", Qt::CaseInsensitive) == 0)
+                {
+                    fieldValue = QString("%1_seq").arg(fieldName.toLower());
+                }
+                else
+                {
+                    fieldValue = funcValue;
+                }
+            }
+            else if (source.startsWith("VAL|"))
+            {
+                QString valValue = source.mid(4);
+                if (valValue.compare("nextval", Qt::CaseInsensitive) == 0)
+                {
+                    fieldValue = QString("%1_seq").arg(fieldName.toLower());
+                }
+                else
+                {
+                    fieldValue = formatValueForField(valValue, field);
+                }
+            }
+            else
+            {
+                fieldValue = formatValueForField(source, field);
+            }
+        }
+        else
+        {
+            // Поля нет в маппинге - используем NULL
+            fieldValue = "NULL";
+        }
+
+        // Формируем условие сравнения
+        QString condition;
+        if (fieldValue == "NULL")
+        {
+            condition = fieldName + " IS NULL";
+        }
+        else
+        {
+            condition = fieldName + " = " + fieldValue;
+        }
+
+        conditions << condition;
+    }
+
+    return conditions.join(" AND ");
+}
+
+QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &columnParameters)
+{
+    QString update = "            UPDATE " + m_pTable->name() + " \n";
+    update += "            SET \n";
+
+    // Получаем поля в порядке из FmtTable
+    QStringList fields;
+    if (m_pTable)
+    {
+        const QList<FmtField*> &tableFields = m_pTable->getFieldsList();
+        for (FmtField *field : tableFields)
+        {
+            fields << field->name();
+        }
+    }
+
+    // Получаем поля, которые участвуют в условии WHERE (индексные поля)
+    QSet<QString> indexFields;
+    if (m_existsIndex)
+    {
+        for (int i = 0; i < m_existsIndex->segmentsCount(); ++i)
+        {
+            FmtSegment *segment = m_existsIndex->segment(i);
+            if (segment && segment->field())
+            {
+                indexFields.insert(segment->field()->name());
+            }
+        }
+    }
+
+    // Генерируем SET часть для UPDATE (исключая индексные поля)
+    QStringList setClauses;
+    for (int i = 0; i < fields.size(); ++i)
+    {
+        const QString &fieldName = fields[i];
+
+        // Пропускаем индексные поля
+        if (indexFields.contains(fieldName))
+        {
+            continue;
+        }
+
+        if (!m_FieldMapping.contains(fieldName))
+        {
+            // Если поля нет в маппинге, пропускаем его в UPDATE
+            continue;
+        }
+
+        QString source = m_FieldMapping[fieldName];
+        FmtField *field = findFieldByName(fieldName);
+
+        if (!field)
+        {
+            continue;
+        }
+
+        QString value;
+        bool isDefaultValue = false;
+
+        if (source.startsWith("COLUMN|"))
+        {
+            QString columnStr = source.mid(7);
+            bool ok;
+            int columnIndex = columnStr.toInt(&ok);
+
+            if (ok && columnIndex >= 0 && columnParameters.contains(columnIndex))
+            {
+                value = columnParameters[columnIndex];
+            }
+            else
+            {
+                value = "NULL";
+                isDefaultValue = true;
+            }
+        }
+        else if (source.startsWith("SQL|"))
+        {
+            value = source.mid(4);
+        }
+        else if (source.startsWith("FUNC|"))
+        {
+            QString funcValue = source.mid(5);
+            if (funcValue.compare("nextval", Qt::CaseInsensitive) == 0)
+            {
+                value = QString("%1_seq").arg(fieldName.toLower());
+            }
+            else
+            {
+                value = funcValue;
+            }
+        }
+        else if (source.startsWith("VAL|"))
+        {
+            QString valValue = source.mid(4);
+            if (valValue.compare("nextval", Qt::CaseInsensitive) == 0)
+            {
+                value = QString("%1_seq").arg(fieldName.toLower());
+            }
+            else
+            {
+                value = formatValueForField(valValue, field);
+                // Проверяем, является ли значение значением по умолчанию
+                QString defaultValue = fmtGetOraDefaultVal(field->type(), field->size(), false);
+                isDefaultValue = (value == defaultValue);
+            }
+        }
+        else
+        {
+            value = formatValueForField(source, field);
+            // Проверяем, является ли значение значением по умолчанию
+            QString defaultValue = fmtGetOraDefaultVal(field->type(), field->size(), false);
+            isDefaultValue = (value == defaultValue);
+        }
+
+        // Пропускаем значения по умолчанию
+        if (isDefaultValue)
+        {
+            continue;
+        }
+
+        // Формируем SET clause
+        bool isLastField = (i == fields.size() - 1);
+        QString setClause = "                " + fieldName + " = " + value;
+        if (!isLastField)
+        {
+            setClause += ",";
+        }
+        setClause += " -- " + fieldName;
+
+        setClauses << setClause;
+    }
+
+    // Если нет полей для обновления, добавляем фиктивное поле чтобы не ломать синтаксис
+    if (setClauses.isEmpty())
+    {
+        setClauses << "                1 = 1 -- Нет полей для обновления";
+    }
+
+    update += setClauses.join("\n") + "\n";
+
+    // Добавляем WHERE условие для UPDATE
+    if (m_useCustomCondition && !m_customExistsCondition.isEmpty())
+    {
+        update += "            WHERE " + m_customExistsCondition + ";\n\n";
+    }
+    else if (m_existsIndex)
+    {
+        update += "            WHERE " + generateIndexCondition(m_existsIndex) + ";\n\n";
+    }
+    else
+    {
+        update += "            WHERE 1=0; -- Нет условия для UPDATE\n\n";
+    }
+
+    return update;
+}
+
+bool RichTextToInsertRun::isDefaultValue(const QString &value, FmtField *field)
+{
+    if (!field)
+        return false;
+
+    QString defaultValue = fmtGetOraDefaultVal(field->type(), field->size(), false);
+
+    // Сравниваем значения
+    if (value == defaultValue)
+        return true;
+
+    // Для дат сравниваем с экранированной версией
+    if (field->type() == fmtt_DATE || field->type() == fmtt_TIME || field->type() == fmtt_DATETIME)
+    {
+        QString escapedDefault = fmtGetOraDefaultVal(field->type(), field->size(), true);
+        if (value == escapedDefault)
+            return true;
+    }
+
+    return false;
 }

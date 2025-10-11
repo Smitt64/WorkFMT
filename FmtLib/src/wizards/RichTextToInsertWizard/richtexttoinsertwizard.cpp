@@ -165,3 +165,27 @@ QMap<QString, QString> RichTextToInsertWizard::fieldMapping() const
 
     return mapping;
 }
+
+FmtIndex* RichTextToInsertWizard::selectedIndex() const
+{
+    if (!m_pExistsConditionPage)
+        return nullptr;
+
+    return m_pExistsConditionPage->getSelectedIndex();
+}
+
+QString RichTextToInsertWizard::customCondition() const
+{
+    if (!m_pExistsConditionPage)
+        return QString();
+
+    return m_pExistsConditionPage->getCustomCondition();
+}
+
+bool RichTextToInsertWizard::useCustomCondition() const
+{
+    if (!m_pExistsConditionPage)
+        return false;
+
+    return m_pExistsConditionPage->useCustomCondition();
+}

@@ -12,7 +12,7 @@ class RichTextPage;
 class FmtImportFldSourcePage;
 class ExistsConditionPage;
 class RichTextToInsertResultPage;
-
+class FmtIndex;
 class RichTextToInsertWizard : public QWizard
 {
     Q_OBJECT
@@ -25,6 +25,10 @@ public:
     QTextDocument *document();
     QMap<QString, QString> fieldMapping() const;
     bool firstAsHeader() const { return field("FirstAsHeader").toBool(); }
+
+    FmtIndex* selectedIndex() const;
+    QString customCondition() const;
+    bool useCustomCondition() const;
 
     bool addTables(const QString &str);
     bool removeTables(const QString &str);

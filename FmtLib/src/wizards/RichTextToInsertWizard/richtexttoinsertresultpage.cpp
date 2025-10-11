@@ -76,7 +76,12 @@ void RichTextToInsertResultPage::generatePlsqlCode()
     QTextDocument *document = wizard->document();
     FmtTable *table = wizard->table();
     bool firstAsHeader = wizard->firstAsHeader();
-    QMap<QString, QString> fieldMapping = wizard->fieldMapping(); // изменился тип
+    QMap<QString, QString> fieldMapping = wizard->fieldMapping();
+
+    // Получаем данные о проверке существования
+    FmtIndex *selectedIndex = wizard->selectedIndex();
+    QString customCondition = wizard->customCondition();
+    bool useCustomCondition = wizard->useCustomCondition();
 
     if (!document || !table)
     {
@@ -87,6 +92,7 @@ void RichTextToInsertResultPage::generatePlsqlCode()
     // Создаем и настраиваем worker
     m_pWorker = new RichTextToInsertRun();
     m_pWorker->setData(document, table, firstAsHeader, fieldMapping);
+    m_pWorker->setExistsCondition(selectedIndex, customCondition, useCustomCondition);
 
     // Подключаем сигналы
     connect(m_pWorker, &RichTextToInsertRun::finished, this, &RichTextToInsertResultPage::onPlsqlGenerated);
