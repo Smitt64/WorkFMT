@@ -895,12 +895,18 @@ QString FmtTableSqlText(FmtTable *pTable)
 {
     QString str = QString("-- Таблица %1\n").arg(pTable->name().toUpper());
     str += pTable->generateCreateTableSql() + ";\n\n";
-    str += pTable->getCommentSql() + ";\n";
+
+    QString Comment1 = pTable->getCommentSql();
+    if (!Comment1.isEmpty())
+        str += Comment1 + ";\n";
 
     for(int i = 0; i < pTable->fieldsCount(); i++)
     {
         FmtField *f = pTable->field(i);
-        str += f->getCommentSql() + ";\n";
+        QString Comment2 = f->getCommentSql();
+
+        if (!Comment2.isEmpty())
+            str += Comment2 + ";\n";
     }
 
     return str;
