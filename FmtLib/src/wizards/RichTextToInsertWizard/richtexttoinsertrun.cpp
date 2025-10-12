@@ -40,6 +40,11 @@ void RichTextToInsertRun::setData(QTextDocument *document, FmtTable *table, bool
     m_FieldMapping = fieldMapping;
 }
 
+QString RichTextToInsertRun::padding(int level) const
+{
+    return QString(level * 2, ' ');
+}
+
 QString RichTextToInsertRun::generatePlsqlBlock()
 {
     QTextTable *table = findTableInDocument();
@@ -117,12 +122,12 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
 
     if (columnParameters.isEmpty())
     {
-        declaration += "    PROCEDURE " + functionName + "\n";
+        declaration += padding(1) + "PROCEDURE " + functionName + "\n";
     }
     else
     {
-        declaration += QString("    PROCEDURE %1\n").arg(functionName);
-        declaration += "    (\n";
+        declaration += padding(1) + QString("PROCEDURE %1\n").arg(functionName);
+        declaration += padding(1) + "(\n";
 
         int paramCount = 0;
         QList<int> columns = columnParameters.keys();
@@ -134,19 +139,17 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
             QString paramType = "VARCHAR2";
 
             if (paramCount == columns.size() - 1)
-                declaration += QString("        %1 IN %2\n").arg(paramName).arg(paramType);
+                declaration += padding(2) + QString("%1 IN %2\n").arg(paramName).arg(paramType);
             else
-                declaration += QString("        %1 IN %2,\n").arg(paramName).arg(paramType);
+                declaration += padding(2) + QString("%1 IN %2,\n").arg(paramName).arg(paramType);
 
             paramCount++;
         }
 
-        declaration += "    )\n";
+        declaration += padding(1) + ")\n";
     }
 
-    declaration += "    IS\n";
-
-    declaration += "    IS\n";
+    declaration += padding(1) + "IS\n";
 
     QString nextvalVars = generateNextvalVariables();
     if (!nextvalVars.isEmpty())
@@ -154,10 +157,10 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
         declaration += nextvalVars;
     }
 
-    declaration += "        v_row_num NUMBER;\n";
-    declaration += "        v_error_msg VARCHAR2(4000);\n";
+    declaration += padding(1) + "    v_row_num NUMBER;\n";
+    declaration += padding(1) + "    v_error_msg VARCHAR2(4000);\n";
 
-    declaration += "    BEGIN\n";
+    declaration += padding(1) + "BEGIN\n";
 
     QString nextvalInit = generateNextvalInitialization();
     if (!nextvalInit.isEmpty())
@@ -170,13 +173,13 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
     if (!existsCondition.isEmpty())
     {
         declaration += existsCondition;
-        declaration += "        IF v_row_num > 0 THEN\n";
-        declaration += "            -- Запись существует, выполняем UPDATE\n";
+        declaration += padding(2) + "IF v_row_num > 0 THEN\n";
+        declaration += padding(3) + "-- Запись существует, выполняем UPDATE\n";
         declaration += generateUpdateStatement(columnParameters);
-        declaration += "        ELSE\n";
-        declaration += "            -- Запись не существует, выполняем INSERT\n";
+        declaration += padding(2) + "ELSE\n";
+        declaration += padding(3) + "-- Запись не существует, выполняем INSERT\n";
         declaration += generateInsertStatement(columnParameters);
-        declaration += "        END IF;\n\n";
+        declaration += padding(2) + "END IF;\n\n";
     }
     else
     {
@@ -185,7 +188,7 @@ QString RichTextToInsertRun::generateFunctionDeclaration(const QString &function
     }
 
     declaration += generateExceptionHandler(columnParameters);
-    declaration += "    END " + functionName + ";\n";
+    declaration += padding(1) + "END " + functionName + ";\n";
 
     return declaration;
 }
@@ -201,7 +204,7 @@ QString RichTextToInsertRun::generateNextvalVariables()
         if ((source.startsWith("FUNC|") || source.startsWith("VAL|")) &&
             source.contains("nextval", Qt::CaseInsensitive))
         {
-            variables += QString("        %1_seq NUMBER;\n").arg(it.key().toLower());
+            variables += padding(2) + QString("%1_seq NUMBER;\n").arg(it.key().toLower());
         }
     }
 
@@ -220,7 +223,7 @@ QString RichTextToInsertRun::generateNextvalInitialization()
         if ((source.startsWith("FUNC|") || source.startsWith("VAL|")) &&
             source.contains("nextval", Qt::CaseInsensitive))
         {
-            init += QString("        SELECT NVL(MAX(%1), 0) + 1 INTO %2_seq FROM %3;\n")
+            init += padding(2) + QString("SELECT NVL(MAX(%1), 0) + 1 INTO %2_seq FROM %3;\n")
             .arg(fieldName)
                 .arg(fieldName.toLower())
                 .arg(m_pTable->name());
@@ -232,7 +235,7 @@ QString RichTextToInsertRun::generateNextvalInitialization()
 
 QString RichTextToInsertRun::generateInsertStatement(const QMap<int, QString> &columnParameters)
 {
-    QString insert = "        INSERT INTO " + m_pTable->name() + " (";
+    QString insert = padding(2) + "INSERT INTO " + m_pTable->name() + " (";
 
     // Получаем поля в порядке из FmtTable
     QStringList fields;
@@ -246,7 +249,7 @@ QString RichTextToInsertRun::generateInsertStatement(const QMap<int, QString> &c
     }
 
     insert += fields.join(", ") + ")\n";
-    insert += "        VALUES (\n";
+    insert += padding(2) + "VALUES (\n";
 
     // Генерируем значения в том же порядке, что и поля
     QStringList values;
@@ -320,7 +323,7 @@ QString RichTextToInsertRun::generateInsertStatement(const QMap<int, QString> &c
         }
 
         // Формируем строку: значение + запятая (если не последнее) + комментарий
-        QString line = "            " + value;
+        QString line = padding(3) + value;
         if (!isLastField)
         {
             line += ",";
@@ -331,7 +334,7 @@ QString RichTextToInsertRun::generateInsertStatement(const QMap<int, QString> &c
     }
 
     insert += values.join("\n") + "\n";
-    insert += "        );\n\n";
+    insert += padding(2) + ");\n\n";
 
     return insert;
 }
@@ -340,12 +343,12 @@ QString RichTextToInsertRun::generateExceptionHandler(const QMap<int, QString> &
 {
     QString exceptionHandler;
 
-    exceptionHandler += "    EXCEPTION\n";
-    exceptionHandler += "        WHEN DUP_VAL_ON_INDEX THEN\n";
-    exceptionHandler += "            v_error_msg := 'Ошибка: нарушение уникальности индекса';\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Сообщение: ' || SQLERRM;\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Трассировка: ' || DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Параметры записи: ';\n";
+    exceptionHandler += padding(1) + "EXCEPTION\n";
+    exceptionHandler += padding(2) + "WHEN DUP_VAL_ON_INDEX THEN\n";
+    exceptionHandler += padding(3) + "v_error_msg := 'Ошибка: нарушение уникальности индекса';\n";
+    exceptionHandler += padding(3) + "v_error_msg := v_error_msg || CHR(10) || 'Сообщение: ' || SQLERRM;\n";
+    exceptionHandler += padding(3) + "v_error_msg := v_error_msg || CHR(10) || 'Трассировка: ' || DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;\n";
+    exceptionHandler += padding(3) + "v_error_msg := v_error_msg || CHR(10) || 'Параметры записи: ';\n";
 
     int paramCount = 0;
     QList<int> columns = columnParameters.keys();
@@ -355,43 +358,43 @@ QString RichTextToInsertRun::generateExceptionHandler(const QMap<int, QString> &
     {
         QString paramName = columnParameters[col];
         if (paramCount == 0) {
-            exceptionHandler += QString("            v_error_msg := v_error_msg || '%1=' || %2;\n")
+            exceptionHandler += padding(3) + QString("v_error_msg := v_error_msg || '%1=' || %2;\n")
             .arg(paramName).arg(paramName);
         } else {
-            exceptionHandler += QString("            v_error_msg := v_error_msg || ', %1=' || %2;\n")
+            exceptionHandler += padding(3) + QString("v_error_msg := v_error_msg || ', %1=' || %2;\n")
             .arg(paramName).arg(paramName);
         }
         paramCount++;
     }
 
-    exceptionHandler += "            DBMS_OUTPUT.PUT_LINE(v_error_msg);\n";
-    exceptionHandler += "            -- RAISE; -- раскомментировать, если нужно прервать выполнение\n";
-    exceptionHandler += "            -- NULL; -- оставить, если нужно продолжить выполнение после ошибки\n\n";
+    exceptionHandler += padding(3) + "DBMS_OUTPUT.PUT_LINE(v_error_msg);\n";
+    exceptionHandler += padding(3) + "-- RAISE; -- раскомментировать, если нужно прервать выполнение\n";
+    exceptionHandler += padding(3) + "-- NULL; -- оставить, если нужно продолжить выполнение после ошибки\n\n";
 
     // Добавляем обработку OTHERS
-    exceptionHandler += "        WHEN OTHERS THEN\n";
-    exceptionHandler += "            v_error_msg := 'Неизвестная ошибка при вставке записи';\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Код ошибки: ' || SQLCODE;\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Сообщение: ' || SQLERRM;\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Трассировка: ' || DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;\n";
-    exceptionHandler += "            v_error_msg := v_error_msg || CHR(10) || 'Параметры записи: ';\n";
+    exceptionHandler += padding(2) + "WHEN OTHERS THEN\n";
+    exceptionHandler += padding(3) + "v_error_msg := 'Неизвестная ошибка при вставке записи';\n";
+    exceptionHandler += padding(3) + "v_error_msg := v_error_msg || CHR(10) || 'Код ошибки: ' || SQLCODE;\n";
+    exceptionHandler += padding(3) + "v_error_msg := v_error_msg || CHR(10) || 'Сообщение: ' || SQLERRM;\n";
+    exceptionHandler += padding(3) + "v_error_msg := v_error_msg || CHR(10) || 'Трассировка: ' || DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;\n";
+    exceptionHandler += padding(3) + "v_error_msg := v_error_msg || CHR(10) || 'Параметры записи: ';\n";
 
     paramCount = 0;
     for (int col : columns)
     {
         QString paramName = columnParameters[col];
         if (paramCount == 0) {
-            exceptionHandler += QString("            v_error_msg := v_error_msg || '%1=' || %2;\n")
+            exceptionHandler += padding(3) + QString("v_error_msg := v_error_msg || '%1=' || %2;\n")
             .arg(paramName).arg(paramName);
         } else {
-            exceptionHandler += QString("            v_error_msg := v_error_msg || ', %1=' || %2;\n")
+            exceptionHandler += padding(3) + QString("v_error_msg := v_error_msg || ', %1=' || %2;\n")
             .arg(paramName).arg(paramName);
         }
         paramCount++;
     }
 
-    exceptionHandler += "            DBMS_OUTPUT.PUT_LINE(v_error_msg);\n";
-    exceptionHandler += "            RAISE; -- повторно вызываем исключение для прерывания выполнения\n";
+    exceptionHandler += padding(3) + "DBMS_OUTPUT.PUT_LINE(v_error_msg);\n";
+    exceptionHandler += padding(3) + "RAISE; -- повторно вызываем исключение для прерывания выполнения\n";
 
     return exceptionHandler;
 }
@@ -433,11 +436,11 @@ QString RichTextToInsertRun::generateFunctionCall(int row, QTextTable *table, co
 
     if (parameters.isEmpty())
     {
-        call = QString("    %1;\n").arg(functionName);
+        call = padding(1) + QString("%1;\n").arg(functionName);
     }
     else
     {
-        call = QString("    %1(%2);\n").arg(functionName).arg(parameters.join(", "));
+        call = padding(1) + QString("%1(%2);\n").arg(functionName).arg(parameters.join(", "));
     }
 
     return call;
@@ -826,16 +829,16 @@ QString RichTextToInsertRun::generateExistsCondition()
     if (m_useCustomCondition)
     {
         // Пользовательское условие
-        condition = "        -- Проверка существования записи по пользовательскому условию\n";
-        condition += "        SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
-        condition += "        WHERE " + m_customExistsCondition + ";\n\n";
+        condition = padding(2) + "-- Проверка существования записи по пользовательскому условию\n";
+        condition += padding(2) + "SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
+        condition += padding(2) + "WHERE " + m_customExistsCondition + ";\n\n";
     }
     else if (m_existsIndex)
     {
         // Условие по выбранному индексу
-        condition = "        -- Проверка существования записи по индексу: " + m_existsIndex->name() + "\n";
-        condition += "        SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
-        condition += "        WHERE " + generateIndexCondition(m_existsIndex) + ";\n\n";
+        condition = padding(2) + "-- Проверка существования записи по индексу: " + m_existsIndex->name() + "\n";
+        condition += padding(2) + "SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
+        condition += padding(2) + "WHERE " + generateIndexCondition(m_existsIndex) + ";\n\n";
     }
 
     return condition;
@@ -942,8 +945,8 @@ QString RichTextToInsertRun::generateIndexCondition(FmtIndex *index)
 
 QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &columnParameters)
 {
-    QString update = "            UPDATE " + m_pTable->name() + " \n";
-    update += "            SET \n";
+    QString update = padding(3) + "UPDATE " + m_pTable->name() + " \n";
+    update += padding(3) + "SET \n";
 
     // Получаем поля в порядке из FmtTable
     QStringList fields;
@@ -970,7 +973,7 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
         }
     }
 
-    // Генерируем SET часть для UPDATE (исключая индексные поля)
+    // Генерируем SET часть для UPDATE (исключая индексные поля и _seq поля)
     QStringList setClauses;
     for (int i = 0; i < fields.size(); ++i)
     {
@@ -978,6 +981,12 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
 
         // Пропускаем индексные поля
         if (indexFields.contains(fieldName))
+        {
+            continue;
+        }
+
+        // Пропускаем поля, которые заканчиваются на _seq (последовательности)
+        if (fieldName.endsWith("_seq", Qt::CaseInsensitive))
         {
             continue;
         }
@@ -998,6 +1007,7 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
 
         QString value;
         bool isDefaultValue = false;
+        bool isSeqValue = false;
 
         if (source.startsWith("COLUMN|"))
         {
@@ -1024,6 +1034,8 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
             QString funcValue = source.mid(5);
             if (funcValue.compare("nextval", Qt::CaseInsensitive) == 0)
             {
+                // Пропускаем поля с nextval в UPDATE
+                isSeqValue = true;
                 value = QString("%1_seq").arg(fieldName.toLower());
             }
             else
@@ -1036,6 +1048,8 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
             QString valValue = source.mid(4);
             if (valValue.compare("nextval", Qt::CaseInsensitive) == 0)
             {
+                // Пропускаем поля с nextval в UPDATE
+                isSeqValue = true;
                 value = QString("%1_seq").arg(fieldName.toLower());
             }
             else
@@ -1054,15 +1068,15 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
             isDefaultValue = (value == defaultValue);
         }
 
-        // Пропускаем значения по умолчанию
-        if (isDefaultValue)
+        // Пропускаем значения по умолчанию и последовательности
+        if (isDefaultValue || isSeqValue)
         {
             continue;
         }
 
         // Формируем SET clause
         bool isLastField = (i == fields.size() - 1);
-        QString setClause = "                " + fieldName + " = " + value;
+        QString setClause = padding(4) + fieldName + " = " + value;
         if (!isLastField)
         {
             setClause += ",";
@@ -1075,7 +1089,7 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
     // Если нет полей для обновления, добавляем фиктивное поле чтобы не ломать синтаксис
     if (setClauses.isEmpty())
     {
-        setClauses << "                1 = 1 -- Нет полей для обновления";
+        setClauses << padding(4) + "1 = 1 -- Нет полей для обновления";
     }
 
     update += setClauses.join("\n") + "\n";
@@ -1083,15 +1097,15 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
     // Добавляем WHERE условие для UPDATE
     if (m_useCustomCondition && !m_customExistsCondition.isEmpty())
     {
-        update += "            WHERE " + m_customExistsCondition + ";\n\n";
+        update += padding(3) + "WHERE " + m_customExistsCondition + ";\n\n";
     }
     else if (m_existsIndex)
     {
-        update += "            WHERE " + generateIndexCondition(m_existsIndex) + ";\n\n";
+        update += padding(3) + "WHERE " + generateIndexCondition(m_existsIndex) + ";\n\n";
     }
     else
     {
-        update += "            WHERE 1=0; -- Нет условия для UPDATE\n\n";
+        update += padding(3) + "WHERE 1=0; -- Нет условия для UPDATE\n\n";
     }
 
     return update;

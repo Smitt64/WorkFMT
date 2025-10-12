@@ -58,6 +58,9 @@ private:
     QTime parseTime(const QString &timeString);
     QDateTime parseDateTime(const QString &dateTimeString);
 
+    // Форматирование отступов
+    QString padding(int level) const;
+
 private:
     bool isDefaultValue(const QString &value, FmtField *field);
 
