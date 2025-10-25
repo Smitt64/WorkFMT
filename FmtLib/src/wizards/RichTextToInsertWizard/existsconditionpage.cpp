@@ -473,6 +473,7 @@ ExistsConditionPage::ExistsConditionPage(QWidget *parent)
     m_hintLabel(nullptr)
 {
     ui->setupUi(this);
+    setTitle(tr("Обновить или вставить?"));
     ui->radioButton->setChecked(true);
 
     m_pGroup = new QButtonGroup(this);

@@ -461,6 +461,8 @@ QString RichTextToInsertRun::getCellValue(QTextTable *table, int row, int col)
     if (text.isEmpty())
         return "NULL";
 
+    text = replaceProblematicSymbols(text);
+
     // Список проблемных символов для замены на CHR()
     static const QVector<QPair<QChar, int>> specialChars = {
         {'"', 34},   // Двойная кавычка
@@ -558,7 +560,10 @@ QString RichTextToInsertRun::getRawCellValue(QTextTable *table, int row, int col
     cursor.setPosition(cell.firstCursorPosition().position());
     cursor.setPosition(cell.lastCursorPosition().position(), QTextCursor::KeepAnchor);
 
-    return cursor.selectedText().trimmed();
+    QString text = cursor.selectedText().trimmed();
+
+    // ЗАМЕНЯЕМ ПРОБЛЕМНЫЕ СИМВОЛЫ
+    return replaceProblematicSymbols(text);
 }
 
 FmtField* RichTextToInsertRun::findFieldByName(const QString &fieldName)
@@ -581,22 +586,24 @@ FmtField* RichTextToInsertRun::findFieldByName(const QString &fieldName)
 
 QString RichTextToInsertRun::formatValueForField(const QString &value, FmtField *field)
 {
-    if (value.compare("sql:NULL", Qt::CaseInsensitive) == 0)
+    QString processedValue = replaceProblematicSymbols(value);
+
+    if (processedValue.compare("sql:NULL", Qt::CaseInsensitive) == 0)
         return "NULL";
 
-    if (value.compare("nextval", Qt::CaseInsensitive) == 0)
+    if (processedValue.compare("nextval", Qt::CaseInsensitive) == 0)
     {
         return QString("%1_seq").arg(field->name().toLower());
     }
 
-    if (value.startsWith("TO_DATE", Qt::CaseInsensitive) ||
-        value.startsWith("CHR", Qt::CaseInsensitive) ||
-        value.startsWith("SYSDATE", Qt::CaseInsensitive) ||
-        value.startsWith("NULL", Qt::CaseInsensitive) ||
-        value.contains("SELECT", Qt::CaseInsensitive) ||
-        value.contains("SEQ_", Qt::CaseInsensitive))
+    if (processedValue.startsWith("TO_DATE", Qt::CaseInsensitive) ||
+        processedValue.startsWith("CHR", Qt::CaseInsensitive) ||
+        processedValue.startsWith("SYSDATE", Qt::CaseInsensitive) ||
+        processedValue.startsWith("NULL", Qt::CaseInsensitive) ||
+        processedValue.contains("SELECT", Qt::CaseInsensitive) ||
+        processedValue.contains("SEQ_", Qt::CaseInsensitive))
     {
-        return value;
+        return processedValue;
     }
 
     if (m_pTable && m_pTable->connection())
@@ -1342,4 +1349,53 @@ bool RichTextToInsertRun::isParameterExists(const QString &paramName) const
         }
     }
     return false;
+}
+
+QString RichTextToInsertRun::replaceProblematicSymbols(const QString &text)
+{
+    if (text.isEmpty())
+        return text;
+
+    QString result = text;
+
+    // Заменяем проблемные символы для CP866
+    QHash<QChar, QChar> symbolReplacements = {
+        {QChar(0x2013), '-'},    // Длинное тире → обычный дефис
+        {QChar(0x2014), '-'},    // Длинное тире → обычный дефис
+        {QChar(0x2018), '\''},   // Левая одинарная кавычка → обычная кавычка
+        {QChar(0x2019), '\''},   // Правая одинарная кавычка → обычная кавычка
+        {QChar(0x201C), '\"'},   // Левая двойная кавычка → обычная кавычка
+        {QChar(0x201D), '\"'},   // Правая двойная кавычка → обычная кавычка
+        {QChar(0x00AB), '\"'},   // Левая угловая кавычка → обычная кавычка
+        {QChar(0x00BB), '\"'},   // Правая угловая кавычка → обычная кавычка
+        {QChar(0x2039), '\''},   // Левая одинарная угловая кавычка → обычная кавычка
+        {QChar(0x203A), '\''},   // Правая одинарная угловая кавычка → обычная кавычка
+        {QChar(0x2026), '.'},    // Многоточие → три точки (обработаем отдельно)
+        {QChar(0x201E), '\"'},   // Нижняя двойная кавычка → обычная кавычка
+        {QChar(0x2E3A), '-'},    // Двойное длинное тире → обычный дефис
+        {QChar(0x2E3B), '-'},    // Тройное длинное тире → обычный дефис
+    };
+
+    // Замена символов из хэша
+    for (auto it = symbolReplacements.begin(); it != symbolReplacements.end(); ++it)
+    {
+        result.replace(it.key(), it.value());
+    }
+
+    // Специальная обработка для многоточия
+    result.replace(QString(QChar(0x2026)), "...");
+
+    // Дополнительно: заменяем "умные" кавычки, которые могут быть в тексте
+    result.replace("«", "\"");
+    result.replace("»", "\"");
+    result.replace("„", "\"");
+    result.replace("“", "\"");
+    result.replace("‟", "\"");
+    result.replace("”", "\"");
+    result.replace("‘", "'");
+    result.replace("’", "'");
+    result.replace("‛", "'");
+    result.replace("‚", "'");
+
+    return result;
 }

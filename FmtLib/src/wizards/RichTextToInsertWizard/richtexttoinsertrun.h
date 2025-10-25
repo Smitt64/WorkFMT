@@ -64,6 +64,7 @@ private:
 
     // Форматирование отступов
     QString padding(int level) const;
+    QString replaceProblematicSymbols(const QString &text);
 
 private:
     bool isDefaultValue(const QString &value, FmtField *field);
