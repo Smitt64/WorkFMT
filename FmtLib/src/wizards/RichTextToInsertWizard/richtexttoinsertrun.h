@@ -30,6 +30,7 @@ private:
     // Основные методы генерации
     QString generatePlsqlBlock();
     QTextTable* findTableInDocument();
+    bool isParameterExists(const QString &paramName) const;
 
     // Генерация функции
     QString generateFunctionDeclaration(const QString &functionName);
@@ -41,6 +42,9 @@ private:
     QString generateNextvalInitialization();
     QString generateExceptionHandler(const QMap<int, QString> &columnParameters);
     QString generateUpdateStatement(const QMap<int, QString> &columnParameters);
+
+    QString replaceFieldReferences(const QString &condition);
+    QString replaceFieldReferencesInCondition(const QString &condition);
 
     // Проверка существования
     QString generateExistsCondition();

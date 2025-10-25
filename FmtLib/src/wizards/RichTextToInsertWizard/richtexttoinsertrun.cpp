@@ -828,14 +828,30 @@ QString RichTextToInsertRun::generateExistsCondition()
 
     if (m_useCustomCondition)
     {
-        // Пользовательское условие
+        QString customCondition = m_customExistsCondition.trimmed();
+
+        // Для условий EXISTS используем специальную замену
+        QString processedCondition = replaceFieldReferencesInCondition(customCondition);
+
+        // Определяем, является ли условие полным SQL выражением
+        bool isFullSql = processedCondition.toUpper().contains("SELECT") ||
+                         processedCondition.toUpper().contains("EXISTS");
+
         condition = padding(2) + "-- Проверка существования записи по пользовательскому условию\n";
-        condition += padding(2) + "SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
-        condition += padding(2) + "WHERE " + m_customExistsCondition + ";\n\n";
+
+        if (isFullSql)
+        {
+            condition += padding(2) + "SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " t\n";
+            condition += padding(2) + "WHERE EXISTS (" + processedCondition + ");\n\n";
+        }
+        else
+        {
+            condition += padding(2) + "SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
+            condition += padding(2) + "WHERE " + processedCondition + ";\n\n";
+        }
     }
     else if (m_existsIndex)
     {
-        // Условие по выбранному индексу
         condition = padding(2) + "-- Проверка существования записи по индексу: " + m_existsIndex->name() + "\n";
         condition += padding(2) + "SELECT COUNT(*) INTO v_row_num FROM " + m_pTable->name() + " \n";
         condition += padding(2) + "WHERE " + generateIndexCondition(m_existsIndex) + ";\n\n";
@@ -876,15 +892,11 @@ QString RichTextToInsertRun::generateIndexCondition(FmtIndex *index)
 
                 if (ok && columnIndex >= 0)
                 {
-                    // Находим имя параметра для этой колонки
-                    for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
-                    {
-                        if (it.value() == source)
-                        {
-                            fieldValue = it.key().toLower();
-                            break;
-                        }
-                    }
+                    fieldValue = "p_col" + QString::number(columnIndex + 1);
+                }
+                else
+                {
+                    fieldValue = "NULL";
                 }
             }
             else if (source.startsWith("SQL|"))
@@ -1097,7 +1109,8 @@ QString RichTextToInsertRun::generateUpdateStatement(const QMap<int, QString> &c
     // Добавляем WHERE условие для UPDATE
     if (m_useCustomCondition && !m_customExistsCondition.isEmpty())
     {
-        update += padding(3) + "WHERE " + m_customExistsCondition + ";\n\n";
+        QString processedCondition = replaceFieldReferencesInCondition(m_customExistsCondition);
+        update += padding(3) + "WHERE " + processedCondition + ";\n\n";
     }
     else if (m_existsIndex)
     {
@@ -1130,5 +1143,203 @@ bool RichTextToInsertRun::isDefaultValue(const QString &value, FmtField *field)
             return true;
     }
 
+    return false;
+}
+
+QString RichTextToInsertRun::replaceFieldReferences(const QString &value)
+{
+    // Этот метод используется только для INSERT/UPDATE, где все поля должны быть заменены
+    QString result = value;
+
+    if (!m_pTable)
+        return result;
+
+    const QList<FmtField*> &fields = m_pTable->getFieldsList();
+    for (FmtField *field : fields)
+    {
+        QString fieldName = field->name();
+
+        if (m_FieldMapping.contains(fieldName))
+        {
+            QString source = m_FieldMapping[fieldName];
+            QString replacement;
+
+            if (source.startsWith("COLUMN|"))
+            {
+                QString columnStr = source.mid(7);
+                bool ok;
+                int columnIndex = columnStr.toInt(&ok);
+
+                if (ok && columnIndex >= 0)
+                {
+                    replacement = "p_col" + QString::number(columnIndex + 1);
+                }
+                else
+                {
+                    replacement = "NULL";
+                }
+            }
+            else if (source.startsWith("SQL|"))
+            {
+                replacement = source.mid(4);
+            }
+            else if (source.startsWith("FUNC|"))
+            {
+                QString funcValue = source.mid(5);
+                if (funcValue.compare("nextval", Qt::CaseInsensitive) == 0)
+                {
+                    replacement = QString("%1_seq").arg(fieldName.toLower());
+                }
+                else
+                {
+                    replacement = funcValue;
+                }
+            }
+            else if (source.startsWith("VAL|"))
+            {
+                QString valValue = source.mid(4);
+                if (valValue.compare("nextval", Qt::CaseInsensitive) == 0)
+                {
+                    replacement = QString("%1_seq").arg(fieldName.toLower());
+                }
+                else
+                {
+                    replacement = formatValueForField(valValue, field);
+                }
+            }
+            else
+            {
+                replacement = formatValueForField(source, field);
+            }
+
+            QRegularExpression regex("\\b" + QRegularExpression::escape(fieldName) + "\\b");
+            result.replace(regex, replacement);
+        }
+    }
+
+    return result;
+}
+
+QString RichTextToInsertRun::replaceFieldReferencesInCondition(const QString &condition)
+{
+    QString result = condition;
+
+    if (!m_pTable)
+        return result;
+
+    // Простой подход: заменяем только те поля, которые в левой части условий
+    // и только если для них есть COLUMN| маппинг
+
+    // Разбиваем условие на части по AND/OR
+    QStringList parts;
+    QString currentPart;
+    int parenLevel = 0;
+
+    for (int i = 0; i < result.length(); ++i)
+    {
+        QChar ch = result[i];
+
+        if (ch == '(') parenLevel++;
+        else if (ch == ')') parenLevel--;
+
+        if (parenLevel == 0 && i > 0)
+        {
+            QString lookahead = result.mid(i, 3).toUpper();
+            if (lookahead == " AND" || lookahead == " OR ")
+            {
+                if (!currentPart.trimmed().isEmpty())
+                {
+                    parts << currentPart.trimmed();
+                    currentPart.clear();
+                }
+                i += 3; // Пропускаем AND/OR
+                continue;
+            }
+        }
+
+        currentPart += ch;
+    }
+
+    if (!currentPart.trimmed().isEmpty())
+    {
+        parts << currentPart.trimmed();
+    }
+
+    // Обрабатываем каждую часть отдельно
+    QStringList processedParts;
+
+    for (const QString &part : parts)
+    {
+        QString processedPart = part;
+
+        // Ищем шаблон "field = value" или "field operator value"
+        QRegularExpression conditionRegex(
+            "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*([=<>!]+|\\s+LIKE\\s+|\\s+IN\\s+)\\s*(.+)$",
+            QRegularExpression::CaseInsensitiveOption
+            );
+
+        QRegularExpressionMatch match = conditionRegex.match(part);
+        if (match.hasMatch())
+        {
+            QString fieldName = match.captured(1).trimmed();
+            QString operatorStr = match.captured(2).trimmed();
+            QString rightPart = match.captured(3).trimmed();
+
+            // Проверяем, есть ли поле в маппинге как COLUMN|
+            if (m_FieldMapping.contains(fieldName))
+            {
+                QString source = m_FieldMapping[fieldName];
+                if (source.startsWith("COLUMN|"))
+                {
+                    QString columnStr = source.mid(7);
+                    bool ok;
+                    int columnIndex = columnStr.toInt(&ok);
+
+                    if (ok && columnIndex >= 0)
+                    {
+                        QString paramName = "p_col" + QString::number(columnIndex + 1);
+
+                        // Проверяем, не является ли правая часть тем же самым параметром
+                        if (rightPart != paramName)
+                        {
+                            // Заменяем поле на параметр в левой части
+                            processedPart = paramName + " " + operatorStr + " " + rightPart;
+                        }
+                    }
+                }
+            }
+        }
+
+        processedParts << processedPart;
+    }
+
+    return processedParts.join(" AND ");
+}
+
+bool RichTextToInsertRun::isParameterExists(const QString &paramName) const
+{
+    // Извлекаем номер колонки из имени параметра: "p_col3" -> 3
+    QRegularExpression regex("p_col(\\d+)");
+    QRegularExpressionMatch match = regex.match(paramName);
+    if (match.hasMatch())
+    {
+        int colNumber = match.captured(1).toInt();
+
+        // Проверяем, есть ли такой номер колонки в маппинге
+        for (auto it = m_FieldMapping.begin(); it != m_FieldMapping.end(); ++it)
+        {
+            QString source = it.value();
+            if (source.startsWith("COLUMN|"))
+            {
+                QString columnStr = source.mid(7);
+                bool ok;
+                int columnIndex = columnStr.toInt(&ok);
+                if (ok && columnIndex >= 0 && (columnIndex + 1) == colNumber)
+                {
+                    return true;
+                }
+            }
+        }
+    }
     return false;
 }
