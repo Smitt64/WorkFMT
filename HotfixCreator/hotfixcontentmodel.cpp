@@ -304,8 +304,12 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
             {
                 const SvnStatusElement &element = *((SvnStatusElement*)elem);
                 item = dynamic_cast<FileContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
-                item->setSvnAction(element.action);
-                item->setFullFileName(element.fullpath);
+
+                if (item)
+                {
+                    item->setSvnAction(element.action);
+                    item->setFullFileName(element.fullpath);
+                }
             }
             else
                 item = dynamic_cast<FileContentTreeItem*>(maker(realParent, separated[i], ""));
@@ -485,7 +489,7 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
 
         PathMaker PkgMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
         {
-            if (!isFile(name) && !isExcludeElement(name))
+            if (!isFile(name) && !isExcludeElement(name) && parent)
             {
                 if (name != "05_PCKG")
                     return parent->appendFolder(name);
@@ -753,7 +757,7 @@ void HotfixContentModel::makePgRoutes(SvnStatusModel *svn, FolderParents Parents
 
     PathMaker ChangelogMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
     {
-        if (name == "release-changelog.xml")
+        if (name == "release-changelog.xml" && parent)
             return parent->appendReleaseChangelogItem(name);
 
         return stdMakePathFunc(parent, name, fullname);
