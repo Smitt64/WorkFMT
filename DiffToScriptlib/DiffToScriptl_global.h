@@ -3,7 +3,7 @@
 
 #include <QtCore/qglobal.h>
 
-// DiffToScriptl_global.h
+// #include "DiffToScriptl_global.h"
 
 #if defined(DIFFTOSCRIPTL_LIBRARY)
 #  define DIFFTOSCRIPTL_EXPORT Q_DECL_EXPORT

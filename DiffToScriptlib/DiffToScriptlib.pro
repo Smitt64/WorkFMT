@@ -1,4 +1,5 @@
-QT -= gui
+QT += core gui sql xml
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TEMPLATE = lib
 DEFINES += DIFFTOSCRIPTL_LIBRARY
@@ -15,11 +16,39 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    difftoscriptl.cpp
+    dattable.cpp \
+    diffconnection.cpp \
+    diffcore.cpp \
+    difffield.cpp \
+    difflogging.cpp \
+    diffmodeparser.cpp \
+    difftableinfo.cpp \
+    difftoscriptl.cpp \
+    join.cpp \
+    linespareser.cpp \
+    linesparsermain.cpp \
+    recordparser.cpp \
+    scripttable.cpp \
+    streamcontrol.cpp \
+    tablelinks.cpp
 
 HEADERS += \
     DiffToScriptl_global.h \
-    difftoscriptl.h
+    dattable.h \
+    diffconnection.h \
+    diffcore.h \
+    difffield.h \
+    difflogging.h \
+    diffmodeparser.h \
+    difftableinfo.h \
+    difftoscriptl.h \
+    join.h \
+    linespareser.h \
+    linesparsermain.h \
+    recordparser.h \
+    scripttable.h \
+    streamcontrol.h \
+    tablelinks.h
 
 # Default rules for deployment.
 unix {
@@ -33,6 +62,9 @@ else:unix: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
 
 INCLUDEPATH += $$PWD/../FmtLib
 DEPENDPATH += $$PWD/../FmtLib
+
+INCLUDEPATH += $$PWD/../FmtLib/h
+DEPENDPATH += $$PWD/../FmtLib/h
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
