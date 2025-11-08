@@ -8,10 +8,12 @@ TEMPLATE = subdirs
 SUBDIRS += \
     ChangeNote \
     DiffToScript \
+    DiffToScriptlib \
     DumpTool \
     FmtLib \
     FmtRslModule \
     HotfixCreator \
+    RegparmTool \
     WorkFMT \
     DBFileTool \
     FmtDbgHelp \
@@ -35,8 +37,10 @@ DBFileTool.depends = FmtLib
 HotfixCreator.depends = FmtLib ToolsRuntimeProj
 fmtdatapumpwrp.depends += FmtLib
 DumpTool.depends = FmtLib fmtdatapumpwrp
-DiffToScript.depends += FmtLib
+DiffToScriptlib.depends += FmtLib ToolsRuntimeProj
+DiffToScript.depends += FmtLib DiffToScriptlib ToolsRuntimeProj
 FmtRslModule.depends += FmtLib
+RegparmTool.depends += FmtLib ToolsRuntimeProj
 #ToolsRuntime.depends += RslToolRuntimeStatic
 
 RESOURCES += \

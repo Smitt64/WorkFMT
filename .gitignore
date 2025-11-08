@@ -188,3 +188,7 @@ qrsd/PgConvWrapper/PgConvWrapper/x64/Debug/
 ChangeNote/debug/
 
 ChangeNote/release/
+
+RegparmTool/debug/
+
+RegparmTool/build/

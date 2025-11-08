@@ -170,3 +170,10 @@ RESOURCES += \
     res.qrc
 
 OTHER_FILES += com.rs.fmt.workfmt.difftoscript.xml res/difftoscript.rc
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../DiffToScriptlib/release/ -lDiffToScriptlib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../DiffToScriptlib/debug/ -lDiffToScriptlib
+else:unix: LIBS += -L$$OUT_PWD/../DiffToScriptlib/ -lDiffToScriptlib
+
+INCLUDEPATH += $$PWD/../DiffToScriptlib
+DEPENDPATH += $$PWD/../DiffToScriptlib
