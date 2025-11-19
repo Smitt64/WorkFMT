@@ -188,6 +188,14 @@ QStringList DiffTableInfo::readColumnsFromFile(const QString& filePath)
         return columns;
 }
 
+void DiffTableInfo::loadFromFmtXml(const QString &fmtxmlfilename, const QString &datfilename)
+{
+    FmtTable fmttable;
+    fmttable.loadFromXml(fmtxmlfilename);
+
+    loadFromFmt(&fmttable, datfilename);
+}
+
 void DiffTableInfo::loadFromFmt(FmtTable *fmtTable, const QString &datfilename)
 {
     FmtInit();

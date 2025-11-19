@@ -162,7 +162,7 @@ public:
 
 Q_DECLARE_OPAQUE_POINTER(JoinTables)
 
-struct JoinListIterator
+struct DIFFTOSCRIPTL_EXPORT JoinListIterator
 {
     JoinListIterator(JoinTable* joinTable, JoinList::iterator first);
     JoinListIterator();
@@ -173,7 +173,7 @@ private:
     JoinTable* _joinTable;
 };
 
-struct JoinTableIterator
+struct DIFFTOSCRIPTL_EXPORT JoinTableIterator
 {
     JoinTableIterator():joinTable(nullptr){}
     JoinTableIterator(const JoinTable* joinTable):joinTable(joinTable){}
@@ -183,7 +183,7 @@ struct JoinTableIterator
     const JoinTable* ptr() {return joinTable;}
 };
 
-bool operator==(const JoinTableIterator& a, const JoinTableIterator& b);
-bool operator!=(const JoinTableIterator& a, const JoinTableIterator& b);
+DIFFTOSCRIPTL_EXPORT bool operator==(const JoinTableIterator& a, const JoinTableIterator& b);
+DIFFTOSCRIPTL_EXPORT bool operator!=(const JoinTableIterator& a, const JoinTableIterator& b);
 
 #endif // JOIN_H

@@ -2,6 +2,7 @@
 #include "toolsruntime.h"
 #include "regparmwizard.h"
 #include "ui_actionpage.h"
+#include "regparmwizard.h"
 #include <QButtonGroup>
 #include <QFileDialog>
 #include <QSettings>
@@ -22,18 +23,22 @@ ActionPage::ActionPage(QWidget *parent) :
     ui->setupUi(this);
 
     setTitle(tr("Добавление настройки в DAT файл"));
-
     registerField("RepositoryPath", ui->pathEdit);
 
     fakeBtn = new QSpinBox();
     m_pGroup = new QButtonGroup();
     m_pGroup->addButton(ui->radioAddRegToDat, 0);
+    m_pGroup->addButton(ui->radioViewDat, 1);
+    m_pGroup->addButton(ui->radioAddFromWord, 2);
     registerField("Action", fakeBtn, "value");
 
     // Соединения
-    //connect(ui->selFolderBtn, &QPushButton::clicked, this, &ActionPage::on_selFolderBtn_clicked);
     connect(ui->pathEdit, &QLineEdit::textChanged, this, &ActionPage::on_pathEdit_textChanged);
     connect(ui->pathEdit, &QLineEdit::textChanged, this, &ActionPage::completeChanged);
+
+    // Подключаем обработчик переключения режимов
+    connect(m_pGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled),
+            this, &ActionPage::onActionToggled);
 
     // Изначально скрываем иконку VCS
     ui->versIcon->setVisible(false);
@@ -45,6 +50,7 @@ ActionPage::ActionPage(QWidget *parent) :
     });
 
     ui->radioAddRegToDat->setChecked(true);
+    updatePathFieldState(); // Инициализируем состояние полей
 }
 
 ActionPage::~ActionPage()
@@ -62,10 +68,16 @@ void ActionPage::initializePage()
     // Сбрасываем состояние
     ui->pathEdit->clear();
     ui->versIcon->setVisible(false);
+    updatePathFieldState(); // Обновляем состояние полей при инициализации
 }
 
 bool ActionPage::isComplete() const
 {
+    // Если выбран режим добавления из Word, путь не обязателен
+    if (ui->radioAddFromWord->isChecked()) {
+        return true;
+    }
+
     QString path = ui->pathEdit->text().trimmed();
 
     // Проверяем, что путь не пустой
@@ -94,6 +106,11 @@ bool ActionPage::isComplete() const
 
 void ActionPage::on_selFolderBtn_clicked()
 {
+    // Если выбран режим добавления из Word, не позволяем выбирать папку
+    if (ui->radioAddFromWord->isChecked()) {
+        return;
+    }
+
     QSettings settings("RegParmWizard.ini", QSettings::IniFormat);
     SelectFolderDlg folderDlg(&settings, "RepoList", this);
 
@@ -137,6 +154,13 @@ void ActionPage::on_selFolderBtn_clicked()
 
 void ActionPage::on_pathEdit_textChanged(const QString &text)
 {
+    // Если выбран режим добавления из Word, игнорируем изменения пути
+    if (ui->radioAddFromWord->isChecked()) {
+        return;
+    }
+
+    RegParmWizard *wzrd = (RegParmWizard*)wizard();
+
     // Проверяем тип VCS при ручном вводе пути
     if (!text.isEmpty() && QDir(text).exists())
     {
@@ -159,6 +183,8 @@ void ActionPage::on_pathEdit_textChanged(const QString &text)
         {
             ui->versIcon->setVisible(false);
         }
+
+        wzrd->addUserField("VcsType", (int)type);
     }
     else
     {
@@ -167,6 +193,33 @@ void ActionPage::on_pathEdit_textChanged(const QString &text)
 
     // При изменении текста вызываем проверку валидности
     emit completeChanged();
+}
+
+void ActionPage::onActionToggled()
+{
+    updatePathFieldState();
+    emit completeChanged();
+}
+
+void ActionPage::updatePathFieldState()
+{
+    bool isAddFromWordMode = ui->radioAddFromWord->isChecked();
+
+    // Делаем поле пути и кнопку выбора неактивными в режиме добавления из Word
+    ui->pathEdit->setEnabled(!isAddFromWordMode);
+    ui->selFolderBtn->setEnabled(!isAddFromWordMode);
+    ui->label->setEnabled(!isAddFromWordMode);
+
+    // Также скрываем иконку VCS в этом режиме
+    if (isAddFromWordMode) {
+        ui->versIcon->setVisible(false);
+        ui->pathEdit->setStyleSheet(""); // Убираем красную рамку
+    }
+
+    // Очищаем поле пути в режиме добавления из Word
+    if (isAddFromWordMode && !ui->pathEdit->text().isEmpty()) {
+        ui->pathEdit->clear();
+    }
 }
 
 QString ActionPage::selectedPath() const
@@ -193,4 +246,19 @@ bool ActionPage::checkRequiredFiles(const QString &basePath) const
     bool hasRegVal = QFile::exists(regValFile);
 
     return hasRegParm && hasRegVal;
+}
+
+int ActionPage::nextId() const
+{
+    RegParmWizard *wzrd = (RegParmWizard*)wizard();
+
+    if (ui->radioViewDat->isChecked())
+        return RegParmWizard::PageViewDat;
+
+    // Для режима добавления из Word следующая страница - подключение к БД
+    if (ui->radioAddFromWord->isChecked())
+        return RegParmWizard::PageConnection;
+
+    // Для обычного добавления в DAT файлы следующая страница также подключение к БД
+    return RegParmWizard::PageConnection;
 }

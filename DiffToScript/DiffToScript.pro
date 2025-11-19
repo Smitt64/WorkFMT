@@ -19,36 +19,21 @@ RC_FILE = res/difftoscript.rc
 SOURCES += \
     altertable.cpp \
     cmdparser.cpp \
-    dattable.cpp \
     dbspelling.cpp \
     dbspellingoracle.cpp \
     dbspellingpostgres.cpp \
-    diffconnection.cpp \
-    diffconnection.cpp \
-    diffcore.cpp \
-    difffield.cpp \
-    difflogging.cpp \
-    diffmodeparser.cpp \
     diffoptionsdlg.cpp \
-    difftableinfo.cpp \
 #    difftoscripttest.cpp \
     functioninfo.cpp \
-    join.cpp \
-    linespareser.cpp \
-    linesparsermain.cpp \
     main.cpp \
     mainwindow.cpp \
-    recordparser.cpp \
     rslobj/difftoscripexecutor.cpp \
     rslobj/fmttableslist.cpp \
     rslobj/regobjects.cpp \
     rslobj/sqlstringlist.cpp \
     rslobj/tablefilesmodel.cpp \
     rslobj/taskoptionscontainer.cpp \
-    scripttable.cpp \
     sqlscriptmain.cpp \
-    streamcontrol.cpp \
-    tablelinks.cpp \
     tablemacoptionspage.cpp \
     tablestree.cpp \
     task.cpp \
@@ -71,34 +56,19 @@ else:unix:!macx: LIBS += -L$$OUT_PWD/../FmtLib/ -lFmtLib
 HEADERS += \
     cmdparser.h \
     datfield.h \
-    dattable.h \
     dbspelling.h \
     dbspellingoracle.h \
     dbspellingpostgres.h \
-    diffconnection.h \
-    diffconnection.h \
-    diffcore.h \
-    difffield.h \
-    difflogging.h \
-    diffmodeparser.h \
     diffoptionsdlg.h \
-    difftableinfo.h \
 #    difftoscripttest.h \
     functioninfo.h \
-    join.h \
-    linespareser.h \
-    linesparsermain.h \
     mainwindow.h \
-    recordparser.h \
     rslobj/difftoscripexecutor.h \
     rslobj/fmttableslist.h \
     rslobj/sqlstringlist.h \
     rslobj/tablefilesmodel.h \
     rslobj/taskoptionscontainer.h \
-    scripttable.h \
     sqlscriptmain.h \
-    streamcontrol.h \
-    tablelinks.h \
     tablemacoptionspage.h \
     tablestree.h \
     task.h \

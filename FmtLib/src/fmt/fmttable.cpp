@@ -549,7 +549,7 @@ bool FmtTable::loadFromXml(const QString &filename, const QString &tableName)
         QString typeName = e.attribute("T_TYPE");
         qint16 type = fmtTypeFromXmlType(typeName);
 
-        FmtField *fld = addFieldPrivate(name, type);
+        FmtField *fld = addFieldPrivate(name.mid(2), type);
         fld->setDataPrivate(FmtField::fld_Size, e.attribute("T_SIZE"));
         fld->setDataPrivate(FmtField::fld_Outlen, e.attribute("T_OUTLEN"));
         fld->setDataPrivate(FmtField::fld_DecPoint, e.attribute("T_DECPOINT"));

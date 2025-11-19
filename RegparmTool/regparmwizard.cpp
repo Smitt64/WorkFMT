@@ -1,17 +1,39 @@
 #include "regparmwizard.h"
 #include "actionpage.h"
 #include "connactionpage.h"
+#include "recordparser.h"
+#include "difftableinfo.h"
+#include "fmtcore.h"
 #include <QIcon>
 #include <QVariant>
+#include "linesparsermain.h"
+#include "regparmmodel/regparmmodel.h"
+#include "viewdatpage.h"
+#include "wordcontentpage.h"
+#include "wordpreviewregpage.h"
+#include <toolsruntime.h>
+#include <rsscript/registerobjlist.hpp>
 
 RegParmWizard::RegParmWizard(QWidget *parent) :
     QWizard(parent),
     m_pActionPage(nullptr),
     m_pConnectionPage(nullptr),
+    m_pViewPage(nullptr),
     m_pHelpMenu(nullptr)
 {
+    QDir trDir(qApp->applicationDirPath());
+    if (trDir.cd("translations"))
+    {
+        QString translatorFile = QString("qt_%1").arg("ru");
+        if (qt_translator.load(translatorFile, trDir.absolutePath()))
+            qApp->installTranslator(&qt_translator);
+    }
+
+    FmtInit();
     setupUi();
     setupConnections();
+
+    rslAddStaticMacroDir(".\\mac\\regparmtool");
 }
 
 RegParmWizard::~RegParmWizard()
@@ -27,12 +49,18 @@ void RegParmWizard::setupUi()
     // Создание страниц
     m_pActionPage = new ActionPage(this);
     m_pConnectionPage = new ConnactionPage(this);
+    m_pViewPage = new ViewDatPage(this);
+    m_pWordContentPage = new WordContentPage(this);
+    m_pWordPreviewRegPage = new WordPreviewRegPage(this);
 
     setWindowTitle(tr("Реестр параметров - Мастер"));
 
     // Добавление страниц
     addPage(m_pActionPage);
     addPage(m_pConnectionPage);
+    addPage(m_pViewPage);
+    addPage(m_pWordContentPage);
+    addPage(m_pWordPreviewRegPage);
    // addPage(m_pScriptsPage);
 
     // Настройка кнопок
@@ -108,7 +136,7 @@ QString RegParmWizard::userValName(const QVariant &value) const
 
 RegParmWizard::ActionType RegParmWizard::selectedAction() const
 {
-    return static_cast<ActionType>(field("actionType").toInt());
+    return static_cast<ActionType>(field("Action").toInt());
 }
 
 void RegParmWizard::onSettingsClicked()
@@ -121,4 +149,44 @@ void RegParmWizard::onRestartClicked()
 {
     // TODO: Реализовать рестарт мастера
     //qDebug() << "Restart button clicked";
+}
+
+QAbstractItemModel *RegParmWizard::datModel()
+{
+    return m_pDatModel.data();
+}
+
+void RegParmWizard::resetDatModel()
+{
+    if (m_DatDatabase.isOpen())
+        m_DatDatabase.close();
+
+    m_DatDatabase = QSqlDatabase::addDatabase("QSQLITE");
+    m_DatDatabase.setDatabaseName("1_DatDebugDb.sqlite");
+    m_DatDatabase.open();
+
+    LinesParserMain linesParser;
+
+    VcsType m_VcsType = (VcsType)userField("VcsType").toInt();
+    if (m_VcsType == VcsType::Svn)
+        linesParser.setTableParser(new LinesTablePareser("Index: "));
+    else
+        linesParser.setTableParser(new LinesTablePareser("diff --git "));
+
+    QDir dir(field("RepositoryPath").toString());
+    QString dataPath = dir.absoluteFilePath("Distrib/DBFile/Data");
+    QDir dataDir(dataPath);
+
+    QScopedPointer<DiffTable> table(new DiffTable());
+    QString regparmdat = dataDir.absoluteFilePath("DREGPARM_DBT.dat");
+    table->loadFromFmtXml("://xml/dregparm_dbt.xml", regparmdat);
+
+    diffLoadDatToSqlite(regparmdat, m_DatDatabase, table.data(), false);
+
+    m_pDatModel.reset(new RegParmModel(m_DatDatabase));
+}
+
+QTextDocument *RegParmWizard::wordContentDocument()
+{
+    return m_pWordContentPage->document();
 }

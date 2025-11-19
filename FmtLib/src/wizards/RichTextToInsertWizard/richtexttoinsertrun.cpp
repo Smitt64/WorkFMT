@@ -13,6 +13,7 @@
 #include "fmtcore.h"
 #include "fmtsegment.h"
 #include "connectioninfo.h"
+#include <toolsruntime.h>
 
 RichTextToInsertRun::RichTextToInsertRun(QObject *parent)
     : QObject{parent}, QRunnable()
@@ -1353,49 +1354,5 @@ bool RichTextToInsertRun::isParameterExists(const QString &paramName) const
 
 QString RichTextToInsertRun::replaceProblematicSymbols(const QString &text)
 {
-    if (text.isEmpty())
-        return text;
-
-    QString result = text;
-
-    // Заменяем проблемные символы для CP866
-    QHash<QChar, QChar> symbolReplacements = {
-        {QChar(0x2013), '-'},    // Длинное тире → обычный дефис
-        {QChar(0x2014), '-'},    // Длинное тире → обычный дефис
-        {QChar(0x2018), '\''},   // Левая одинарная кавычка → обычная кавычка
-        {QChar(0x2019), '\''},   // Правая одинарная кавычка → обычная кавычка
-        {QChar(0x201C), '\"'},   // Левая двойная кавычка → обычная кавычка
-        {QChar(0x201D), '\"'},   // Правая двойная кавычка → обычная кавычка
-        {QChar(0x00AB), '\"'},   // Левая угловая кавычка → обычная кавычка
-        {QChar(0x00BB), '\"'},   // Правая угловая кавычка → обычная кавычка
-        {QChar(0x2039), '\''},   // Левая одинарная угловая кавычка → обычная кавычка
-        {QChar(0x203A), '\''},   // Правая одинарная угловая кавычка → обычная кавычка
-        {QChar(0x2026), '.'},    // Многоточие → три точки (обработаем отдельно)
-        {QChar(0x201E), '\"'},   // Нижняя двойная кавычка → обычная кавычка
-        {QChar(0x2E3A), '-'},    // Двойное длинное тире → обычный дефис
-        {QChar(0x2E3B), '-'},    // Тройное длинное тире → обычный дефис
-    };
-
-    // Замена символов из хэша
-    for (auto it = symbolReplacements.begin(); it != symbolReplacements.end(); ++it)
-    {
-        result.replace(it.key(), it.value());
-    }
-
-    // Специальная обработка для многоточия
-    result.replace(QString(QChar(0x2026)), "...");
-
-    // Дополнительно: заменяем "умные" кавычки, которые могут быть в тексте
-    result.replace("«", "\"");
-    result.replace("»", "\"");
-    result.replace("„", "\"");
-    result.replace("“", "\"");
-    result.replace("‟", "\"");
-    result.replace("”", "\"");
-    result.replace("‘", "'");
-    result.replace("’", "'");
-    result.replace("‛", "'");
-    result.replace("‚", "'");
-
-    return result;
+    return toolReplaceUnicodeSymToOem(text);
 }

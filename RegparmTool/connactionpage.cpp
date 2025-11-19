@@ -4,6 +4,7 @@
 #include "odbctablemodel.h"
 #include "odbctablemodeldelegate.h"
 #include "connectioninfo.h"
+#include "regparmwizard.h" // Добавляем заголовок для доступа к wizard()
 #include <QMessageBox>
 
 ConnactionPage::ConnactionPage(QWidget *parent) :
@@ -76,4 +77,18 @@ bool ConnactionPage::validatePage()
 void ConnactionPage::initializePage()
 {
     ui->connectionsTree->setCurrentIndex(QModelIndex());
+}
+
+int ConnactionPage::nextId() const
+{
+    // Получаем указатель на wizard и приводим к правильному типу
+    RegParmWizard *wzrd = qobject_cast<RegParmWizard*>(wizard());
+    if (wzrd && wzrd->selectedAction() == RegParmWizard::ActionAddFromWord)
+    {
+        // Для режима добавления из Word переходим на страницу ввода Word таблиц
+        return RegParmWizard::PageEnterWordTable;
+    }
+
+    // Для остальных режимов используем стандартное поведение
+    return QWizardPage::nextId();
 }

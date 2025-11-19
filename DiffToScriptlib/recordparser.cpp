@@ -52,6 +52,8 @@ bool RecordParser::parseRecord(QString line)
             {
                 if ((success = parseString(is, value)))
                     _values.push_back(value);
+                else
+                    _values.push_back(QChar(1));
             }
             else
             {
@@ -263,10 +265,10 @@ QString diffCreateChangesTableForSqlite(DiffTable *table)
 
 // ---------------------------------------------------------------------------
 
-void diffLoadChangesToSqlite(SqlDatabase *Connection, DiffTable *table)
+void diffLoadChangesToSqlite(QSqlDatabase &Connection, DiffTable *table)
 {
     QString err;
-    QSqlQuery query(Connection->database());
+    QSqlQuery query(Connection);
     query.prepare(QString("DROP TABLE IF EXISTS %1_CHANGE").arg(table->name));
     ExecuteQuery(&query);
 
@@ -307,7 +309,7 @@ void diffLoadChangesToSqlite(SqlDatabase *Connection, DiffTable *table)
             break;
         }
 
-        QSqlQuery insert(Connection->database());
+        QSqlQuery insert(Connection);
         insert.prepare(insertsql);
 
         for (int i = 0; i < table->realFields.size(); i++)
@@ -333,12 +335,9 @@ void diffLoadChangesToSqlite(SqlDatabase *Connection, DiffTable *table)
     }
 }
 
-bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffTable *table, bool changes)
+bool diffLoadDatToSqlite(const QString &filename, QSqlDatabase &Connection, DiffTable *table, bool changes)
 {
-    if (!Connection || !Connection->isOpen())
-        return false;
-
-    QSqlQuery query(Connection->database());
+    QSqlQuery query(Connection);
     query.prepare(QString("DROP TABLE IF EXISTS %1").arg(table->name));
     ExecuteQuery(&query);
 
@@ -357,7 +356,7 @@ bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffT
 
         indexsql += "INDEX " + index->name + " ON " + table->name + "(" + index->fields.fields().join(",") + ")";
 
-        QSqlQuery indexquery(Connection->database());
+        QSqlQuery indexquery(Connection);
         indexquery.prepare(indexsql);
         ExecuteQuery(&indexquery);
     }
@@ -385,6 +384,11 @@ bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffT
     {
         QString line = stream.readLine();
 
+        if (line.contains("4345"))
+        {
+            qDebug() << line;
+        }
+
         if (!IsDataSection)
         {
             if (line.contains("BEGINDATA", Qt::CaseInsensitive))
@@ -392,12 +396,18 @@ bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffT
         }
         else
         {
-            if (parser->parseRecord(line))
+            RecordParser *ptrParser = parser.data();
+            if (ptrParser->parseRecord(line))
             {
-                QSqlQuery insert(Connection->database());
+                QSqlQuery insert(Connection);
                 insert.prepare(insertsql);
 
                 QStringList values = parser->getValues();
+                /*QString tmp = values[2];
+                if (values[0] == "596")
+                {
+                    qDebug() << values;
+                }*/
                 for (int i = 0; i < table->realFields.size(); i++)
                 {
                     QString value = values[i];
@@ -405,10 +415,20 @@ bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffT
 
                     if (field->isString)
                     {
-                        value = value.mid(1, value.size() - 2);
-
                         if (value == QChar(1) || value == QChar(2))
                             value = QString();
+                        else
+                        {
+                            //value = value.mid(1, value.size() - 2);
+                            if (value.endsWith("'"))
+                                value.chop(1);
+
+                            if (value.startsWith("'"))
+                                value = value.mid(1);
+
+                            if (value == QChar(1) || value == QChar(2))
+                                value = QString();
+                        }
                     }
 
                     insert.bindValue(params[i], value);
@@ -423,4 +443,12 @@ bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffT
         diffLoadChangesToSqlite(Connection, table);
 
     return true;
+}
+
+bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffTable *table, bool changes)
+{
+    if (!Connection || !Connection->isOpen())
+        return false;
+
+    return diffLoadDatToSqlite(filename, Connection->database(), table, changes);
 }

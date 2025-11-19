@@ -47,8 +47,8 @@ public:
 
 Q_DECLARE_OPAQUE_POINTER(IndexField);
 
-bool operator==(const IndexField& a, const IndexField& b);
-bool operator!=(const IndexField& a, const IndexField& b);
+DIFFTOSCRIPTL_EXPORT bool operator==(const IndexField& a, const IndexField& b);
+DIFFTOSCRIPTL_EXPORT bool operator!=(const IndexField& a, const IndexField& b);
 
 class DIFFTOSCRIPTL_EXPORT IndexFields : public ListIterableObject<IndexField*>
 {

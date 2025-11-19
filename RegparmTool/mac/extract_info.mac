@@ -1,0 +1,50 @@
+import RichText, StrLib;
+
+private macro BoolStrToBool(str)
+    if (strContains(strToUpper(str), strToUpper("Установлен")) or strContains(strToUpper(str), "YES") or strContains(strToUpper(str), "X"))
+        return true;
+    end;
+
+    return false;
+end;
+
+private macro ReadCoreTable(Table, InfoArray)
+    var i = 0;
+    var Info = RegInfoObj();
+
+    while (i < Table.rows)
+        var CellAttr = strTrimmed(Table.cellAt(i, 1).text);
+        var Value = strTrimmed(Table.cellAt(i, 2).text);
+
+        if ((CellAttr == "Полное имя"))
+            Info.fullName = Value;
+        elif ((CellAttr == "Тип"))
+            Info.typeName = Value;
+        elif ((CellAttr == "Комментарий"))
+            Info.comment = Value;
+        elif ((CellAttr == "Значение по умолчанию"))
+            Info.defaultValue = Value;
+        elif ( (strContains(CellAttr, "Глобальная настройка", true)) )
+            Info.isGlobal = BoolStrToBool(Value);
+        elif ( (strContains(CellAttr, "Узловая настройка", true)) )
+            Info.isNode = BoolStrToBool(Value);
+        elif ( (strContains(CellAttr, "Настройка безопасности", true)) )
+            Info.isSecurity = BoolStrToBool(Value);
+        end;
+        i = i + 1;
+    end;
+debugbreak;
+    InfoArray[InfoArray.size] = Info;
+end;
+
+macro ExtractRegInfo(DocumentTables)
+    var InfoArray = TArray;
+
+    while (DocumentTables.hasNext())
+        var Table = DocumentTables.next();
+
+        ReadCoreTable(Table, InfoArray);
+    end;
+
+    return InfoArray;
+end;

@@ -63,7 +63,7 @@ public:
 
 Q_DECLARE_OPAQUE_POINTER(Link);
 
-bool operator==(const Link& a, const Link& b);
+DIFFTOSCRIPTL_EXPORT bool operator==(const Link& a, const Link& b);
 
 class DIFFTOSCRIPTL_EXPORT Links : public ListIterableObject<Link*, CachedObjectDeleter>
 {
@@ -137,7 +137,7 @@ private:
 
 Q_DECLARE_OPAQUE_POINTER(TableLinks);
 
-bool operator==(const TableLinks& a, const TableLinks& b);
+DIFFTOSCRIPTL_EXPORT bool operator==(const TableLinks& a, const TableLinks& b);
 
 
 #endif // TABLELINKS_H

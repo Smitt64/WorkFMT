@@ -1,5 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
-<changelog project="Diff to Script">
+<changelog project="Diff to Script">\
+    <version ver="1.0.1.9">
+        <add>Часть функционала вынесена в отдельную библиотеку</add>
+        <fix>Исправлено падение, если в строковом поле отсутствовал символ chr(1)</fix>
+    </version>
     <version ver="1.0.1.8">
         <fix>Исправлена ошибка генерации символьных полей по их коду</fix>
     </version>

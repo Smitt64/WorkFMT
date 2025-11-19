@@ -49,6 +49,20 @@
         </widget>
        </item>
        <item>
+        <widget class="QRadioButton" name="radioViewDat">
+         <property name="text">
+          <string>Просмотр содержимого DAT файла</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioAddFromWord">
+         <property name="text">
+          <string>Добавление настроек на схему из Word таблиц</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="Line" name="line">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

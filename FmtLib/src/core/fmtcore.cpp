@@ -1466,6 +1466,9 @@ bool CheckConnectionType(ConnectionInfo *pInfo, const QList<int> &Type, bool Sho
 
 QString FmtCapitalizeField(const QString &undecoratedfield, bool force)
 {
+    if (!settings())
+        return undecoratedfield;
+
     if (!settings()->value("AutoCamelCase", true).toBool() && !force)
         return undecoratedfield;
 

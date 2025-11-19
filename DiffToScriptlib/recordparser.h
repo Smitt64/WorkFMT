@@ -17,7 +17,7 @@
 //substring
 //  '' string ''
 
-
+class QSqlDatabase;
 class DIFFTOSCRIPTL_EXPORT RecordParser : public QObject
 {
     Q_OBJECT
@@ -48,5 +48,7 @@ class SqlDatabase;
 DIFFTOSCRIPTL_EXPORT QString diffCreateTableForSqlite(DiffTable *table);
 DIFFTOSCRIPTL_EXPORT QString diffCreateChangesTableForSqlite(DiffTable *table);
 DIFFTOSCRIPTL_EXPORT bool diffLoadDatToSqlite(const QString &filename, SqlDatabase *Connection, DiffTable *table, bool changes = false);
+
+DIFFTOSCRIPTL_EXPORT bool diffLoadDatToSqlite(const QString &filename, QSqlDatabase &Connection, DiffTable *table, bool changes);
 
 #endif // RECORDPARSER_H

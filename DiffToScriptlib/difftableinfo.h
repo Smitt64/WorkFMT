@@ -28,6 +28,7 @@ public:
     QStringList realFields;
 
     void loadFromFmt(FmtTable* fmtTable, const QString &datfilename = QString()); //TODO replace FmtTable to QString
+    void loadFromFmtXml(const QString &fmtxml, const QString &datfilename = QString());
     void InitUniqFields(TableLinks* tableLink);
 
     Q_INVOKABLE DatIndex *firstUniq(bool skipAutoInc) const;

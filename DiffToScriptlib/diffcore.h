@@ -27,7 +27,7 @@ enum LineUpdateType
     lutLast
 };
 
-struct ParsedLine
+struct DIFFTOSCRIPTL_EXPORT ParsedLine
 {
     QString value;
     LineType lineType;

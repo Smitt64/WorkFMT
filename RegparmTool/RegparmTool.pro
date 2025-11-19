@@ -17,12 +17,28 @@ SOURCES += \
     actionpage.cpp \
     connactionpage.cpp \
     main.cpp \
-    regparmwizard.cpp
+    regparmmodel/regparmitem.cpp \
+    regparmmodel/regparmmodel.cpp \
+    regparmmodel/regparmproxymodel.cpp \
+    regparmwizard.cpp \
+    rsl/extractinfoexecutor.cpp \
+    rsl/reginfoobj.cpp \
+    viewdatpage.cpp \
+    wordcontentpage.cpp \
+    wordpreviewregpage.cpp
 
 HEADERS += \
     actionpage.h \
     connactionpage.h \
-    regparmwizard.h
+    regparmmodel/regparmitem.h \
+    regparmmodel/regparmmodel.h \
+    regparmmodel/regparmproxymodel.h \
+    regparmwizard.h \
+    rsl/extractinfoexecutor.h \
+    rsl/reginfoobj.h \
+    viewdatpage.h \
+    wordcontentpage.h \
+    wordpreviewregpage.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -31,7 +47,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 FORMS += \
     actionpage.ui \
-    connactionpage.ui
+    connactionpage.ui \
+    viewdatpage.ui \
+    wordcontentpage.ui \
+    wordpreviewregpage.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/release/ -lToolsRuntime
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/debug/ -lToolsRuntime
@@ -41,7 +60,8 @@ INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 
 RESOURCES += \
-    ../DiffToScript/res.qrc
+    ../DiffToScript/res.qrc \
+    regtool.qrc
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib
@@ -52,3 +72,31 @@ DEPENDPATH += $$PWD/../FmtLib
 
 target.path = $$PWD/../bin
 INSTALLS += target
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../DiffToScriptlib/release/ -lDiffToScriptlib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../DiffToScriptlib/debug/ -lDiffToScriptlib
+else:unix: LIBS += -L$$OUT_PWD/../DiffToScriptlib/ -lDiffToScriptlib
+
+INCLUDEPATH += $$PWD/../DiffToScriptlib
+DEPENDPATH += $$PWD/../DiffToScriptlib
+
+OTHER_FILES += \
+    $$PWD/mac
+
+defineTest(copyToDestDir) {
+    files = $$1
+    dir = $$2
+    # replace slashes in destination path for Windows
+    win32:dir ~= s,/,\\,g
+
+    for(file, files) {
+        # replace slashes in source path for Windows
+        win32:file ~= s,/,\\,g
+        QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$shell_quote($$file) $$shell_quote($$dir) $$escape_expand(\\n\\t)
+    }
+
+    export(QMAKE_POST_LINK)
+}
+
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac/regparmtool)
+copyToDestDir($$OTHER_FILES, $$OUT_PWD/../RegparmTool/debug/mac/regparmtool)

@@ -21,6 +21,7 @@ public:
     virtual bool isComplete() const Q_DECL_OVERRIDE;
     virtual bool validatePage() Q_DECL_OVERRIDE;
     virtual void initializePage() Q_DECL_OVERRIDE;
+    virtual int nextId() const Q_DECL_OVERRIDE; // Добавляем переопределение
 
 private slots:
     void on_connectionsTree_clicked(const QModelIndex &index);

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>xml/dregparm_dbt.xml</file>
+        <file>xml/dregval_dbt.xml</file>
+    </qresource>
+</RCC>

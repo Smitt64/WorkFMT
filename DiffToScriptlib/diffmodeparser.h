@@ -9,7 +9,7 @@
 #include <QXmlStreamWriter>
 #include "DiffToScriptl_global.h"
 
-typedef struct DiffLine
+typedef struct DIFFTOSCRIPTL_EXPORT DiffLine
 {
     enum Type
     {
