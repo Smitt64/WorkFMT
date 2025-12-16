@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>xml/dregparm_dbt.xml</file>
         <file>xml/dregval_dbt.xml</file>
+        <file>res/insert_regparm.sql</file>
     </qresource>
 </RCC>

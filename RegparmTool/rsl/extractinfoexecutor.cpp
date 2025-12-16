@@ -27,9 +27,6 @@ void ExtractInfoExecutor::setDocument(QTextDocument *pDocument)
 
 void ExtractInfoExecutor::onSetStModuleAdd()
 {
-    /*RegisterObjList::inst()->AddStdProc("diffCreateTableForSqlite", Rsl_diffCreateTableForSqlite);
-    RegisterObjList::inst()->AddStdProc("diffLoadDatToSqlite", Rsl_diffLoadDatToSqlite);
-    RegisterObjList::inst()->AddStdProc("Padding", Rsl_Padding);*/
     ADDTORSL_OBJ(RegInfoObj, true);
     RslExecutor::onSetStModuleAdd();
 }
@@ -44,10 +41,28 @@ void ExtractInfoExecutor::PlayRepProc()
              QVariant::fromValue<QObject*>(DocumentTables)
          });
 
-    //qDebug() << retVal;
+    m_List.clear();
+    //
+    qDebug() << retVal;
+
+    QVariantList lst = retVal.toList();
+    for (auto info : lst)
+    {
+        QObject *obj = info.value<QObject*>();
+        RegInfoObj *InfoObj = dynamic_cast<RegInfoObj*>(obj);
+
+        if (InfoObj)
+        {
+            QSharedPointer<RegInfoObj> ptr(new RegInfoObj(*InfoObj));
+            m_List.append(ptr);
+        }
+    }
 
     if (DocumentTables)
         delete DocumentTables;
 }
 
-// Оператор вывода в QDebug (добавить в public секцию)
+QList<QSharedPointer<RegInfoObj>> ExtractInfoExecutor::objList()
+{
+    return m_List;
+}

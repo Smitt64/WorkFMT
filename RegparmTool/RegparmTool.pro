@@ -17,6 +17,9 @@ SOURCES += \
     actionpage.cpp \
     connactionpage.cpp \
     main.cpp \
+    operation/addfromwordoperation.cpp \
+    operation/operationbase.cpp \
+    operationwizardpage.cpp \
     regparmmodel/regparmitem.cpp \
     regparmmodel/regparmmodel.cpp \
     regparmmodel/regparmproxymodel.cpp \
@@ -30,6 +33,9 @@ SOURCES += \
 HEADERS += \
     actionpage.h \
     connactionpage.h \
+    operation/addfromwordoperation.h \
+    operation/operationbase.h \
+    operationwizardpage.h \
     regparmmodel/regparmitem.h \
     regparmmodel/regparmmodel.h \
     regparmmodel/regparmproxymodel.h \
@@ -48,6 +54,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 FORMS += \
     actionpage.ui \
     connactionpage.ui \
+    operationwizardpage.ui \
     viewdatpage.ui \
     wordcontentpage.ui \
     wordpreviewregpage.ui

@@ -11,6 +11,7 @@
 #include "viewdatpage.h"
 #include "wordcontentpage.h"
 #include "wordpreviewregpage.h"
+#include "operationwizardpage.h"
 #include <toolsruntime.h>
 #include <rsscript/registerobjlist.hpp>
 
@@ -52,6 +53,7 @@ void RegParmWizard::setupUi()
     m_pViewPage = new ViewDatPage(this);
     m_pWordContentPage = new WordContentPage(this);
     m_pWordPreviewRegPage = new WordPreviewRegPage(this);
+    m_pOperationWizardPage = new OperationWizardPage(this);
 
     setWindowTitle(tr("Реестр параметров - Мастер"));
 
@@ -61,6 +63,7 @@ void RegParmWizard::setupUi()
     addPage(m_pViewPage);
     addPage(m_pWordContentPage);
     addPage(m_pWordPreviewRegPage);
+    addPage(m_pOperationWizardPage);
    // addPage(m_pScriptsPage);
 
     // Настройка кнопок

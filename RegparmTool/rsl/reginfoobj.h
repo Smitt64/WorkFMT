@@ -3,6 +3,10 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QAbstractTableModel>
+#include <QSharedPointer>
+#include <QComboBox>
+#include <QStyledItemDelegate>
 
 class RegInfoObj : public QObject
 {
@@ -20,6 +24,7 @@ class RegInfoObj : public QObject
 public:
     Q_INVOKABLE RegInfoObj(QObject *parent = nullptr);
     Q_INVOKABLE RegInfoObj(const RegInfoObj &other, QObject *parent = nullptr);
+    virtual ~RegInfoObj();
 
     // Геттеры
     QString fullName() const;
@@ -32,14 +37,14 @@ public:
     QVariant defaultValue() const;
 
     // Сеттеры
-    void setFullName(const QString &fullName);
-    void setTypeName(const QString &typeName);
-    void setType(qint16 type);
-    void setIsGlobal(bool isGlobal);
-    void setIsNode(bool isNode);
-    void setIsSecurity(bool isSecurity);
-    void setComment(const QString &comment);
-    void setDefaultValue(const QVariant &defaultValue);
+    Q_INVOKABLE void setFullName(const QString &fullName);
+    Q_INVOKABLE void setTypeName(const QString &typeName);
+    Q_INVOKABLE void setType(qint16 type);
+    Q_INVOKABLE void setIsGlobal(bool isGlobal);
+    Q_INVOKABLE void setIsNode(bool isNode);
+    Q_INVOKABLE void setIsSecurity(bool isSecurity);
+    Q_INVOKABLE void setComment(const QString &comment);
+    Q_INVOKABLE void setDefaultValue(const QVariant &defaultValue);
 
     // Константы для типов
     enum Type {
@@ -54,6 +59,9 @@ public:
     // Вспомогательные методы
     Q_INVOKABLE static QString getTypeNameFromType(qint16 type);
     Q_INVOKABLE static qint16 getTypeFromTypeName(const QString &typeName);
+    Q_INVOKABLE QString getDefaultValueAsString() const;
+    Q_INVOKABLE bool validateDefaultValue(const QVariant &value) const;
+    Q_INVOKABLE static QStringList getAvailableTypes();
 
 signals:
     void fullNameChanged();
@@ -67,6 +75,8 @@ signals:
 private:
     void updateTypeNameFromType();
     void updateTypeFromTypeName();
+    QVariant convertToType(const QVariant &value) const;
+    bool isValidForType(const QVariant &value) const;
 
     QString m_fullName;
     QString m_typeName;
@@ -79,7 +89,116 @@ private:
     QString m_RegPath;
 };
 
-QDebug operator<<(QDebug debug, RegInfoObj *obj);
 QDebug operator<<(QDebug debug, const RegInfoObj &obj);
+QDebug operator<<(QDebug debug, RegInfoObj *obj);
+
+// ----------------------------------------------------------------------
+
+using RegInfoObjList = QList<QSharedPointer<RegInfoObj>>;
+
+class RegInfoObjModel : public QAbstractTableModel
+{
+    Q_OBJECT
+
+public:
+    explicit RegInfoObjModel(QObject *parent = nullptr);
+
+    // Enum для колонок таблицы
+    enum Column {
+        FullNameColumn = 0,
+        TypeNameColumn,
+        //TypeColumn,
+        IsGlobalColumn,
+        IsNodeColumn,
+        IsSecurityColumn,
+        CommentColumn,
+        DefaultValueColumn,
+
+        ColumnCount // Должен быть последним
+    };
+    Q_ENUM(Column)
+
+    // QAbstractTableModel interface
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+    // Дополнительные методы для работы с данными
+    void setRegInfoObjects(const RegInfoObjList &objects);
+    void addRegInfoObject(QSharedPointer<RegInfoObj> obj);
+    void insertRegInfoObject(int row, QSharedPointer<RegInfoObj> obj);
+    void removeRegInfoObject(int row);
+    void clear();
+    QSharedPointer<RegInfoObj> getRegInfoObject(int row) const;
+    RegInfoObjList getAllObjects() const;
+
+    // Вспомогательные методы
+    int findRowByFullName(const QString &fullName) const;
+    QModelIndex findIndexByFullName(const QString &fullName) const;
+
+    // Статические методы для работы с колонками
+    static QString columnName(Column column);
+    static bool isBooleanColumn(Column column);
+    static bool isEditableColumn(Column column);
+    static bool isTypeColumn(Column column);
+
+signals:
+    void objectAdded(QSharedPointer<RegInfoObj> obj);
+    void objectRemoved(QSharedPointer<RegInfoObj> obj);
+    void objectChanged(QSharedPointer<RegInfoObj> obj);
+    void validationError(const QString &errorMessage);
+
+private:
+    RegInfoObjList m_objects;
+
+private slots:
+    void onObjectDataChanged();
+};
+
+// ----------------------------------------------------------------------
+
+class TypeComboBoxDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+
+public:
+    explicit TypeComboBoxDelegate(QObject *parent = nullptr);
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                          const QModelIndex &index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model,
+                      const QModelIndex &index) const override;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
+                              const QModelIndex &index) const override;
+};
+
+// ----------------------------------------------------------------------
+
+class DefaultValueDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+
+public:
+    explicit DefaultValueDelegate(QObject *parent = nullptr);
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                          const QModelIndex &index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model,
+                      const QModelIndex &index) const override;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
+                              const QModelIndex &index) const override;
+
+private:
+    QWidget *createIntegerEditor(QWidget *parent) const;
+    QWidget *createDoubleEditor(QWidget *parent) const;
+    QWidget *createStringEditor(QWidget *parent) const;
+    QWidget *createBinaryEditor(QWidget *parent) const;
+    QWidget *createFlagEditor(QWidget *parent) const;
+};
 
 #endif // REGINFOOBJ_H

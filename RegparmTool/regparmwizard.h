@@ -15,6 +15,7 @@ class QAbstractItemModel;
 class WordContentPage;
 class QTextDocument;
 class WordPreviewRegPage;
+class OperationWizardPage;
 class RegParmWizard : public QWizard
 {
     Q_OBJECT
@@ -26,7 +27,8 @@ public:
         PageConnection,
         PageViewDat,
         PageEnterWordTable,
-        PageWordPreviewReg
+        PageWordPreviewReg,
+        PageOperationWizard
     };
 
     enum ActionType
@@ -50,6 +52,8 @@ public:
 
     QTextDocument *wordContentDocument();
 
+    WordPreviewRegPage *wordPreviewRegPage() { return m_pWordPreviewRegPage; }
+
 private slots:
     void onSettingsClicked();
     void onRestartClicked();
@@ -63,6 +67,7 @@ private:
     ViewDatPage *m_pViewPage;
     WordContentPage *m_pWordContentPage;
     WordPreviewRegPage *m_pWordPreviewRegPage;
+    OperationWizardPage *m_pOperationWizardPage;
 
     QMap<QString, QVariant> m_Fields;
     QMenu *m_pHelpMenu;
