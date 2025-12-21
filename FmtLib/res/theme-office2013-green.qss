@@ -1,0 +1,537 @@
+﻿/*
+Тема, имитирующая Office 2013 в зеленом стиле
+начало набора ленты
+*/
+
+SARibbonMainWindow {
+    border-left: 2px solid #217346;
+    border-right: 2px solid #217346;
+    border-bottom: 2px solid #217346;
+    border-top: 3px solid #217346;
+}
+
+SARibbonMainWindow > QStatusBar {
+	background-color: #217346;
+	color: white;
+}
+
+/*SARibbonBar*/
+SARibbonBar {
+  background-color: white;
+  border: solid #707070;
+  color:#b2b2b2;
+}
+
+
+/*SARibbonQuickAccessBar*/
+SARibbonQuickAccessBar {
+  background-color: #d5f0e2;
+}
+
+/*SARibbonCtrlContainer*/
+SARibbonCtrlContainer {
+  background-color: transparent;
+}
+
+
+/*SARibbonStackedWidget*/
+SARibbonStackedWidget {
+  border: 1pt solid #c5d2e0;
+  border-top-width: 0px;
+  
+  border-bottom: 1px solid #217346;
+  padding: 0px
+}
+
+SARibbonStackedWidget:focus {
+  outline: none;
+}
+
+
+/*
+SARibbonSeparatorWidget
+Примечание: SARibbonSeparatorWidget использует color для цвета фона
+Для разных стилей разделителей в разных компонентах используйте SARibbonCategory > SARibbonSeparatorWidget
+*/
+SARibbonSeparatorWidget {
+  color: #bec0c2;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/*SARibbonCategory*/
+SARibbonCategory {
+  background-color: white;
+}
+SARibbonCategory:focus {
+  outline: none;
+}
+
+/*
+SARibbonCategory下的SARibbonSeparatorWidget
+Примечание: SARibbonSeparatorWidget использует color для цвета фона
+*/
+SARibbonCategory > SARibbonSeparatorWidget {
+  color: #bec0c2;
+  margin-top:3px;
+  margin-bottom:3px;
+}
+
+/*SARibbonPannel*/
+
+SARibbonPannel {
+  background-color: white;
+  border: none;
+  color: #666666;
+}
+
+SARibbonPannel > SARibbonButtonGroupWidget {
+  border: 1px solid #DD0E00;
+  /* c2d0df */
+}
+/*SARibbonButtonGroupWidget*/
+SARibbonButtonGroupWidget {
+  background-color: transparent;
+}
+
+/*SARibbonPannelLabel Заголовок панели*/
+
+SARibbonPannelLabel {
+    background-color: transparent;
+    color: #666666;
+}
+
+/*SARibbonPannelOptionButton*/
+
+SARibbonPannelOptionButton {
+  background-color: transparent;
+  color: #333;
+}
+
+SARibbonPannelOptionButton:hover {
+  background-color: #d5f0e2;
+  border: 0px;
+}
+
+
+/*SARibbonApplicationButton*/
+SARibbonApplicationButton {
+  color: white;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  background-color: #217346;
+}
+
+SARibbonApplicationButton:hover {
+  background-color: #2e8b57;
+}
+
+SARibbonApplicationButton:pressed {
+  background-color: #1a5c38;
+}
+
+SARibbonApplicationButton:focus {
+  outline: none;
+}
+
+SARibbonApplicationButton::menu-indicator {
+  width:0px;
+}
+
+/*SARibbonTabBar*/
+SARibbonTabBar {
+  background-color: transparent;
+}
+
+
+SARibbonTabBar::tab {
+  color: #217346;
+  border: 1px solid transparent;
+  background: transparent;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-left: 5px;
+  margin-bottom: 0px;
+  min-width: 50px;
+}
+
+SARibbonTabBar::tab:selected {
+  color: #217346;
+  background: white;
+  border-top:1px solid #c5d2e0;
+  border-right:1px solid #c5d2e0;
+  border-left:1px solid #c5d2e0;
+  border-bottom:1px solid white;
+}
+
+SARibbonTabBar::tab:hover:!selected {
+    color: #217346;
+    background: white;
+    border-top:1px solid #c5d2e0;
+    border-right:1px solid #c5d2e0;
+    border-left:1px solid #c5d2e0;
+    border-bottom:1px solid white;
+}
+
+
+/*SARibbonToolButton*/
+/* 
+Фон SARibbonToolButton должен совпадать с цветом панели или категории
+Нельзя устанавливать transparent, иначе кнопки в режиме ActionMenu не отобразятся правильно
+*/
+SARibbonToolButton {
+  border: none;
+  color: #333;
+  background-color: white;
+}
+
+SARibbonToolButton:focus {
+  border: 1px solid #d5f0e2;
+  color: #333;
+  background-color: #fcfdfe;
+}
+
+SARibbonToolButton:pressed {
+  color: #000;
+  border: 1px solid #34a852;
+  background-color: #a8e6bd;
+}
+
+SARibbonToolButton:checked {
+  color: #333;
+  border: 1px solid #d5f0e2;
+  background-color: #d5f0e2;
+}
+
+SARibbonToolButton:hover {
+  color: #000;
+  border: 1px solid #c2e8d1;
+  background-color: #d5f0e2;
+}
+
+/*SARibbonControlButton*/
+
+SARibbonControlButton {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: #333;
+}
+
+SARibbonControlButton:pressed {
+  border: 1px solid #34a852;
+  background-color: #a8e6bd;
+}
+
+SARibbonControlButton:checked {
+  border: 1px solid #d5f0e2;
+  background-color: #d5f0e2;
+}
+
+SARibbonControlButton:hover {
+  border: 1px solid #c2e8d1;
+  background-color: #d5f0e2;
+}
+
+SARibbonGalleryButton {
+  border: 1px solid #d5f0e2;
+}
+
+/*SARibbonMenu*/
+
+SARibbonMenu {
+  color: #333;
+  background-color: #FCFCFC;
+  border: 1px solid #c2d0df;
+}
+
+SARibbonMenu::item {
+  padding: 5px 5px 5px 5px;
+  background-color: transparent;
+}
+
+SARibbonMenu::item:selected {
+  background-color: #d5f0e2;
+}
+
+SARibbonMenu::item:hover {
+  color: #000;
+  background-color: #d5f0e2;
+  border: 1px solid #c2e8d1;
+}
+
+SARibbonMenu::icon {
+  margin-left: 1px;
+}
+
+/*SARibbonGallery*/
+
+SARibbonGallery {
+  border: 1px solid #c2d0df;
+  background-color: transparent;
+  color: #333;
+}
+
+/*SARibbonGalleryGroup*/
+
+SARibbonGalleryGroup {
+  show-decoration-selected: 1;
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #c2d0df;
+}
+
+SARibbonGalleryGroup::item:selected {
+  background-color: #a8e6bd;
+  color: black;
+}
+
+SARibbonGalleryGroup::item:hover {
+  border: 1px solid #c2e8d1;
+  background-color: #d5f0e2;
+}
+
+/*RibbonGalleryViewport*/
+
+SARibbonGalleryViewport {
+  background-color: #ffffff;
+}
+
+/*SARibbonLineEdit*/
+
+SARibbonLineEdit {
+  border: 1px solid #C0C2C4;
+  background: #FFF;
+  selection-background-color: #a8e6bd;
+  selection-color: #000;
+}
+
+/*SARibbonComboBox*/
+
+SARibbonComboBox {
+  border: 1px solid #c2d0df;
+  background-color: white;
+}
+
+SARibbonComboBox:hover {
+  border: 1px solid #34a852;
+  color: #000;
+}
+
+SARibbonComboBox:editable {
+  color: #000;
+  background: white;
+  selection-background-color: #a8e6bd;
+  selection-color: #000;
+}
+
+SARibbonComboBox::drop-down {
+  subcontrol-origin: padding;
+  subcontrol-position: top right;
+  width: 1em;
+  border: none;
+}
+
+SARibbonComboBox::drop-down:hover {
+  border: 1px solid #FDEEB3;
+  background-color: #a8e6bd;
+}
+
+SARibbonComboBox::down-arrow {
+  image: url(:/SARibbon/image/resource/ArrowDown.png);
+}
+
+/*SARibbonSeparatorWidget*/
+
+SARibbonSeparatorWidget {
+  background-color: white;
+}
+
+SARibbonCategoryScrollButton {
+  border: 1px solid #c5d2e0;
+  color: #333;
+  background-color: white;
+}
+
+SARibbonCategoryScrollButton[arrowType="3"] {
+  border-right-width: 1px;
+}
+
+SARibbonCategoryScrollButton[arrowType="4"] {
+  border-left-width: 1px;
+}
+
+SARibbonCategoryScrollButton:hover {
+  color: #000000;
+  background-color: #d5f0e2;
+}
+
+/*SARibbonSystemToolButton*/
+
+SARibbonSystemToolButton {
+  background-color: transparent; 
+  border:none;
+  margin-top: 2px;
+}
+
+SARibbonSystemToolButton:focus {
+  outline: none;
+}
+/*Min*/
+SARibbonSystemToolButton#SAMinimizeWindowButton {
+  background-position:center;
+  background-repeat: no-repeat;
+  background-image: url(:/SARibbon/image/resource/Titlebar_Min.svg);
+}
+SARibbonSystemToolButton#SAMinimizeWindowButton:hover{
+  background-color: #e5e5e5;
+}
+SARibbonSystemToolButton#SAMinimizeWindowButton:pressed{
+  background-color: #cacacb;
+}
+/*Max*/
+SARibbonSystemToolButton#SAMaximizeWindowButton {
+    background-position:center;
+    background-repeat: no-repeat;
+    background-image: url(:/SARibbon/image/resource/Titlebar_Max.svg);
+}
+SARibbonSystemToolButton#SAMaximizeWindowButton:hover {
+    background-color: #e5e5e5;
+}
+SARibbonSystemToolButton#SAMaximizeWindowButton:checked {
+    background-image: url(:/SARibbon/image/resource/Titlebar_Normal.svg) center;
+}
+
+/*Close*/
+SARibbonSystemToolButton#SACloseWindowButton {
+    background-position:center;
+    background-repeat: no-repeat;
+    background-image: url(:/SARibbon/image/resource/Titlebar_Close.svg);
+    border-right: 2px solid #217346;
+	/*padding-right: 4px;
+	margin-top: 2px;*/
+}
+
+SARibbonSystemToolButton#SACloseWindowButton:hover {
+  background-color: #e81123;
+}
+SARibbonSystemToolButton#SACloseWindowButton:pressed {
+    background-color: #f1707a;
+}
+
+SARibbonMainWindow {
+    border-left: 2px solid #217346;
+    border-right: 2px solid #217346;
+    border-bottom: 2px solid #217346;
+    border-top: 3px solid #217346;
+}
+
+QDockWidget {
+	border: 2px solid #217346;
+	background-color: #F8F8F8;
+}
+
+QDockWidget::title {
+    background-color: #f8f8f8;
+    color: #666666;
+    border: 1px solid #c5d2e0;
+    border-bottom: none;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    padding: 6px 12px;
+    text-align: left;
+    font-weight: normal;
+    font-size: 9pt;
+    font-family: 'Segoe UI';
+}
+
+/* Когда док-виджет активен/выделен */
+QDockWidget:focus::title {
+    background-color: white;
+    color: #217346;
+    font-weight: bold;
+    border: 1px solid #c5d2e0;
+    border-bottom: 1px solid white;
+    border-top: 2px solid #217346;
+}
+
+/* Ховер на заголовок */
+QDockWidget::title:hover {
+    background-color: #e6f2fc;
+    color: #217346;
+    border: 1px solid #a8e6bd;
+    border-bottom: none;
+}
+
+QDockWidget::float-button {
+    background-color: transparent;
+    border: 1px solid transparent;
+    icon-size: 12px;
+    margin-right: 2px;
+}
+
+QDockWidget::float-button:hover {
+    background-color: #d5f0e2;
+    border: 1px solid #217346;
+    border-radius: 2px;
+}
+
+QDockWidget::close-button {
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+QDockWidget::close-button:hover {
+    background-color: #e81123;
+    border: 1px solid #d01020;
+    border-radius: 2px;
+}
+
+QDockWidget > QWidget {
+    border: none;
+}
+
+QDockWidget QTabWidget::pane {
+    /*border: 1px solid #217346;*/
+    background-color: white;
+}
+
+SARibbonMainWindow > QTabBar {
+    background-color: #F8F8F8;
+	color: #217346
+}
+
+QDockWidget QTabBar::tab {
+    background-color: #f8f8f8;
+    color: #333333;
+    border: 1px solid #c5d2e0;
+    border-bottom: none;
+    padding: 4px 10px;
+    margin-right: 1px;
+    font-size: 8pt;
+}
+
+QDockWidget QTabBar::tab:selected {
+    background-color: white;
+    color: #217346;
+    border: 1px solid #217346;
+    border-bottom: 1px solid white;
+}
+
+QDockWidget QTabBar::tab:hover:!selected {
+    background-color: #e6f2fc;
+    color: #217346;
+}
+
+QMainWindow::separator {
+	background: #F8F8F8;
+	width: 5px;
+	height: 5px;
+}
+
+QMainWindow::separator:hover {
+	background: #e6f2fc;
+}
+
+QStatusBar QLabel {
+	color: white;
+}

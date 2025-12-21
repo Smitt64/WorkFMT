@@ -1,0 +1,242 @@
+/* ================== QMdiSubWindow ================== */
+
+/* Основное окно QMdiSubWindow - стилизация через контейнер */
+QMdiSubWindow {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+/* Контейнер субокна - здесь создается рамка */
+QMdiSubWindow::container {
+    background-color: #217346;
+    border: 2px solid #217346;
+    border-radius: 2px;
+}
+
+/* Активное окно */
+QMdiSubWindow:active::container {
+    background-color: #217346;
+    border: 3px solid #217346;
+}
+
+/* Неактивное окно */
+QMdiSubWindow:!active::container {
+    background-color: #a8e6bd;
+    border: 2px solid #a8e6bd;
+}
+
+/* Заголовок QMdiSubWindow */
+QMdiSubWindow::title {
+    background-color: #f8f8f8;
+    color: #666666;
+    border: 1px solid #c5d2e0;
+    border-bottom: none;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    text-align: left;
+    font-weight: normal;
+    font-size: 9pt;
+    font-family: 'Segoe UI';
+    height: 24px;
+    padding: 6px 12px 6px 12px;
+}
+
+/* Когда окно активно/выбрано */
+QMdiSubWindow:focus::title {
+    background-color: #ffffff;
+    color: #217346;
+    font-weight: bold;
+    border: 1px solid #217346;
+    border-bottom: 1px solid white;
+    border-top: 2px solid #217346;
+}
+
+/* Ховер на заголовок неактивного окна */
+QMdiSubWindow::title:hover {
+    background-color: #e6f2fc;
+    color: #217346;
+}
+
+/* Кнопки в заголовке QMdiSubWindow */
+QMdiSubWindow::float-button,
+QMdiSubWindow::close-button,
+QMdiSubWindow::maximize-button,
+QMdiSubWindow::minimize-button {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    margin: 2px;
+    padding: 2px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Кнопка свернуть */
+QMdiSubWindow::minimize-button {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/SARibbon/image/resource/Titlebar_Min.svg);
+}
+
+QMdiSubWindow::minimize-button:hover {
+    background-color: #e5e5e5;
+    border: 1px solid #c5d2e0;
+}
+
+/* Кнопка развернуть/восстановить */
+QMdiSubWindow::maximize-button {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/SARibbon/image/resource/Titlebar_Max.svg);
+}
+
+QMdiSubWindow::maximize-button:checked {
+    background-image: url(:/SARibbon/image/resource/Titlebar_Normal.svg);
+}
+
+QMdiSubWindow::maximize-button:hover {
+    background-color: #e5e5e5;
+    border: 1px solid #c5d2e0;
+}
+
+/* Кнопка закрыть */
+QMdiSubWindow::close-button {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/SARibbon/image/resource/Titlebar_Close.svg);
+    margin-right: 2px;
+}
+
+QMdiSubWindow::close-button:hover {
+    background-color: #e81123;
+    border: 1px solid #d01020;
+}
+
+/* Кнопка плавающего режима */
+QMdiSubWindow::float-button {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/img/FloatWindow.svg);
+}
+
+QMdiSubWindow::float-button:hover {
+    background-color: #d5f0e2;
+    border: 1px solid #217346;
+}
+
+/* Область содержимого QMdiSubWindow */
+QMdiSubWindow > QWidget {
+    background-color: white;
+    border: none;
+    margin: 0px;
+}
+
+/* Альтернативный способ - стилизация через внутренний виджет */
+QMdiSubWindow > #qt_mdi_subwindow_internal {
+    border: 3px solid #217346;
+    background-color: #217346;
+    border-radius: 3px;
+}
+
+/* Для отладки - попробуйте разные селекторы */
+*[class="QMdiSubWindow"] {
+    border: 5px solid red !important;
+}
+
+/* Ручки изменения размера */
+QMdiSubWindow::handle {
+    background-color: #f8f8f8;
+    width: 5px;
+    height: 5px;
+}
+
+QMdiSubWindow::handle:hover {
+    background-color: #d5f0e2;
+}
+
+/* Если все равно не работает, попробуйте стилизовать QMdiArea и использовать QSS с ID */
+QMdiArea QMdiSubWindow {
+    border: 3px solid #217346;
+    background-color: #217346;
+}
+
+/* Еще вариант - через псевдокласс для отладки */
+QMdiSubWindow:enabled {
+    outline: 2px solid red;
+}
+
+/* Стиль для внутренних элементов управления в QMdiSubWindow */
+QMdiSubWindow QToolBar {
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #c5d2e0;
+    spacing: 3px;
+    padding: 2px;
+}
+
+QMdiSubWindow QToolBar::handle {
+    image: url(:/img/ToolbarHandle.svg);
+}
+
+/* Кнопки в тулбаре QMdiSubWindow */
+QMdiSubWindow QToolButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 3px;
+    margin: 1px;
+}
+
+QMdiSubWindow QToolButton:hover {
+    background-color: #d5f0e2;
+    border: 1px solid #c2e8d1;
+}
+
+QMdiSubWindow QToolButton:pressed {
+    background-color: #a8e6bd;
+    border: 1px solid #34a852;
+}
+
+QMdiSubWindow QToolButton:checked {
+    background-color: #d5f0e2;
+    border: 1px solid #217346;
+}
+
+/* Стиль для меню в QMdiSubWindow */
+QMdiSubWindow QMenuBar {
+    background-color: #f8f8f8;
+    color: #333333;
+}
+
+QMdiSubWindow QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 10px;
+    margin: 0px;
+}
+
+QMdiSubWindow QMenuBar::item:selected {
+    background-color: #d5f0e2;
+    color: #217346;
+    border: 1px solid #c2e8d1;
+}
+
+/* Статусбар в QMdiSubWindow */
+QMdiSubWindow QStatusBar {
+    background-color: #f0f0f0;
+    color: #666666;
+    border-top: 1px solid #c5d2e0;
+    padding: 2px;
+}
+
+/* Эффект тени при перетаскивании */
+QMdiSubWindow[dragging="true"] {
+    border: 2px dashed #217346;
+    opacity: 0.8;
+}
+
+/* Дополнительно: если используете QMdiArea, попробуйте */
+QMdiArea {
+    background-color: #f0f0f0;
+    border: 1px solid #c5d2e0;
+}

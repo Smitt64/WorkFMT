@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "mainwindow.h" // -------------------
 #include "fmtapplication.h"
 #include "fmtcore.h"
 #include "toolsruntime.h"
@@ -9,15 +9,26 @@
 #include <QCommandLineParser>
 #include <QSettings>
 #include <QDir>
-#include <QStyleFactory>
+#include "fmtribbonmainwindow.h"
+#include "IconThemeManager.h"
 
-static void ProcessRsreqOption(MainWindow *w, const QString &constringsdir);
+static void ProcessRsreqOption(FmtRibbonMainWindow *w, const QString &constringsdir);
 static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser, QCommandLineOption &logOption, QCommandLineOption &logruleOption);
+
+static void InitIconTheme()
+{
+    IconThemeManager::initialize("vs_theme");
+
+    /*#ifdef QT_DEBUG
+    IconThemeManager::addCustomPath("d:\\Work\\ResEditor\\RsResEditor\\res\\icons");
+#endif*/
+}
 
 int main(int argc, char **argv)
 {
     QDir settingsDir = QDir(argv[0]);
 
+    InitIconTheme();
     FmtApplication a(argc, argv);
 
     QCommandLineParser parser;
@@ -48,10 +59,11 @@ int main(int argc, char **argv)
     qDebug() << a.arguments();
     parser.process(a.arguments());
 
-    MainWindow *w = (MainWindow*)a.addMainWindow();
+    //MainWindow *w = (MainWindow*)a.addMainWindow();
+    FmtRibbonMainWindow *w = a.addMainWindow<FmtRibbonMainWindow>();
     ProcessLoggingOption(&a, &parser, logOption, logruleOption);
     a.init();
-    a.applyStyle();
+    //a.applyStyle();
 
     // строка подключения
     if (parser.isSet(connectionStringOption))
@@ -74,7 +86,7 @@ int main(int argc, char **argv)
     return a.exec();
 }
 
-static void ProcessRsreqOption(MainWindow *w, const QString &constringsdir)
+static void ProcessRsreqOption(FmtRibbonMainWindow *w, const QString &constringsdir)
 {
     QDir d(constringsdir);
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <style>.icon-canvas-transparent{opacity:0;fill:#f6f6f6}.icon-vs-out{fill:#f6f6f6}.icon-vs-bg{fill:#424242}.icon-vs-fg{fill:#f0eff1}</style>
+  <path class="icon-canvas-transparent" d="M16 16H0V0h16v16z" id="canvas"/>
+  <path class="icon-vs-out" d="M1 15V1h15v14H1z" id="outline"/>
+  <path class="icon-vs-fg" d="M3 11h3v2H3v-2zm0-1h3V8H3v2zm0-3h3V5H3v2zm4 6h3v-2H7v2zm0-3h3V8H7v2zm0-3h3V5H7v2zm4 6h3v-2h-3v2zm0-3h3V8h-3v2zm0-5v2h3V5h-3z" id="iconFg"/>
+  <g id="iconBg">
+    <path class="icon-vs-bg" d="M2 2v12h13V2H2zm4 11H3v-2h3v2zm0-3H3V8h3v2zm0-3H3V5h3v2zm4 6H7v-2h3v2zm0-3H7V8h3v2zm0-3H7V5h3v2zm4 6h-3v-2h3v2zm0-3h-3V8h3v2zm0-3h-3V5h3v2z"/>
+  </g>
+  <path class="icon-vs-out" d="M 6.983 7.942 L 13.984 7.942 L 13.984 13.075 L 6.983 13.075 L 6.983 7.942 Z" id="path-1" style="stroke-width: 1;"/>
+  <path class="icon-vs-bg" d="M 10.483 8.263 L 7.421 8.263 L 7.421 10.508 L 10.483 10.508 L 10.483 8.263 Z M 9.17 10.187 L 7.859 10.187 L 7.859 9.867 L 9.17 9.867 L 9.17 10.187 Z M 9.17 9.546 L 7.859 9.546 L 7.859 8.583 L 9.17 8.583 L 9.17 9.546 Z M 10.046 10.187 L 9.608 10.187 L 9.608 8.583 L 10.046 8.583 L 10.046 10.187 Z M 11.359 11.471 L 7.421 11.471 L 7.421 11.15 L 11.359 11.15 L 11.359 11.471 Z M 10.483 12.113 L 7.421 12.113 L 7.421 11.792 L 10.483 11.792 L 10.483 12.113 Z M 7.421 12.433 L 9.608 12.433 L 9.608 12.754 L 7.421 12.754 L 7.421 12.433 Z M 11.359 9.867 L 13.546 9.867 L 13.546 10.187 L 11.359 10.187 L 11.359 9.867 Z M 11.359 9.225 L 13.546 9.225 L 13.546 9.546 L 11.359 9.546 L 11.359 9.225 Z M 13.546 8.583 L 13.546 8.904 L 11.359 8.904 L 11.359 8.583 L 13.546 8.583 Z" id="path-2" style="stroke-width: 1;"/>
+  <path class="icon-vs-fg" d="M 9.17 10.187 L 7.859 10.187 L 7.859 9.867 L 9.17 9.867 L 9.17 10.187 Z M 9.17 9.546 L 7.859 9.546 L 7.859 8.583 L 9.17 8.583 L 9.17 9.546 Z M 10.046 10.187 L 9.608 10.187 L 9.608 8.583 L 10.046 8.583 L 10.046 10.187 Z" id="path-3" style="stroke-width: 1;"/>
+  <path class="icon-vs-blue" d="M 13.546 10.829 L 13.546 12.754 L 13.108 12.754 L 13.108 12.433 L 11.73 12.433 L 11.359 12.754 L 10.811 12.754 L 13 10.829 L 13.546 10.829 Z M 13.108 12.113 L 13.108 11.214 L 12.087 12.113 L 13.108 12.113 Z" id="colorImportance" style="fill: rgb(27, 161, 226); stroke-width: 1;"/>
+</svg>

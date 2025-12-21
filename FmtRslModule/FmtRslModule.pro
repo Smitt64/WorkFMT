@@ -1,4 +1,4 @@
-QT += widgets sql
+QT += widgets sql gui
 
 UI_DIR = build
 MOC_DIR = build

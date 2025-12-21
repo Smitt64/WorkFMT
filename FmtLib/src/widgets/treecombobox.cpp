@@ -4,7 +4,7 @@
 #include <QMouseEvent>
 
 TreeComboBox::TreeComboBox(QWidget *parent) :
-    QComboBox(parent)
+    SARibbonComboBox(parent)
 {
     pView = new QTreeView(this);
     pView->setRootIsDecorated(false);

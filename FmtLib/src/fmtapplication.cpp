@@ -68,9 +68,9 @@ FmtApplication::~FmtApplication()
 
 void FmtApplication::applyStyle()
 {
-    QString styleName = pSettings->value("style").toString();
+    /*QString styleName = pSettings->value("style").toString();
     QStyle *style = QStyleFactory::create(styleName);
-    QApplication::setStyle(style);
+    QApplication::setStyle(style);*/
 }
 
 void FmtApplication::init()

@@ -34,7 +34,9 @@ SOURCES += \
     rslexecutors/generatorrslexecutor.cpp \
     rslexecutors/toolbaractionexecutor.cpp \
     src/core/fmttablecomparemodel.cpp \
+    src/core/mdiproxystyle.cpp \
     src/debugconnect.cpp \
+    src/fmtribbonmainwindow.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
@@ -228,6 +230,7 @@ RESOURCES += \
     res/fmt.qrc
 
 HEADERS += \
+    h/fmtribbonmainwindow.h \
     h/gensqltemplatedlg.h \
     h/DataStructure.hpp \
     h/LockVar.hpp \
@@ -315,6 +318,7 @@ HEADERS += \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
     src/core/fmttablecomparemodel.h \
+    src/core/mdiproxystyle.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/models/tableobjectsmodel.h \
@@ -393,6 +397,10 @@ DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 OTHER_FILES += \
     $$PWD/mac
 
+ICONS_SRC =  \
+    $$PWD/../FmtLib/res/icons \
+    $$PWD/../ToolsRuntimeProj/ToolsRuntime/icons
+
 defineTest(copyToDestDir) {
     files = $$1
     dir = $$2
@@ -410,5 +418,6 @@ defineTest(copyToDestDir) {
 
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../WorkFMT/debug/mac)
+copyToDestDir($$ICONS_SRC, $$OUT_PWD/../bin/resources/icons)
 
 OTHER_FILES += com.rs.fmt.workfmt.xml
