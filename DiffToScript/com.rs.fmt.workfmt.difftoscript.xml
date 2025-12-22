@@ -1,5 +1,10 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
-<changelog project="Diff to Script">\
+<changelog project="Diff to Script">
+    <version ver="1.0.2.1">
+        <fix>Исправлено дублирование скриптов</fix>
+        <fix>Исправлена ошибка формирования строк с русскими символами (для &quot;chr(1)&quot;)</fix>
+        <fix>Исправлена ошибка формирования инструкции &quot;delete&quot;, если в таблице нет уникальных ключей;</fix>
+    </version>
     <version ver="1.0.1.9">
         <add>Часть функционала вынесена в отдельную библиотеку</add>
         <fix>Исправлено падение, если в строковом поле отсутствовал символ chr(1)</fix>

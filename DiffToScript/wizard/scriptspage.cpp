@@ -286,7 +286,7 @@ void GenerateOperation::run()
 
     //if (Action == ActionByLocalDiff)
     {
-        if (args.count() > 1)
+        if (args.count() > 1 && !lastFile.isEmpty())
         {
             QScopedPointer<QProcess> proc(new QProcess);
             proc->setWorkingDirectory(Path);

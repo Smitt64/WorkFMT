@@ -501,8 +501,17 @@ QStringList SqlScriptMain::buildWhere(const JoinTable *joinTable, const DatRecor
     QStringList where;
 
     //В where пойдут только ключевые поля.
-    for (const DiffField *uf : joinTable->scriptTable->uniqFields)
-        where.append(uf->name + " = " + oldRec->values[joinTable->scriptTable->fields.indexByFieldName(uf->name)]);
+
+    if (!joinTable->scriptTable->uniqFields.isEmpty())
+    {
+        for (const DiffField *uf : joinTable->scriptTable->uniqFields)
+            where.append(uf->name + " = " + oldRec->values[joinTable->scriptTable->fields.indexByFieldName(uf->name)]);
+    }
+    else
+    {
+        for (const QString &uf : std::as_const(joinTable->scriptTable->realFields))
+            where.append(uf + " = " + oldRec->values[joinTable->scriptTable->realFields.indexOf(uf)]);
+    }
 
     return where;
 }
@@ -1036,12 +1045,14 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
                 else
                 {
                     QChar ch = rec->values[i].at(1);
-                    QString unicodeStr(ch);
+                    /*QString unicodeStr(ch);
                     QByteArray encoded = codec866->fromUnicode(unicodeStr);
 
                     rec->values[i] = QString("%1(%2)")
                             .arg(_dbSpelling->chr())
-                            .arg((int)static_cast<unsigned char>(encoded.at(0)));
+                            .arg((int)static_cast<unsigned char>(encoded.at(0)));*/
+                    rec->values[i] = QString("'%2'")
+                            .arg(ch);
                 }
             }
         }

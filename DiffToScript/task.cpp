@@ -392,7 +392,7 @@ void Task::runScriptTask()
             lines = lines.remove(begin_pos, (end_pos - begin_pos) + end_pattern.size());
             tmpStream.seek(0);
             tmpStream << lines;
-            qDebug() << tmp.fileName();
+            //qDebug() << tmp.fileName();
             tmp.close();
 
             is = sc.getInput(tmp.fileName());

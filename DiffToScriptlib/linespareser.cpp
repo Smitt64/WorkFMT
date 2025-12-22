@@ -94,8 +94,17 @@ bool LinesDeleteParser::parseLine(QTextStream& is, ParsedLines& lines, ScriptTab
         if(recParser.parseRecord(parsedLine.value))
         {
             QStringList key;
-            for (const DiffField *uf : dt->uniqFields)
-                key.append(recParser.getValues()[dt->fields.indexByFieldName(uf->name)]);
+
+            if (!dt->uniqFields.isEmpty())
+            {
+                for (const DiffField *uf : dt->uniqFields)
+                    key.append(recParser.getValues()[dt->fields.indexByFieldName(uf->name)]);
+            }
+            else
+            {
+                for (const QString &uf : std::as_const(dt->realFields))
+                    key.append(recParser.getValues()[dt->fields.indexByFieldName(uf)]);
+            }
 
             key.append("+"); //сначала находим вставку для определения операции обновления
             if(lines.contains(key))
