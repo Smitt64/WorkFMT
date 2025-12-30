@@ -16,7 +16,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
 {
     pModel = Q_NULLPTR;
     pTables = new QListView(this);
-    pTables->setResizeMode(QListView::Adjust);
+    //pTables->setResizeMode(QListView::Adjust);
     pTables->setContextMenuPolicy(Qt::ActionsContextMenu);
     setCentralWidget(pTables);
     setIconSize(QSize(16, 16));
@@ -27,6 +27,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
 
     pMainToolBar = addToolBar(tr("Фильтр"));
     pMainToolBar->setMovable(false);
+    pMainToolBar->setAutoFillBackground(true);
     pMainToolBar->addWidget(pFilterLabel);
     pMainToolBar->addWidget(pFilterEdit);
 
@@ -63,6 +64,9 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
     pFilterEdit->setEnabled(false);
     pTables->setEnabled(false);
     pTables->installEventFilter(this);
+    pTables->setIconSize(QSize(16, 16));
+    pTables->setResizeMode(QListView::Fixed);
+    pTables->setMouseTracking(true);
 
     connect(pFilterEdit, SIGNAL(textChanged(QString)), SLOT(filterTextChanged(QString)));
     connect(pFilterEdit, SIGNAL(returnPressed()), SLOT(filterReturnPressed()));

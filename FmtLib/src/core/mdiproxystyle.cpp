@@ -17,6 +17,7 @@
 MDIProxyStyle::MDIProxyStyle(QStyle *style)
     : QProxyStyle(style)
 {
+    mainAppColor = QColor::fromRgb(33, 115, 70);
     loadSARibbonIcons();
 }
 
@@ -517,18 +518,19 @@ void MDIProxyStyle::drawMdiSubWindowFrame(const QStyleOption *option,
     QColor frameColor = isActive ? activeFrameColor() : inactiveFrameColor();
 
     // Рисуем зеленую рамку (3 пикселя)
-    QPen framePen(frameColor, 2);
+    int FarameWidth = pixelMetric(PM_MdiSubWindowFrameWidth, option, widget);
+    QPen framePen(frameColor, FarameWidth + 1);
     painter->setPen(framePen);
     painter->setBrush(Qt::NoBrush);
 
-    QRect frameRect = widget->rect().adjusted(1, 1, -1, -1);
+    QRect frameRect = widget->rect().adjusted(FarameWidth, FarameWidth, -FarameWidth, -FarameWidth);
     painter->drawRect(frameRect);
 
     // Если окно активно, добавляем дополнительный акцент
     if (isActive) {
         QPen accentPen(activeFrameColor().lighter(120), 1);
         painter->setPen(accentPen);
-        QRect accentRect = frameRect.adjusted(1, 1, -1, -1);
+        QRect accentRect = frameRect.adjusted(FarameWidth, FarameWidth, -FarameWidth, -FarameWidth);
         painter->drawRect(accentRect);
     }
 
@@ -554,7 +556,7 @@ int MDIProxyStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
 {
     // Настройка толщины рамки для QMdiSubWindow
     if (metric == PM_MdiSubWindowFrameWidth && widget && qobject_cast<const QMdiSubWindow*>(widget)) {
-        return 3;
+        return 1;
     }
 
     if (metric == PM_MdiSubWindowMinimizedWidth && widget && qobject_cast<const QMdiSubWindow*>(widget)) {
@@ -736,19 +738,17 @@ QStyle::SubControl MDIProxyStyle::hitTestComplexControl(ComplexControl cc, const
         // Проверяем кнопки управления MDI
         QRect closeRect = subControlRect(cc, opt, SC_MdiCloseButton, widget);
         if (closeRect.isValid() && closeRect.contains(pos)) {
-            qDebug() << "SC_MdiCloseButton";
             return SC_MdiCloseButton;
         }
 
         QRect normalRect = subControlRect(cc, opt, SC_MdiNormalButton, widget);
         if (normalRect.isValid() && normalRect.contains(pos)) {
-            qDebug() << "SC_MdiNormalButton";
+
             return SC_MdiNormalButton;
         }
 
         QRect minRect = subControlRect(cc, opt, SC_MdiMinButton, widget);
         if (minRect.isValid() && minRect.contains(pos)) {
-            qDebug() << "SC_MdiMinButton";
             return SC_MdiMinButton;
         }
     }
@@ -799,4 +799,68 @@ void MDIProxyStyle::polish(QWidget *widget)
 void MDIProxyStyle::unpolish(QWidget *widget)
 {
     QProxyStyle::unpolish(widget);
+}
+
+QPalette MDIProxyStyle::standardPalette() const
+{
+    QPalette pal = QProxyStyle::standardPalette(); // Начинаем с палитры базового стиля
+
+    QColor mainColor = mainAppColor; // Используем наш основной цвет #217346
+    QColor lightColor = mainColor.lighter(240);  // #D5F0E2 - как в QSS SARibbonQuickAccessBar
+    QColor lighterColor = mainColor.lighter(280); // Ещё светлее, напр. #E8F7F0
+    QColor midColor = mainColor.darker(120);     // Средний тон для неактивных элементов
+    QColor darkColor = mainColor.darker(180);    // Темнее для границ неактивных
+    QColor highlightColor = mainColor;           // Основной цвет для активных элементов (Highlight) #217346
+    QColor highlightedTextColor = Qt::white;     // Цвет текста на активных элементах
+    QColor windowBgColor = QColor("#F8F8F8");    // Цвет фона окна из QSS
+    QColor windowTextColor = QColor("#666666");  // Цвет текста окна из QSS
+    QColor buttonBgColor = QColor("#FFFFFF");    // Цвет фона кнопки из QSS
+    QColor buttonTextColor = QColor("#333333");  // Цвет текста кнопки из QSS
+    QColor disabledTextColor = QColor("#B2B2B2"); // Цвет отключенного текста из QSS
+
+    // --- Основные цвета окна ---
+    pal.setColor(QPalette::Window, windowBgColor);
+    pal.setColor(QPalette::WindowText, windowTextColor);
+
+    // --- Цвета текста ---
+    pal.setColor(QPalette::Text, windowTextColor);
+    pal.setColor(QPalette::ButtonText, buttonTextColor);
+    pal.setColor(QPalette::PlaceholderText, disabledTextColor);
+
+    // --- Цвета фона ---
+    pal.setColor(QPalette::Base, Qt::white); // Стандартный фон редактируемых полей
+    pal.setColor(QPalette::AlternateBase, windowBgColor.lighter(110)); // Альтернативный фон списков
+
+    // --- Цвета акцента (Highlight) ---
+    // *** ИСПРАВЛЕНО: Устанавливаем цвет для Active и Inactive ***
+    pal.setColor(QPalette::Active, QPalette::Highlight, highlightColor);      // #217346
+    pal.setColor(QPalette::Inactive, QPalette::Highlight, midColor);          // Или buttonBgColor, но midColor тоже логично
+    pal.setColor(QPalette::Active, QPalette::HighlightedText, highlightedTextColor); // #FFFFFF
+    pal.setColor(QPalette::Inactive, QPalette::HighlightedText, Qt::black); // Или buttonTextColor
+
+    // --- Цвета кнопок ---
+    pal.setColor(QPalette::Button, buttonBgColor);
+    pal.setColor(QPalette::Light, lightColor); // #D5F0E2 - светлый акцент
+    pal.setColor(QPalette::Mid, midColor);     // Средний тон
+    pal.setColor(QPalette::Dark, darkColor);   // Темный тон
+
+    // --- Цвета для неактивного состояния (Window, Text, ButtonText уже установлены выше) ---
+    pal.setColor(QPalette::Inactive, QPalette::Window, windowBgColor);
+    pal.setColor(QPalette::Inactive, QPalette::WindowText, windowTextColor.darker(120)); // Немного темнее
+    pal.setColor(QPalette::Inactive, QPalette::Text, windowTextColor.darker(120));
+    pal.setColor(QPalette::Inactive, QPalette::ButtonText, buttonTextColor.darker(120));
+    // Highlight и HighlightedText уже установлены выше для Inactive
+
+    // --- Цвета для отключенных элементов ---
+    pal.setColor(QPalette::Disabled, QPalette::WindowText, disabledTextColor);
+    pal.setColor(QPalette::Disabled, QPalette::Text, disabledTextColor);
+    pal.setColor(QPalette::Disabled, QPalette::ButtonText, disabledTextColor);
+    // Disabled Highlight часто делается как Base
+    pal.setColor(QPalette::Disabled, QPalette::Highlight, pal.color(QPalette::Base));
+    pal.setColor(QPalette::Disabled, QPalette::HighlightedText, Qt::black); // Или buttonTextColor
+
+    // --- Цвета для рамок и деталей ---
+    pal.setColor(QPalette::Midlight, lighterColor); // #E8F7F0 или аналогичный
+
+    return pal;
 }

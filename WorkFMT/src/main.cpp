@@ -2,6 +2,7 @@
 #include "fmtapplication.h"
 #include "fmtcore.h"
 #include "toolsruntime.h"
+#include "mdiproxystyle.h"
 #include <QDebug>
 #include <QApplication>
 #include <QMessageBox>
@@ -26,10 +27,17 @@ static void InitIconTheme()
 
 int main(int argc, char **argv)
 {
+    //SetSysColor(COLOR_WINDOW, RGB(0x33, 0x33, 0x33));
     QDir settingsDir = QDir(argv[0]);
 
     InitIconTheme();
     FmtApplication a(argc, argv);
+
+    QStyle *windows = QStyleFactory::create("WindowsVista");
+    QScopedPointer<MDIProxyStyle> OfficeStyle(new MDIProxyStyle());
+    OfficeStyle->setBaseStyle(windows);
+    a.setStyle(OfficeStyle.data());
+    //a.setPalette(OfficeStyle->standardPalette());
 
     QCommandLineParser parser;
     QCommandLineOption helpOption = parser.addHelpOption();
@@ -56,7 +64,7 @@ int main(int argc, char **argv)
     parser.addOption(logOption);
     parser.addOption(logruleOption);
 
-    qDebug() << a.arguments();
+    //qDebug() << a.arguments();
     parser.process(a.arguments());
 
     //MainWindow *w = (MainWindow*)a.addMainWindow();

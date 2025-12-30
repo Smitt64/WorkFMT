@@ -8,8 +8,9 @@ FmtTablesModel::FmtTablesModel(ConnectionInfo *ConInfo, QObject *parent) :
     pQuery(Q_NULLPTR)
 {
     pInfo = ConInfo;
-    tableIcon = QIcon(":/table");
-    tmpTableIcon = QIcon(":/tablet");
+    tableIcon = QIcon::fromTheme("Table");
+    tmpTableIcon = QIcon::fromTheme("TemporalTable");
+    recTableIcon = QIcon::fromTheme("FmtRecord");
 }
 
 FmtTablesModel::~FmtTablesModel()
@@ -122,6 +123,8 @@ QVariant FmtTablesModel::data(const QModelIndex &item, int role) const
 
         if (hasTemporaryFlag(Flags))
             return QVariant::fromValue(tmpTableIcon);
+        else if (hasRecordFlag(Flags))
+            return QVariant::fromValue(recTableIcon);
         else
             return QVariant::fromValue(tableIcon);
     }

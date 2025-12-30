@@ -309,7 +309,9 @@ void MainWindow::UpdateActions()
     ConnectionInfo *cur = currentConnection();
 
     if (!cur)
+    {
         return;
+    }
 
     if (cur->type() != ConnectionInfo::CON_ORA)
         ui->actionEditContent->setEnabled(false);

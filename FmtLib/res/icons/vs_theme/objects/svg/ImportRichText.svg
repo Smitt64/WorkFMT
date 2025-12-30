@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <style>.icon-vs-out{fill:#f6f6f6}.icon-vs-bg{fill:#424242}.icon-vs-fg{fill:#f0eff1}.icon-vs-blue{fill:#1ba1e2}</style>
+  <path class="icon-vs-out" d="M0 0h16v16H0z" id="outline"/>
+  <path class="icon-vs-bg" d="M8 1H1v7h7V1zM5 7H2V6h3v1zm0-2H2V2h3v3zm2 2H6V2h1v5zm3 4H1v-1h9v1zm-2 2H1v-1h7v1zm-7 1h5v1H1v-1zm9-8h5v1h-5V6zm0-2h5v1h-5V4zm5-2v1h-5V2h5z" id="iconBg"/>
+  <path class="icon-vs-fg" d="M5 7H2V6h3v1zm0-2H2V2h3v3zm2 2H6V2h1v5z" id="iconFg"/>
+  <path class="icon-vs-blue" d="M15 9v6h-1v-1h-3.15L10 15H8.75l5-6H15zm-1 4v-2.8L11.666 13H14z" id="colorImportance"/>
+  <title>Download_16x</title>
+  <g id="canvas" style="" transform="matrix(0.643436, 0, 0, 0.625608, 0, 0)">
+    <path class="icon-canvas-transparent" d="M16,0V16H0V0Z" style="fill: rgb(246, 246, 246); opacity: 0;"/>
+  </g>
+  <g id="group-1" style="" transform="matrix(0.643436, 0, 0, 0.625608, 0, 0)">
+    <polygon class="icon-vs-out" points="7.672 16 8.328 16 15.621 8.707 12.793 5.879 10 8.672 10 0 6 0 6 8.672 3.207 5.879 0.379 8.707 7.672 16"/>
+  </g>
+  <g id="group-2" style="" transform="matrix(0.643436, 0, 0, 0.625608, 0, 0)">
+    <path class="icon-vs-action-blue" d="M3.207,7.293,7,11.086V1H9V11.086l3.793-3.793,1.414,1.414L8,14.914,1.793,8.707Z" style="fill: rgb(0, 83, 156);"/>
+  </g>
+</svg>

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <SARibbon.h>
 #include <QKeySequence>
+#include <VarLocker.hpp>
 #include "fmtlib_global.h"
 
 class QMdiArea;
@@ -31,6 +32,8 @@ public:
 
     QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
     QMdiSubWindow *CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow = Q_NULLPTR);
+
+    void UpdateActions();
 
 private slots:
     void ActionConnectTriggered();
@@ -64,15 +67,20 @@ private:
 
     void InitQuickAccessBar();
     void InitMainRibbonTab();
+    void InitContextCategoryes();
 
     QMdiArea *pMdi;
-    MDIProxyStyle *m_pMdiStyle;
+    QMdiSubWindow *m_LastActiveWindow;
+    VarLocker<QString> m_LastRibbonTabName;
+
     TablesDock *pTablesDock;
     FmtTableListDelegate *pTableListDelegate;
     QStatusBar *m_pStatusBar;
 
     SubWindowsModel *pWindowsModel;
     TreeComboBox *pWindowsComboBox;
+
+    SARibbonLineEdit *pSearchLine;
 
     QMap<ConnectionInfo*, WorkWindowList> m_Windows;
     QList<ConnectionInfo*> m_pConnections;

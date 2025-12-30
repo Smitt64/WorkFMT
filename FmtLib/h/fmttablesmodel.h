@@ -20,13 +20,15 @@ public:
     QString filterString();
 
     virtual Qt::ItemFlags flags(const QModelIndex &index) const;
-    virtual QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
+    QVariant extracted(QVariant &name, QVariant &comment) const;
+    virtual QVariant data(const QModelIndex &item,
+                          int role = Qt::DisplayRole) const;
 
 private:
     QVariant fieldValue(const QModelIndex &item, const int &id) const;
     ConnectionInfo *pInfo;
     QString m_FilterString;
-    QIcon tableIcon, tmpTableIcon;
+    QIcon tableIcon, tmpTableIcon, recTableIcon;
 
     QSqlQuery *pQuery;
 };

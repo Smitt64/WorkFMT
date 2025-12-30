@@ -223,10 +223,10 @@ void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent
 void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidget *parent);
 
 void ExportFmtToXml(ConnectionInfo *connection, const QStringList &file, const QString &dir, bool ShowProgress, bool ShowReport, QWidget *parent = Q_NULLPTR);
-FMTLIBSHARED_EXPORT void InitFmtTable(FmtTable *pTable, QWidget *parent);
+FMTLIBSHARED_EXPORT void InitFmtTable(FmtTable *pTable, QWidget *parent, const QString &icon = QString());
 FMTLIBSHARED_EXPORT qint16 InitFmtTableExec(FmtTable *pTable, QString *err);
 
-void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent);
+void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent, const QString &icon = QString());
 FMTLIBSHARED_EXPORT QString FmtTableSqlText(FmtTable *pTable);
 void FmtHotFixCreate(QSharedPointer<FmtTable> pTable);
 //QString GenerateTableXML(const FmtTable *pTable);
@@ -261,8 +261,8 @@ FMTLIBSHARED_EXPORT int CloneFmtFromConnection(QSqlDatabase &source, QSqlDatabas
 FMTLIBSHARED_EXPORT bool CheckConnectionType(ConnectionInfo *pInfo, const int &Type, bool ShowMsg = false, QWidget *parent = Q_NULLPTR);
 FMTLIBSHARED_EXPORT bool CheckConnectionType(ConnectionInfo *pInfo, const QList<int> &Type, bool ShowMsg = false, QWidget *parent = Q_NULLPTR);
 
-FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR, QWidget *userwidget = Q_NULLPTR);
-FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR, QWidget *userwidget = Q_NULLPTR);
+FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR, QWidget *userwidget = Q_NULLPTR, const QString icon = QString());
+FMTLIBSHARED_EXPORT int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent = Q_NULLPTR, QWidget *userwidget = Q_NULLPTR, const QString icon = QString());
 
 FMTLIBSHARED_EXPORT void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote = '"');
 

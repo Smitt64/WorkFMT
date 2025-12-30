@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <style>.icon-canvas-transparent{opacity:0;fill:#f6f6f6}.icon-vs-out{fill:#f6f6f6}.icon-vs-bg{fill:#424242}.icon-vs-fg{fill:#f0eff1}.icon-vs-action-blue{fill:#00539c}</style>
+  <path class="icon-canvas-transparent" d="M16 0v16H0V0h16z" id="canvas"/>
+  <path class="icon-vs-out" d="M15 4.379V16H2l.012-9.065L0 4.915v-.537l1.851-1.851.166.166L2.02 0h8.601L15 4.379z" id="outline"/>
+  <path class="icon-vs-bg" d="M10.207 1H6v1h3v4h4v8H4V8.931L3 7.927V15h11V4.793L10.207 1zM10 5V2.207L12.793 5H10z" id="iconBg"/>
+  <path class="icon-vs-fg" d="M7.132 2.527L6 3.655V2h3v2.396L7.132 2.527zM10 2.207V5h2.793L10 2.207zM9 6V4.899L4.483 9.416l-.479-.481-.004.02V14h9V6H9z" id="iconFg"/>
+  <path class="icon-vs-action-blue" d="M5 6.063V1H4v5.081l-2.148-2.14-.707.707L4.485 8l3.352-3.352-.707-.707L5 6.063z" id="colorAction"/>
+  <path class="icon-canvas-transparent" d="M 8.337 8.959 L 15.961 8.959 L 15.961 15.948 L 8.337 15.948 L 8.337 8.959 Z" id="path-1" style="stroke-width: 1;"/>
+  <path class="icon-vs-out" d="M 13.925 9.228 C 13.439 9.055 12.808 8.959 12.149 8.959 C 11.49 8.959 10.859 9.055 10.374 9.228 C 9.431 9.564 9.29 10.094 9.29 10.379 L 9.29 14.528 C 9.29 14.814 9.431 15.344 10.374 15.679 C 10.859 15.852 11.491 15.948 12.149 15.948 C 12.808 15.948 13.439 15.852 13.925 15.679 C 14.867 15.344 15.008 14.814 15.008 14.528 L 15.008 10.379 C 15.008 10.094 14.867 9.564 13.925 9.228 Z" id="path-2" style="stroke-width: 1;"/>
+  <path class="icon-vs-fg" d="M 12.149 10.925 C 13.383 10.925 14.056 10.564 14.056 10.379 C 14.056 10.193 13.383 9.833 12.149 9.833 C 10.916 9.833 10.244 10.193 10.244 10.379 C 10.244 10.564 10.916 10.925 12.149 10.925 Z" id="path-3" style="stroke-width: 1;"/>
+  <g id="group-1" transform="matrix(0.476504, 0, 0, 0.436796, 8.33742, 8.959317)" style="">
+    <path class="icon-vs-blue" d="M13 12.75v-9.5c0-.688-.581-1.293-1.637-1.703C10.457 1.194 9.263 1 8 1s-2.457.194-3.363.547C3.581 1.957 3 2.562 3 3.25v9.5c0 .688.581 1.293 1.637 1.703.906.353 2.1.547 3.363.547s2.457-.194 3.363-.547C12.419 14.043 13 13.438 13 12.75zM8 2c2.588 0 4 .826 4 1.25S10.588 4.5 8 4.5s-4-.826-4-1.25S5.412 2 8 2z" style="fill: rgb(27, 161, 226);"/>
+  </g>
+</svg>

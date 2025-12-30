@@ -129,5 +129,6 @@
         <file alias="dump_fmt_to_xml_pg.sql">sql/dump_fmt_to_xml_pg.sql</file>
         <file>theme-office2013-green.qss</file>
         <file>theme-office2013-subwindow.qss</file>
+        <file>app-icon.svg</file>
     </qresource>
 </RCC>

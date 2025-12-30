@@ -13,8 +13,7 @@ FmtTableListDelegate::FmtTableListDelegate(QObject *parent) :
 
 void FmtTableListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QStyleOptionViewItemV4 optionV4 = option;
-    QStyleOptionViewItem opt = option;
+    QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
 
     bool fRenderText = false;
@@ -22,34 +21,42 @@ void FmtTableListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
     if (!m_HighlightText.isEmpty())
     {
         QString str = optionV4.text;
-        QString rxstring = QString("(%1)").arg(m_HighlightText);
+        QString rxstring = QString("(%1)").arg(QRegExp::escape(m_HighlightText));
         QRegExp rx(rxstring);
         rx.setCaseSensitivity(Qt::CaseInsensitive);
-        value = str.replace(rx, QString("<span style=\" background-color:#9BFF9B;\">\\1</span>"));
+        value = str.replace(rx, QString("<span style=\"background-color:#9BFF9B;\">\\1</span>"));
 
         if (value != optionV4.text)
             fRenderText = true;
     }
 
-    QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
     if (!fRenderText)
-        QStyledItemDelegate::paint(painter, opt, index);
+        QStyledItemDelegate::paint(painter, option, index);
     else
     {
+        QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+
+        optionV4.text = QString();
+        optionV4.state &= ~QStyle::State_HasFocus;
+
+        style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter, optionV4.widget);
+
         QTextDocument doc;
-        doc.setDocumentMargin(2);
+        doc.setDocumentMargin(0.5);
         doc.setDefaultFont(optionV4.font);
         doc.setHtml(value);
-        optionV4.text = QString();
+
+        QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4, optionV4.widget);
+        textRect.adjust(2, 0, -2, 0);
+        painter->save();
+
+        painter->translate(textRect.topLeft());
+        painter->setClipRect(QRect(0, 0, textRect.width(), textRect.height()));
 
         QAbstractTextDocumentLayout::PaintContext ctx;
-        style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
-
-        QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
-        painter->save();
-        painter->translate(textRect.topLeft());
-        painter->setClipRect(textRect.translated(-textRect.topLeft()));
+        ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Text));
         doc.documentLayout()->draw(painter, ctx);
+
         painter->restore();
     }
 }

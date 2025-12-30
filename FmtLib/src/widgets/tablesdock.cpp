@@ -6,6 +6,84 @@
 
 #define FILTER_TITLE "Флтр#"
 
+class ColoredTabBar : public QTabBar
+{
+    QColor m_startColor;
+public:
+    ColoredTabBar(QWidget *parent = nullptr) :
+        QTabBar(parent)
+    {
+
+    }
+
+    virtual ~ColoredTabBar()
+    {
+
+    }
+
+    void setStartColor(const QColor &color)
+    {
+        if (m_startColor != color)
+        {
+            m_startColor = color;
+            update();
+        }
+    }
+
+    QColor startColor() const { return m_startColor; }
+
+protected:
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE
+    {
+        QPainter painter(this);
+        painter.fillRect(rect(), Qt::white);
+
+        if (m_startColor.isValid())
+        {
+            QRect rc = rect().adjusted(0, 0, 0, -1);
+
+            painter.setPen(QPen(m_startColor, 3));
+            painter.drawLine(rc.bottomLeft(), rc.bottomRight());
+        }
+
+        QTabBar::paintEvent(event);
+    }
+};
+
+class ColoredTabWidget : public QTabWidget
+{
+public:
+    ColoredTabWidget(QWidget *parent = nullptr) :
+        QTabWidget(parent)
+    {
+        m_pTabBar = new ColoredTabBar();
+        m_startColor = QColor(Qt::white);
+        setTabBar(m_pTabBar);
+    }
+
+    void setStartColor(const QColor &color)
+    {
+        if (m_startColor != color)
+        {
+            m_startColor = color;
+            m_pTabBar->setStartColor(m_startColor);
+            update();
+        }
+    }
+
+    QColor startColor() const { return m_startColor; }
+
+protected:
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE
+    {
+        QTabWidget::paintEvent(event);
+    }
+
+private:
+    QColor m_startColor;
+    ColoredTabBar *m_pTabBar;
+};
+
 TablesDock::TablesDock(const QString &title, QWidget *parent, Qt::WindowFlags flags) :
     QDockWidget(title, parent, flags),
     pInfo(Q_NULLPTR),
@@ -13,33 +91,35 @@ TablesDock::TablesDock(const QString &title, QWidget *parent, Qt::WindowFlags fl
     pEventFilter(Q_NULLPTR)
 {
     pLayout = new QHBoxLayout();
-    pBtnContainer = new QFrame(this);
-    pTabBar = new QTabWidget(this);
-    pAddButton = new QPushButton(this);
+    //pBtnContainer = new QFrame(this);
+    pTabBar = new ColoredTabWidget(this);
+    //pAddButton = new QPushButton(this);
     TablesDockWidget *tablesWidget = new TablesDockWidget();
     pWidget.append(tablesWidget);
 
-    pTabBar->setTabShape(QTabWidget::Triangular);
+    //pTabBar->setTabShape(QTabWidget::Triangular);
     pTabBar->setTabsClosable(true);
+    pTabBar->setDocumentMode(true);
     pTabBar->addTab(tablesWidget, tr("Фильтр"));
+    //pTabBar->setAutoFillBackground(false);
+    //pTabBar->tabBar()->setAutoFillBackground(false);
     setObjectName("TablesDock");
     setWidget(pTabBar);
 
-    pAddButton->setStyleSheet(AddTabButtonCss());
-    pAddButton->setToolTip(tr("Новый фильтр"));
+    //pAddButton->setStyleSheet(AddTabButtonCss());
+    //pAddButton->setToolTip(tr("Новый фильтр"));
 
-    pLayout = new QHBoxLayout();
+    /*pLayout = new QHBoxLayout();
     pLayout->addWidget(pAddButton);
     pLayout->setContentsMargins(0, 0, 0, 2);
-    pBtnContainer->setLayout(pLayout);
-
+    pBtnContainer->setLayout(pLayout);*/
     QTabBar *tabBar = pTabBar->findChild<QTabBar*>();
     tabBar->setTabButton(0, QTabBar::RightSide, Q_NULLPTR);
-    pTabBar->setCornerWidget(pBtnContainer);
-    pAddButton->setEnabled(false);
+    //pTabBar->setCornerWidget(pBtnContainer);
+    //pAddButton->setEnabled(false);
 
     connect(tablesWidget, SIGNAL(tableDbClicked(quint32)), SIGNAL(tableDbClicked(quint32)));
-    connect(pAddButton, &QPushButton::clicked, this, &TablesDock::addFilterTab);
+    //connect(pAddButton, &QPushButton::clicked, this, &TablesDock::addFilterTab);
     connect(pTabBar, &QTabWidget::tabCloseRequested, this, &TablesDock::tabCloseRequested);
 }
 
@@ -56,6 +136,8 @@ void TablesDock::setModel(FmtTablesModel *model)
 {
     TablesDockWidget *tablesWidget = pWidget[pTabBar->currentIndex()];
     tablesWidget->setModel(model);
+
+    pTabBar->setStartColor(model->connection()->color());
 }
 
 void TablesDock::closeConnection()
@@ -67,6 +149,7 @@ void TablesDock::closeConnection()
         pTabBar->removeTab(i);
     }
 
+    pInfo = Q_NULLPTR;
     setModel(Q_NULLPTR);
 }
 
@@ -114,7 +197,7 @@ void TablesDock::setConnection(ConnectionInfo *info)
         }
     }
 
-    pAddButton->setEnabled(true);
+    //pAddButton->setEnabled(true);
 }
 
 void TablesDock::setItemDelegate(QAbstractItemDelegate *delegate)

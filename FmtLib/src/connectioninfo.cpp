@@ -280,6 +280,7 @@ bool ConnectionInfo::openSqlite(const QString &filename)
     if (hr)
     {
         m_Type = CON_SQLITE;
+        m_DSN = fi.fileName();
         qCInfo(logCore()) << QString("Connected to %1").arg(fi.baseName());
     }
     else

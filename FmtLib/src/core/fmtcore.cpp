@@ -880,15 +880,176 @@ QString BoolToString(bool value)
     return value ? "true" : "false";
 }
 
-QColor GenerateColor()
+/*QColor GenerateColor()
 {
     static double h = 0.0;
-    if (h == 0.0)
-        h = qrand() % 255 / 255;
+    static QColor accentColor("#217346");
 
-    h += COLOR_GOLDEN_RATIO;
-    double hc = (h - (int)h);
-    return QColor::fromHsvF(hc, 0.5, 0.95, 1);
+    // Инициализация начального значения
+    if (h == 0.0) {
+        h = qrand() % 255 / 255.0;
+    }
+
+    // Константы для генерации гармоничных цветов
+    static const double GOLDEN_RATIO = 0.618033988749895;
+    static const double SATURATION = 0.6;
+    static const double VALUE = 0.8;
+
+    // Генерация нового оттенка
+    h += GOLDEN_RATIO;
+    double hue = fmod(h, 1.0);
+
+    // Получение цвета из HSV
+    QColor generatedColor = QColor::fromHsvF(hue, SATURATION, VALUE, 1.0);
+
+    // Проверка контрастности с акцентным цветом
+    QColor accent("#217346");
+
+    // Вычисление относительной яркости (WCAG 2.1)
+    auto luminance = [](const QColor& color) {
+        double r = color.redF();
+        double g = color.greenF();
+        double b = color.blueF();
+
+        r = (r <= 0.03928) ? r / 12.92 : pow((r + 0.055) / 1.055, 2.4);
+        g = (g <= 0.03928) ? g / 12.92 : pow((g + 0.055) / 1.055, 2.4);
+        b = (b <= 0.03928) ? b / 12.92 : pow((b + 0.055) / 1.055, 2.4);
+
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+
+    double l1 = luminance(generatedColor);
+    double l2 = luminance(accent);
+
+    // Контрастное отношение
+    double contrast = (qMax(l1, l2) + 0.05) / (qMin(l1, l2) + 0.05);
+
+    // Если контраст недостаточен, корректируем яркость
+    if (contrast < 3.0) {
+        // Делаем цвет светлее или темнее для лучшего контраста
+        if (l1 > l2) {
+            // Сгенерированный цвет светлее акцентного
+            QColor adjusted = generatedColor.lighter(120);
+            if (luminance(adjusted) - l2 > 0.3) {
+                return adjusted;
+            }
+        } else {
+            // Сгенерированный цвет темнее акцентного
+            QColor adjusted = generatedColor.darker(120);
+            if (l2 - luminance(adjusted) > 0.3) {
+                return adjusted;
+            }
+        }
+
+        // Если корректировка не помогла, выбираем комплементарный цвет
+        double complementaryHue = fmod(hue + 0.5, 1.0);
+        return QColor::fromHsvF(complementaryHue, 0.7, 0.85, 1.0);
+    }
+
+    return generatedColor;
+}*/
+/*QColor GenerateColor()
+{
+    static int colorIndex = 0;
+
+    // Базовый акцентный цвет (#217346)
+    QColor accentBase("#217346");
+
+    // Предопределённая палитра, гармонирующая с акцентным цветом
+    static const QVector<QColor> colorPalette = {
+        // Тёплые оттенки
+        QColor("#2E8B57"), // Морская зелень (близкий к акцентному)
+        QColor("#4682B4"), // Стальной синий
+        QColor("#D2691E"), // Шоколадный
+        QColor("#CD5C5C"), // Индийский красный
+        QColor("#9370DB"), // Средний фиолетовый
+        QColor("#20B2AA"), // Светлый морской волны
+        QColor("#DAA520"), // Золотистый
+        QColor("#6495ED"), // Васильковый
+        QColor("#DC143C"), // Малиновый
+        QColor("#008B8B"), // Тёмный бирюзовый
+
+        // Дополнительные оттенки
+        QColor("#4169E1"), // Королевский синий
+        QColor("#8B4513"), // Коричневый седла
+        QColor("#2F4F4F"), // Тёмный аспидно-серый
+        QColor("#6A5ACD"), // Аспидно-синий
+        QColor("#B22222")  // Кирпичный
+    };
+
+    // Увеличиваем индекс для следующего вызова
+    colorIndex = (colorIndex + 1) % colorPalette.size();
+
+    return colorPalette[colorIndex];
+}*/
+
+QColor GenerateColor(/*bool useAccentHarmony = true*/)
+{
+    bool useAccentHarmony = true;
+    static QList<QColor> history;
+    static int callCount = 0;
+    static const int HISTORY_SIZE = 10;
+
+    // Цветовые пространства для разнообразия
+    const double hueStep = 0.382; // Ещё одна константа золотого сечения
+    static double currentHue = qrand() % 360 / 360.0;
+
+    // Генерируем новый оттенок
+    currentHue = fmod(currentHue + hueStep, 1.0);
+
+    // Используем разные схемы насыщенности/яркости
+    double saturation, value;
+
+    switch (callCount % 4) {
+    case 0: saturation = 0.6; value = 0.8; break; // Яркие
+    case 1: saturation = 0.7; value = 0.7; break; // Насыщенные
+    case 2: saturation = 0.5; value = 0.9; break; // Пастельные
+    case 3: saturation = 0.8; value = 0.6; break; // Глубокие
+    default: saturation = 0.65; value = 0.75;
+    }
+
+    // Корректируем под акцентный цвет если нужно
+    if (useAccentHarmony) {
+        static QColor accent("#217346");
+        QColor accentHsv = accent.toHsv();
+
+        // Держимся на расстоянии от акцентного цвета
+        double accentHue = accentHsv.hueF();
+        double hueDiff = qAbs(currentHue - accentHue);
+        hueDiff = qMin(hueDiff, 1.0 - hueDiff);
+
+        if (hueDiff < 0.15) {
+            // Слишком близко к акцентному - сдвигаем
+            currentHue = fmod(accentHue + 0.3, 1.0);
+        }
+    }
+
+    QColor newColor = QColor::fromHsvF(currentHue, saturation, value, 1.0);
+
+    // Проверяем историю
+    for (const QColor& oldColor : history) {
+        QColor oldHsv = oldColor.toHsv();
+        QColor newHsv = newColor.toHsv();
+
+        double hueDiff = qAbs(oldHsv.hueF() - newHsv.hueF());
+        hueDiff = qMin(hueDiff, 1.0 - hueDiff);
+
+        // Если слишком похоже, слегка меняем
+        if (hueDiff < 0.08) {
+            currentHue = fmod(currentHue + 0.15, 1.0);
+            newColor = QColor::fromHsvF(currentHue, saturation, value, 1.0);
+            break;
+        }
+    }
+
+    // Обновляем историю
+    history.append(newColor);
+    if (history.size() > HISTORY_SIZE) {
+        history.removeFirst();
+    }
+
+    callCount++;
+    return newColor;
 }
 
 QString FmtTableSqlText(FmtTable *pTable)
@@ -912,9 +1073,12 @@ QString FmtTableSqlText(FmtTable *pTable)
     return str;
 }
 
-void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent)
+void SaveFmtTableSql(QSharedPointer<FmtTable> pTable, QWidget *parent, const QString &icon)
 {
     SelectFolderDlg folder(RsCreateSqlContext, parent);
+
+    if (!icon.isEmpty())
+        folder.setWindowIcon(QIcon::fromTheme(icon));
 
     if (folder.exec() == QDialog::Accepted)
     {
@@ -994,9 +1158,12 @@ qint16 InitFmtTableExec(FmtTable *pTable, QString *err)
     return stat;
 }
 
-void InitFmtTable(FmtTable *pTable, QWidget *parent)
+void InitFmtTable(FmtTable *pTable, QWidget *parent, const QString &icon)
 {
     DbInitDlg dlg(pTable, parent);
+
+    if (!icon.isEmpty())
+        dlg.setWindowIcon(QIcon::fromTheme(icon));
 
     int stat = 0;
     if (dlg.exec() == QDialog::Accepted)
@@ -1553,6 +1720,7 @@ void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *pare
     QObject::connect(&wrp, SIGNAL(startError()), &dlg, SLOT(exec()));
 
     SelectFolderDlg folder(RsExpUnlDirContext, parent);
+    folder.setWindowIcon(QIcon::fromTheme("UnloadDbf"));
     if (folder.exec() == QDialog::Accepted)
         wrp.unload(folder.selectedPath(), table, DefaultAction, UseOld);
 }
@@ -1576,6 +1744,7 @@ void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent
 void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidget *parent)
 {
     SelectFolderDlg folder(RsExpUnlDirContext, parent);
+    folder.setWindowIcon(QIcon::fromTheme("LoadDbf"));
     if (folder.exec() == QDialog::Accepted)
     {
         QString file = QString("%1.dat").arg(table.toUpper());
@@ -1588,13 +1757,17 @@ void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidg
     }
 }
 
-int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent, QWidget *userwidget)
+int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent, QWidget *userwidget, const QString icon)
 {
     int stat = 0;
 
     SelectFieldsModel selFldModel(pTable, parent);
     SelectFilteredDlg dlg(parent);
     dlg.setWindowTitle(title);
+
+    if (!icon.isEmpty())
+        dlg.setWindowIcon(QIcon::fromTheme(icon));
+
     dlg.setFilteredModel(&selFldModel);
     dlg.setHidenColumns(QList<int>()
                         << FmtFildsModel::fld_Size
@@ -1628,9 +1801,9 @@ int SelectTableFieldsDlg(FmtTable *pTable, const QString &title, QList<FmtField*
     return stat;
 }
 
-int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent, QWidget *userwidget)
+int SelectTableFieldsDlg(QSharedPointer<FmtTable> pTable, const QString &title, QList<FmtField*> *pFldList, QWidget *parent, QWidget *userwidget, const QString icon)
 {
-    return SelectTableFieldsDlg(pTable.data(), title, pFldList, parent, userwidget);
+    return SelectTableFieldsDlg(pTable.data(), title, pFldList, parent, userwidget, icon);
 }
 
 void readCSVRow(const QString &row, QVector<QString> &fields, const QChar &quote)

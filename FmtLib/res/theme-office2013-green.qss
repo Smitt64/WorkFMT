@@ -535,3 +535,111 @@ QMainWindow::separator:hover {
 QStatusBar QLabel {
 	color: white;
 }
+
+TablesDock QToolBar {
+	background-color: white;
+}
+
+/* Стили для QListView - добавлены для соответствия зеленому стилю Office 2013 */
+TablesDockWidget > QListView {
+    background-color: white;
+    border: 1px solid #c5d2e0;
+    border-radius: 2px;
+    color: #333333;
+    outline: none;
+    font-family: 'Segoe UI';
+    font-size: 9pt;
+    /* Фиксируем размеры элементов для корректного отображения иконок */
+    padding: 0px;
+    margin: 0px;
+    show-decoration-selected: 1;
+}
+
+/* Важно: устанавливаем фиксированные размеры для элементов в обычном состоянии */
+TablesDockWidget > QListView::item {
+    background-color: transparent;
+    color: #333333;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 4px 8px;
+    margin: 1px;
+    /* Фиксируем высоту элемента для стабильного размера иконок */
+    height: 18px;
+    /* Отключаем растягивание по ширине */
+    qproperty-iconSize: 16px;
+}
+
+/* Особые настройки для иконок */
+TablesDockWidget > QListView::item QIcon {
+    margin-right: 0px;
+}
+
+/* Стиль элемента при наведении - ВОТ ЗДЕСЬ ИКОНКИ ВЫГЛЯДЯТ КОРРЕКТНО */
+TablesDockWidget > QListView::item:hover {
+    background-color: #d5f0e2;
+    border: 1px solid #c2e8d1;
+    color: #000000;
+    /* При наведении границы элемента фиксируются */
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Стиль выбранного элемента */
+TablesDockWidget > QListView::item:selected {
+    background-color: #a8e6bd;
+    color: #000000;
+    border: 1px solid #34a852;
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Стиль выбранного элемента с фокусом */
+TablesDockWidget > QListView::item:selected:focus {
+    background-color: #a8e6bd;
+    color: #000000;
+    border: 1px solid #34a852;
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Стиль элемента при наведении, когда уже выбран */
+TablesDockWidget > QListView::item:selected:hover {
+    background-color: #9ad6ac;
+    color: #000000;
+    border: 1px solid #2e8b57;
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Альтернативные цвета строк (через делегат в коде) */
+TablesDockWidget > QListView::item:alternate {
+    background-color: #f8f8f8;
+}
+
+/* Выделение текста в элементах */
+TablesDockWidget > QListView::item:selected:!active {
+    background-color: #e0f0e6;
+    color: #333333;
+}
+
+/* Стиль для отключенного элемента */
+TablesDockWidget > QListView::item:disabled {
+    color: #b2b2b2;
+    background-color: transparent;
+}
+
+/* Убрать пунктирный прямоугольник фокуса по умолчанию */
+TablesDockWidget > QListView:focus {
+    border: 1px solid #217346;
+}
+
+/* Дополнительный фикс для проблем с размерами иконок */
+TablesDockWidget > QListView::indicator {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}

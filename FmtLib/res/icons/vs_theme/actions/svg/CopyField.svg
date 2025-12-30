@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <style>.icon-canvas-transparent{opacity:0;fill:#f6f6f6}.icon-vs-out{fill:#f6f6f6}.icon-vs-bg{fill:#424242}.icon-vs-fg{fill:#f0eff1}</style>
+  <path class="icon-canvas-transparent" d="M16 16H0V0h16v16z" id="canvas"/>
+  <path class="icon-vs-out" d="M1 15V1h15v14H1z" id="outline"/>
+  <path class="icon-vs-fg" d="M3 11h3v2H3v-2zm0-1h3V8H3v2zm0-3h3V5H3v2zm4 6h3v-2H7v2zm0-3h3V8H7v2zm0-3h3V5H7v2zm4 6h3v-2h-3v2zm0-3h3V8h-3v2zm0-5v2h3V5h-3z" id="iconFg"/>
+  <g id="iconBg">
+    <path class="icon-vs-bg" d="M2 2v12h13V2H2zm4 11H3v-2h3v2zm0-3H3V8h3v2zm0-3H3V5h3v2zm4 6H7v-2h3v2zm0-3H7V8h3v2zm0-3H7V5h3v2zm4 6h-3v-2h3v2zm0-3h-3V8h3v2zm0-3h-3V5h3v2z"/>
+  </g>
+  <title>Copy_16x</title>
+  <g id="group-1" transform="matrix(0.663741, 0, 0, 0.62511, -0.639157, 0)" style="">
+    <path class="icon-canvas-transparent" d="M16,16H0V0H16Z"/>
+  </g>
+  <g id="group-2" transform="matrix(0.663741, 0, 0, 0.62511, -0.639157, 0)" style="">
+    <path class="icon-vs-out" d="M 5 16.809 L 5 13.966 L 0.963 14.011 L 1 0 L 7.618 0 L 10.6 3 L 11.617 3 L 16 7.379 L 16.042 16.831 C 16.268 16.771 5.226 16.749 5 16.809 Z"/>
+  </g>
+  <g id="group-3" transform="matrix(0.683601, 0, 0, 0.670555, 0.072183, 0.674276)" style="">
+    <path class="icon-asx-blue" d="M 9.791 2.609 L 8.882 2.609 L 6.153 0 L 0.963 0 L 0.963 11.302 L 4.6 11.302 L 4.6 13.91 L 13.695 13.91 L 13.695 6.34 L 9.791 2.609 Z M 10.058 4.093 L 12.144 6.086 L 10.058 6.086 L 10.058 4.093 Z M 1.872 10.433 L 1.872 0.87 L 5.777 0.87 L 7.596 2.609 L 4.6 2.609 L 4.6 10.433 L 1.872 10.433 Z M 5.51 13.04 L 5.51 3.477 L 9.147 3.477 L 9.147 6.955 L 12.786 6.955 L 12.786 13.04 L 5.51 13.04 Z" style="fill: rgb(0, 129, 228); stroke-width: 1.553;"/>
+  </g>
+  <g id="group-4" transform="matrix(0.663741, 0, 0, 0.62511, -0.639157, 0)" style="">
+    <path class="icon-vs-fg" d="M 11.381 5.477 L 13.603 7.618 L 11.466 7.573 L 11.381 5.477 Z M 5.81 12.303 L 3.021 12.281 L 3 2 L 7.096 2.067 L 8.937 3.91 L 5.852 3.888 L 5.81 12.303 Z M 14.275 15.124 L 6.788 15.011 L 6.746 4.798 L 10.423 4.82 L 10.487 8.596 L 14.169 8.573 L 14.275 15.124 Z"/>
+  </g>
+</svg>

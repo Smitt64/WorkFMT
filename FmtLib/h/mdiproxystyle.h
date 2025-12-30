@@ -10,7 +10,7 @@
 class QPaintEvent;
 class QStyleOptionButton;
 class QStyleOptionTitleBar;
-class FMTLIBSHARED_EXPORT MDIProxyStyle : public QProxyStyle
+class MDIProxyStyle : public QProxyStyle
 {
     Q_OBJECT
 
@@ -44,7 +44,7 @@ public:
                          SubControl sc, const QWidget *widget = nullptr) const override;
 
     SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
-                                                    const QPoint &pos, const QWidget *widget) const override;
+                                                    const QPoint &pos, const QWidget *widget) const;
 
     int styleHint(QStyle::StyleHint hint, const QStyleOption *option = nullptr, const QWidget *widget = nullptr, QStyleHintReturn *returnData = nullptr) const override;
 
@@ -92,7 +92,7 @@ private:
 
     // Вспомогательные функции для получения цветов
     QColor activeFrameColor() const { return QColor(33, 115, 70); }     // #217346
-    QColor inactiveFrameColor() const { return QColor(190, 192, 194); } // #bec0c2
+    QColor inactiveFrameColor() const { return QColor(168, 230, 189); } // #a8e6bd
     QColor titleBarActive() const { return QColor(255, 255, 255); }     // Белый
     QColor titleBarInactive() const { return QColor(248, 248, 248); }   // #f8f8f8
     QColor titleTextActive() const { return QColor(33, 115, 70); }      // #217346

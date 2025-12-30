@@ -6,7 +6,6 @@
 #include "options/externaltoolspage.h"
 #include "options/fmtoptionsdlg.h"
 #include "oracleauthdlg.h"
-#include "src/core/MDIProxyStyle.h"
 #include "src/debugconnect.h"
 #include "src/widgets/guiconverterdlg.h"
 #include "src/widgets/sqlconvertordlg.h"
@@ -14,6 +13,7 @@
 #include "subwindowsmodel.h"
 #include "tablesdock.h"
 #include "recentconnectionlist.h"
+#include "tablesdockwidget.h"
 #include "treecombobox.h"
 #include <QStatusBar>
 #include <toolsruntime.h>
@@ -21,11 +21,13 @@
 #include <QMenu>
 #include <QDebug>
 #include <QPaintEvent>
+#include <QTreeView>
 
 FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
-    SARibbonMainWindow(parent)
+    SARibbonMainWindow(parent),
+    m_LastActiveWindow(nullptr)
 {
-    setWindowIcon(QIcon(":/img/icon128.png"));
+    setWindowIcon(QIcon("://app-icon.svg"));
     setWindowTitle(tr("WorkFMT"));
     setMinimumSize(800, 600);
 
@@ -35,13 +37,15 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     pTableListDelegate = new FmtTableListDelegate(this);
     pTablesDock->setItemDelegate(pTableListDelegate);
 
-    m_pMdiStyle = new MDIProxyStyle(qApp->style());
-    setStyle(m_pMdiStyle);
+    //m_pMdiStyle = new MDIProxyStyle(qApp->style());
+    //setStyle(m_pMdiStyle);
+    //qApp->setStyle(m_pMdiStyle);
 
     pMdi = new QMdiArea(this);
     pMdi->setDocumentMode(true);
     pMdi->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     pMdi->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    pMdi->setBackground(QColor("#EBEFF2"));
     //pMdi->setStyle(m_pMdiStyle);
     setCentralWidget(pMdi);
 
@@ -53,9 +57,136 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     /*SARibbonCategory *viewPage = new SARibbonCategory("Вид");
     ribbon->addCategoryPage(viewPage);*/
 
+    InitContextCategoryes();
     InitQuickAccessBar();
 
     connect(pTablesDock, &TablesDock::tableDbClicked, this, &FmtRibbonMainWindow::TableClicked);
+    connect(pMdi, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
+    {
+        // subWindowActivated
+        if (!window)
+        {
+            if (m_LastActiveWindow)
+            {
+                MdiSubInterface *lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
+
+                if (lastwnd)
+                {
+                    QList<QWidget*> status = lastwnd->statusBarSections();
+                    lastwnd->clearRibbonTabs();
+
+                    for (auto widget : qAsConst(status))
+                        m_pStatusBar->removeWidget(widget);
+                }
+            }
+
+            QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
+            for (auto all : qAsConst(allCategoryes))
+            {
+                if (all->categoryCount())
+                    ribbonBar()->showContextCategory(all);
+                else
+                    ribbonBar()->hideContextCategory(all);
+            }
+
+            //m_ToolBoxDock->setModel(nullptr);
+            //m_PropertyDock->setPropertyModel(nullptr);
+            //m_PropertyDock->setStructModel(nullptr);
+            m_LastActiveWindow = nullptr;
+
+            return;
+        }
+
+        if (m_LastActiveWindow == window)
+        {
+            return;
+        }
+
+        MdiSubInterface *lastwnd = nullptr;
+        MdiSubInterface *wnd = qobject_cast<MdiSubInterface*>(window->widget());
+
+        if (m_LastActiveWindow)
+            lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
+
+        if (!wnd)
+        {
+            /*m_ToolBoxDock->setModel(nullptr);
+            m_PropertyDock->setPropertyModel(nullptr);
+            m_PropertyDock->setStructModel(nullptr);*/
+
+            /*m_pActionUndo->setSource(nullptr);
+            m_pActionRedo->setSource(nullptr);
+            m_pUndoActionWidget->setUndoStack(nullptr);*/
+
+            if (lastwnd)
+            {
+                QList<QWidget*> status = lastwnd->statusBarSections();
+                lastwnd->clearRibbonTabs();
+
+                for (auto widget : qAsConst(status))
+                    m_pStatusBar->removeWidget(widget);
+            }
+
+            m_LastActiveWindow = nullptr;
+        }
+        else
+        {
+            /*m_ToolBoxDock->setModel(wnd->toolBox());
+            m_PropertyDock->setPropertyModel(wnd->propertyModel());
+            m_PropertyDock->setStructModel(wnd->structModel());*/
+
+            /*m_pActionUndo->setSource(wnd->undoAction());
+            m_pActionRedo->setSource(wnd->redoAction());
+            m_pUndoActionWidget->setUndoStack(wnd->undoStack());*/
+
+            QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
+            pWindowsComboBox->setCurrentIndex(index);
+
+            m_LastRibbonTabName.lock();
+
+            ribbonBar()->setUpdatesEnabled(false);
+            if (lastwnd)
+            {
+                QList<QWidget*> status = lastwnd->statusBarSections();
+                lastwnd->clearRibbonTabs();
+
+                for (auto widget : qAsConst(status))
+                    m_pStatusBar->removeWidget(widget);
+            }
+
+            wnd->updateRibbonTabs();
+
+            if (!m_LastRibbonTabName.get().isEmpty())
+                ribbonBar()->raiseCategory(ribbonBar()->categoryByName(m_LastRibbonTabName));
+
+            QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
+            for (auto all : qAsConst(allCategoryes))
+            {
+                if (all->categoryCount())
+                    ribbonBar()->showContextCategory(all);
+                else
+                    ribbonBar()->hideContextCategory(all);
+            }
+            ribbonBar()->setUpdatesEnabled(true);
+
+            QList<QWidget*> status = wnd->statusBarSections();
+            for (auto widget : qAsConst(status))
+            {
+                m_pStatusBar->addPermanentWidget(widget);
+                widget->show();
+            }
+
+            m_LastActiveWindow = window;
+            m_LastRibbonTabName.unlock();
+        }
+        /*if (wnd)
+        {
+            QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
+            pWindowsComboBox->setCurrentIndex(index);
+        }*/
+    });
+
+    UpdateActions();
 }
 
 FmtRibbonMainWindow::~FmtRibbonMainWindow()
@@ -63,20 +194,68 @@ FmtRibbonMainWindow::~FmtRibbonMainWindow()
 
 }
 
-
 void FmtRibbonMainWindow::OpenConnection(const QString &connectionString)
 {
- // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    QSettings *s = settings();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Открыть файл подключения"), s->value("LastOpenConnectionDir", QString()).toString(),
+                                                    tr("Sqlite db, rsreq.ini (*.sqlite *.db rsreq.ini);;Sqlite db(*.sqlite *.db);;rsreq.ini(rsreq.ini)"));
+
+    if (!filename.isEmpty())
+    {
+        ConnectionInfo *info = new ConnectionInfo();
+
+        QFileInfo finfo(filename);
+        QString suffix = finfo.suffix();
+        if (suffix == "db" || suffix == "sqlite")
+        {
+            if (!info->openSqlite(filename))
+                delete info;
+            else
+            {
+                CreateConnectionActio(info);
+                info->updateFmtList();
+                s->setValue("LastOpenConnectionDir", finfo.absolutePath());
+                s->sync();
+            }
+        }
+        else if (suffix == "ini")
+        {
+            QString constrtype1regexp = ConstrType1RegExp();
+            QString rsreq = ReadTextFileContent(filename);
+            QRegExp rx(constrtype1regexp);
+
+            QStringList list;
+            int pos = 0;
+
+            while ((pos = rx.indexIn(rsreq, pos)) != -1) {
+                list << rx.cap(0);
+                pos += rx.matchedLength();
+            }
+
+            if (!list.isEmpty())
+            {
+                StringListDlg dlg(this);
+                dlg.setWindowTitle(tr("Открыть подключение"));
+                dlg.setList(list);
+                if (dlg.exec() == QDialog::Accepted)
+                    OpenConnection(dlg.selected());
+            }
+
+            s->setValue("LastOpenConnectionDir", finfo.absolutePath());
+            s->sync();
+        }
+    }
 }
 
 void FmtRibbonMainWindow::InitQuickAccessBar()
 {
+    SARibbonButtonGroupWidget* rightBar = ribbonBar()->rightButtonGroup();
     SARibbonQuickAccessBar* quickAccessBar = ribbonBar()->quickAccessBar();
 
     RecentConnectionList list;
     if (list.load() && !list.isEmpty())
     {
-        QMenu* RecentMenu = new QMenu(tr("Недавние файлы"), this);
+        QMenu* RecentMenu = new QMenu(tr("Недавние подключения"), this);
         RecentMenu->setIcon(QIcon::fromTheme("History"));
 
         toolAddActionWithTooltip(RecentMenu, tr("Список последних открытых подключений"));
@@ -93,11 +272,25 @@ void FmtRibbonMainWindow::InitQuickAccessBar()
 
         quickAccessBar->addMenu(RecentMenu, Qt::ToolButtonIconOnly, QToolButton::InstantPopup);
     }
+
+    pSearchLine = new SARibbonLineEdit(this);
+    pSearchLine->setPlaceholderText(tr("Введите текст для поиска..."));
+    pSearchLine->setFrame(false);
+    pSearchLine->setMinimumWidth(350);
+    pSearchLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    pSearchLine->setClearButtonEnabled(true);
+
+    rightBar->addWidget(pSearchLine);
+
+    connect(pSearchLine, SIGNAL(textChanged(QString)), pTableListDelegate, SLOT(setHighlightText(QString)));
+    connect(pSearchLine, SIGNAL(textChanged(QString)), pTablesDock, SLOT(forceRepaint()));
 }
 
 void FmtRibbonMainWindow::InitMainRibbonTab()
 {
     SARibbonBar* ribbon = ribbonBar();
+    ribbon->applicationButton()->setText(tr("Файл"));
+    ribbon->applicationButton()->setMinimumWidth(60);
 
     SARibbonCategory *mainPage = new SARibbonCategory("Главная");
     ribbon->addCategoryPage(mainPage);
@@ -190,12 +383,6 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
         dir = QDir::current();
 
-    if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
-        m_pActionDumpTool->setEnabled(false);
-
-    if (!QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
-        m_pActionDiffTool->setEnabled(false);
-
     connect(m_pActionDiffTool, &QAction::triggered, [=]()
     {
         QProcess::startDetached(dir.absoluteFilePath("DiffToScript.exe"), QStringList());
@@ -225,6 +412,12 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
 
         dlg.exec();
     });
+}
+
+void FmtRibbonMainWindow::InitContextCategoryes()
+{
+    SARibbonContextCategory *rescat = ribbonBar()->addContextCategory(FMTTABLE_CONTEXTCATEGORY, QColor(0xBFFFBF), 0);
+    //SARibbonContextCategory *controlcat = ribbon->addContextCategory(tr("Элемент"), QColor(0xC7FFFF), 0);
 }
 
 void FmtRibbonMainWindow::setupAction(QAction *act, const QString& text, const QString& iconname, const QKeySequence &key)
@@ -284,7 +477,7 @@ QAction *FmtRibbonMainWindow::CreateConnectionActio(ConnectionInfo *info)
     pTablesDock->setModel(info->tablesModel());
     pTablesDock->setConnection(info);
 
-    //UpdateActions();
+    UpdateActions();
 
     return a;
 }
@@ -357,6 +550,16 @@ void FmtRibbonMainWindow::InitWindowsCombo()
     connect(pWindowsComboBox, SIGNAL(modelIndexChanged(QModelIndex)), SLOT(subWindowIndexChanged(QModelIndex)));
 
     wbar->addWidget(pWindowsComboBox);
+
+    connect(pWindowsModel, &SubWindowsModel::windowsUpdated, (QTreeView*)pWindowsComboBox->view(), &QTreeView::expandAll);
+    connect(pWindowsComboBox, &TreeComboBox::modelIndexChanged, [=](const QModelIndex &index)
+    {
+        // subWindowIndexChanged
+        QMdiSubWindow *wnd = pWindowsModel->window(index);
+
+        if (wnd)
+            SetActiveFmtWindow(wnd);
+    });
 }
 
 void FmtRibbonMainWindow::showEvent(QShowEvent *event)
@@ -500,15 +703,32 @@ QMdiSubWindow *FmtRibbonMainWindow::HasTableWindow(const quint64 &tableID)
 QMdiSubWindow *FmtRibbonMainWindow::CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection)
 {
     m_Windows[pConnection].push_back(window);
-    QMdiSubWindow *wnd = new QMdiSubWindow();  OfficeMdiWindow
+    QMdiSubWindow *wnd = new QMdiSubWindow();
     wnd->setWidget(window);
     pMdi->addSubWindow(wnd);
 
     wnd->setAttribute(Qt::WA_DeleteOnClose);
     window->setParentWnd(wnd);
     window->setConnection(pConnection);
+    window->setRibbonBar(ribbonBar());
+    //window->setPalette(m_pMdiStyle->standardPalette());
+
+    //window->setPalette(m_pMdiStyle->standardPalette());
     wnd->setWindowTitle(window->makeWindowTitle());
-    connect(window, SIGNAL(destroyed(QObject*)), SLOT(WorkWindowDestroyed(QObject*)));
+
+    connect(window, &MdiSubInterface::destroyed, [=](QObject *wnd)
+    {
+        // WorkWindowDestroyed
+        const FmtWorkWindow *window = static_cast<const FmtWorkWindow*>(wnd);
+
+        if (window)
+        {
+            ConnectionInfo *connection = window->connection();
+
+            if (m_Windows[connection].contains((QWidget*)window))
+                m_Windows[connection].removeOne((QWidget*)window);
+        }
+    });
 
     QModelIndex index = pWindowsModel->addWindow(pConnection, wnd);
     pWindowsComboBox->setCurrentIndex(index);
@@ -526,9 +746,16 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateDocument(QSharedPointer<FmtTable> &tab
     QMdiSubWindow *wnd = CreateMdiWindow(window, table->connection());
     wnd->setWindowIcon(QIcon(":/table"));
 
-    connect(window, SIGNAL(accepted()), wnd, SLOT(deleteLater()));
-    connect(window, SIGNAL(rejected()), wnd, SLOT(deleteLater()));
-    connect(window, SIGNAL(needUpdateTableList()), SLOT(OnTableChangeUpdtList()));
+    connect(window, &FmtWorkWindow::accepted, wnd, &FmtRibbonMainWindow::deleteLater);
+    connect(window, &FmtWorkWindow::rejected, wnd, &FmtRibbonMainWindow::deleteLater);
+    connect(window, &FmtWorkWindow::needUpdateTableList, [=]()
+    {
+        // OnTableChangeUpdtList
+        TablesDockWidget *list = pTablesDock->tablesWidget();
+
+        if (list->isFiltered())
+            list->updateList();
+    });
 
     if (pWindow)
         *pWindow = window;
@@ -554,4 +781,101 @@ void FmtRibbonMainWindow::TableClicked(const quint32 &id)
     }
     else
         SetActiveFmtWindow(wnd);
+}
+
+void FmtRibbonMainWindow::UpdateActions()
+{
+    ConnectionInfo *cur = currentConnection();
+
+    bool HasConnection = cur ? true : false;
+
+    m_pActionDisconnect->setEnabled(HasConnection);
+    m_pSqliteAction->setEnabled(HasConnection);
+    m_pActionImport->setEnabled(HasConnection);
+    m_pActionExport->setEnabled(HasConnection);
+    m_pActionImportDir->setEnabled(HasConnection);
+
+    m_pActionCreateGroup->setEnabled(HasConnection);
+    m_pActionCopyTable->setEnabled(HasConnection);
+    m_pActionCopyTableTmp->setEnabled(HasConnection);
+    m_pActionCopyTableTo->setEnabled(HasConnection);
+
+    m_pActionDebug->setEnabled(HasConnection && cur->type() == ConnectionInfo::CON_ORA);
+
+    QDir dir = QApplication::applicationDirPath();
+    if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
+        dir = QDir::current();
+
+    if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
+        m_pActionDumpTool->setEnabled(false);
+
+    if (!QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
+        m_pActionDiffTool->setEnabled(false);
+
+    /*if (!cur)
+    {
+        return;
+    }*/
+
+    /*if (cur->type() != ConnectionInfo::CON_ORA)
+        ui->actionEditContent->setEnabled(false);
+
+    if (cur->hasFeature(ConnectionInfo::CanCreateTable))
+    {
+        actionEdit->setText(tr("Редактировать"));
+        actionDeleteTable->setEnabled(true);
+        ui->actionCreate->setEnabled(true);
+        ui->actionRebuildOffset->setEnabled(true);
+        ui->actionCreateFromText->setEnabled(true);
+        ui->actionInit->setEnabled(true);
+
+        ui->actionCopyTable->setEnabled(true);
+        ui->actionCopyTableAs->setEnabled(true);
+        ui->actionCopyTableTmp->setEnabled(true);
+
+        ui->actionMassOp->setEnabled(true);
+        ui->actionCreateXml->setEnabled(true);
+    }
+    else
+    {
+        actionEdit->setText(tr("Просмотр"));
+        actionDeleteTable->setEnabled(false);
+        ui->actionCreate->setEnabled(false);
+        ui->actionRebuildOffset->setEnabled(false);
+        ui->actionCreateFromText->setEnabled(false);
+        ui->actionInit->setEnabled(false);
+
+        ui->actionCopyTable->setEnabled(false);
+        ui->actionCopyTableAs->setEnabled(false);
+        ui->actionCopyTableTmp->setEnabled(false);
+
+        ui->actionMassOp->setEnabled(false);
+        ui->actionCreateXml->setEnabled(false);
+    }
+
+    if (cur->hasFeature(ConnectionInfo::CanSaveToXml))
+    {
+        actionExport->setEnabled(true);
+        ui->actionImpExpPrm->setEnabled(true);
+        ui->actionImportDir->setEnabled(true);
+        ui->actionImport->setEnabled(true);
+    }
+    else
+    {
+        actionExport->setEnabled(false);
+        ui->actionImpExpPrm->setEnabled(false);
+        ui->actionImportDir->setEnabled(false);
+        ui->actionImport->setEnabled(false);
+    }
+
+    if (cur->hasFeature(ConnectionInfo::CanLoadUnloadDbf))
+    {
+        ui->actionUnloadDbf->setEnabled(true);
+        ui->actionLoadDbf->setEnabled(true);
+    }
+    else
+    {
+        ui->actionUnloadDbf->setEnabled(false);
+        ui->actionLoadDbf->setEnabled(false);
+    }*/
 }

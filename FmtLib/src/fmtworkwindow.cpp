@@ -11,6 +11,7 @@
 #include "fmtcore.h"
 #include "errorsmodel.h"
 #include "errordlg.h"
+#include "fmtcore.h"
 #include "fmtimpexpwrp.h"
 #include "fmtfield.h"
 #include "fmtworkwndgen.h"
@@ -40,6 +41,7 @@
 #include "src/core/fmttablecomparemodel.h"
 #include "wizards/RichTextToInsertWizard/richtexttoinsertwizard.h"
 #include "toolsqlconverter.h"
+#include <SARibbon.h>
 #include <QtWidgets>
 #include <QClipboard>
 #include <QMessageBox>
@@ -166,32 +168,32 @@ void FmtWorkWindow::SetupActionsMenu()
                            this, SLOT(onUserActionTriggered()));
 
     pActionsMenu = new QMenu(this);
-    m_AddFieldsToEnd = pActionsMenu->addAction(QIcon(":/img/PushBackClause_10553_32.png"), tr("Добавить поля в конец"));
-    m_InsertFields = pActionsMenu->addAction(QIcon(":/img/InsertClause_10553_32.png"), tr("Добавить поля перед..."));
+    //m_AddFieldsToEnd = pActionsMenu->addAction(QIcon(":/img/PushBackClause_10553_32.png"), tr("Добавить поля в конец"));
+    //m_InsertFields = pActionsMenu->addAction(QIcon(":/img/InsertClause_10553_32.png"), tr("Добавить поля перед..."));
     pActionsMenu->addSeparator();
     m_CamelCaseAction = pActionsMenu->addAction(QIcon(":/img/FontHS.png"), tr("Преобразовать поля в CamelCase"));
     pActionsMenu->addSeparator();
-    m_CopyFields = pActionsMenu->addAction(QIcon(":/img/CopyHS.png"), tr("Копировать поля в буффер обмена..."));
-    m_PasteFields = pActionsMenu->addAction(QIcon(":/img/PasteHS.png"), tr("Вставить поля из буффера обмена..."));
+    //m_CopyFields = pActionsMenu->addAction(QIcon(":/img/CopyHS.png"), tr("Копировать поля в буффер обмена..."));
+    //m_PasteFields = pActionsMenu->addAction(QIcon(":/img/PasteHS.png"), tr("Вставить поля из буффера обмена..."));
     pActionsMenu->addSeparator();
-    m_saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
+    //m_saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
     pActionsMenu->addSeparator();
     m_GenDiffToScript = pActionsMenu->addAction(QIcon(":/img/DiffToScript.png"), tr("Diff to Script"));
     pActionsMenu->addSeparator();
-    m_pCompareFmt = pActionsMenu->addAction(QIcon(":/img/SychronizeListHS.png"), tr("Сравнить структуры"));
+    //m_pCompareFmt = pActionsMenu->addAction(QIcon(":/img/SychronizeListHS.png"), tr("Сравнить структуры"));
     pActionsMenu->addSeparator();
-    m_MassRemoveFields = pActionsMenu->addAction(QIcon(":/img/remove.png"), tr("Удалить поля из таблицы"));
+    //m_MassRemoveFields = pActionsMenu->addAction(QIcon(":/img/remove.png"), tr("Удалить поля из таблицы"));
     pActionsMenu->addSeparator();
     m_EditContent = pActionsMenu->addAction(QIcon(":/img/EditTableHS.png"), tr("Редактировать содержимое"));
-    m_unloadDbf = pActionsMenu->addAction(tr("Выгрузить содержимое в *.dat"));
-    m_loadDbf = pActionsMenu->addAction(tr("Загрузить содержимое из *.dat"));
-    pActionsMenu->addSeparator();
-    m_ImportFromTable = pActionsMenu->addAction(tr("Скрипт загрузки содержимого"));
+    //m_unloadDbf = pActionsMenu->addAction(tr("Выгрузить содержимое в *.dat"));
+    //m_loadDbf = pActionsMenu->addAction(tr("Загрузить содержимое из *.dat"));
+    //pActionsMenu->addSeparator();
+    //m_ImportFromTable = pActionsMenu->addAction(tr("Скрипт загрузки содержимого"));
     pActionsMenu->addSeparator();
     /*m_ImportData = pActionsMenu->addAction(QIcon(":/img/ImportContent.png"), tr("Загрузить данные"));
     pActionsMenu->addSeparator();*/
-    m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
-    m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
+    //m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
+    //m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
     m_CheckAction = pActionsMenu->addAction(tr("Проверить таблицу на ошибки"));
     pActionsMenu->addSeparator();
 
@@ -211,28 +213,28 @@ void FmtWorkWindow::SetupActionsMenu()
     m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
     ui->pushActions->setMenu(pActionsMenu);//pUserActionsMenu
 
-    connect(m_saveToXml, SIGNAL(triggered(bool)), SLOT(ExportXml()));
-    connect(m_createTableSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
-    connect(m_unloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadToDbf()));
-    connect(m_loadDbf, SIGNAL(triggered(bool)), SLOT(LoadFromDbf()));
+    //connect(m_saveToXml, SIGNAL(triggered(bool)), SLOT(ExportXml()));
+    //connect(m_createTableSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
+    //connect(m_unloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadToDbf()));
+    //connect(m_loadDbf, SIGNAL(triggered(bool)), SLOT(LoadFromDbf()));
     connect(m_GenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
     connect(m_GenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
     connect(m_GenInsertTemplate, SIGNAL(triggered(bool)), SLOT(GenInsertTemplateSql()));
     connect(m_GenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
 
     connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
-    connect(m_MassRemoveFields, SIGNAL(triggered(bool)), SLOT(RemoveTableFields()));
-    connect(m_AddFieldsToEnd, SIGNAL(triggered(bool)), SLOT(AddFieldsToEnd()));
-    connect(m_InsertFields, SIGNAL(triggered(bool)), SLOT(InsertFieldsBefore()));
+    //connect(m_MassRemoveFields, SIGNAL(triggered(bool)), SLOT(RemoveTableFields()));
+    //connect(m_AddFieldsToEnd, SIGNAL(triggered(bool)), SLOT(AddFieldsToEnd()));
+    //connect(m_InsertFields, SIGNAL(triggered(bool)), SLOT(InsertFieldsBefore()));
     connect(m_EditContent, SIGNAL(triggered(bool)), SLOT(EditContent()));
-    connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
-    connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
+    //connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
+    //connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
     connect(m_CamelCaseAction, SIGNAL(triggered(bool)), SLOT(CamelCaseAction()));
     connect(m_GenDiffToScript, SIGNAL(triggered(bool)), SLOT(DiffToScript()));
     connect(m_CheckAction, SIGNAL(triggered(bool)), SLOT(CheckAction()));
-    connect(m_pCompareFmt, SIGNAL(triggered(bool)), SLOT(CompareStruct()));
-    connect(ui->compareBtn, SIGNAL(clicked()), SLOT(CompareStruct()));
-    connect(m_ImportFromTable, SIGNAL(triggered(bool)), SLOT(ImportFromTable()));
+    //connect(m_pCompareFmt, SIGNAL(triggered(bool)), SLOT(CompareStruct()));
+    //connect(ui->compareBtn, SIGNAL(clicked()), SLOT(CompareStruct()));
+    //connect(m_ImportFromTable, SIGNAL(triggered(bool)), SLOT(ImportFromTable()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
 
     connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
@@ -383,7 +385,7 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     connect(pTable.data(), SIGNAL(nameChanged(QString)), SLOT(UpdateCopyMenu(QString)));
     connect(fieldsModel, SIGNAL(AddedToLast(FmtField*, const QModelIndex&)), SLOT(AddedToLast(FmtField*,QModelIndex)));
     connect(pTable.data(), SIGNAL(isTemporaryChanged(bool)), SLOT(isTemporaryTableChanged(bool)));
-    connect(m_rebuildOffsets, SIGNAL(triggered(bool)), pTable.data(), SLOT(rebuildOffsets()));
+    //connect(m_rebuildOffsets, SIGNAL(triggered(bool)), pTable.data(), SLOT(rebuildOffsets()));
 }
 
 void FmtWorkWindow::setupUndoRedo()
@@ -589,7 +591,7 @@ void FmtWorkWindow::FieldAdded(FmtField *fld)
 
 void FmtWorkWindow::InitDB()
 {
-    InitFmtTable(pTable.data(), this);
+    InitFmtTable(pTable.data(), this, "TableAdapter");
 }
 
 void FmtWorkWindow::CheckTable()
@@ -609,6 +611,8 @@ void FmtWorkWindow::CheckTable()
 void FmtWorkWindow::ExportXml()
 {
     SelectFolderDlg folder(RsFmtUnlDirContext, tr("Экспорт в xml файл"), this);
+    folder.setWindowIcon(QIcon::fromTheme("ExportFmtXml"));
+
     if (folder.exec() == QDialog::Accepted)
     {
         ExportFmtToXml(pTable->connection(),QStringList()
@@ -625,7 +629,7 @@ void FmtWorkWindow::AddedToLast(FmtField *fld, const QModelIndex &index)
 
 void FmtWorkWindow::CreateTableSql()
 {
-    SaveFmtTableSql(pTable, this);
+    SaveFmtTableSql(pTable, this, "CreateTablesSql");
 }
 
 void FmtWorkWindow::UpdateCopyMenu(const QString &table)
@@ -669,35 +673,47 @@ void FmtWorkWindow::keyPressEvent(QKeyEvent *event)
 
 void FmtWorkWindow::paintEvent(QPaintEvent *paintEvent)
 {
+    QMdiSubWindow* parentMdiSubWin = qobject_cast<QMdiSubWindow*>(parentWidget());
+    bool isActiveMdiSubWin = parentMdiSubWin ? parentMdiSubWin->isActiveWindow() : false;
+    const QPalette& widgetPalette = qApp->style()->standardPalette();
+
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
     p.save();
-    QPen pen(dcolor);
-    pen.setWidth(2);
-    if (!pTable->id())
-        pen.setStyle(Qt::DotLine);
-    p.setPen(pen);
-    p.setBrush(Qt::NoBrush);
-
-    QRect rc = rect();
-    rc.setX(rc.x() + 1);
-    rc.setY(rc.y() + 1);
-    rc.setWidth(rc.width() - 1);
-    rc.setHeight(rc.height() - 1);
-    p.drawRect(rc);
 
     QPainterPath path;
     int startx = ui->idEdit->x() + ui->idEdit->width();
     int tmpy = ui->idEdit->y() + ui->idEdit->height();
 
+    QColor frameColor;
+    if (isActiveMdiSubWin)
+        frameColor = widgetPalette.color(QPalette::Active, QPalette::Highlight);
+    else
+        frameColor = widgetPalette.color(QPalette::Inactive, QPalette::Dark);
+
+    QPen pen(frameColor);
+    pen.setWidth(2);
+    if (!pTable->id())
+        pen.setStyle(Qt::DotLine);
+    p.setPen(pen);
+
+    QPointF gradientStart(startx, 0);
+    QPointF gradientEnd(startx, tmpy / 2.0);
+
     p.setBrush(color);
-    path.moveTo(startx, -1);
+
+    path.moveTo(0, -1);
+    path.moveTo(0, 2);
+    path.lineTo(startx, 2);
     path.cubicTo(startx + 50, 0, startx + 25, tmpy / 4, startx + 50, tmpy / 2);
-    path.lineTo(width(), tmpy / 2);
+    path.lineTo(width() + 1, tmpy / 2);
+    path.lineTo(width() + 1, 0);
+
+    path.lineTo(0, 0);
+    path.lineTo(0, -1);
+
     p.drawPath(path);
     p.restore();
-
-    p.fillRect(startx + 50, 0, width(), tmpy / 2 - 1, color);
 
     QDialog::paintEvent(paintEvent);
 }
@@ -738,9 +754,9 @@ void FmtWorkWindow::TabCloseRequested(int index)
     ui->tabWidget->removeTab(index);
 }
 
-int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget)
+int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget, const QString &icon)
 {
-    return SelectTableFieldsDlg(pTable, title, pFldList, this, userwidget);
+    return SelectTableFieldsDlg(pTable, title, pFldList, this, userwidget, icon);
 }
 
 void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap, bool AddConvertButton)
@@ -890,7 +906,7 @@ void FmtWorkWindow::GenCreateTableScript()
 void FmtWorkWindow::RemoveTableFields()
 {
     QList<FmtField*> FldList;
-    if (SelectTableFieldsDailog(tr("Выбор полей для удаления"), &FldList) == QDialog::Accepted)
+    if (SelectTableFieldsDailog(tr("Выбор полей для удаления"), &FldList, nullptr, "RemoveRow") == QDialog::Accepted)
     {
         foreach (FmtField *fld, FldList) {
             qint32 row = pTable->fieldNum(fld);
@@ -910,6 +926,7 @@ void FmtWorkWindow::AddFieldsToEnd()
 {
     QDialog dlg(this);
     dlg.setWindowTitle(m_AddFieldsToEnd->text());
+    dlg.setWindowIcon(QIcon::fromTheme("AddField"));
     FmRichTextWidget rich;
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
@@ -936,6 +953,7 @@ void FmtWorkWindow::InsertFieldsBefore()
 {
     QDialog dlg(this);
     dlg.setWindowTitle(m_InsertFields->text());
+    dlg.setWindowIcon(QIcon::fromTheme("InsertField"));
     FmRichTextWidget rich;
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     QComboBox combo;
@@ -976,7 +994,7 @@ void FmtWorkWindow::CopyFields()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
     QList<FmtField*> FldList;
-    if (SelectTableFieldsDailog(tr("Выбор полей для копирования в буффер"), &FldList) == QDialog::Accepted)
+    if (SelectTableFieldsDailog(tr("Выбор полей для копирования в буффер"), &FldList, nullptr, "CopyField") == QDialog::Accepted)
     {
         QByteArray itemData;
         QDataStream stream(&itemData, QIODevice::WriteOnly);
@@ -1258,5 +1276,245 @@ void FmtWorkWindow::CompareStruct()
 void FmtWorkWindow::ImportFromTable()
 {
     RichTextToInsertWizard wzrd(pTable.data(), this);
+    wzrd.setWindowIcon(QIcon::fromTheme("ImportRichText"));
     wzrd.exec();
+}
+
+void FmtWorkWindow::initRibbonFmtPanel()
+{
+    SARibbonPannel* FmtPannel = new SARibbonPannel(tr("Запись словаря"));
+    m_pFmtCategory->addPannel(FmtPannel);
+
+    m_pInitTableMenu = new QMenu(tr("Инициализировать"), this);
+    m_pInitTableMenu->setIcon(QIcon::fromTheme("TableAdapter"));
+    m_pInitCreateTableAction = m_pInitTableMenu->addAction(tr("Создать/пересоздать таблицу"));
+    m_pInitCreateIndexAction = m_pInitTableMenu->addAction(tr("Создать/пересоздать индексы"));
+
+    m_pInitTableMenuAction = FmtPannel->addLargeMenu(m_pInitTableMenu, QToolButton::MenuButtonPopup);
+    m_pInitTableMenuAction->setIcon(QIcon::fromTheme("TableAdapter"));
+
+    m_pCheckAction = createAction(tr("Проверить"), "Test");
+    FmtPannel->addSmallAction(m_pCheckAction);
+
+    m_pCompareFmt = createAction(tr("Сравнить структуры"), "CompareFmt");
+    FmtPannel->addSmallAction(m_pCompareFmt);
+
+    m_rebuildOffsets = createAction(tr("Перестроить смещения"), "Step");
+    FmtPannel->addSmallAction(m_rebuildOffsets);
+    FmtPannel->addSeparator();
+
+    m_saveToXml = createAction(tr("Экспорт в XML"), "ExportFmtXml");
+    FmtPannel->addLargeAction(m_saveToXml);
+
+    m_createTableSql = createAction(tr("Экспорт CreateTablesSql"), "CreateTablesSql");
+    FmtPannel->addLargeAction(m_createTableSql);
+
+    connect(m_pCheckAction, &QAction::triggered, this, &FmtWorkWindow::CheckTable);
+    connect(m_pInitTableMenuAction, &QAction::triggered, this, &FmtWorkWindow::InitDB);
+    connect(m_saveToXml, &QAction::triggered, this, &FmtWorkWindow::ExportXml);
+    connect(m_pCompareFmt, &QAction::triggered, this, &FmtWorkWindow::CompareStruct);
+    connect(m_createTableSql, &QAction::triggered, this, &FmtWorkWindow::CreateTableSql);
+    connect(m_rebuildOffsets, &QAction::triggered, this, &FmtWorkWindow::rebuildOffsets);
+    connect(m_pInitCreateTableAction, &QAction::triggered, [=]() {
+        if (pTable->isRecord())
+            return;
+
+        bool CreateIndex = false;
+        if (pTable->isExistsInDb())
+        {
+            QCheckBox *check = new QCheckBox(tr("Создать индексы"));
+            QMessageBox msg(this);
+            msg.setWindowTitle(QObject::tr("Создать/пересоздать таблицу"));
+            msg.setText(tr("Таблица уже существует в БД."));
+            msg.setInformativeText(tr("Пересоздание приведет к потери данных в таблице. Пересоздать?"));
+            msg.setCheckBox(check);
+            msg.setIcon(QMessageBox::Warning);
+            msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+            if (msg.exec() == QMessageBox::No)
+                return;
+
+            CreateIndex = check->isChecked();
+        }
+
+        QString err;
+        int stat = pTable->createDbTable(&err);
+
+        if (stat)
+        {
+            QMessageBox msg(this);
+            msg.setWindowTitle(QObject::tr("Ошибка"));
+            msg.setIcon(QMessageBox::Critical);
+            msg.setText(QObject::tr("Не удалось создать/пересоздать таблицу"));
+            msg.setDetailedText(err);
+            msg.exec();
+        }
+        else
+        {
+            if (CreateIndex)
+            {
+                err = QString();
+                stat = InitFmtTableExec(pTable.data(), &err);
+
+                QApplication::processEvents();
+                QMessageBox msg(this);
+
+                if (stat)
+                {
+                    msg.setWindowTitle(QObject::tr("Ошибка"));
+                    msg.setIcon(QMessageBox::Critical);
+                    msg.setText(QObject::tr("<b>DbInit вернул код ошибки [%1]: %2</b>").arg(stat).arg(DbInitTextError(stat)));
+                }
+                else
+                {
+                    msg.setWindowTitle(QObject::tr("Результат выполнения"));
+                    msg.setIcon(QMessageBox::Information);
+                    msg.setText(QObject::tr("<b>DbInit завершился с кодом [%1]: %2</b>").arg(stat).arg(DbInitTextError(stat)));
+                }
+
+                if (err.size())
+                {
+                    msg.setDetailedText(err);
+                    QSpacerItem* horizontalSpacer = new QSpacerItem(500, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                    QGridLayout* layout = (QGridLayout*)msg.layout();
+                    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+                }
+                msg.exec();
+            }
+        }
+    });
+
+    connect(m_pInitCreateIndexAction, &QAction::triggered, [=]() {
+        QString err;
+        int stat = InitFmtTableExec(pTable.data(), &err);
+        QApplication::processEvents();
+
+        QMessageBox msg(this);
+
+        if (stat)
+        {
+            msg.setWindowTitle(QObject::tr("Ошибка"));
+            msg.setIcon(QMessageBox::Critical);
+            msg.setText(QObject::tr("<b>DbInit вернул код ошибки [%1]: %2</b>").arg(stat).arg(DbInitTextError(stat)));
+        }
+        else
+        {
+            msg.setWindowTitle(QObject::tr("Результат выполнения"));
+            msg.setIcon(QMessageBox::Information);
+            msg.setText(QObject::tr("<b>DbInit завершился с кодом [%1]: %2</b>").arg(stat).arg(DbInitTextError(stat)));
+        }
+
+        if (err.size())
+        {
+            msg.setDetailedText(err);
+            QSpacerItem* horizontalSpacer = new QSpacerItem(500, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+            QGridLayout* layout = (QGridLayout*)msg.layout();
+            layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+        }
+        msg.exec();
+    });
+}
+
+void FmtWorkWindow::initRibbonFieldsPanel()
+{
+    SARibbonPannel* Pannel = new SARibbonPannel(tr("Колонки"));
+    m_pFmtCategory->addPannel(Pannel);
+
+    m_MassRemoveFields = createAction(tr("Удалить"), "RemoveRow");
+    m_AddFieldsToEnd = createAction(tr("Добавить в конец"), "AddField");
+    m_InsertFields = createAction(tr("Добавить перед..."), "InsertField");
+    Pannel->addLargeAction(m_MassRemoveFields);
+    Pannel->addMediumAction(m_AddFieldsToEnd);
+    Pannel->addMediumAction(m_InsertFields);
+    Pannel->addSeparator();
+
+    m_CopyFields = createAction(tr("Копировать"), "CopyField");
+    Pannel->addLargeAction(m_CopyFields);
+
+    m_PasteFields = createAction(tr("Вставить"), "PasteField");
+    Pannel->addLargeAction(m_PasteFields);
+
+    connect(m_MassRemoveFields, &QAction::triggered, this, &FmtWorkWindow::RemoveTableFields);
+    connect(m_AddFieldsToEnd, &QAction::triggered, this, &FmtWorkWindow::AddFieldsToEnd);
+    connect(m_InsertFields, &QAction::triggered, this, &FmtWorkWindow::InsertFieldsBefore);
+    connect(m_CopyFields, &QAction::triggered, this, &FmtWorkWindow::CopyFields);
+    connect(m_PasteFields, &QAction::triggered, this, &FmtWorkWindow::PasteFields);
+}
+
+void FmtWorkWindow::initRibbonDataPanel()
+{
+    SARibbonPannel* Pannel = new SARibbonPannel(tr("Содержимое"));
+    m_pFmtCategory->addPannel(Pannel);
+
+    m_unloadDbf = createAction(tr("Выгрузить в *.dat"), "UnloadDbf");
+    Pannel->addLargeAction(m_unloadDbf);
+
+    m_loadDbf = createAction(tr("Загрузить из *.dat"), "LoadDbf");
+    Pannel->addMediumAction(m_loadDbf);
+
+    m_ImportFromTable = createAction(tr("Загрузить из Word"), "ImportRichText");
+    Pannel->addMediumAction(m_ImportFromTable);
+
+    connect(m_unloadDbf, &QAction::triggered, this, &FmtWorkWindow::UnloadToDbf);
+    connect(m_loadDbf, &QAction::triggered, this, &FmtWorkWindow::LoadFromDbf);
+    connect(m_ImportFromTable, &QAction::triggered, this, &FmtWorkWindow::ImportFromTable);
+}
+
+void FmtWorkWindow::initRibbonPanels()
+{
+    m_pFmtCategory = new SARibbonCategory(FMTTABLE_CONTEXTCATEGORY, ribbon());
+    m_pFmtCategory->setObjectName(pTable->name());
+
+    initRibbonFmtPanel();
+    initRibbonDataPanel();
+    initRibbonFieldsPanel();
+}
+
+void FmtWorkWindow::updateRibbonTabs()
+{
+    SARibbonContextCategory *context = findCategoryByName(FMTTABLE_CONTEXTCATEGORY);
+
+    if (!context)
+        return;
+
+    QList<SARibbonCategory*> oldCategories = context->categoryList();
+    for (SARibbonCategory *cat : qAsConst(oldCategories))
+        context->takeCategory(cat);
+
+    if (m_pFmtCategory)
+    {
+        if (!context->isHaveCategory(m_pFmtCategory))
+            context->addCategoryPage(m_pFmtCategory);
+    }
+
+    ribbon()->showContextCategory(context);
+    ribbon()->showCategory(m_pFmtCategory);
+}
+
+void FmtWorkWindow::clearRibbonTabs()
+{
+    SARibbonContextCategory *context = findCategoryByName(FMTTABLE_CONTEXTCATEGORY);
+
+    if (!context)
+        return;
+
+    if (m_pFmtCategory)
+    {
+        ribbon()->removeCategory(m_pFmtCategory);
+        ribbon()->hideCategory(m_pFmtCategory);
+    }
+
+    bool hasVisible = false;
+    QList<SARibbonCategory*> oldCategories = context->categoryList();
+    for (SARibbonCategory *cat : qAsConst(oldCategories))
+    {
+        if (ribbon()->isCategoryVisible(cat))
+        {
+            hasVisible = true;
+            break;
+        }
+    }
+
+    if (!hasVisible)
+        ribbon()->hideContextCategory(context);
 }

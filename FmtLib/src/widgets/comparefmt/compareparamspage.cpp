@@ -18,6 +18,18 @@ CompareParamsPage::CompareParamsPage(QWidget *parent) :
     m_pGroup->addButton(ui->radioConnection, 2);
     m_pGroup->addButton(ui->radioXml, 3);
 
+    ui->radioText->setIconSize(QSize(24, 24));
+    ui->radioText->setIcon(QIcon::fromTheme("CPPHeaderFile"));
+
+    ui->radioTable->setIconSize(QSize(24, 24));
+    ui->radioTable->setIcon(QIcon::fromTheme("Table"));
+
+    ui->radioConnection->setIconSize(QSize(24, 24));
+    ui->radioConnection->setIcon(QIcon::fromTheme("Database"));
+
+    ui->radioXml->setIconSize(QSize(24, 24));
+    ui->radioXml->setIcon(QIcon::fromTheme("DatabaseUnknown"));
+
     registerField("Action", fakeBtn, "value");
 
     connect(m_pGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled), [=](int id, bool checked)

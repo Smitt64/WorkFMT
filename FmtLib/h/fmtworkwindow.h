@@ -15,6 +15,8 @@ namespace Ui {
 class FmtWorkWindow;
 }
 
+#define FMTTABLE_CONTEXTCATEGORY tr("Таблица")
+
 class FmtFieldsDelegate;
 class FmtIndecesDelegate;
 class FmtFieldsTableView;
@@ -27,7 +29,7 @@ class QShortcut;
 class FmtFieldsTableHeaderDelegate;
 class FilteredTableWidget;
 class FmtFieldsTableViewFilterController;
-
+class SARibbonCategory;
 class FmtFieldsTableViewFilterController: public QObject, public FilteredControlHandler
 {
     Q_OBJECT
@@ -128,16 +130,24 @@ private slots:
     void onUserActionTriggered();
 
 protected:
-    void paintEvent(QPaintEvent *paintEvent);
+    void paintEvent(QPaintEvent *paintEvent) override;
     void keyPressEvent(QKeyEvent *event) override;
 
+    virtual void initRibbonPanels() Q_DECL_OVERRIDE;
+    virtual void updateRibbonTabs() Q_DECL_OVERRIDE;
+    virtual void clearRibbonTabs() Q_DECL_OVERRIDE;
+
 private:
+    void initRibbonFmtPanel();
+    void initRibbonFieldsPanel();
+    void initRibbonDataPanel();
+
     int CheckAppy();
     int SaveTable();
     void setupUndoRedo();
     void setupFind();
     void SetUnclosableSystemTabs();
-    int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget = nullptr);
+    int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget = nullptr, const QString &icon = QString());
     void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false, bool AddConvertButton = true);
     void AddCppCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
     void SetupActionsMenu();
@@ -181,6 +191,12 @@ private:
 
     QColor dcolor;
     QColor color;
+
+    SARibbonCategory* m_pFmtCategory;
+
+    QMenu *m_pInitTableMenu;
+    QAction *m_pInitTableMenuAction, *m_pInitCreateTableAction, *m_pInitCreateIndexAction;
+    QAction *m_pCheckAction;
 };
 
 #endif // FMTWORKWINDOW_H

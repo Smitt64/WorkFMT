@@ -318,7 +318,7 @@ HEADERS += \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
     src/core/fmttablecomparemodel.h \
-    src/core/mdiproxystyle.h \
+    h/mdiproxystyle.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
     src/models/tableobjectsmodel.h \

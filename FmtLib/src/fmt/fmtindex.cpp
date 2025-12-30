@@ -118,7 +118,14 @@ QVariant FmtIndex::data(int column, int role) const
         if (column == FmtIndecesModelItem::fld_Name)
         {
             if (isPrimary())
-                return QPixmap(":/img/PrimaryKeyHS.png");
+            {
+                //if (QIcon::themeName().isEmpty())
+                    return QPixmap(":/img/PrimaryKeyHS.png");
+                /*else
+                {
+                    return QIcon::fromTheme("KeyDown");
+                }*/
+            }
             else
                 return QVariant();
         }
