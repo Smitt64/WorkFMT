@@ -13,6 +13,7 @@ SUBDIRS += \
     DumpTool \
     FmtLib \
     FmtRslModule \
+    HfProjects \
     HotfixCreator \
     RegparmTool \
     WorkFMT \

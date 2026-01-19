@@ -200,3 +200,11 @@ DiffToScriptlib/debug/
 DatViewer/build/
 
 DatViewer/debug/
+
+HfProjects/release/
+
+DiffToScriptlib/release/
+
+DatViewer/release/
+
+RegparmTool/release/

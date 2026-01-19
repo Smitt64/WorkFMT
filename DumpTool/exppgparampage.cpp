@@ -6,6 +6,40 @@
 #include <QFileDialog>
 #include <QSettings>
 
+QDir GetPostgreSQLInstallLocation()
+{
+    QDir result;
+    //WOW6432Node
+    QSettings settings64("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", QSettings::NativeFormat);
+    QStringList childKeys = settings64.childGroups();
+
+    for (const QString &key : childKeys)
+    {
+        if (key.contains("PostgreSQL"))
+        {
+            settings64.beginGroup(key);
+            QString InstallLocation = settings64.value("InstallLocation").toString();
+
+            if (!InstallLocation.isEmpty())
+            {
+                QDir tmp(InstallLocation);
+
+                if (tmp.cd("bin"))
+                {
+                    if (QFile::exists(tmp.absoluteFilePath("pg_dump.exe")) &&
+                            QFile::exists(tmp.absoluteFilePath("psql.exe")))
+                    {
+                        result = tmp;
+                        break;
+                    }
+                }
+            }
+            settings64.endGroup();
+        }
+    }
+    return result;
+}
+
 ExpPgParamPage::ExpPgParamPage(QWidget *parent) :
     QWizardPage(parent),
     ui(new Ui::ExpPgParamPage)
@@ -18,12 +52,14 @@ ExpPgParamPage::ExpPgParamPage(QWidget *parent) :
     registerField("PgExpUser", ui->userImpEdit);
     registerField("PgExpDatabase", ui->databaseImpEdit);
     registerField("PgExpPath", ui->exportPath);
+    registerField("PgExpDumpPath", ui->dumpPath);
 
     connect(ui->selectServer, &QToolButton::clicked, this, &ExpPgParamPage::onSelectServer);
     connect(ui->serverImpEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->userImpEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->databaseImpEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->portImpBox, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
+    connect(ui->dumpPath, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
 }
 
 ExpPgParamPage::~ExpPgParamPage()
@@ -42,7 +78,8 @@ bool ExpPgParamPage::isComplete() const
             ui->userImpEdit->text().isEmpty() ||
             ui->databaseImpEdit->text().isEmpty() ||
             !ui->portImpBox->value() ||
-            !ui->exportPath->text().isEmpty())
+            !ui->exportPath->text().isEmpty() ||
+            !ui->dumpPath->text().isEmpty())
         return false;
 
     DumpToolWizard *wzrd = qobject_cast<DumpToolWizard*>(wizard());
@@ -87,40 +124,6 @@ void ExpPgParamPage::on_selfileButton_clicked()
 
     if (!filename.isEmpty())
         ui->exportPath->setText(filename);
-}
-
-QDir GetPostgreSQLInstallLocation()
-{
-    QDir result;
-    //WOW6432Node
-    QSettings settings64("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", QSettings::NativeFormat);
-    QStringList childKeys = settings64.childGroups();
-
-    for (const QString &key : childKeys)
-    {
-        if (key.contains("PostgreSQL"))
-        {
-            settings64.beginGroup(key);
-            QString InstallLocation = settings64.value("InstallLocation").toString();
-
-            if (!InstallLocation.isEmpty())
-            {
-                QDir tmp(InstallLocation);
-
-                if (tmp.cd("bin"))
-                {
-                    if (QFile::exists(tmp.absoluteFilePath("pg_dump.exe")) &&
-                            QFile::exists(tmp.absoluteFilePath("psql.exe")))
-                    {
-                        result = tmp;
-                        break;
-                    }
-                }
-            }
-            settings64.endGroup();
-        }
-    }
-    return result;
 }
 
 void ExpPgParamPage::on_addParamsBtn_clicked()
