@@ -287,7 +287,7 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
         {
             if (!Parents.contains(separated[i]))
             {
-                const SvnStatusElement &element = *((SvnStatusElement*)elem);
+                const SvnSatatusElement &element = *((SvnSatatusElement*)elem);
                 FolderContentTreeItem *realParent = !i ? parent : Parents[separated[i - 1]];
                 FolderContentTreeItem *item = dynamic_cast<FolderContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
 
@@ -302,7 +302,7 @@ ContentTreeItem *HotfixContentModel::makePathEx(FolderParents &Parents,
 
             if (elem)
             {
-                const SvnStatusElement &element = *((SvnStatusElement*)elem);
+                const SvnSatatusElement &element = *((SvnSatatusElement*)elem);
                 item = dynamic_cast<FileContentTreeItem*>(maker(realParent, separated[i], element.fullpath));
 
                 if (item)
@@ -380,13 +380,13 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
         return Templs;
     };
 
-    using ElementWrp = std::reference_wrapper<const SvnStatusElement>;
+    using ElementWrp = std::reference_wrapper<const SvnSatatusElement>;
     QList<ElementWrp> PackagesList;
     QList<ElementWrp> CrebankdistrList;
 
     for (int i = 0; i < svn.rowCount(); i++)
     {
-        const SvnStatusElement &element = svn.element(i);
+        const SvnSatatusElement &element = svn.element(i);
 
         QStringList separated = element.path.split("\\");
         if (element.path.contains("Source\\", Qt::CaseInsensitive) && !isExcludePath(element.path))
@@ -574,7 +574,7 @@ void HotfixContentModel::makeModel(const QString &source, const QString &dst, co
 
 void HotfixContentModel::makeAddFiles(FolderParents &Parents, const QString &path, Qt::HANDLE elem, FolderContentTreeItem *AddFiles)
 {
-    const SvnStatusElement &element = *((SvnStatusElement*)elem);
+    const SvnSatatusElement &element = *((SvnSatatusElement*)elem);
 
     PathMaker IdxMaker = [=](FolderContentTreeItem *parent, const QString &name, const QString &fullname) -> ContentTreeItem*
     {
@@ -763,13 +763,13 @@ void HotfixContentModel::makePgRoutes(SvnStatusModel *svn, FolderParents Parents
         return stdMakePathFunc(parent, name, fullname);
     };
 
-    using ElementWrp = std::reference_wrapper<const SvnStatusElement>;
+    using ElementWrp = std::reference_wrapper<const SvnSatatusElement>;
     QList<ElementWrp> ReleaseChangeList;
     QList<ElementWrp> PgSqlList;
 
     for (int i = 0; i < svn->rowCount(); i++)
     {
-        const SvnStatusElement &element = svn->element(i);
+        const SvnSatatusElement &element = svn->element(i);
 
         if (isFile(element.path))
         {
@@ -787,7 +787,7 @@ void HotfixContentModel::makePgRoutes(SvnStatusModel *svn, FolderParents Parents
     {
         if (!ReleaseChangeList.isEmpty())
         {
-            const SvnStatusElement &element = ReleaseChangeList[0].get();
+            const SvnSatatusElement &element = ReleaseChangeList[0].get();
 
             QFileInfo fi(element.fullpath);
             QString verstr = fi.path();
@@ -803,7 +803,7 @@ void HotfixContentModel::makePgRoutes(SvnStatusModel *svn, FolderParents Parents
 
         for (const auto &item : PgSqlList)
         {
-            const SvnStatusElement &element = item.get();
+            const SvnSatatusElement &element = item.get();
 
             QFileInfo fi(element.fullpath);
             QString verstr = fi.path();

@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QTranslator>
 #include <QMessageBox>
+#include <toolsruntime.h>
 
 int main(int argc, char *argv[])
 {
