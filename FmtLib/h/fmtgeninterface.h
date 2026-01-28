@@ -6,21 +6,24 @@
 #include "fmttable.h"
 #include "fmtlibfactory.h"
 #include "loggingcategories.h"
+#include "qobject.h"
 #include <codeeditor/codehighlighter.h>
 #include <codeeditor/highlighterstyle.h>
 #include <QTextCharFormat>
+#include <utility>
+#include <QMap>
 
 class FmtGenFinishEvent : public QEvent
 {
 public:
-    FmtGenFinishEvent(const QByteArray &data);
+    FmtGenFinishEvent(const QMap<QString, QByteArray> &data);
     static int getEventRegType();
 
-    QByteArray data() const { return _data; }
+    QMap<QString, QByteArray> data() const { return _data; }
 
 private:
     static QEvent::Type EventType;
-    QByteArray _data;
+    QMap<QString, QByteArray> _data;
 };
 
 class FmtGenInterface : public QObject
@@ -38,13 +41,14 @@ public:
     virtual void propertyEditor(QWidget *parent) { Q_UNUSED(parent) }
     virtual bool hasPropertes() const { return false; }
 
+    virtual QStringList tabs();
     virtual GenHighlightingRuleList highlightingRuleList() const;
 
 signals:
-    void finish(const QByteArray&);
+    void finish(const QMap<QString, QByteArray>&);
 
 protected:
-    virtual QByteArray makeContent(QSharedPointer<FmtTable> pTable) = 0;
+    virtual QMap<QString, QByteArray> makeContent(QSharedPointer<FmtTable> pTable) = 0;
 
 public:
     static FmtLibFactory<FmtGenInterface,QString> m_pGenInterfaceFactory;

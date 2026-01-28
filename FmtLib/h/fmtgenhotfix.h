@@ -12,7 +12,7 @@ public:
     virtual int getContentType() const { return HighlighterSql; }
 
 protected:
-    virtual QByteArray makeContent(QSharedPointer<FmtTable> pTable);
+    virtual QMap<QString, QByteArray> makeContent(QSharedPointer<FmtTable> pTable);
 };
 
 #endif // FMTGENHOTFIX_H

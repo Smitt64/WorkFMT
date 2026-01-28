@@ -34,7 +34,7 @@ void FmtGenCppTemplate::initSettings()
     GenCppSettings::ReadGenSettings(&prm);
 }
 
-QByteArray FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
+QMap<QString, QByteArray> FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
@@ -85,7 +85,7 @@ QByteArray FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
 
     stream.flush();
 
-    return data;
+    return QMap<QString, QByteArray>{{QString(), data}};
 }
 
 void FmtGenCppTemplate::propertyEditor(QWidget *parent)
@@ -825,4 +825,9 @@ void FmtGenCppTemplate::createDeclExtern(const FmtSharedTablePtr &pTable, QTextS
 GenHighlightingRuleList FmtGenCppTemplate::highlightingRuleList() const
 {
     return m_HighlightingRuleList;
+}
+
+QStringList FmtGenCppTemplate::tabs()
+{
+    return {};
 }

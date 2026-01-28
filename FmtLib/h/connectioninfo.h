@@ -120,6 +120,7 @@ protected:
     QList<FmtTablesModel*> pModels;
     QList<int> m_Index;
     int Index;
+    int m_GlobalId;
 
     QObject *m_SqlDatabaseObj;
 };

@@ -9,6 +9,7 @@ class FmtTablesModel;
 class TablesDockWidget;
 class ConnectionInfo;
 class ColoredTabWidget;
+class AddTabToolButton;
 class FMTLIBSHARED_EXPORT TablesDock : public QDockWidget
 {
     Q_OBJECT
@@ -37,8 +38,7 @@ private:
     ColoredTabWidget *pTabBar;
     ConnectionInfo *pInfo;
     QAbstractItemDelegate *pDelegate;
-    QPushButton *pAddButton;
-    //QFrame *pBtnContainer;
+    AddTabToolButton *pAddButton;
     QHBoxLayout *pLayout;
     QList<TablesDockWidget*> pWidget;
     QObject *pEventFilter;

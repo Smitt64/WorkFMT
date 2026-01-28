@@ -113,7 +113,20 @@ QVariant FmtTablesModel::data(const QModelIndex &item, int role) const
         QSqlRecord rec = record(item.row());
         QVariant comment = rec.value(fnc_Comment);
 
-        return comment.toString();
+        qint32 Flags = rec.value(fnc_Flags).toInt();
+        if (hasTemporaryFlag(Flags))
+        {
+            return QString("Временная: %1")
+                .arg(comment.toString());
+        }
+        else if (hasRecordFlag(Flags))
+        {
+            return QString("Структура: %1")
+                .arg(comment.toString());
+        }
+
+        return QString("Таблица: %1")
+            .arg(comment.toString());
     }
 
     if (role == Qt::DecorationRole)

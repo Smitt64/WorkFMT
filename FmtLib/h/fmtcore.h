@@ -217,7 +217,7 @@ FMTLIBSHARED_EXPORT QString BoolToString(bool value);
 FMTLIBSHARED_EXPORT QString BlobFieldTypeOraString(int type);
 FMTLIBSHARED_EXPORT QString BlobFieldTypePgString(int type);
 
-QColor GenerateColor();
+QColor GenerateColor(QObject* obj);
 void StartUnloadDbf(ConnectionInfo *current, const QString &table, QWidget *parent, QSettings *settings = nullptr);
 void StartLoadDbf(ConnectionInfo *current, const QString &table, QWidget *parent);
 void StartLoadDbfSelectFile(ConnectionInfo *current, const QString &table, QWidget *parent);

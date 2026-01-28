@@ -11,6 +11,8 @@
 #include <QBitmap>
 #include <QUuid>
 
+static int GlobalId = 0;
+
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     QObject(Q_NULLPTR),
     pModel(Q_NULLPTR),
@@ -22,8 +24,10 @@ ConnectionInfo::ConnectionInfo(const QString &dbalias) :
         _db = QSqlDatabase::database(m_Alias);
     pModel = addModel();
     //pModel->updateFmtList();
-    m_Color = GenerateColor();
+    m_Color = GenerateColor(this);
     m_Type = CON_NON;
+
+    m_GlobalId = ++GlobalId;
 }
 
 ConnectionInfo::~ConnectionInfo()

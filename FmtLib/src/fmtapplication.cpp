@@ -39,6 +39,7 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     QDir current(QDir::current());
     QApplication::setApplicationName("WorkFMT");
     QApplication::setApplicationVersion(GetVersionNumberString());
+    setWindowIcon(QIcon("://app-icon.svg"));
 
     QDir settingsDir = QDir(qApp->applicationDirPath());
     pSettings = new QSettings(settingsDir.absoluteFilePath("fmtopt.ini"), QSettings::IniFormat, this);

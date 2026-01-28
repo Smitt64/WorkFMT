@@ -121,7 +121,8 @@ void MassDestribProgressRun::run()
 
             if (element->UnloadCreateTables) {
                 FmtGenTablesSql gen;
-                QString code = QString::fromLocal8Bit(gen.makeContent(element->table));
+                QMap<QString, QByteArray> data = gen.makeContent(element->table);
+                QString code = QString::fromLocal8Bit(data.first());
                 QString UnloadCreateTablesTitle = QString("Выгрузка CreateTables для %1").arg(tableName);
                 emit message(UnloadCreateTablesTitle);
                 writefile(m_CreateTables, QString("%1.sql").arg(tableUpper), code);

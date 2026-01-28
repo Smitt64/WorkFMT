@@ -14,7 +14,7 @@ public:
     virtual GenHighlightingRuleList highlightingRuleList() const;
 
 protected:
-    virtual QByteArray makeContent(FmtSharedTablePtr pTable);
+    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable);
 
 private:
     void createClassDeclaration(const FmtSharedTablePtr &pTable, QTextStream &stream);

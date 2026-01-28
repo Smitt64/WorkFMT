@@ -1,5 +1,6 @@
 #include "fmtribbonmainwindow.h"
 #include "connectioninfo.h"
+#include "fmtfromrichtext.h"
 #include "fmttable.h"
 #include "fmttablelistdelegate.h"
 #include "fmtworkwindow.h"
@@ -89,9 +90,6 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
                     ribbonBar()->hideContextCategory(all);
             }
 
-            //m_ToolBoxDock->setModel(nullptr);
-            //m_PropertyDock->setPropertyModel(nullptr);
-            //m_PropertyDock->setStructModel(nullptr);
             m_LastActiveWindow = nullptr;
 
             return;
@@ -342,6 +340,8 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
 
     m_pActionCreateGroup = TablePannel->addLargeMenu(m_pMenuCreate, QToolButton::MenuButtonPopup);
 
+    m_pMenuCreate->addAction("TEST");
+
     m_pActionCopyTable = createAction(tr("Копировать таблицу"), "CopyTable");
     TablePannel->addSmallAction(m_pActionCopyTable);
 
@@ -375,9 +375,27 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     m_pActionConvertScript = createAction(tr("Конвертировать скрипт"), "TransferStoredProcedure");
     ToolsPannel->addMediumAction(m_pActionConvertScript);
 
+    auto FuncActionCreate = [=]()
+    {
+        ConnectionInfo *current = CurrentConnection();
+
+        if (current)
+        {
+            QSharedPointer<FmtTable> table(new FmtTable(current));
+            CreateDocument(table)->show();
+        }
+    };
+
+    connect(m_pActionCreateGroup, &QAction::triggered, FuncActionCreate);
+    connect(m_pActionCreate, &QAction::triggered, FuncActionCreate);
+
     connect(m_pActionConnect, &QAction::triggered, this, &FmtRibbonMainWindow::ActionConnectTriggered);
+    connect(m_pActionDisconnect, &QAction::triggered, this, &FmtRibbonMainWindow::DisconnectCurrent);
     connect(m_pOpenConnection, &QAction::triggered, this, &FmtRibbonMainWindow::OpenConnectionFile);
     connect(m_pActionGuiConverter, &QAction::triggered, this, &FmtRibbonMainWindow::StartGuiConverter);
+    connect(m_pSqliteAction, &QAction::triggered, this, &FmtRibbonMainWindow::UnloadSqlite);
+    connect(m_pConnectionsGallery, &SARibbonGallery::triggered, this, &FmtRibbonMainWindow::ConnectionActionSelected);
+
 
     QDir dir = QApplication::applicationDirPath();
     if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
@@ -402,7 +420,7 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
 
     connect(m_pActionConvertScript, &QAction::triggered, [=]()
     {
-        ConnectionInfo *connection = currentConnection();
+        ConnectionInfo *connection = CurrentConnection();
 
         SqlConvertorDlg dlg(this);
         dlg.setWindowIcon(QIcon::fromTheme("TransferStoredProcedure"));
@@ -411,6 +429,42 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
             dlg.setUserName(connection->user());
 
         dlg.exec();
+    });
+
+    connect(m_pActionCreateText, &QAction::triggered, [=]()
+    {
+        ConnectionInfo *current = CurrentConnection();
+
+        if (!current)
+            return;
+
+        FmtFromRichText wizard(current, this);
+        if (wizard.exec() == QDialog::Accepted)
+        {
+            QSharedPointer<FmtTable> table = wizard.fmtTable();
+            QMdiSubWindow *wnd = CreateDocument(table);
+            wnd->show();
+        }
+    });
+
+    connect(m_pActionCreateXml, &QAction::triggered, [=]()
+    {
+        ConnectionInfo *current = CurrentConnection();
+
+        if (!current)
+            return;
+
+        QString fileName = QFileDialog::getOpenFileName(this, QString(), QString(), "Файлы Fmt (*.xml);");
+        if (!fileName.isEmpty())
+        {
+            QSharedPointer<FmtTable> table(new FmtTable(current));
+
+            if (table->loadFromXml(fileName))
+            {
+                QMdiSubWindow *wnd = CreateDocument(table);
+                wnd->show();
+            }
+        }
     });
 }
 
@@ -446,6 +500,21 @@ ConnectionInfo* FmtRibbonMainWindow::openConnection()
     }
 
     return info;
+}
+
+ConnectionInfo *FmtRibbonMainWindow::CurrentConnection()
+{
+    QActionGroup* group = m_pConnectionsGalleryGroup->actionGroup();
+
+    if (!m_pConnectionsGallery->currentViewGroup()->currentIndex().isValid())
+        return nullptr;
+
+    int index = m_pConnectionsGallery->currentViewGroup()->currentIndex().row();
+
+    QAction *action = group->actions().at(index);
+    ConnectionInfo *current = reinterpret_cast<ConnectionInfo*>(action->data().toInt());
+
+    return current;
 }
 
 QAction *FmtRibbonMainWindow::CreateConnectionActio(ConnectionInfo *info)
@@ -579,7 +648,23 @@ void FmtRibbonMainWindow::showEvent(QShowEvent *event)
 
     setContentsMargins(2,2,2,2);
 
+    QSettings *s = settings();
+    restoreGeometry(s->value("Geometry").toByteArray());
+    restoreState(s->value("State").toByteArray());
+
     update();
+}
+
+void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
+{
+    SARibbonMainWindow::closeEvent(event);
+
+    QSettings *s = settings();
+    s->setValue("Geometry", saveGeometry());
+    s->setValue("State", saveState());
+    //pUpdateChecker->requestInterruption();
+    //pUpdateChecker->deleteLater();
+    event->accept();
 }
 
 void FmtRibbonMainWindow::StartGuiConverter()
@@ -591,7 +676,7 @@ void FmtRibbonMainWindow::StartGuiConverter()
 
     if (path.isEmpty())
     {
-        FmtOptionsDlg dlg(currentConnection(), setting, this);
+        FmtOptionsDlg dlg(CurrentConnection(), setting, this);
         OptionsPage *page = dlg.findPage<ExternalToolsPage*>();
 
         if (page)
@@ -632,20 +717,6 @@ void FmtRibbonMainWindow::StartGuiConverter()
     }
 }
 
-ConnectionInfo *FmtRibbonMainWindow::currentConnection()
-{
-    ConnectionInfo *cur = Q_NULLPTR;
-
-    QList<QAction*> ConnectionsGroup = m_pConnectionsGalleryGroup->actionGroup()->actions();
-    foreach (QAction *act, ConnectionsGroup)
-    {
-        if (act->isChecked())
-            cur = reinterpret_cast<ConnectionInfo*>(act->data().toInt());
-    }
-
-    return cur;
-}
-
 void FmtRibbonMainWindow::SetActiveFmtWindow(QMdiSubWindow *wnd)
 {
     wnd->setWindowState(Qt::WindowNoState);
@@ -655,7 +726,7 @@ void FmtRibbonMainWindow::SetActiveFmtWindow(QMdiSubWindow *wnd)
 QMdiSubWindow *FmtRibbonMainWindow::HasTableWindow(const QString &tableName)
 {
     QMdiSubWindow *find = Q_NULLPTR;
-    QList<QWidget*> lst = m_Windows[currentConnection()];
+    QList<QWidget*> lst = m_Windows[CurrentConnection()];
 
     QList<QWidget*>::Iterator iter = lst.begin();
     while(iter != lst.end())
@@ -679,7 +750,7 @@ QMdiSubWindow *FmtRibbonMainWindow::HasTableWindow(const QString &tableName)
 QMdiSubWindow *FmtRibbonMainWindow::HasTableWindow(const quint64 &tableID)
 {
     QMdiSubWindow *find = Q_NULLPTR;
-    QList<QWidget*> lst = m_Windows[currentConnection()];
+    QList<QWidget*> lst = m_Windows[CurrentConnection()];
 
     QList<QWidget*>::Iterator iter = lst.begin();
     while(iter != lst.end())
@@ -714,7 +785,6 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateMdiWindow(MdiSubInterface *window, Con
     //window->setPalette(m_pMdiStyle->standardPalette());
 
     //window->setPalette(m_pMdiStyle->standardPalette());
-    wnd->setWindowTitle(window->makeWindowTitle());
 
     connect(window, &MdiSubInterface::destroyed, [=](QObject *wnd)
     {
@@ -741,9 +811,11 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateMdiWindow(MdiSubInterface *window, Con
 QMdiSubWindow *FmtRibbonMainWindow::CreateDocument(QSharedPointer<FmtTable> &table, FmtWorkWindow **pWindow)
 {
     FmtWorkWindow *window = new FmtWorkWindow;
-    window->setFmtTable(table);
     //m_Windows[table->connection()].push_back(window);
     QMdiSubWindow *wnd = CreateMdiWindow(window, table->connection());
+
+    window->setFmtTable(table);
+    wnd->setWindowTitle(window->makeWindowTitle());
     wnd->setWindowIcon(QIcon(":/table"));
 
     connect(window, &FmtWorkWindow::accepted, wnd, &FmtRibbonMainWindow::deleteLater);
@@ -765,7 +837,7 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateDocument(QSharedPointer<FmtTable> &tab
 
 void FmtRibbonMainWindow::TableClicked(const quint32 &id)
 {
-    ConnectionInfo *current = currentConnection();
+    ConnectionInfo *current = CurrentConnection();
 
     if (!current)
         return;
@@ -783,9 +855,35 @@ void FmtRibbonMainWindow::TableClicked(const quint32 &id)
         SetActiveFmtWindow(wnd);
 }
 
+void FmtRibbonMainWindow::UnloadSqlite()
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    QSqlDatabase sqliteDB = QSqlDatabase::addDatabase("QSQLITE", "sqliteDBexport");
+    QString fname = QFileDialog::getSaveFileName(this, QString(), QString(), QString("Sqlite db (*.sqlite *.db)"));
+
+    if (!fname.isEmpty())
+    {
+        sqliteDB.setDatabaseName(fname);
+        if (sqliteDB.open())
+        {
+            if (!CloneFmtFromConnection(current->db(), sqliteDB, this))
+            {
+
+            }
+            sqliteDB.close();
+            QSqlDatabase::removeDatabase(fname);
+        }
+    }
+}
+
+
 void FmtRibbonMainWindow::UpdateActions()
 {
-    ConnectionInfo *cur = currentConnection();
+    ConnectionInfo *cur = CurrentConnection();
 
     bool HasConnection = cur ? true : false;
 
@@ -878,4 +976,71 @@ void FmtRibbonMainWindow::UpdateActions()
         ui->actionUnloadDbf->setEnabled(false);
         ui->actionLoadDbf->setEnabled(false);
     }*/
+}
+
+void FmtRibbonMainWindow::ConnectionActionSelected(QAction *action)
+{
+    ConnectionInfo *info = reinterpret_cast<ConnectionInfo*>(action->data().toInt());
+    pTablesDock->setConnection(info);
+
+    UpdateActions();
+}
+
+void FmtRibbonMainWindow::DisconnectCurrent()
+{
+    QActionGroup* group = m_pConnectionsGalleryGroup->actionGroup();
+    int index = m_pConnectionsGallery->currentViewGroup()->currentIndex().row();
+
+    QAction *action = group->actions().at(index);
+    ConnectionInfo *current = reinterpret_cast<ConnectionInfo*>(action->data().toInt());
+
+    if (!current)
+        return;
+
+    bool NeedClose = true;
+    if (!m_Windows[current].isEmpty())
+    {
+        if (QMessageBox::question(this, tr("Закрытие соеденения."), tr("Имеются незакрытые окна, работающие с соеденением <b>%1</b>. Завершить подключение?")
+                                  .arg(current->schemeName()),
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::No
+        )
+            NeedClose = false;
+    }
+
+    if (!NeedClose)
+        return;
+
+    current->db().close();
+    pTablesDock->closeConnection();
+    group->removeAction(action);
+
+    SARibbonGalleryItem *GallaryItem = m_pConnectionsGallery->currentViewGroup()->groupModel()->take(index);
+    delete GallaryItem;
+
+    QList<QMdiSubWindow*> windows = pMdi->subWindowList();
+    foreach (QMdiSubWindow *w, windows)
+    {
+        FmtWorkWindow *doc = (FmtWorkWindow*)w->widget();
+        if (doc->connection() == current)
+        {
+            doc->clearRibbonTabs();
+            w->deleteLater();
+        }
+    }
+
+    QList<QAction*> actions = group->actions();
+    if (!actions.isEmpty())
+    {
+        actions[0]->setChecked(true);
+        ConnectionActionSelected(actions[0]);
+    }
+
+    pWindowsModel->removeConnection(current);
+    m_pConnectionsGallery->update();
+    m_pConnectionsGalleryGroup->update();
+
+    delete action;
+    delete current;
+
+    UpdateActions();
 }

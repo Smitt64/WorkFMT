@@ -1,4 +1,5 @@
 #include "MDIProxyStyle.h"
+#include "qdatetime.h"
 #include <QApplication>
 #include <QPainterPath>
 #include <QMdiSubWindow>
@@ -692,14 +693,17 @@ QStyle::SubControl MDIProxyStyle::hitTestComplexControl(ComplexControl cc, const
 {
     // Для заголовка QMdiSubWindow
     const QMdiSubWindow *window = qobject_cast<const QMdiSubWindow*>(widget);
-    if (cc == CC_TitleBar && widget && window) {
-        if (const QStyleOptionTitleBar *titleBarOpt = qstyleoption_cast<const QStyleOptionTitleBar*>(opt)) {
+    if (cc == CC_TitleBar && widget && window)
+    {
+        //if (const QStyleOptionTitleBar *titleBarOpt = qstyleoption_cast<const QStyleOptionTitleBar*>(opt))
+        {
             // Проверяем кнопки в правильном порядке (справа налево)
 
             // 1. Кнопка закрытия
             QRect closeRect = subControlRect(cc, opt, SC_TitleBarCloseButton, widget);
             if (closeRect.isValid() && closeRect.contains(pos)) {
                 //qDebug() << "SC_TitleBarCloseButton";
+                qDebug() << QTime::currentTime() << closeRect;
                 return SC_TitleBarCloseButton;
             }
 
@@ -734,7 +738,7 @@ QStyle::SubControl MDIProxyStyle::hitTestComplexControl(ComplexControl cc, const
     }
 
     // Для MDI контролов в QMdiArea
-    if (cc == CC_MdiControls) {
+    /*if (cc == CC_MdiControls) {
         // Проверяем кнопки управления MDI
         QRect closeRect = subControlRect(cc, opt, SC_MdiCloseButton, widget);
         if (closeRect.isValid() && closeRect.contains(pos)) {
@@ -751,7 +755,7 @@ QStyle::SubControl MDIProxyStyle::hitTestComplexControl(ComplexControl cc, const
         if (minRect.isValid() && minRect.contains(pos)) {
             return SC_MdiMinButton;
         }
-    }
+    }*/
 
     // По умолчанию используем базовый класс
     return QProxyStyle::hitTestComplexControl(cc, opt, pos, widget);
@@ -863,4 +867,17 @@ QPalette MDIProxyStyle::standardPalette() const
     pal.setColor(QPalette::Midlight, lighterColor); // #E8F7F0 или аналогичный
 
     return pal;
+}
+
+void MDIProxyStyle::addSubElementRectForWidget(QWidget *widget, QStyle::SubElement se, const QRect &rect)
+{
+    m_subElementRectW.insert(qMakePair(widget, se), rect);
+}
+
+QRect MDIProxyStyle::subElementRect(QStyle::SubElement element, const QStyleOption *option, const QWidget *widget) const
+{
+    if (m_subElementRectW.contains(qMakePair((QWidget*)widget, element)))
+        return m_subElementRectW[qMakePair((QWidget*)widget, element)];
+
+    return QProxyStyle::subElementRect(element, option, widget);
 }

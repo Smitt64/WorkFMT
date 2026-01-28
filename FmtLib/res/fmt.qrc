@@ -130,5 +130,7 @@
         <file>theme-office2013-green.qss</file>
         <file>theme-office2013-subwindow.qss</file>
         <file>app-icon.svg</file>
+        <file>img/svg/Close_16x.svg</file>
+        <file>img/svg/Close_red_16x.svg</file>
     </qresource>
 </RCC>

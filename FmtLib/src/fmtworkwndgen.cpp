@@ -12,13 +12,7 @@
 #include <QDir>
 #include <QRegularExpression>
 #include "rslexecutors/generatorrslexecutor.h"
-
-typedef struct
-{
-    QString macro;
-    QString alias;
-    QString highlighter;
-}GeneratorsMacroElement;
+#include "src/models/generatorsproxymodel.h"
 
 class GenMacroExecutor : public FmtGenInterface
 {
@@ -35,180 +29,16 @@ public:
     }
 
 protected:
-    virtual QByteArray makeContent(FmtSharedTablePtr pTable)
+    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable)
     {
         GeneratorRslExecutor executor(m_Data.macro, pTable.data());
         executor.execute();
 
-        return executor.data();
+        return QMap<QString, QByteArray>{{QString(), executor.data()}};
     }
 
 private:
     GeneratorsMacroElement m_Data;
-};
-
-class GeneratorsProxyModel : public QAbstractProxyModel
-{
-public:
-    GeneratorsProxyModel(QObject* parent = nullptr) :
-        QAbstractProxyModel(parent)
-    {
-        QDir appdir(qApp->applicationDirPath());
-
-        if (appdir.cd("mac") && appdir.cd("fmtcore") && appdir.cd("generators"))
-        {
-            QFileInfoList generators = appdir.entryInfoList({"*.mac"}, QDir::Files);
-
-            for (const QFileInfo &info : generators)
-            {
-                m_MacroList.append({info.absoluteFilePath(), info.baseName()});
-                ReadFileInfo(m_MacroList.back());
-            }
-        }
-    }
-
-    QString ReadValue(const QString &value, const QString &content)
-    {
-        int pos = content.indexOf(value + ":");
-
-        if (pos!= -1) 
-        {
-            int pos2 = content.indexOf("\n", pos);
-            return content.mid(pos + value.length() + 1, pos2 - pos - value.length() - 1).simplified().trimmed();
-        }
-
-        return QString();
-    }
-
-    void ReadFileInfo(GeneratorsMacroElement &elem)
-    {
-        QFile f(elem.macro);
-        if (f.open(QIODevice::ReadOnly))
-        {
-            QRegularExpression rx("\\/\\*[\\s\\S]*?\\*\\/");
-
-            QTextStream stream(&f);
-            stream.setCodec("IBM 866");
-            QString content = stream.readAll();
-
-            QRegularExpressionMatch match = rx.match(content);
-            if (match.hasMatch())
-            {
-                QString matched = match.captured();
-
-                elem.alias = ReadValue("Title", matched);
-                elem.highlighter = ReadValue("Highlighter", matched);
-            }
-            f.close();
-        }
-    }
-
-    virtual ~GeneratorsProxyModel()
-    {
-
-    }
-
-    virtual QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE
-    {
-        return QModelIndex();
-    }
-
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE
-    {
-        if (parent.isValid())
-            return 0;
-
-        return sourceModel()->columnCount();
-    }
-
-    virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const Q_DECL_OVERRIDE
-    {
-        if(!sourceModel())
-            return QModelIndex();
-
-        return index(sourceIndex.row(), sourceIndex.column(), QModelIndex());
-    }
-
-    virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const Q_DECL_OVERRIDE
-    {
-        if(!sourceModel())
-            return QModelIndex();
-
-        if (proxyIndex.row() < sourceModel()->rowCount())
-            return sourceModel()->index(proxyIndex.row(), proxyIndex.column());
-
-        return QModelIndex();
-    }
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE
-    {
-        if (!sourceModel() || parent.isValid())
-            return 0;
-
-        return sourceModel()->rowCount() + m_MacroList.size();
-    }
-
-    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE
-    {
-        if (parent.isValid())
-            return QModelIndex();
-
-        return createIndex(row, column);
-    }
-
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const
-    {
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren;
-    }
-
-    virtual bool hasChildren(const QModelIndex &parent = QModelIndex())
-    {
-        return false;
-    }
-
-    virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE
-    {
-        if (index.row() < sourceModel()->rowCount())
-        {
-            if (role == Qt::DisplayRole)
-                return sourceModel()->data(mapToSource(index), role);
-            else if (role == Qt::DecorationRole)
-                return QIcon(":/img/codewin.png");
-
-            return sourceModel()->data(mapToSource(index), role);
-        }
-        else
-        {
-            int idx = index.row() - sourceModel()->rowCount();
-            if (role == Qt::DisplayRole)
-            {
-                if (index.column() == GenInterfaceFactoryModel::FieldAlias)
-                    return m_MacroList[idx].alias;
-                else
-                    return QString("macro:%1").arg(m_MacroList[idx].macro);
-            }
-            else if (role == Qt::EditRole)
-            {
-                if (index.column() == GenInterfaceFactoryModel::FieldAlias)
-                    return m_MacroList[idx].macro;
-            }
-            else if (role == Qt::DecorationRole)
-                return QIcon(":/img/script.png");
-        }
-
-        return QVariant();
-    }
-
-    GeneratorsMacroElement getMacroElement(const QModelIndex &index)
-    {
-        if (index.row() >= sourceModel()->rowCount())
-            return m_MacroList[sourceModel()->rowCount() - index.row()];
-
-        return GeneratorsMacroElement();
-    }
-
-private:
-    QList<GeneratorsMacroElement> m_MacroList;
 };
 
 FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :

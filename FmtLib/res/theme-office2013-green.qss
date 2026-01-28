@@ -444,7 +444,6 @@ QDockWidget::title {
     font-family: 'Segoe UI';
 }
 
-/* Когда док-виджет активен/выделен */
 QDockWidget:focus::title {
     background-color: white;
     color: #217346;
@@ -454,7 +453,6 @@ QDockWidget:focus::title {
     border-top: 2px solid #217346;
 }
 
-/* Ховер на заголовок */
 QDockWidget::title:hover {
     background-color: #e6f2fc;
     color: #217346;
@@ -490,17 +488,25 @@ QDockWidget > QWidget {
     border: none;
 }
 
-QDockWidget QTabWidget::pane {
-    /*border: 1px solid #217346;*/
+QDockWidget ColoredTabWidget::pane {
+    border: 1px solid #217346;
+	border: none;
     background-color: white;
+}
+
+ColoredTabWidget {
+	background-color: white;
+	color: #217346;
+	border: none;
 }
 
 SARibbonMainWindow > QTabBar {
     background-color: #F8F8F8;
-	color: #217346
+	color: #217346;
+	border: none;
 }
 
-QDockWidget QTabBar::tab {
+TablesDockWidget QTabBar::tab {
     background-color: #f8f8f8;
     color: #333333;
     border: 1px solid #c5d2e0;
@@ -510,14 +516,14 @@ QDockWidget QTabBar::tab {
     font-size: 8pt;
 }
 
-QDockWidget QTabBar::tab:selected {
+TablesDockWidget QTabBar::tab:selected {
     background-color: white;
     color: #217346;
     border: 1px solid #217346;
     border-bottom: 1px solid white;
 }
 
-QDockWidget QTabBar::tab:hover:!selected {
+TablesDockWidget QTabBar::tab:hover:!selected {
     background-color: #e6f2fc;
     color: #217346;
 }
@@ -642,4 +648,227 @@ TablesDockWidget > QListView::indicator {
     width: 16px;
     height: 16px;
     margin-right: 4px;
+}
+
+/* Базовый стиль для всех контекстных меню */
+QMenu {
+    background-color: #ffffff;
+    border: 1px solid #c5d2e0;
+    color: #333333;
+    font-family: 'Segoe UI';
+    font-size: 9pt;
+    padding: 1px 0px; /* Уменьшено сверху и снизу */
+    margin: 0px;
+}
+
+/* Элементы меню */
+QMenu::item {
+    background-color: transparent;
+    color: #333333;
+    padding: 4px 25px 4px 25px; /* Уменьшено сверху и снизу, было 5px */
+    margin: 0px 1px;
+    border: 1px solid transparent;
+    min-height: 20px; /* Уменьшена минимальная высота, было 22px */
+    font-weight: normal;
+}
+
+/* Элемент меню с иконкой - специальные отступы */
+QMenu::item:has-icon {
+    padding-left: 28px; /* Немного уменьшено, было 30px */
+}
+
+/* Элемент меню по умолчанию - ЖИРНЫЙ ШРИФТ */
+QMenu::item[default="true"] {
+    font-weight: bold;
+    color: #217346;
+}
+
+/* Элемент меню при наведении */
+QMenu::item:selected {
+    background-color: #d5f0e2;
+    color: #000000;
+    border: 1px solid #c2e8d1;
+}
+
+/* Элемент меню по умолчанию при наведении */
+QMenu::item[default="true"]:selected {
+    font-weight: bold;
+    color: #1a5c38;
+    background-color: #d5f0e2;
+}
+
+/* Элемент меню с включенным состоянием */
+QMenu::item:enabled {
+    color: #333333;
+}
+
+/* Элемент меню с отключенным состоянием */
+QMenu::item:disabled {
+    color: #b2b2b2;
+    background-color: transparent;
+    font-weight: normal;
+}
+
+/* Элемент меню с отключенным состоянием и по умолчанию */
+QMenu::item[default="true"]:disabled {
+    color: #94b09c;
+    font-weight: normal;
+}
+
+/* Стиль для иконки в меню */
+QMenu::icon {
+    position: absolute;
+    left: 4px; /* Немного уменьшен отступ */
+    width: 16px;
+    height: 16px;
+}
+
+/* Элемент меню с галочкой (checked) */
+QMenu::item:checked {
+    background-color: #e8f5ee;
+    border: 1px solid #c2e8d1;
+}
+
+/* Стиль для разделителя в меню */
+QMenu::separator {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 3px 10px; /* Уменьшено сверху и снизу, было 4px */
+}
+
+/* Подменю (меню второго уровня) */
+QMenu::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+/* Стрелка подменю - позиционируем справа */
+QMenu::right-arrow {
+    image: url(:/SARibbon/image/resource/ArrowRight.png);
+    width: 8px;
+    height: 8px;
+    margin-right: 5px;
+}
+
+/* Галочка выбранного элемента */
+QMenu::indicator:checked {
+    image: url(:/SARibbon/image/resource/Checkmark.svg);
+    background-color: transparent;
+    margin-left: 2px; /* Уменьшено, было 3px */
+}
+
+/* Радиокнопка в меню */
+QMenu::indicator:exclusive:checked {
+    image: url(:/SARibbon/image/resource/RadioChecked.svg);
+    margin-left: 2px; /* Уменьшено, было 3px */
+}
+
+QMenu::indicator:exclusive:unchecked {
+    image: url(:/SARibbon/image/resource/RadioUnchecked.svg);
+    margin-left: 2px; /* Уменьшено, было 3px */
+}
+
+/* Специальные стили для иконок в меню */
+QMenu::item:has-icon:checked {
+    padding-left: 28px; /* Уменьшено, было 30px */
+}
+
+/* Стили для подменю */
+QMenu QMenu {
+    background-color: #ffffff;
+    border: 1px solid #c5d2e0;
+    margin-left: 1px; /* Уменьшено, было 2px */
+}
+
+/* Стиль для заголовка меню (например, в каскадных меню) */
+QMenu::title {
+    background-color: #f0f0f0;
+    color: #666666;
+    padding: 4px 10px; /* Уменьшено сверху и снизу, было 5px */
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Стиль для акселераторов (горячих клавиш) в меню */
+QMenu::item:selected QLabel {
+    color: #000000;
+}
+
+QMenu::item:!selected QLabel {
+    color: #666666;
+}
+
+/* Элемент меню по умолчанию - акселератор */
+QMenu::item[default="true"] QLabel {
+    color: #217346;
+    font-weight: bold;
+}
+
+QMenu::item[default="true"]:selected QLabel {
+    color: #1a5c38;
+}
+
+QMenu::item:default {
+    font-weight: bold; /* Bold the default action */
+}
+
+/* Стиль для меню в панелях инструментов */
+QToolBar > QMenu {
+    border: 1px solid #c5d2e0;
+    margin-top: 2px; /* Уменьшено, было 3px */
+}
+
+/* Стиль для меню в QComboBox */
+QComboBox QMenu {
+    min-width: 180px; /* Немного уменьшено, было 200px */
+}
+
+/* Стиль для меню в QPushButton */
+QPushButton::menu-indicator {
+    width: 14px; /* Уменьшено, было 16px */
+    height: 14px; /* Уменьшено, было 16px */
+    subcontrol-position: right center;
+}
+
+/* Стиль для меню в QMenuBar (основное меню приложения) */
+QMenuBar {
+    background-color: #f8f8f8;
+    border: none;
+    color: #333333;
+    font-family: 'Segoe UI';
+    font-size: 9pt;
+    padding: 2px 0px; /* Добавлены небольшие отступы */
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 15px; /* Уменьшено сверху и снизу, было 5px */
+    margin: 0px 1px;
+    border: 1px solid transparent;
+    min-height: 18px; /* Добавлена минимальная высота */
+}
+
+QMenuBar::item:selected {
+    background-color: #d5f0e2;
+    border: 1px solid #c2e8d1;
+    color: #000000;
+}
+
+QMenuBar::item:pressed {
+    background-color: #a8e6bd;
+    border: 1px solid #34a852;
+}
+
+/* Элемент меню в QMenuBar по умолчанию */
+QMenuBar::item[default="true"] {
+    font-weight: bold;
+    color: #217346;
+}
+
+/* Стрелка вправо для каскадных меню в QMenuBar */
+QMenuBar::right-arrow {
+    image: url(:/SARibbon/image/resource/ArrowDown.png);
+    width: 8px;
+    height: 8px;
+    margin-left: 5px;
 }

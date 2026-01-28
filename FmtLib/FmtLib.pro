@@ -33,6 +33,7 @@ SOURCES += \
     rslexecutors/checksaveexecutor.cpp \
     rslexecutors/generatorrslexecutor.cpp \
     rslexecutors/toolbaractionexecutor.cpp \
+    src/core/colormanager.cpp \
     src/core/fmttablecomparemodel.cpp \
     src/core/mdiproxystyle.cpp \
     src/debugconnect.cpp \
@@ -48,6 +49,7 @@ SOURCES += \
     src/fmtworkwindow.cpp \
     src/mainwindow.cpp \
     src/massop/destribcreate/massdestribprogress.cpp \
+    src/models/generatorsproxymodel.cpp \
     src/models/odbctablemodel.cpp \
     src/models/odbctablemodeldelegate.cpp \
     src/models/tableobjectsmodel.cpp \
@@ -62,6 +64,7 @@ SOURCES += \
     src/widgets/comparefmt/comparexmlpage.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
+    src/widgets/fmtworkwindow/fmtwindowtabinterface.cpp \
     src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
     src/widgets/sqlconvertordlg.cpp \
@@ -317,10 +320,12 @@ HEADERS += \
     rslexecutors/checksaveexecutor.h \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
+    src/core/colormanager.h \
     src/core/fmttablecomparemodel.h \
     h/mdiproxystyle.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
+    src/models/generatorsproxymodel.h \
     src/models/tableobjectsmodel.h \
     src/queryeditor/queryeditor.h \
     src/widgets/comparefmt/comparecppstructpage.h \
@@ -371,6 +376,7 @@ HEADERS += \
     h/odbctablemodeldelegate.h \
     h/recentconnectionlist.h \
     h/tnsnames.h \
+    src/widgets/fmtworkwindow/fmtwindowtabinterface.h \
     src/widgets/guiconverterdlg.h \
     src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h \

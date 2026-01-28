@@ -17,7 +17,7 @@ GenHighlightingRuleList FmtGenInputServiceCppTemplate::highlightingRuleList() co
     return m_HighlightingRuleList;
 }
 
-QByteArray FmtGenInputServiceCppTemplate::makeContent(FmtSharedTablePtr pTable)
+QMap<QString, QByteArray> FmtGenInputServiceCppTemplate::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
@@ -66,7 +66,7 @@ QByteArray FmtGenInputServiceCppTemplate::makeContent(FmtSharedTablePtr pTable)
     stream << "// case RSB_OFFFORMLNK_SERVICE:" << Qt::endl;
     createGetSelectIDForService(pTable, stream);
 
-    return data;
+    return QMap<QString, QByteArray>{{QString(), data}};
 }
 
 void FmtGenInputServiceCppTemplate::createGetSelectIDForService(const FmtSharedTablePtr &pTable, QTextStream &stream)

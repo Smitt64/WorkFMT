@@ -27,7 +27,6 @@ public:
     FmtRibbonMainWindow(QWidget *parent = nullptr);
     virtual ~FmtRibbonMainWindow();
 
-    ConnectionInfo *currentConnection();
     void OpenConnection(const QString &connectionString);
 
     QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
@@ -35,17 +34,24 @@ public:
 
     void UpdateActions();
 
+    ConnectionInfo *CurrentConnection();
+
+    void DisconnectCurrent();
+
 private slots:
     void ActionConnectTriggered();
     void OpenConnectionFile();
     void StartGuiConverter();
     void TableClicked(const quint32 &id);
+    void UnloadSqlite();
 
 protected:
     //virtual void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
     virtual void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+    virtual void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private:
+    void ConnectionActionSelected(QAction *action);
     ConnectionInfo* openConnection();
     QAction *CreateConnectionActio(ConnectionInfo *info);
 

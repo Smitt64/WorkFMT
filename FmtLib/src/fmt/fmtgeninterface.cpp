@@ -5,7 +5,7 @@
 FmtLibFactory<FmtGenInterface,QString> FmtGenInterface::m_pGenInterfaceFactory;
 QEvent::Type FmtGenFinishEvent::EventType = QEvent::None;
 
-FmtGenFinishEvent::FmtGenFinishEvent(const QByteArray &data)
+FmtGenFinishEvent::FmtGenFinishEvent(const QMap<QString, QByteArray> &data)
     : QEvent((QEvent::Type)FmtGenFinishEvent::getEventRegType())
 {
     _data = data;
@@ -32,7 +32,7 @@ public:
 
     virtual void run()
     {
-        QByteArray data = pInterface->makeContent(m_pTable);
+        QMap<QString, QByteArray> data = pInterface->makeContent(m_pTable);
         QApplication::postEvent(pInterface, new FmtGenFinishEvent(data));
     }
 
@@ -52,7 +52,7 @@ void FmtGenInterface::start(QSharedPointer<FmtTable> pTable)
     if (!pTable.isNull())
         QThreadPool::globalInstance()->start(new FmtGenInterfaceRunnable(pTable, this));
     else
-        emit finish(QByteArray());
+        emit finish(QMap<QString, QByteArray>());
 }
 
 bool FmtGenInterface::event(QEvent *e)
@@ -71,6 +71,11 @@ bool FmtGenInterface::event(QEvent *e)
 GenHighlightingRuleList FmtGenInterface::highlightingRuleList() const
 {
     return GenHighlightingRuleList();
+}
+
+QStringList FmtGenInterface::tabs()
+{
+    return {};
 }
 
 //---------------------------------------------------------------------

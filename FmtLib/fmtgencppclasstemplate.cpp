@@ -19,7 +19,7 @@ GenHighlightingRuleList FmtGenCppClassTemplate::highlightingRuleList() const
     return m_HighlightingRuleList;
 }
 
-QByteArray FmtGenCppClassTemplate::makeContent(FmtSharedTablePtr pTable)
+QMap<QString, QByteArray> FmtGenCppClassTemplate::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
@@ -44,7 +44,7 @@ QByteArray FmtGenCppClassTemplate::makeContent(FmtSharedTablePtr pTable)
     stream << Qt::endl << "// ptr_pt.c" << Qt::endl;
     createRslClassDefenition(pTable, stream);
 
-    return data;
+    return QMap<QString, QByteArray>{{QString(), data}};
 }
 
 void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTable, QTextStream &stream)

@@ -10,7 +10,7 @@
 class QPaintEvent;
 class QStyleOptionButton;
 class QStyleOptionTitleBar;
-class MDIProxyStyle : public QProxyStyle
+class FMTLIBSHARED_EXPORT MDIProxyStyle : public QProxyStyle
 {
     Q_OBJECT
 
@@ -55,6 +55,9 @@ public:
     // Загрузка иконок из ресурсов SARibbon
     void loadSARibbonIcons();
 
+    void addSubElementRectForWidget(QWidget *widget, QStyle::SubElement se, const QRect &rect);
+    QRect subElementRect(QStyle::SubElement element, const QStyleOption *option, const QWidget *widget = nullptr) const override;
+
 private:
     // Иконки для кнопок (загружаются из SARibbon)
     QIcon closeIcon;
@@ -63,6 +66,8 @@ private:
     QIcon restoreIcon;
 
     QColor mainAppColor;
+
+    QHash<QPair<QWidget*, QStyle::SubElement>, QRect> m_subElementRectW;
 
     // Рисуем зеленую рамку для QMdiSubWindow
     void drawMdiSubWindowFrame(const QStyleOption *option,

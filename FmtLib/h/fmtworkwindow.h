@@ -41,6 +41,8 @@ private:
     FmtFieldsDelegate *pDelegate;
 };
 
+class GeneratorsProxyModel;
+class GenInterfaceFactoryModel;
 class FMTLIBSHARED_EXPORT FmtWorkWindow : public MdiSubInterface
 {
     Q_OBJECT
@@ -69,6 +71,8 @@ public:
     QObject* tableProp() const { return pTable.data(); }
 
     void execUserAction(const QString &macro);
+
+    virtual void clearRibbonTabs() Q_DECL_OVERRIDE;
 
 signals:
 
@@ -135,12 +139,12 @@ protected:
 
     virtual void initRibbonPanels() Q_DECL_OVERRIDE;
     virtual void updateRibbonTabs() Q_DECL_OVERRIDE;
-    virtual void clearRibbonTabs() Q_DECL_OVERRIDE;
 
 private:
     void initRibbonFmtPanel();
     void initRibbonFieldsPanel();
     void initRibbonDataPanel();
+    void initRibbonCodeTemplatesPanel();
 
     int CheckAppy();
     int SaveTable();
@@ -167,14 +171,15 @@ private:
     QSpacerItem *pHorizontalSpacer;
     QPushButton *pAddIndex;
 
-    QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu, *pUserActionsMenu;
+    QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu, *pUserActionsMenu, *pGenCppCodeMenu;
     QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_MassRemoveFields;
     QAction *m_unloadDbf, *m_loadDbf, *m_ImportData, *m_ImportFromTable;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript, *m_pCompareFmt;
-    QAction *m_TableObjects;
-    QAction *m_CheckAction;
+    QAction *m_TableObjects, *pGenCodeAction;
+    QAction *m_DiffToScript;
+
     FmtWorkWndGen *pCodeGenWidget;
 
     QFrame *pUndoRedoBtnContainer;
@@ -197,6 +202,9 @@ private:
     QMenu *m_pInitTableMenu;
     QAction *m_pInitTableMenuAction, *m_pInitCreateTableAction, *m_pInitCreateIndexAction;
     QAction *m_pCheckAction;
+
+    GenInterfaceFactoryModel *m_pGeneratorsModel;
+    GeneratorsProxyModel *m_pGeneratorsProxyModel;
 };
 
 #endif // FMTWORKWINDOW_H

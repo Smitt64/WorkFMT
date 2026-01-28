@@ -1,4 +1,5 @@
 #include "fmtworkwindow.h"
+#include "geninterfacefactorymodel.h"
 #include "ui_fmtworkwindow.h"
 #include "fmtfieldsdelegate.h"
 #include "fmtindecesdelegate.h"
@@ -37,6 +38,7 @@
 #include "mainwindow.h"
 #include "fmtapplication.h"
 #include "src/widgets/tablestructsqldlg.h"
+#include "src/models/generatorsproxymodel.h"
 #include "widgets/comparefmt/comparefmtwizard.h"
 #include "src/core/fmttablecomparemodel.h"
 #include "wizards/RichTextToInsertWizard/richtexttoinsertwizard.h"
@@ -90,6 +92,10 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     pTable(Q_NULLPTR)
 {
     ui->setupUi(this);
+    m_pGeneratorsModel = new GenInterfaceFactoryModel(this);
+    m_pGeneratorsProxyModel = new GeneratorsProxyModel(this);
+    m_pGeneratorsProxyModel->setSourceModel(m_pGeneratorsModel);
+
     pMapper = new QDataWidgetMapper(this);
 
     pFieldsDelegate = new FmtFieldsDelegate(this);
@@ -118,6 +124,9 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     ui->tabWidget->widget(1)->layout()->addItem(pHBoxLayout);
     ui->tabWidget->widget(1)->layout()->addWidget(pTreeView);
 
+    //ui->tabWidget->setDocumentMode(true);
+
+
     QList<QAbstractButton*> pButtomList = ui->buttonBox->buttons();
     foreach (QAbstractButton *pBtn, pButtomList) {
         QPushButton *btn = qobject_cast<QPushButton*>(pBtn);
@@ -145,10 +154,8 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     connect(pAddIndex, SIGNAL(clicked(bool)), SLOT(AddIndex()));
     connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked(bool)), SLOT(Apply()));
     connect(ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked(bool)), SLOT(OnOk()));
-    connect(ui->pushButton, SIGNAL(clicked(bool)), SLOT(InitDB()));
     connect(pTableView, SIGNAL(clicked(QModelIndex)), SLOT(Clicked(QModelIndex)));
     connect(pTreeView, SIGNAL(clicked(QModelIndex)), SLOT(SegmentButtonClicked(QModelIndex)));
-    connect(ui->checkButton, SIGNAL(clicked(bool)), SLOT(CheckTable()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(TabCloseRequested(int)));
     connect(ui->scriptButton, SIGNAL(clicked(bool)), SLOT(OpenScriptEditorWindow()));
 }
@@ -175,11 +182,7 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu->addSeparator();
     //m_CopyFields = pActionsMenu->addAction(QIcon(":/img/CopyHS.png"), tr("Копировать поля в буффер обмена..."));
     //m_PasteFields = pActionsMenu->addAction(QIcon(":/img/PasteHS.png"), tr("Вставить поля из буффера обмена..."));
-    pActionsMenu->addSeparator();
     //m_saveToXml = pActionsMenu->addAction(QIcon(":/img/savexml.png"), tr("Экспорт в XML"));
-    pActionsMenu->addSeparator();
-    m_GenDiffToScript = pActionsMenu->addAction(QIcon(":/img/DiffToScript.png"), tr("Diff to Script"));
-    pActionsMenu->addSeparator();
     //m_pCompareFmt = pActionsMenu->addAction(QIcon(":/img/SychronizeListHS.png"), tr("Сравнить структуры"));
     pActionsMenu->addSeparator();
     //m_MassRemoveFields = pActionsMenu->addAction(QIcon(":/img/remove.png"), tr("Удалить поля из таблицы"));
@@ -194,35 +197,34 @@ void FmtWorkWindow::SetupActionsMenu()
     pActionsMenu->addSeparator();*/
     //m_createTableSql = pActionsMenu->addAction(QIcon(":/img/savesql.png"), tr("Сохранить CreateTablesSql скрипт"));
     //m_rebuildOffsets = pActionsMenu->addAction(tr("Перестроить смещения"));
-    m_CheckAction = pActionsMenu->addAction(tr("Проверить таблицу на ошибки"));
     pActionsMenu->addSeparator();
 
     if (pUserActionsMenu)
         pActionsMenu->addMenu(pUserActionsMenu);
 
-    pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты SQL"));
+    /*pCodeGenMenu = pActionsMenu->addMenu(tr("Скрипты SQL"));
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
     m_GenAddScript = pCodeGenMenu->addAction(tr("Добавление полей"));
     m_GenModifyScript = pCodeGenMenu->addAction(tr("Изменение полей"));
     m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
-    pCodeGenMenu->addSeparator();
+    pCodeGenMenu->addSeparator();*/
 
-    m_TableObjects = pCodeGenMenu->addAction(tr("Объекты таблицы"));
-    pCodeGenMenu->addSeparator();
+    /*m_TableObjects = pCodeGenMenu->addAction(tr("Объекты таблицы"));
+    pCodeGenMenu->addSeparator();*/
 
-    m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
+    //m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
     ui->pushActions->setMenu(pActionsMenu);//pUserActionsMenu
 
     //connect(m_saveToXml, SIGNAL(triggered(bool)), SLOT(ExportXml()));
     //connect(m_createTableSql, SIGNAL(triggered(bool)), SLOT(CreateTableSql()));
     //connect(m_unloadDbf, SIGNAL(triggered(bool)), SLOT(UnloadToDbf()));
     //connect(m_loadDbf, SIGNAL(triggered(bool)), SLOT(LoadFromDbf()));
-    connect(m_GenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
+    /*connect(m_GenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
     connect(m_GenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
     connect(m_GenInsertTemplate, SIGNAL(triggered(bool)), SLOT(GenInsertTemplateSql()));
     connect(m_GenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
 
-    connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));
+    connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));*/
     //connect(m_MassRemoveFields, SIGNAL(triggered(bool)), SLOT(RemoveTableFields()));
     //connect(m_AddFieldsToEnd, SIGNAL(triggered(bool)), SLOT(AddFieldsToEnd()));
     //connect(m_InsertFields, SIGNAL(triggered(bool)), SLOT(InsertFieldsBefore()));
@@ -230,14 +232,10 @@ void FmtWorkWindow::SetupActionsMenu()
     //connect(m_CopyFields, SIGNAL(triggered(bool)), SLOT(CopyFields()));
     //connect(m_PasteFields, SIGNAL(triggered(bool)), SLOT(PasteFields()));
     connect(m_CamelCaseAction, SIGNAL(triggered(bool)), SLOT(CamelCaseAction()));
-    connect(m_GenDiffToScript, SIGNAL(triggered(bool)), SLOT(DiffToScript()));
-    connect(m_CheckAction, SIGNAL(triggered(bool)), SLOT(CheckAction()));
     //connect(m_pCompareFmt, SIGNAL(triggered(bool)), SLOT(CompareStruct()));
     //connect(ui->compareBtn, SIGNAL(clicked()), SLOT(CompareStruct()));
     //connect(m_ImportFromTable, SIGNAL(triggered(bool)), SLOT(ImportFromTable()));
     //connect(m_ImportData, SIGNAL(triggered(bool)), SLOT(OnImport()));
-
-    connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
 }
 
 void FmtWorkWindow::setupFind()
@@ -350,7 +348,6 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
         ui->isRec->setEnabled(false);
         ui->keyComboBox->setEnabled(false);
         ui->blobLen->setEnabled(false);
-        ui->pushButton->setEnabled(false);
 
         m_AddFieldsToEnd->setEnabled(false);
         m_InsertFields->setEnabled(false);
@@ -581,7 +578,7 @@ void FmtWorkWindow::setDialogButtonsVisible(bool f)
 
 void FmtWorkWindow::setInitButtonVisible(bool f)
 {
-    ui->pushButton->setVisible(f);
+    m_pInitTableMenu->setVisible(f);
 }
 
 void FmtWorkWindow::FieldAdded(FmtField *fld)
@@ -1115,6 +1112,7 @@ void FmtWorkWindow::DiffToScript()
 {
     ConnectionInfo *conn = pTable->connection();
     SelectFolderDlg folder(RsDiffToScriptContext, tr("Выбор каталога с репозиторием"), this);
+    folder.setWindowIcon(QIcon::fromTheme("DiffToScript"));
 
     if (folder.exec() != QDialog::Accepted)
         return;
@@ -1460,14 +1458,90 @@ void FmtWorkWindow::initRibbonDataPanel()
     connect(m_ImportFromTable, &QAction::triggered, this, &FmtWorkWindow::ImportFromTable);
 }
 
+void FmtWorkWindow::initRibbonCodeTemplatesPanel()
+{
+    SARibbonPannel* Pannel = new SARibbonPannel(tr("Генерация кода"));
+    m_pFmtCategory->addPannel(Pannel);
+
+    m_DiffToScript = createAction(tr("Diff To Script"), "DiffToScript");
+    Pannel->addLargeAction(m_DiffToScript);
+
+    pGenCppCodeMenu = new QMenu(tr("Шаблоны"), this);
+    pGenCppCodeMenu->setIcon(QIcon::fromTheme("GenerateAndRecordCode"));
+
+    pGenCodeAction = Pannel->addLargeMenu(pGenCppCodeMenu, QToolButton::MenuButtonPopup);
+    pGenCodeAction->setIcon(QIcon::fromTheme("GenerateAndRecordCode"));
+
+    bool HasMacroSeparator = false;
+    for (int i = 0; i < m_pGeneratorsProxyModel->rowCount(); i++)
+    {
+        QModelIndex indexAlias = m_pGeneratorsProxyModel->index(i, GenInterfaceFactoryModel::FieldAlias);
+        QModelIndex indexKey = m_pGeneratorsProxyModel->index(i, GenInterfaceFactoryModel::FieldKey);
+        QString id = m_pGeneratorsProxyModel->data(indexKey).toString();
+
+        if (id.startsWith("macro:") && !HasMacroSeparator)
+        {
+            pGenCppCodeMenu->addSeparator();
+            HasMacroSeparator = false;
+        }
+
+        QAction *action = nullptr;
+        if (id != "FmtGenCppTemplate")
+            action = pGenCppCodeMenu->addAction(m_pGeneratorsProxyModel->data(indexAlias).toString());
+        else
+        {
+            action = new QAction(m_pGeneratorsProxyModel->data(indexAlias).toString());
+            pGenCppCodeMenu->insertAction(pGenCppCodeMenu->actions().at(0), action);
+            pGenCppCodeMenu->setDefaultAction(action);
+        }
+        action->setData(id);
+    }
+
+    pCodeGenMenu = new QMenu(tr("Скрипты SQL"), this);
+    pCodeGenMenu->setIcon(QIcon::fromTheme("GenerateChangeScript"));
+
+    m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
+    m_GenAddScript = pCodeGenMenu->addAction(tr("Добавление полей"));
+    m_GenModifyScript = pCodeGenMenu->addAction(tr("Изменение полей"));
+    m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
+    pCodeGenMenu->addSeparator();
+
+    m_TableObjects = pCodeGenMenu->addAction(tr("Объекты таблицы"));
+    pCodeGenMenu->addSeparator();
+
+    m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
+    //ui->pushActions->setMenu(pActionsMenu);//pUserActionsMenu
+
+    pGenCodeAction = Pannel->addLargeMenu(pCodeGenMenu, QToolButton::MenuButtonPopup);
+    pGenCodeAction->setIcon(QIcon::fromTheme("GenerateChangeScript"));
+
+    connect(m_DiffToScript, &QAction::triggered, this, &FmtWorkWindow::DiffToScript);
+
+    connect(m_GenDelScript, &QAction::triggered, this, &FmtWorkWindow::GenDeleteFiledsScript);
+    connect(m_GenAddScript, &QAction::triggered, this, &FmtWorkWindow::GenAddFiledsScript);
+    connect(m_GenInsertTemplate, &QAction::triggered, this, &FmtWorkWindow::GenInsertTemplateSql);
+    connect(m_GenModifyScript, &QAction::triggered, this, &FmtWorkWindow::GenModifyTableFields);
+    connect(m_TableObjects, &QAction::triggered, this, &FmtWorkWindow::TableObjects);
+    connect(m_GenCreateTbSql, &QAction::triggered, this, &FmtWorkWindow::GenCreateTableScript);
+
+    /*connect(m_GenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
+    connect(m_GenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
+    connect(m_GenInsertTemplate, SIGNAL(triggered(bool)), SLOT(GenInsertTemplateSql()));
+    connect(m_GenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
+
+    connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
+    connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));*/
+}
+
 void FmtWorkWindow::initRibbonPanels()
 {
     m_pFmtCategory = new SARibbonCategory(FMTTABLE_CONTEXTCATEGORY, ribbon());
-    m_pFmtCategory->setObjectName(pTable->name());
+    //m_pFmtCategory->setObjectName(pTable->name());
 
     initRibbonFmtPanel();
     initRibbonDataPanel();
     initRibbonFieldsPanel();
+    initRibbonCodeTemplatesPanel();
 }
 
 void FmtWorkWindow::updateRibbonTabs()

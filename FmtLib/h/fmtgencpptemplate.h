@@ -57,9 +57,11 @@ public:
     void createDeclExtern(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void WriteTableComment(const FmtSharedTablePtr &pTable, QTextStream &stream, bool inlineComment = false);
 
+    virtual QStringList tabs();
     virtual GenHighlightingRuleList highlightingRuleList() const;
+
 protected:
-    virtual QByteArray makeContent(FmtSharedTablePtr pTable);
+    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable);
 
 private:
     void WrapSkfAssignValue(QTextStream &stream, const QString &keyName, const QString &fldName, const QString &minval, const QString &maxval, const QString &zeroval, const bool &descOrder);

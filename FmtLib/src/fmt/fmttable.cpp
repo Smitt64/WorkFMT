@@ -20,6 +20,7 @@
 #include <QtXml>
 #include <QRegExpValidator>
 #include <QUndoStack>
+#include <toolsruntime.h>
 
 #define NOT_EXISTS 2
 
@@ -1549,9 +1550,9 @@ qint16 FmtTable::indecesCount() const
     return static_cast<qint16>(m_pIndeces.count());
 }
 
-int FmtTable::dbInit(const QString &log)
+int FmtTable::dbInit(const QString &log, QString *errorOutput)
 {
-    int stat = 0;
+    /*int stat = 0;
 
     QDir dbinitexe = QFileInfo(QCoreApplication::applicationFilePath()).absoluteDir();
     dbinitexe.cd("DLL_ms");
@@ -1574,6 +1575,74 @@ int FmtTable::dbInit(const QString &log)
 
     exe.setWorkingDirectory(dbinitexe.absolutePath());
     stat = CoreStartProcess(&exe, dbinitexe.absoluteFilePath("DbInit.exe"), arguments, true);
+
+    return stat;*/
+    int stat = 0;
+
+    QDir dbinitexe = QFileInfo(QCoreApplication::applicationFilePath()).absoluteDir();
+    dbinitexe.cd("DLL_ms");
+
+    QProcess exe;
+    QStringList arguments;
+
+    QString service = pConnection->dsn();
+    QString tablelist = dbtName();
+
+    arguments << QString("%1:%2@%3")
+                     .arg(db.userName().simplified())
+                     .arg(db.password().simplified())
+                     .arg(DatasourceFromService(service))
+              << "-DT:ORA" << "-OP:IDX"
+              << "-O" <<  QString("-TBLI:%1").arg(tablelist);
+
+    if (!log.isEmpty())
+        arguments.append(QString("-LOG:%1").arg(log));
+
+    exe.setWorkingDirectory(dbinitexe.absolutePath());
+
+    // Устанавливаем кодировку для процесса
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    // Для Windows русская локаль
+    env.insert("LANG", "ru_RU.UTF-8");
+    env.insert("LC_ALL", "ru_RU.UTF-8");
+    // Для Oracle
+    env.insert("NLS_LANG", "RUSSIAN_RUSSIA.AL32UTF8");
+    env.insert("NLS_NCHAR", "AL32UTF8");
+    // Для ODBC
+    env.insert("ODBCSYSINI", dbinitexe.absolutePath());
+    exe.setProcessEnvironment(env);
+
+    // Запускаем процесс
+    exe.start(dbinitexe.absoluteFilePath("DbInit.exe"), arguments);
+
+    if (!exe.waitForStarted(5000)) {
+        if (errorOutput)
+            *errorOutput = "Не удалось запустить DbInit.exe";
+        return -1;
+    }
+
+    if (!exe.waitForFinished(300000))
+    {
+        if (errorOutput)
+        {
+            *errorOutput = "Таймаут выполнения DbInit.exe";
+
+            QByteArray error = exe.readAllStandardError();
+            if (!error.isEmpty())
+                *errorOutput += toolDecodeRussianText(error);
+        }
+
+        exe.kill();
+        return -2;
+    }
+
+    stat = exe.exitCode();
+
+    QByteArray error = exe.readAllStandardError();
+    QByteArray allData = error;
+
+    if (errorOutput && !allData.isEmpty())
+        *errorOutput = toolDecodeRussianText(allData);
 
     return stat;
 }
