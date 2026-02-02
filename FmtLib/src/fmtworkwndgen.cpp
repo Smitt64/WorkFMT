@@ -53,6 +53,10 @@ FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
 
 FmtWorkWndGen::~FmtWorkWndGen()
 {
+    qDeleteAll(m_pWindowsList);
+    m_pWindowsList.clear();
+    m_pWindows.clear();
+    delete pInterface;
 }
 
 void FmtWorkWndGen::setTable(QSharedPointer<FmtTable> table)
