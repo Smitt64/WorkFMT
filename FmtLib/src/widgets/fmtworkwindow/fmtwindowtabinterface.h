@@ -1,9 +1,9 @@
 #ifndef FMTWINDOWTABINTERFACE_H
 #define FMTWINDOWTABINTERFACE_H
 
-#include <QWidget>
+#include <QMainWindow>
 
-class FmtWindowTabInterface : public QWidget
+class FmtWindowTabInterface : public QMainWindow
 {
     Q_OBJECT
 public:

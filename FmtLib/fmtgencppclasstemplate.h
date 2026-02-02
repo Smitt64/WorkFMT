@@ -4,17 +4,23 @@
 #include "fmtgeninterface.h"
 #include "gencppsettings.h"
 
+#define RSBPARTY_HPP "RsbParty.hpp"
+#define RSBPARTY_CPP "RsbParty.cpp"
+#define CBPTMSG_H "cbptmsg.h"
+#define PTR_PT_C "ptr_pt.c"
+
 class FmtGenCppClassTemplate : public FmtGenInterface
 {
 public:
     FmtGenCppClassTemplate();
     virtual ~FmtGenCppClassTemplate();
 
-    virtual int getContentType() const { return HighlighterCpp; }
-    virtual GenHighlightingRuleList highlightingRuleList() const;
+    virtual QStringList tabs() Q_DECL_OVERRIDE;
+    virtual int getContentType() const Q_DECL_OVERRIDE { return HighlighterCpp; }
+    virtual GenHighlightingRuleList highlightingRuleList() const Q_DECL_OVERRIDE;
 
 protected:
-    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable);
+    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable) Q_DECL_OVERRIDE;
 
 private:
     void createClassDeclaration(const FmtSharedTablePtr &pTable, QTextStream &stream);

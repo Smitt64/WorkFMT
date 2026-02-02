@@ -99,3 +99,8 @@ FmtGenInterface *fmtGenInterfaceCreate(const QString &alias)
 {
     return FmtGenInterface::m_pGenInterfaceFactory.create(alias);
 }
+
+QString fmtGenInterfaceAlias(const QString &id)
+{
+    return FmtGenInterface::m_pGenInterfaceFactory.getAlias(id);
+}

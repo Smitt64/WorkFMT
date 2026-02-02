@@ -459,6 +459,7 @@ void FmtTable::setIsRecord(const bool &v)
     else
         m_Flags = value;
 
+    emit isRecordChanged(v);
     emit dataChanged(createIndex(0, 0), createIndex(0, fld_isRecord));
 }
 

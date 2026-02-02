@@ -200,3 +200,5 @@ DiffToScriptlib/debug/
 DatViewer/build/
 
 DatViewer/debug/
+
+.qtcreator/

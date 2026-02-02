@@ -19,10 +19,29 @@ GenHighlightingRuleList FmtGenCppClassTemplate::highlightingRuleList() const
     return m_HighlightingRuleList;
 }
 
+QStringList FmtGenCppClassTemplate::tabs()
+{
+    return { RSBPARTY_HPP, RSBPARTY_CPP, CBPTMSG_H, PTR_PT_C };
+}
+
 QMap<QString, QByteArray> FmtGenCppClassTemplate::makeContent(FmtSharedTablePtr pTable)
 {
-    QByteArray data;
-    QTextStream stream(&data, QIODevice::WriteOnly);
+    QMap<QString, QByteArray> data =
+    {
+        { RSBPARTY_HPP, QByteArray() },
+        { RSBPARTY_CPP, QByteArray() },
+        { CBPTMSG_H, QByteArray() },
+        { PTR_PT_C, QByteArray() }
+    };
+
+    QMap<QString, QTextStream*> stream =
+    {
+        { RSBPARTY_HPP, new QTextStream(&data[RSBPARTY_HPP], QIODevice::WriteOnly) },
+        { RSBPARTY_CPP, new QTextStream(&data[RSBPARTY_CPP], QIODevice::WriteOnly) },
+        { CBPTMSG_H, new QTextStream(&data[CBPTMSG_H], QIODevice::WriteOnly) },
+        { PTR_PT_C, new QTextStream(&data[PTR_PT_C], QIODevice::WriteOnly) }
+    };
+
     GenCppSettings::ReadGenSettings(&prm);
 
     if (pTable->pkIDx() >= 0)
@@ -32,19 +51,26 @@ QMap<QString, QByteArray> FmtGenCppClassTemplate::makeContent(FmtSharedTablePtr 
     m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(className)), FormatElemType});
     m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(FmtTableStructName(pTable->name()))), FormatElemType});
 
-    stream << "// RsbParty.hpp" << Qt::endl;
-    createClassDeclaration(pTable, stream);
+    (*stream[RSBPARTY_HPP]) << "// RsbParty.hpp" << Qt::endl;
+    createClassDeclaration(pTable, (*stream[RSBPARTY_HPP]));
 
-    stream << Qt::endl << "// RsbParty.cpp" << Qt::endl;
-    createClassDefenition(pTable, stream);
+    (*stream[RSBPARTY_CPP]) << "// RsbParty.cpp" << Qt::endl;
+    createClassDefenition(pTable, (*stream[RSBPARTY_CPP]));
 
-    stream << Qt::endl << "// cbptmsg.h" << Qt::endl;
-    createRslClassDeclaration(pTable, stream);
+    (*stream[CBPTMSG_H]) << "// cbptmsg.h" << Qt::endl;
+    createRslClassDeclaration(pTable, (*stream[CBPTMSG_H]));
 
-    stream << Qt::endl << "// ptr_pt.c" << Qt::endl;
-    createRslClassDefenition(pTable, stream);
+    (*stream[PTR_PT_C]) << "// ptr_pt.c" << Qt::endl;
+    createRslClassDefenition(pTable, (*stream[PTR_PT_C]));
 
-    return QMap<QString, QByteArray>{{QString(), data}};
+    for (auto it = stream.begin(); it != stream.end(); ++it)
+    {
+        it.value()->flush();
+        delete it.value();
+        it.value() = nullptr;
+    }
+
+    return data;
 }
 
 void FmtGenCppClassTemplate::createClassDeclaration(const FmtSharedTablePtr &pTable, QTextStream &stream)

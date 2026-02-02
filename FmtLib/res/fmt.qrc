@@ -132,5 +132,6 @@
         <file>app-icon.svg</file>
         <file>img/svg/Close_16x.svg</file>
         <file>img/svg/Close_red_16x.svg</file>
+        <file>office2013_highlighter.json</file>
     </qresource>
 </RCC>

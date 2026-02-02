@@ -531,7 +531,7 @@ void MDIProxyStyle::drawMdiSubWindowFrame(const QStyleOption *option,
     if (isActive) {
         QPen accentPen(activeFrameColor().lighter(120), 1);
         painter->setPen(accentPen);
-        QRect accentRect = frameRect.adjusted(FarameWidth, FarameWidth, -FarameWidth, -FarameWidth);
+        QRect accentRect = frameRect.adjusted(FarameWidth - 1, FarameWidth, -FarameWidth, -FarameWidth);
         painter->drawRect(accentRect);
     }
 
@@ -703,7 +703,6 @@ QStyle::SubControl MDIProxyStyle::hitTestComplexControl(ComplexControl cc, const
             QRect closeRect = subControlRect(cc, opt, SC_TitleBarCloseButton, widget);
             if (closeRect.isValid() && closeRect.contains(pos)) {
                 //qDebug() << "SC_TitleBarCloseButton";
-                qDebug() << QTime::currentTime() << closeRect;
                 return SC_TitleBarCloseButton;
             }
 

@@ -814,9 +814,9 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateDocument(QSharedPointer<FmtTable> &tab
     //m_Windows[table->connection()].push_back(window);
     QMdiSubWindow *wnd = CreateMdiWindow(window, table->connection());
 
+    window->setParentWnd(wnd);
     window->setFmtTable(table);
     wnd->setWindowTitle(window->makeWindowTitle());
-    wnd->setWindowIcon(QIcon(":/table"));
 
     connect(window, &FmtWorkWindow::accepted, wnd, &FmtRibbonMainWindow::deleteLater);
     connect(window, &FmtWorkWindow::rejected, wnd, &FmtRibbonMainWindow::deleteLater);

@@ -4,6 +4,12 @@
 #include "fmtgeninterface.h"
 #include "gencppsettings.h"
 
+#define FILE_BFSH "*bfs.h"
+#define FILE_BFH "*bf.h"
+#define FILE_BFC "*bf.c"
+#define FILE_FC "*f.c"
+#define FILE_SKFC "*skf.c"
+
 typedef struct
 {
     qint16 m_MaxCppLenght, m_MaxFldLenght;
@@ -32,10 +38,10 @@ public:
     FmtGenCppTemplate();
     virtual ~FmtGenCppTemplate();
 
-    virtual int getContentType() const { return HighlighterCpp; }
+    virtual int getContentType() const Q_DECL_OVERRIDE { return HighlighterCpp; }
 
-    virtual void propertyEditor(QWidget *parent);
-    virtual bool hasPropertes() const { return false; }//{ return true; }
+    virtual void propertyEditor(QWidget *parent) Q_DECL_OVERRIDE;
+    virtual bool hasPropertes() const Q_DECL_OVERRIDE { return false; }//{ return true; }
 
     void initSettings();
     void CreateBlocks(const FmtSharedTablePtr &pTable);
@@ -57,11 +63,11 @@ public:
     void createDeclExtern(const FmtSharedTablePtr &pTable, QTextStream &stream);
     void WriteTableComment(const FmtSharedTablePtr &pTable, QTextStream &stream, bool inlineComment = false);
 
-    virtual QStringList tabs();
-    virtual GenHighlightingRuleList highlightingRuleList() const;
+    virtual QStringList tabs() Q_DECL_OVERRIDE;
+    virtual GenHighlightingRuleList highlightingRuleList() const Q_DECL_OVERRIDE;
 
 protected:
-    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable);
+    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable) Q_DECL_OVERRIDE;
 
 private:
     void WrapSkfAssignValue(QTextStream &stream, const QString &keyName, const QString &fldName, const QString &minval, const QString &maxval, const QString &zeroval, const bool &descOrder);

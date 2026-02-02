@@ -36,8 +36,23 @@ void FmtGenCppTemplate::initSettings()
 
 QMap<QString, QByteArray> FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTable)
 {
-    QByteArray data;
-    QTextStream stream(&data, QIODevice::WriteOnly);
+    QMap<QString, QByteArray> data =
+    {
+        { FILE_BFSH, QByteArray() },
+        { FILE_BFH, QByteArray() },
+        { FILE_BFC, QByteArray() },
+        { FILE_FC, QByteArray() },
+        { FILE_SKFC, QByteArray() }
+    };
+
+    QMap<QString, QTextStream*> stream =
+    {
+        { FILE_BFSH, new QTextStream(&data[FILE_BFSH], QIODevice::WriteOnly) },
+        { FILE_BFH, new QTextStream(&data[FILE_BFH], QIODevice::WriteOnly) },
+        { FILE_BFC, new QTextStream(&data[FILE_BFC], QIODevice::WriteOnly) },
+        { FILE_FC, new QTextStream(&data[FILE_FC], QIODevice::WriteOnly) },
+        { FILE_SKFC, new QTextStream(&data[FILE_SKFC], QIODevice::WriteOnly) }
+    };
     GenCppSettings::ReadGenSettings(&prm);
 
     qDeleteAll(m_BlocksStore);
@@ -48,44 +63,48 @@ QMap<QString, QByteArray> FmtGenCppTemplate::makeContent(FmtSharedTablePtr pTabl
 
     if (prm.fGenStruct)
     {
-        createStruct(pTable, stream);
-        stream << Qt::endl;
+        createStruct(pTable, *stream[FILE_BFSH]);
+        (*stream[FILE_BFSH]) << Qt::endl;
     }
 
     if (prm.fGenUnion && pTable->indecesCount())
     {
-        createKeysUnion(pTable, stream);
-        stream << Qt::endl;
+        createKeysUnion(pTable, (*stream[FILE_BFSH]));
+        (*stream[FILE_BFSH]) << Qt::endl;
     }
 
     if (prm.fGenEnum && pTable->indecesCount())
     {
-        createKeysEnum(pTable, stream);
-        stream << Qt::endl;
+        createKeysEnum(pTable, (*stream[FILE_BFSH]));
+        (*stream[FILE_BFSH]) << Qt::endl;
     }
 
-    createOpenFuncDecl(pTable, stream);
-    stream << Qt::endl;
-    createOpenFunc(pTable, stream);
-    stream << Qt::endl;
-    createInitFunc(pTable, stream);
-    stream << Qt::endl;
+    createOpenFuncDecl(pTable, (*stream[FILE_BFC]));
+    (*stream[FILE_BFC]) << Qt::endl;
+    createOpenFunc(pTable, *stream[FILE_BFC]);
+    (*stream[FILE_BFC]) << Qt::endl;
+    createInitFunc(pTable, *stream[FILE_BFC]);
 
     if (prm.fGenSkf)
     {
-        createSkfDeclFunctions(pTable, stream, FmtGenCppTemplate::SkfMode_Create);
-        createSkfFunctions(pTable, stream);
+        createSkfDeclFunctions(pTable, *stream[FILE_BFH], FmtGenCppTemplate::SkfMode_Create);
+        createSkfFunctions(pTable, *stream[FILE_SKFC]);
 
         if (pTable->indecesCount())
-            stream << Qt::endl;
+            *stream[FILE_SKFC] << Qt::endl;
     }
 
-    createFindFunctions(pTable, stream);
-    createDeclExtern(pTable, stream);
+    createFindFunctions(pTable, *stream[FILE_FC]);
+    createDeclExtern(pTable, *stream[FILE_BFH]);
 
-    stream.flush();
+    for (auto it = stream.begin(); it != stream.end(); ++it)
+    {
+        it.value()->flush();
+        delete it.value();
+        it.value() = nullptr;
+    }
 
-    return QMap<QString, QByteArray>{{QString(), data}};
+    return data;
 }
 
 void FmtGenCppTemplate::propertyEditor(QWidget *parent)
@@ -829,5 +848,5 @@ GenHighlightingRuleList FmtGenCppTemplate::highlightingRuleList() const
 
 QStringList FmtGenCppTemplate::tabs()
 {
-    return {};
+    return { FILE_BFSH, FILE_BFH, FILE_BFC, FILE_FC, FILE_SKFC };
 }

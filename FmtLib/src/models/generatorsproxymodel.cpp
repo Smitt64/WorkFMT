@@ -198,3 +198,17 @@ GeneratorsMacroElement GeneratorsProxyModel::getMacroElement(const QModelIndex &
 
     return GeneratorsMacroElement();
 }
+
+GeneratorsMacroElement GeneratorsProxyModel::getMacroElement(const QString &id)
+{
+    QModelIndex start = index(0, 0);
+    QModelIndexList lst = match(start, Qt::DisplayRole, id);
+
+    if (!lst.isEmpty())
+    {
+        QModelIndex idx = lst.first();
+        return getMacroElement(idx);
+    }
+
+    return GeneratorsMacroElement();
+}

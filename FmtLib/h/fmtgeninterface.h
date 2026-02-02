@@ -62,6 +62,7 @@ void registerFmtGenInterface(const QString &alias, const QString &label)
 }
 
 FmtGenInterface *fmtGenInterfaceCreate(const QString &alias);
+QString fmtGenInterfaceAlias(const QString &id);
 QStringList fmtGenInterfaces();
 QStringList fmtGenAliases();
 qint32 fmtGenInterfacesCount();

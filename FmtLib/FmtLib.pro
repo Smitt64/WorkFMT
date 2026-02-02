@@ -210,7 +210,6 @@ FORMS += \
     ui/oracleauthdlg.ui \
     ui/tablesgroupsdlg.ui \
     ui/windowslistdlg.ui \
-    ui/fmtworkwndgen.ui \
     ui/gencppsettings.ui \
     ui/selectconnectiondlg.ui \
     ui/stringlistdlg.ui \

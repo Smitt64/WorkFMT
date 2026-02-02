@@ -51,8 +51,7 @@ public:
     enum FmtWinTabs
     {
         FmtWinTabs_Columns = 0,
-        FmtWinTabs_Index,
-        FmtWinTabs_Code,
+        FmtWinTabs_Index
     };
 
     explicit FmtWorkWindow(QWidget *parent = Q_NULLPTR);
@@ -73,6 +72,8 @@ public:
     void execUserAction(const QString &macro);
 
     virtual void clearRibbonTabs() Q_DECL_OVERRIDE;
+
+    void UpdateTableIcon();
 
 signals:
 
@@ -115,6 +116,7 @@ private slots:
 
     void undoActionChanged();
     void isTemporaryTableChanged(bool value);
+    void isRecordTableChanged(bool value);
 
     void TabCloseRequested(int index);
     void RemoveTableFields();
@@ -155,6 +157,7 @@ private:
     void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false, bool AddConvertButton = true);
     void AddCppCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
     void SetupActionsMenu();
+    void OpenGeneratorTab(const QString &interfaceid, const QString &title);
     Ui::FmtWorkWindow *ui;
     QSharedPointer<FmtTable> pTable;
 
@@ -177,10 +180,8 @@ private:
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript, *m_pCompareFmt;
-    QAction *m_TableObjects, *pGenCodeAction;
+    QAction *m_TableObjects, *pGenCodeAction, *pGenCppCodeAction;
     QAction *m_DiffToScript;
-
-    FmtWorkWndGen *pCodeGenWidget;
 
     QFrame *pUndoRedoBtnContainer;
     QHBoxLayout *pUndoRedoLayout;

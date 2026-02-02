@@ -17,10 +17,31 @@ GenHighlightingRuleList FmtGenInputServiceCppTemplate::highlightingRuleList() co
     return m_HighlightingRuleList;
 }
 
+QStringList FmtGenInputServiceCppTemplate::tabs()
+{
+    return { HEADER_H, BF_CPP, ALINPSRV_HPP, RSBPARTY_HPP, RSBPARTY_CPP };
+}
+
 QMap<QString, QByteArray> FmtGenInputServiceCppTemplate::makeContent(FmtSharedTablePtr pTable)
 {
-    QByteArray data;
-    QTextStream stream(&data, QIODevice::WriteOnly);
+    QMap<QString, QByteArray> data =
+    {
+        { HEADER_H, QByteArray() },
+        { BF_CPP, QByteArray() },
+        { ALINPSRV_HPP, QByteArray() },
+        { RSBPARTY_HPP, QByteArray() },
+        { RSBPARTY_CPP, QByteArray() }
+    };
+
+    QMap<QString, QTextStream*> stream =
+    {
+        { HEADER_H, new QTextStream(&data[HEADER_H], QIODevice::WriteOnly) },
+        { BF_CPP, new QTextStream(&data[BF_CPP], QIODevice::WriteOnly) },
+        { ALINPSRV_HPP, new QTextStream(&data[ALINPSRV_HPP], QIODevice::WriteOnly) },
+        { RSBPARTY_HPP, new QTextStream(&data[RSBPARTY_HPP], QIODevice::WriteOnly) },
+        { RSBPARTY_CPP, new QTextStream(&data[RSBPARTY_CPP], QIODevice::WriteOnly) }
+    };
+
     QString inputServiceClassName = getInputServiceClassName(pTable);
     QString serviceMemberName = getInputServicePtMemberName(pTable);
     QString StructName = FmtTableStructName(pTable->name());
@@ -28,45 +49,52 @@ QMap<QString, QByteArray> FmtGenInputServiceCppTemplate::makeContent(FmtSharedTa
     m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(inputServiceClassName)), FormatElemType});
     m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(StructName)), FormatElemType});
 
-    stream << "// *.h" << Qt::endl;
-    createCacheClassDeclaration(pTable, stream);
+    //(*stream[HEADER_H]) << "// *.h" << Qt::endl;
+    createCacheClassDeclaration(pTable, (*stream[HEADER_H]));
 
-    stream << Qt::endl << "// bf_*.cpp " << Qt::endl;
-    createCacheClassDefenition(pTable, stream);
+    //(*stream[BF_CPP]) << Qt::endl << "// bf_*.cpp " << Qt::endl;
+    createCacheClassDefenition(pTable, (*stream[BF_CPP]));
 
-    stream << Qt::endl << "// AlInpSrv.hpp, enum eRSB_INPUT_SERVICE" << Qt::endl;
-    stream << getEnumRSB_INPUT_SERVICE(pTable) << ", // " << pTable->comment();
+    (*stream[ALINPSRV_HPP]) << "// AlInpSrv.hpp, enum eRSB_INPUT_SERVICE" << Qt::endl;
+    (*stream[ALINPSRV_HPP]) << getEnumRSB_INPUT_SERVICE(pTable) << ", // " << pTable->comment();
 
-    stream << Qt::endl << "// RsbParty.hpp " << Qt::endl;
-    createInputServiceAdmOpClass(pTable, stream);
+    (*stream[RSBPARTY_HPP]) << "// RsbParty.hpp " << Qt::endl;
+    createInputServiceAdmOpClass(pTable, (*stream[RSBPARTY_HPP]));
 
-    stream << Qt::endl << "// RsbParty.hpp " << Qt::endl;
-    stream << "// class _BANKKERNELEXP TRsbParty" << Qt::endl;
-    stream << "// ..." << Qt::endl;
-    stream << "// TAdressInpSrv m_AdressSrv;" << Qt::endl;
-    stream << QString("%1 %2;").arg(inputServiceClassName).arg(serviceMemberName) << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << "// RsbParty.hpp " << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << "// class _BANKKERNELEXP TRsbParty" << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << "// ..." << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << "// TAdressInpSrv m_AdressSrv;" << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << QString("%1 %2;").arg(inputServiceClassName).arg(serviceMemberName) << Qt::endl;
 
-    stream << Qt::endl;
-    stream << "// class TRsbPartyCPP: public TRsbPtrWrapper<TRsbParty>" << Qt::endl;
-    stream << "// ..." << Qt::endl;
-    stream << "// if (!m_pObject->m_TaxExempSrv.IsInitService()) RSBEXCEPT_THROW_ONSTAT(m_pObject->InitChildService(&(m_pObject->m_TaxExempSrv)));" << Qt::endl;
-    stream << QString("if (!m_pObject->%1.IsInitService()) RSBEXCEPT_THROW_ONSTAT(m_pObject->InitChildService(&(m_pObject->%1)));")
+    (*stream[RSBPARTY_HPP]) << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << "// class TRsbPartyCPP: public TRsbPtrWrapper<TRsbParty>" << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << "// ..." << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << "// if (!m_pObject->m_TaxExempSrv.IsInitService()) RSBEXCEPT_THROW_ONSTAT(m_pObject->InitChildService(&(m_pObject->m_TaxExempSrv)));" << Qt::endl;
+    (*stream[RSBPARTY_HPP]) << QString("if (!m_pObject->%1.IsInitService()) RSBEXCEPT_THROW_ONSTAT(m_pObject->InitChildService(&(m_pObject->%1)));")
               .arg(serviceMemberName)
            << Qt::endl;
 
-    stream << Qt::endl << "// RsbParty.cpp " << Qt::endl;
-    stream << "// TRsbParty::TRsbParty(int32 PartyID, bool Original, bool InitChild):" << Qt::endl;
-    stream << "// ..." << Qt::endl;
-    stream << "// AddService(&m_OffformlnkSrv);" << Qt::endl;
-    stream << QString("AddService(&%1);").arg(serviceMemberName) << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << "// RsbParty.cpp " << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << "// TRsbParty::TRsbParty(int32 PartyID, bool Original, bool InitChild):" << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << "// ..." << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << "// AddService(&m_OffformlnkSrv);" << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << QString("AddService(&%1);").arg(serviceMemberName) << Qt::endl;
 
-    stream << Qt::endl;
-    stream << "// TFileSelectID* TRsbParty::GetSelectIDForService(int SrvType, void* RecBuf)" << Qt::endl;
-    stream << "// ..." << Qt::endl;
-    stream << "// case RSB_OFFFORMLNK_SERVICE:" << Qt::endl;
-    createGetSelectIDForService(pTable, stream);
+    (*stream[RSBPARTY_CPP]) << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << "// TFileSelectID* TRsbParty::GetSelectIDForService(int SrvType, void* RecBuf)" << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << "// ..." << Qt::endl;
+    (*stream[RSBPARTY_CPP]) << "// case RSB_OFFFORMLNK_SERVICE:" << Qt::endl;
+    createGetSelectIDForService(pTable, (*stream[RSBPARTY_CPP]));
 
-    return QMap<QString, QByteArray>{{QString(), data}};
+    for (auto it = stream.begin(); it != stream.end(); ++it)
+    {
+        it.value()->flush();
+        delete it.value();
+        it.value() = nullptr;
+    }
+
+    return data;
 }
 
 void FmtGenInputServiceCppTemplate::createGetSelectIDForService(const FmtSharedTablePtr &pTable, QTextStream &stream)

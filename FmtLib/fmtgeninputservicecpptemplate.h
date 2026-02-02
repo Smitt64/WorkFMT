@@ -3,13 +3,25 @@
 
 #include "fmtgeninterface.h"
 
+/*#define RSBPARTY_HPP "RsbParty.hpp"
+#define RSBPARTY_CPP "RsbParty.cpp"
+#define CBPTMSG_H "cbptmsg.h"
+#define PTR_PT_C "ptr_pt.c"*/
+
+#define HEADER_H "*.h"
+#define BF_CPP "bf_*.cpp"
+#define ALINPSRV_HPP "AlInpSrv.hpp"
+#define RSBPARTY_HPP "RsbParty.hpp"
+#define RSBPARTY_CPP "RsbParty.cpp"
+
 class FmtGenInputServiceCppTemplate : public FmtGenInterface
 {
 public:
     FmtGenInputServiceCppTemplate();
     virtual ~FmtGenInputServiceCppTemplate();
 
-    virtual int getContentType() const { return HighlighterCpp; }
+    virtual QStringList tabs() Q_DECL_OVERRIDE;
+    virtual int getContentType() const Q_DECL_OVERRIDE { return HighlighterCpp; }
 
     static QString getSelectTypedefName(const FmtSharedTablePtr &pTable);
     static QString getCacheClassName(const FmtSharedTablePtr &pTable);
@@ -19,10 +31,10 @@ public:
     static QString getInputServiceClassName(const FmtSharedTablePtr &pTable);
     static QString getInputServicePtMemberName(const FmtSharedTablePtr &pTable);
 
-    virtual GenHighlightingRuleList highlightingRuleList() const;
+    virtual GenHighlightingRuleList highlightingRuleList() const Q_DECL_OVERRIDE;
 
 protected:
-    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable);
+    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable) Q_DECL_OVERRIDE;
 
 private:
     void createCacheClassDeclaration(const FmtSharedTablePtr &pTable, QTextStream &stream);

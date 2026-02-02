@@ -142,9 +142,6 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
 
     SetupActionsMenu();
 
-    pCodeGenWidget = new FmtWorkWndGen(this);
-    ui->tabWidget->addTab(pCodeGenWidget, tr("Код"));
-
     ui->nameEdit->setMaxLength(fmtm_TableNameMaxSize);
     ui->commentEdit->setMaxLength(fmtm_TableCommentMaxSize);
     ui->scriptButton->setEnabled(false);
@@ -264,15 +261,12 @@ void FmtWorkWindow::SetUnclosableSystemTabs()
 
     tabBar->setTabButton(FmtWinTabs_Index, QTabBar::RightSide, Q_NULLPTR);
     tabBar->setTabButton(FmtWinTabs_Index, QTabBar::LeftSide, Q_NULLPTR);
-
-    tabBar->setTabButton(FmtWinTabs_Code, QTabBar::RightSide, Q_NULLPTR);
-    tabBar->setTabButton(FmtWinTabs_Code, QTabBar::LeftSide, Q_NULLPTR);
 }
 
 void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
 {
     pTable = table;
-    pCodeGenWidget->setTable(pTable);
+
     FillIndecesList();
     UpdateCopyMenu(pTable->name());
 
@@ -282,8 +276,8 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     pMapper->addMapping(ui->nameEdit, FmtTable::fld_Name);
     pMapper->addMapping(ui->commentEdit, FmtTable::fld_Comment);
     pMapper->addMapping(ui->blobLen, FmtTable::fld_BlobLen);
-    pMapper->addMapping(ui->isTemp, FmtTable::fld_isTemporary);
-    pMapper->addMapping(ui->isRec, FmtTable::fld_isRecord);
+    /*pMapper->addMapping(ui->isTemp, FmtTable::fld_isTemporary);
+    pMapper->addMapping(ui->isRec, FmtTable::fld_isRecord);*/
     pMapper->addMapping(ui->keyComboBox, FmtTable::fld_PkIndx, "currentText");
 
     pMapper->toFirst();
@@ -310,7 +304,7 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     pTreeView->setFmtTable(pTable.data());
     pTreeView->expandAll();
 
-    isTemporaryTableChanged(pTable->isTemporary());
+    UpdateTableIcon();
     setupUndoRedo();
     setupFind();
 
@@ -381,7 +375,11 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     connect(pTable.data(), SIGNAL(indexChanged(FmtIndex*)), SLOT(OnIndexChanged(FmtIndex*)));
     connect(pTable.data(), SIGNAL(nameChanged(QString)), SLOT(UpdateCopyMenu(QString)));
     connect(fieldsModel, SIGNAL(AddedToLast(FmtField*, const QModelIndex&)), SLOT(AddedToLast(FmtField*,QModelIndex)));
-    connect(pTable.data(), SIGNAL(isTemporaryChanged(bool)), SLOT(isTemporaryTableChanged(bool)));
+    /*connect(pTable.data(), SIGNAL(isTemporaryChanged(bool)), SLOT(isTemporaryTableChanged(bool)));
+    connect(pTable.data(), SIGNAL(isRecordChanged(bool)), SLOT(isRecordTableChanged(bool)));*/
+
+    connect(ui->isRec, &QCheckBox::toggled, this, &FmtWorkWindow::isRecordTableChanged);
+    connect(ui->isTemp, &QCheckBox::toggled, this, &FmtWorkWindow::isTemporaryTableChanged);
     //connect(m_rebuildOffsets, SIGNAL(triggered(bool)), pTable.data(), SLOT(rebuildOffsets()));
 }
 
@@ -418,8 +416,8 @@ void FmtWorkWindow::setupUndoRedo()
     pUndoMenu->addAction(pUndoActionWrp);
     pUndoMenu->addAction(pUndoPopup);
 
-    pUndoAction->setIcon(QIcon(":/img/Edit_UndoHS.png"));
-    pRedoAction->setIcon(QIcon(":/img/Edit_RedoHS.png"));
+    pUndoAction->setIcon(QIcon::fromTheme("Undo"));
+    pRedoAction->setIcon(QIcon::fromTheme("Redo"));
     undoDisabled = QIcon(pUndoAction->icon().pixmap(16, QIcon::Disabled));
     pUndoActionWrp->setIcon(undoDisabled);
 
@@ -720,19 +718,33 @@ QUndoStack *FmtWorkWindow::tableUndoStack()
     return pTable->undoStack();
 }
 
-void FmtWorkWindow::isTemporaryTableChanged(bool value)
+void FmtWorkWindow::UpdateTableIcon()
 {
-    if (!pParentWnd)
-        return;
-
     QIcon icon;
-    if (!value)
-        icon = QIcon(":/table");
-    else
-        icon = QIcon(":/tablet");
 
+    if (!ui->isRec->isChecked() && !ui->isTemp->isChecked())
+        icon = QIcon::fromTheme("Table");
+    else
+    {
+        if (ui->isTemp->isChecked())
+            icon = QIcon::fromTheme("TemporalTable");
+        else
+            icon = QIcon::fromTheme("FmtRecord");
+    }
     if (pParentWnd)
         pParentWnd->setWindowIcon(icon);
+}
+
+void FmtWorkWindow::isTemporaryTableChanged(bool value)
+{
+    pTable->setIsTemporary(value);
+    UpdateTableIcon();
+}
+
+void FmtWorkWindow::isRecordTableChanged(bool value)
+{
+    pTable->setIsRecord(value);
+    UpdateTableIcon();
 }
 
 void FmtWorkWindow::UnloadToDbf()
@@ -858,24 +870,28 @@ void FmtWorkWindow::GenAddFiledsScript()
     QHBoxLayout *layout = new QHBoxLayout(containert);
     layout->setMargin(0);
 
+    QButtonGroup group;
     QRadioButton *newAlgRadio = new QRadioButton(tr("Использовать DEFAULT для полей"));
     QRadioButton *oldAlgRadio = new QRadioButton(tr("Обновлять значения после создания полей (UPDATE)"));
 
-    newAlgRadio->setChecked(true);
     layout->addWidget(newAlgRadio);
     layout->addWidget(oldAlgRadio);
     containert->setLayout(layout);
 
-    connect(newAlgRadio, &QRadioButton::toggled, [&newAlg](bool value)
+    group.addButton(newAlgRadio);
+    group.addButton(oldAlgRadio);
+
+    /*connect(newAlgRadio, &QRadioButton::toggled, [&newAlg](bool value)
     {
         newAlg = value;
-    });
+    });*/
 
+    oldAlgRadio->setChecked(true);
     if (SelectTableFieldsDailog(tr("Выбор полей для скрипта обновления"), &FldList, containert) == QDialog::Accepted)
     {
         QString code;
 
-        if (newAlg)
+        if (!group.checkedId())
             code = FmtGenUpdateAddColumnScript(FldList);
         else
             code = FmtGenUpdateAddColumnScriptOld(FldList);
@@ -1283,7 +1299,7 @@ void FmtWorkWindow::initRibbonFmtPanel()
     SARibbonPannel* FmtPannel = new SARibbonPannel(tr("Запись словаря"));
     m_pFmtCategory->addPannel(FmtPannel);
 
-    m_pInitTableMenu = new QMenu(tr("Инициализировать"), this);
+    m_pInitTableMenu = new QMenu(tr("Создать в БД"), this);
     m_pInitTableMenu->setIcon(QIcon::fromTheme("TableAdapter"));
     m_pInitCreateTableAction = m_pInitTableMenu->addAction(tr("Создать/пересоздать таблицу"));
     m_pInitCreateIndexAction = m_pInitTableMenu->addAction(tr("Создать/пересоздать индексы"));
@@ -1469,8 +1485,8 @@ void FmtWorkWindow::initRibbonCodeTemplatesPanel()
     pGenCppCodeMenu = new QMenu(tr("Шаблоны"), this);
     pGenCppCodeMenu->setIcon(QIcon::fromTheme("GenerateAndRecordCode"));
 
-    pGenCodeAction = Pannel->addLargeMenu(pGenCppCodeMenu, QToolButton::MenuButtonPopup);
-    pGenCodeAction->setIcon(QIcon::fromTheme("GenerateAndRecordCode"));
+    pGenCppCodeAction = Pannel->addLargeMenu(pGenCppCodeMenu, QToolButton::MenuButtonPopup);
+    pGenCppCodeAction->setIcon(QIcon::fromTheme("GenerateAndRecordCode"));
 
     bool HasMacroSeparator = false;
     for (int i = 0; i < m_pGeneratorsProxyModel->rowCount(); i++)
@@ -1495,12 +1511,19 @@ void FmtWorkWindow::initRibbonCodeTemplatesPanel()
             pGenCppCodeMenu->setDefaultAction(action);
         }
         action->setData(id);
+
+        connect(action, &QAction::triggered, [=]()
+        {
+            OpenGeneratorTab(action->data().toString(), action->text());
+        });
     }
 
     pCodeGenMenu = new QMenu(tr("Скрипты SQL"), this);
     pCodeGenMenu->setIcon(QIcon::fromTheme("GenerateChangeScript"));
 
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
+    pCodeGenMenu->setDefaultAction(m_GenCreateTbSql);
+
     m_GenAddScript = pCodeGenMenu->addAction(tr("Добавление полей"));
     m_GenModifyScript = pCodeGenMenu->addAction(tr("Изменение полей"));
     m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
@@ -1523,14 +1546,12 @@ void FmtWorkWindow::initRibbonCodeTemplatesPanel()
     connect(m_GenModifyScript, &QAction::triggered, this, &FmtWorkWindow::GenModifyTableFields);
     connect(m_TableObjects, &QAction::triggered, this, &FmtWorkWindow::TableObjects);
     connect(m_GenCreateTbSql, &QAction::triggered, this, &FmtWorkWindow::GenCreateTableScript);
+    connect(pGenCodeAction, &QAction::triggered, this, &FmtWorkWindow::GenCreateTableScript);
 
-    /*connect(m_GenDelScript, SIGNAL(triggered(bool)), SLOT(GenDeleteFiledsScript()));
-    connect(m_GenAddScript, SIGNAL(triggered(bool)), SLOT(GenAddFiledsScript()));
-    connect(m_GenInsertTemplate, SIGNAL(triggered(bool)), SLOT(GenInsertTemplateSql()));
-    connect(m_GenModifyScript, SIGNAL(triggered(bool)), SLOT(GenModifyTableFields()));
-
-    connect(m_TableObjects, SIGNAL(triggered(bool)), SLOT(TableObjects()));
-    connect(m_GenCreateTbSql, SIGNAL(triggered(bool)), SLOT(GenCreateTableScript()));*/
+    connect(pGenCppCodeAction, &QAction::triggered, [=]
+    {
+        OpenGeneratorTab("FmtGenCppTemplate", fmtGenInterfaceAlias("FmtGenCppTemplate"));
+    });
 }
 
 void FmtWorkWindow::initRibbonPanels()
@@ -1540,8 +1561,8 @@ void FmtWorkWindow::initRibbonPanels()
 
     initRibbonFmtPanel();
     initRibbonDataPanel();
-    initRibbonFieldsPanel();
     initRibbonCodeTemplatesPanel();
+    initRibbonFieldsPanel();
 }
 
 void FmtWorkWindow::updateRibbonTabs()
@@ -1591,4 +1612,23 @@ void FmtWorkWindow::clearRibbonTabs()
 
     if (!hasVisible)
         ribbon()->hideContextCategory(context);
+}
+
+void FmtWorkWindow::OpenGeneratorTab(const QString &interfaceid, const QString &title)
+{
+    for (int i = 0; i < ui->tabWidget->count(); i ++)
+    {
+        FmtWorkWndGen *GenTmp = qobject_cast<FmtWorkWndGen*>(ui->tabWidget->widget(i));
+
+        if (GenTmp && GenTmp->interfaceId() == interfaceid)
+            return;
+    }
+
+    FmtWorkWndGen *GenWnd = new FmtWorkWndGen(this);
+    GenWnd->setInterfaceID(interfaceid);
+    GenWnd->setTable(pTable);
+    GenWnd->generate();
+
+    ui->tabWidget->addTab(GenWnd, title);
+    ui->tabWidget->setCurrentWidget(GenWnd);
 }

@@ -56,6 +56,8 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     toolLoggingCategoryListAdd(logCore());
     toolLoggingCategoryListAdd(logFmt());
     toolLoggingCategoryListAdd(logDbgHelp());
+
+    HighlighterStyle::inst()->loadStyle("://office2013_highlighter.json");
 }
 
 FmtApplication::~FmtApplication()
@@ -101,8 +103,8 @@ void FmtApplication::init()
 
     registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate", tr("Шаблоны btrv"));
     registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql", tr("Скрипт TablesSql"));
-    registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate", tr("Объектный сервис ввода для TRsbParty"));
-    registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate", tr("Класс для импорта в RSL"));
+    registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate", tr("Rs-Core: Объектный сервис ввода для TRsbParty"));
+    registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate", tr("Rs-Core: Класс для импорта в RSL для TRsbParty"));
     registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix", tr("PL/SQL скрип наполнения fmt"));
 
     registerMassOpInterface<MassInitTableOperation>("MassInitTableOperation", tr("Создание таблиц/индексов"));
