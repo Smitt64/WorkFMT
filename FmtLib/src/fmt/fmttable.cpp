@@ -1475,7 +1475,7 @@ QString FmtTable::generateCreateTableSql()
             break;
         case BT_CLOB:
             blobtypestyring = "CLOB";
-            blobfldname = "T_FMTBLOBDATA_XXXX";
+            blobfldname = "T_FMTCLOBDATA_XXXX";
             break;
         }
 

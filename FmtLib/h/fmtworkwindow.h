@@ -15,7 +15,7 @@ namespace Ui {
 class FmtWorkWindow;
 }
 
-#define FMTTABLE_CONTEXTCATEGORY tr("Таблица")
+#define FMTTABLE_CONTEXTCATEGORY tr("Редактор")
 
 class FmtFieldsDelegate;
 class FmtIndecesDelegate;
@@ -52,6 +52,13 @@ public:
     {
         FmtWinTabs_Columns = 0,
         FmtWinTabs_Index
+    };
+
+    enum
+    {
+        COMBO_No = 0,
+        COMBO_BLOB,
+        COMBO_CLOB
     };
 
     explicit FmtWorkWindow(QWidget *parent = Q_NULLPTR);
@@ -96,6 +103,7 @@ public slots:
                      bool OpenTab = true, bool WordWrap = false);
 
 private slots:
+    void currentTabChanged(int index);
     void indexModelReseted();
     void indexModelInserted(const QModelIndex &parent, const int &first, const int &last);
     void AddIndex();
@@ -154,9 +162,8 @@ private:
     void setupFind();
     void SetUnclosableSystemTabs();
     int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget = nullptr, const QString &icon = QString());
-    void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false, bool AddConvertButton = true);
+    void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
     void AddCppCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
-    void SetupActionsMenu();
     void OpenGeneratorTab(const QString &interfaceid, const QString &title);
     Ui::FmtWorkWindow *ui;
     QSharedPointer<FmtTable> pTable;
@@ -174,6 +181,7 @@ private:
     QSpacerItem *pHorizontalSpacer;
     QPushButton *pAddIndex;
 
+    QAction *pCopyMenuAction;
     QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu, *pUserActionsMenu, *pGenCppCodeMenu;
     QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_MassRemoveFields;
     QAction *m_unloadDbf, *m_loadDbf, *m_ImportData, *m_ImportFromTable;
@@ -181,7 +189,7 @@ private:
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript, *m_pCompareFmt;
     QAction *m_TableObjects, *pGenCodeAction, *pGenCppCodeAction;
-    QAction *m_DiffToScript;
+    QAction *m_DiffToScript, *m_pUserCode, *m_pEditMacro;
 
     QFrame *pUndoRedoBtnContainer;
     QHBoxLayout *pUndoRedoLayout;
@@ -206,6 +214,8 @@ private:
 
     GenInterfaceFactoryModel *m_pGeneratorsModel;
     GeneratorsProxyModel *m_pGeneratorsProxyModel;
+
+    QWidget *m_pLastActiveFmtTab;
 };
 
 #endif // FMTWORKWINDOW_H

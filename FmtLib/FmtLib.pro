@@ -64,6 +64,8 @@ SOURCES += \
     src/widgets/comparefmt/comparexmlpage.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
+    src/widgets/fmtworkwindow/fmtcodetabbase.cpp \
+    src/widgets/fmtworkwindow/fmtsqltab.cpp \
     src/widgets/fmtworkwindow/fmtwindowtabinterface.cpp \
     src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
@@ -375,6 +377,8 @@ HEADERS += \
     h/odbctablemodeldelegate.h \
     h/recentconnectionlist.h \
     h/tnsnames.h \
+    src/widgets/fmtworkwindow/fmtcodetabbase.h \
+    src/widgets/fmtworkwindow/fmtsqltab.h \
     src/widgets/fmtworkwindow/fmtwindowtabinterface.h \
     src/widgets/guiconverterdlg.h \
     src/widgets/sqlconvertordlg.h \

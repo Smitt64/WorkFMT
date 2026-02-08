@@ -13,42 +13,13 @@
 #include "rslexecutors/generatorrslexecutor.h"
 #include "src/models/generatorsproxymodel.h"
 #include <QMdiArea>
+#include <SARibbon.h>
 
 FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
-    FmtWindowTabInterface(parent),
+    FmtCodeTabBase(parent),
     pInterface(nullptr),
-    pContainer(nullptr),
-    pEditor(nullptr)
+    m_pUpdateScripts(nullptr)
 {
-    /*pGenType = new QComboBox(this);
-    pActionProperty = ui->toolBar->addAction(QIcon(":/img/Properties.png"), tr("Параметры"));
-    pActionSave = ui->toolBar->addAction(QIcon(":/save"), tr("Сохранить"));
-    ui->toolBar->addSeparator();
-    pActionRun = ui->toolBar->addAction(QIcon(":/img/FormRunHS.png"), tr("Сгенерировать"));*/
-
-    //connect(pGenType, SIGNAL(currentIndexChanged(QString)), SLOT(interfaceComboSelected(QString)));
-    //connect(pActionRun, SIGNAL(triggered(bool)), SLOT(generate()));
-
-    /*pGenModel = new GenInterfaceFactoryModel(this);
-    pProxyModel = new GeneratorsProxyModel(this);
-    pProxyModel->setSourceModel(pGenModel);*/
-
-    /*pGenType->setModel(pProxyModel);//->addItems(fmtGenInterfaces());
-    pGenType->setModelColumn(GenInterfaceFactoryModel::FieldAlias);*/
-
-    /*pEditor = new CodeEditor(this);
-    pEditor->setReadOnly(true);
-    pEditor->setWordWrapMode(QTextOption::NoWrap);*/
-
-    //setCentralWidget(pEditor);
-    //UpdateSaveAction();
-    //ToolApplyHighlighter(pEditor, HighlighterCpp);
-    //pEditor->rehighlight();
-
-    //connect(pActionSave, SIGNAL(triggered(bool)), SLOT(onSave()));
-    //connect(pActionProperty, SIGNAL(triggered(bool)), SLOT(onProperty()));
-
-    //setInterfaceID("FmtGenCppTemplate");
 }
 
 FmtWorkWndGen::~FmtWorkWndGen()
@@ -82,56 +53,22 @@ void FmtWorkWndGen::setInterfaceID(const QString &id)
         GetGenMacroExecutor(&element, &pInterface);
     }
 
-    auto AddTab = [=](const QString &tabname) -> QMdiSubWindow*
-    {
-        CodeEditor *pCode = new CodeEditor(this);
-        pCode->setReadOnly(true);
-
-        QMdiSubWindow *mdi = pContainer->addSubWindow(pCode);
-        mdi->setWindowTitle(tabname);
-        mdi->setAttribute(Qt::WA_DeleteOnClose);
-        mdi->setWindowIcon(QIcon::fromTheme("Code"));
-        mdi->showMaximized();
-
-        return mdi;
-    };
-
-    pContainer = new QMdiArea(this);
-    pContainer->setDocumentMode(true);
-    pContainer->setViewMode(QMdiArea::TabbedView);
-    pContainer->setTabsClosable(false);
-    //pContainer->setTabPosition(QTabWidget::South);
-    setCentralWidget(pContainer);
-
     QStringList tabsNames = pInterface->tabs();
     if (!tabsNames.isEmpty())
     {
         for (const auto &tab : tabsNames)
-        {
-            QMdiSubWindow *window = AddTab(tab);
-
-            m_pWindows.insert(tab, window);
-            m_pWindowsList.append(window);
-        }
+            AddTab(tab);
     }
     else
     {
         QString tab = fmtGenInterfaceAlias(m_InterfaceId);
-        QMdiSubWindow *window = AddTab(tab);
-
-        m_pWindows.insert(tab, window);
-        m_pWindowsList.append(window);
+        AddTab(tab);
     }
 
     connect(pInterface, &FmtGenInterface::finish, this, &FmtWorkWndGen::onFinish);
-}
 
-/*QString FmtWorkWndGen::getInterfaceId() const
-{
-    int index = pGenType->currentIndex();
-    QString id = pProxyModel->data(pProxyModel->index(index, GenInterfaceFactoryModel::FieldKey), Qt::DisplayRole).toString();
-    return id;
-}*/
+    updateRibbonState();
+}
 
 void FmtWorkWndGen::onFinish(const QMap<QString, QByteArray> &data)
 {
@@ -147,7 +84,7 @@ void FmtWorkWndGen::onFinish(const QMap<QString, QByteArray> &data)
         CodeEditor *pCode = qobject_cast<CodeEditor*>(window->widget());
         pCode->setPlainText(QString::fromLocal8Bit(data));
 
-        ToolApplyHighlighter(pCode, pInterface->getContentType(), "office2013_highlighter");
+        setHighlighter(pCode, pInterface->getContentType());
 
         if (pCode->highlighter())
         {
@@ -166,104 +103,22 @@ void FmtWorkWndGen::onFinish(const QMap<QString, QByteArray> &data)
             QString TabName = item.key();
 
             if (m_pWindows.contains(TabName))
-            {
                 SetCodeToTab(m_pWindows[TabName], item.value());
-                /*CodeEditor *pCode = qobject_cast<CodeEditor*>(m_pWindows[TabName]->widget());
-                pCode->setPlainText(QString::fromLocal8Bit(item.value()));
-
-                ToolApplyHighlighter(pCode, pInterface->getContentType(), "office2013_highlighter");
-
-                if (pCode->highlighter())
-                {
-                    pCode->highlighter()->addType(pTable->name());
-                    pCode->highlighter()->addHighlightingRules(pInterface->highlightingRuleList());
-                    pCode->rehighlight();
-                }*/
-            }
         }
     }
     else
         SetCodeToTab(m_pWindowsList[0], data[QString()]);
 
     pContainer->setActiveSubWindow(m_pWindowsList[0]);
+    m_pUpdateScripts->setEnabled(true);
 
-    /*FmtGenInterface *pInterface = m_Interfaces[id];
-    ToolApplyHighlighter(pEditor, pInterface->getContentType());
-
-    if (pEditor->highlighter())
-    {
-        pEditor->highlighter()->addType(pTable->name());
-        pEditor->highlighter()->addHighlightingRules(pInterface->highlightingRuleList());
-        pEditor->rehighlight();
-    }
-
-    pEditor->setPlainText(QString::fromLocal8Bit(data));
-    pActionRun->setEnabled(true);
-    UpdateSaveAction();*/
-}
-
-void FmtWorkWndGen::interfaceComboSelected(const QString &value)
-{
-    Q_UNUSED(value);
-    /*const QString id = getInterfaceId();
-
-    if (!id.startsWith("macro:"))
-    {
-        FmtGenInterface *pInterface = Q_NULLPTR;
-
-        if (m_Interfaces.contains(id))
-            pInterface = m_Interfaces[id];
-        else
-        {
-            pInterface = fmtGenInterfaceCreate(id);
-            m_Interfaces[id] = pInterface;
-        }
-
-        connect(pInterface, SIGNAL(finish(QByteArray)), SLOT(onFinish(QByteArray)));
-        pActionProperty->setEnabled(pInterface->hasPropertes());
-    }
-    else
-    {
-        QModelIndex start = pProxyModel->index(0, 0);
-        QModelIndexList lst = pProxyModel->match(start, Qt::DisplayRole, id);
-
-        if (!lst.isEmpty())
-        {
-            QModelIndex index = lst.first();
-
-            GeneratorsMacroElement element = pProxyModel->getMacroElement(index);
-
-            GenMacroExecutor *pMacroExecutor = Q_NULLPTR;
-
-            if (m_Interfaces.contains(id))
-                pMacroExecutor = dynamic_cast<GenMacroExecutor*>(m_Interfaces[id]);
-            else
-            {
-                pMacroExecutor = new GenMacroExecutor(&element);
-                m_Interfaces[id] = pMacroExecutor;
-
-                connect(m_Interfaces[id], SIGNAL(finish(QByteArray)), SLOT(onFinish(QByteArray)));
-                pActionProperty->setEnabled(m_Interfaces[id]->hasPropertes());
-            }
-        }
-    }*/
+    updateRibbonState();
 }
 
 void FmtWorkWndGen::generate()
 {
+    m_pUpdateScripts->setEnabled(false);
     pInterface->start(pTable);
-    /*const QString id = getInterfaceId();
-
-    m_Interfaces[getInterfaceId()]->start(pTable);
-    pActionRun->setEnabled(false);*/
-}
-
-void FmtWorkWndGen::UpdateSaveAction()
-{
-    /*if (pEditor->toPlainText().isEmpty())
-        pActionSave->setEnabled(false);
-    else
-        pActionSave->setEnabled(true);*/
 }
 
 void FmtWorkWndGen::onProperty()
@@ -276,34 +131,41 @@ void FmtWorkWndGen::onProperty()
     }*/
 }
 
-void FmtWorkWndGen::onSave()
+QString FmtWorkWndGen::ribbonCategoryName() const
 {
-    /*QString filter;
-    FmtGenInterface *pInterface = m_Interfaces[getInterfaceId()];
+    return tr("Код");
+}
 
-    switch(pInterface->getContentType())
+void FmtWorkWndGen::initRibbonPanels()
+{
+    FmtCodeTabBase::initRibbonPanels();
+}
+
+void FmtWorkWndGen::activateRibbon()
+{
+    FmtCodeTabBase::activateRibbon();
+    updateRibbonState();
+}
+
+void FmtWorkWndGen::deactivateRibbon()
+{
+    FmtCodeTabBase::deactivateRibbon();
+}
+
+void FmtWorkWndGen::updateRibbonState()
+{
+    FmtCodeTabBase::updateRibbonState();
+}
+
+void FmtWorkWndGen::setupRibbonActions()
+{
+    m_pActionPannel->addSeparator();
+    m_pUpdateScripts = createAction(tr("Обновить"), "UpdatedScript");
+    m_pActionPannel->addLargeAction(m_pUpdateScripts);
+    m_pUpdateScripts->setEnabled(false);
+
+    connect(m_pUpdateScripts, &QAction::triggered, [=]()
     {
-    case HighlighterSql:
-        filter = "Sql files(*.sql)";
-        break;
-    case HighlighterCpp:
-        filter = "C++ files(*.c *.cpp *.h *.hpp)";
-        break;
-    default:
-        filter = "Text files(*.txt)";
-    }
-
-    QString fname = QFileDialog::getSaveFileName(this, QString(), QString(), filter);
-
-    if (fname.isEmpty())
-        return;
-
-    QFile f(fname);
-    if (f.open(QIODevice::WriteOnly))
-    {
-        QTextStream stream(&f);
-        stream.setCodec("IBM 866");
-        stream << pEditor->toPlainText();
-        f.close();
-    }*/
+        generate();
+    });
 }
