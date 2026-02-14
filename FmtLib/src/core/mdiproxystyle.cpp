@@ -517,6 +517,7 @@ void MDIProxyStyle::drawMdiSubWindowFrame(const QStyleOption *option,
 
     // Цвет рамки в зависимости от активности
     QColor frameColor = isActive ? activeFrameColor() : inactiveFrameColor();
+    QColor titleTextColor = isActive ? titleTextActive() : titleTextInactive();
 
     // Рисуем зеленую рамку (3 пикселя)
     int FarameWidth = pixelMetric(PM_MdiSubWindowFrameWidth, option, widget);
@@ -837,7 +838,7 @@ QPalette MDIProxyStyle::standardPalette() const
     // --- Цвета акцента (Highlight) ---
     // *** ИСПРАВЛЕНО: Устанавливаем цвет для Active и Inactive ***
     pal.setColor(QPalette::Active, QPalette::Highlight, highlightColor);      // #217346
-    pal.setColor(QPalette::Inactive, QPalette::Highlight, midColor);          // Или buttonBgColor, но midColor тоже логично
+    pal.setColor(QPalette::Inactive, QPalette::Highlight, inactiveFrameColor());          // Или buttonBgColor, но midColor тоже логично
     pal.setColor(QPalette::Active, QPalette::HighlightedText, highlightedTextColor); // #FFFFFF
     pal.setColor(QPalette::Inactive, QPalette::HighlightedText, Qt::black); // Или buttonTextColor
 

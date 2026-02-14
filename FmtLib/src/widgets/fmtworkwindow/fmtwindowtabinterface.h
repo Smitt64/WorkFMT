@@ -42,6 +42,7 @@ public:
     }
 
 protected:
+    virtual void setupRibbonActions();
     virtual void initDefaultPanel();
     void setWordWrapToEdit(QPlainTextEdit *pEdit, bool flag);
     void setAllCharsModeToEdit(QPlainTextEdit *pEdit, bool flag);

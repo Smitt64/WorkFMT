@@ -10,9 +10,22 @@
 #include <errorsmodel.h>
 
 ToolbarActionExecutor::ToolbarActionExecutor(MainWindow *parent)
-    : RslExecutor{parent}
+    : RslExecutor{parent},
+    pInfo(nullptr)
 {
     pMainWindow = parent;
+
+    FmtWorkWindow *wnd = pMainWindow->currentWorkWindow();
+    pTable = wnd->table();
+    pInfo = pMainWindow->currentConnection();
+}
+
+ToolbarActionExecutor::ToolbarActionExecutor(FmtSharedTablePtr Table, QWidget *parent)
+    : RslExecutor{parent},
+    pInfo(nullptr)
+{
+    pTable = Table;
+    pInfo = pTable->connection();
 }
 
 ToolbarActionExecutor::~ToolbarActionExecutor()
@@ -26,20 +39,12 @@ void ToolbarActionExecutor::onInspectModuleSymbol(Qt::HANDLE sym)
 
     if (!name.compare("{CurrentConnection}", Qt::CaseInsensitive))
     {
-        ConnectionInfo *info = pMainWindow->currentConnection();
-
-        if (info)
-            globalSet(sym, QVariant::fromValue((QObject*)info));
+        if (pInfo)
+            globalSet(sym, QVariant::fromValue((QObject*)pInfo));
     }
     else if (!name.compare("{FmtTable}", Qt::CaseInsensitive))
     {
-        FmtWorkWindow *wnd = pMainWindow->currentWorkWindow();
-
-        if (wnd)
-        {
-            FmtSharedTablePtr table = wnd->table();
-            globalSet(sym, QVariant::fromValue((QObject*)table.data()));
-        }
+        globalSet(sym, QVariant::fromValue((QObject*)pTable.data()));
     }
 }
 
@@ -50,6 +55,7 @@ void ToolbarActionExecutor::PlayRepProc()
 
 void ToolbarActionExecutor::playRep(const QString &filename, const QString &output, RslExecutorProc proc)
 {
+    QWidget *pWidget = qobject_cast<QWidget*>(parent());
     QMap<QString,QString> meta = rslGetMacroInfo(filename);
 
     RslExecutor::playRep(filename, output, proc);
@@ -62,7 +68,7 @@ void ToolbarActionExecutor::playRep(const QString &filename, const QString &outp
         for (int i = 0; i < err.size(); ++i)
             model.addError(err[i]);
 
-        ErrorDlg dlg(ErrorDlg::ModeInformation, pMainWindow);
+        ErrorDlg dlg(ErrorDlg::ModeInformation, pWidget);
         dlg.setErrors(&model);
         dlg.exec();
     }
@@ -82,7 +88,7 @@ void ToolbarActionExecutor::playRep(const QString &filename, const QString &outp
             int Highlighter = toolHighlighterByName(meta["Highlighter"]);
 
             QString code = toolReadTextFileContent(outputFileName(), "IBM 866");
-            toolShowCodeDialog(pMainWindow, title, Highlighter, code);
+            toolShowCodeDialog(pWidget, title, Highlighter, code);
         }
     }
 }

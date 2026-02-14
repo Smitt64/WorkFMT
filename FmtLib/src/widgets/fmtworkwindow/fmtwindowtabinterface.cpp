@@ -42,6 +42,11 @@ void FmtWindowTabInterface::setParentContextCategory(SARibbonContextCategory *co
     m_pParentContextCategory = contextCategory;
 }
 
+void FmtWindowTabInterface::setupRibbonActions()
+{
+
+}
+
 SARibbonContextCategory *FmtWindowTabInterface::parentContextCategory() const
 {
     return m_pParentContextCategory;
@@ -69,6 +74,7 @@ void FmtWindowTabInterface::initRibbonPanels()
     if (m_pRibbon && !m_pRibbonCategory)
         m_pRibbonCategory = new SARibbonCategory(ribbonCategoryName());
 
+    setupRibbonActions();
     initDefaultPanel();
 }
 

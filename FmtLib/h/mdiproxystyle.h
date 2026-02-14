@@ -44,7 +44,7 @@ public:
                          SubControl sc, const QWidget *widget = nullptr) const override;
 
     SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
-                                                    const QPoint &pos, const QWidget *widget) const;
+                                                    const QPoint &pos, const QWidget *widget) const override;
 
     int styleHint(QStyle::StyleHint hint, const QStyleOption *option = nullptr, const QWidget *widget = nullptr, QStyleHintReturn *returnData = nullptr) const override;
 
@@ -57,6 +57,19 @@ public:
 
     void addSubElementRectForWidget(QWidget *widget, QStyle::SubElement se, const QRect &rect);
     QRect subElementRect(QStyle::SubElement element, const QStyleOption *option, const QWidget *widget = nullptr) const override;
+
+    // Вспомогательные функции для получения цветов
+    QColor activeFrameColor() const { return QColor(33, 115, 70); }     // #217346
+    QColor inactiveFrameColor() const { return QColor(197, 210, 224); } // #666666
+    QColor titleBarActive() const { return QColor(255, 255, 255); }     // Белый
+    QColor titleBarInactive() const { return QColor(248, 248, 248); }   // #f8f8f8
+    QColor titleTextActive() const { return QColor(33, 115, 70); }      // #217346
+    QColor titleTextInactive() const { return QColor(102, 102, 102); }  // #666666
+    QColor borderColor() const { return QColor(197, 210, 224); }        // #c5d2e0
+    QColor buttonHoverColor() const { return QColor(213, 240, 226); }   // #d5f0e2
+    QColor buttonPressColor() const { return QColor(160, 220, 180); }   // #a0dcb4
+    QColor closeButtonHover() const { return QColor(232, 17, 35); }     // #e81123
+    QColor closeButtonPress() const { return QColor(200, 0, 20); }      // #c80014
 
 private:
     // Иконки для кнопок (загружаются из SARibbon)
@@ -94,19 +107,6 @@ private:
                             QPainter *painter, const QWidget *widget,
                             SubControl control, const QIcon &icon,
                             bool isActive) const;
-
-    // Вспомогательные функции для получения цветов
-    QColor activeFrameColor() const { return QColor(33, 115, 70); }     // #217346
-    QColor inactiveFrameColor() const { return QColor(168, 230, 189); } // #a8e6bd
-    QColor titleBarActive() const { return QColor(255, 255, 255); }     // Белый
-    QColor titleBarInactive() const { return QColor(248, 248, 248); }   // #f8f8f8
-    QColor titleTextActive() const { return QColor(33, 115, 70); }      // #217346
-    QColor titleTextInactive() const { return QColor(102, 102, 102); }  // #666666
-    QColor borderColor() const { return QColor(197, 210, 224); }        // #c5d2e0
-    QColor buttonHoverColor() const { return QColor(213, 240, 226); }   // #d5f0e2
-    QColor buttonPressColor() const { return QColor(160, 220, 180); }   // #a0dcb4
-    QColor closeButtonHover() const { return QColor(232, 17, 35); }     // #e81123
-    QColor closeButtonPress() const { return QColor(200, 0, 20); }      // #c80014
 };
 
 #endif // MDIPROXYSTYLE_H

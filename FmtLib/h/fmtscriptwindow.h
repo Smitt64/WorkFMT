@@ -5,28 +5,51 @@
 //#include <QtScript>
 //#include <QtScriptTools>
 #include "fmttable.h"
+#include "src/widgets/fmtworkwindow/fmtcodetabbase.h"
+
+#define WndTypeCode 1
+#define WndTypeOutput 2
+
+#define Prop_WndType "WndType"
+#define Prop_LinkedWnd "LinkedWnd"
 
 class CodeEditor;
 class Highlighter;
-class FmtScriptWindow : public QMainWindow
+class SubWindowEventFilter;
+class SARibbonPannel;
+class FmtScriptWindow : public FmtCodeTabBase
 {
     Q_OBJECT
 public:
     explicit FmtScriptWindow(QSharedPointer<FmtTable> &table, QWidget *parent = nullptr);
     virtual ~FmtScriptWindow();
 
-signals:
+    void closeLinkedWindow(QMdiSubWindow *window);
+    QString ribbonCategoryName() const override;
+
+    virtual void initRibbonPanels() override;
+    virtual void activateRibbon() override;
+    virtual void deactivateRibbon() override;
+
+protected:
+    virtual void preInitDefaultActions() override;
+    virtual void setupRibbonActions() override;
+    virtual void updateRibbonState() override;
 
 private slots:
     void OnNew();
-    void OnExecute();
-    void OnExecuteDebug();
     void OnOpen();
-    void OnSave();
+    /*void OnExecute();
+    void OnExecuteDebug();
+
+    void OnSave();*/
 
 private:
-    bool save();
     void ExecuteEx(bool useDebug);
+
+    QMdiSubWindow *outputWnd(QMdiSubWindow *CodeWnd);
+    /*bool save();
+
     void CreateActions();
     void CreateMdi();
     void CreateScriptEngine();
@@ -36,10 +59,14 @@ private:
     QSplitter *pSplitter;
     CodeEditor *pOutput;
 
-    CodeEditor *pEditor;
+    CodeEditor *pEditor;*/
     //QScriptEngine *pEngine;
     //QScriptEngineDebugger dbg;
+
+    SARibbonPannel *m_pRslPanel;
+    QAction *m_pRunAction, *m_pClearOutput, *m_pCreateAction, *m_pOpenAction;
     QSharedPointer<FmtTable> pTable;
+    SubWindowEventFilter *m_pEventFilter;
 };
 
 #endif // FMTSCRIPTWINDOW_H

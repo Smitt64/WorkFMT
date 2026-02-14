@@ -25,16 +25,18 @@ public:
     QMdiSubWindow *AddTab(const QString &tabname, const QString &icon = "Code");
     QMdiSubWindow *AddTab(const QString &tabname, const QString &code, const qint16 &Syntax, const QString &icon = "Code");
 
+    CodeEditor *editorFromWindow(QMdiSubWindow *wnd);
+
     virtual QString ribbonCategoryName() const override;
 
-    virtual void initRibbonPanels();
-    virtual void activateRibbon();
-    virtual void deactivateRibbon();
+    virtual void initRibbonPanels() override;
+    virtual void activateRibbon() override;
+    virtual void deactivateRibbon() override;
 
     void setWordWrap(const bool &val);
 
 protected:
-    virtual void setupRibbonActions();
+    virtual void preInitDefaultActions();
     virtual void updateRibbonState();
     void setHighlighter(CodeEditor *edidor, const qint16 &Syntax);
     QMdiArea *pContainer;
@@ -49,7 +51,7 @@ protected:
     QList<QMdiSubWindow*> m_pWindowsList;
 
 private:
-    void initDefaultPanel();
+    void initDefaultPanel() override;
 };
 
 #endif // FMTCODETABBASE_H

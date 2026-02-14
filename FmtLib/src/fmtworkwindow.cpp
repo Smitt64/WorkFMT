@@ -687,7 +687,7 @@ void FmtWorkWindow::paintEvent(QPaintEvent *paintEvent)
     if (isActiveMdiSubWin)
         frameColor = widgetPalette.color(QPalette::Active, QPalette::Highlight);
     else
-        frameColor = widgetPalette.color(QPalette::Inactive, QPalette::Dark);
+        frameColor = widgetPalette.color(QPalette::Inactive, QPalette::Highlight);
 
     QPen pen(frameColor);
     pen.setWidth(2);
@@ -1074,8 +1074,18 @@ void FmtWorkWindow::RemoveTableFields()
 void FmtWorkWindow::OpenScriptEditorWindow()
 {
     FmtScriptWindow *script = new FmtScriptWindow(pTable);
+
+    SARibbonContextCategory *sharedContextCategory = findCategoryByName(FMTTABLE_CONTEXTCATEGORY);
+    if (ribbon() && sharedContextCategory)
+    {
+        script->setRibbonBar(ribbon());
+        script->setParentContextCategory(sharedContextCategory);
+        script->initRibbonPanels();
+    }
+
     int tab = ui->tabWidget->addTab(script, tr("Скрипт"));
     ui->tabWidget->setCurrentIndex(tab);
+    currentTabChanged(ui->tabWidget->currentIndex());
 }
 
 void FmtWorkWindow::AddFieldsToEnd()

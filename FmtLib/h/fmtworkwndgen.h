@@ -32,6 +32,7 @@ public:
     virtual void deactivateRibbon() override;
 
 protected:
+    virtual void setupRibbonActions() override;
     virtual void updateRibbonState() override;
 
 private slots:
@@ -39,8 +40,6 @@ private slots:
     void onProperty();
 
 private:
-    virtual void setupRibbonActions() override;
-
     QString m_InterfaceId;
     FmtGenInterface *pInterface;
 

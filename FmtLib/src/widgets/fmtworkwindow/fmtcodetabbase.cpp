@@ -8,13 +8,30 @@
 
 FmtCodeTabBase::FmtCodeTabBase(QWidget *parent) :
     FmtWindowTabInterface(parent),
-    pContainer(nullptr)
+    pContainer(nullptr),
+    m_pActionPannel(nullptr),
+    m_pViewPannel(nullptr),
+    m_pTabsPannel(nullptr),
+    m_pSave(nullptr),
+    m_pCopy(nullptr),
+    m_pCut(nullptr),
+    m_pPaste(nullptr),
+    m_pWordWrap(nullptr),
+    m_pShowChars(nullptr),
+    m_pConvertPg(nullptr),
+    m_pPrevTab(nullptr),
+    m_pNextTab(nullptr)
 {
     pContainer = new QMdiArea(this);
     pContainer->setDocumentMode(true);
     pContainer->setViewMode(QMdiArea::TabbedView);
     pContainer->setTabsClosable(false);
     setCentralWidget(pContainer);
+
+    connect(pContainer, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
+    {
+        updateRibbonState();
+    });
 }
 
 FmtCodeTabBase::~FmtCodeTabBase()
@@ -33,10 +50,18 @@ void FmtCodeTabBase::setHighlighter(CodeEditor *edidor, const qint16 &Syntax)
     ToolApplyHighlighter(edidor, Syntax, FmtCodeTabStyle);
 }
 
+CodeEditor *FmtCodeTabBase::editorFromWindow(QMdiSubWindow *wnd)
+{
+    CodeEditor *pCode = qobject_cast<CodeEditor*>(wnd->widget());
+    return pCode;
+}
+
 QMdiSubWindow* FmtCodeTabBase::AddTab(const QString &tabname, const QString &icon)
 {
     CodeEditor *pCode = new CodeEditor(this);
     pCode->setReadOnly(true);
+    setWordWrapToEdit(pCode, m_pWordWrap ? m_pWordWrap->isChecked() : true);
+    setAllCharsModeToEdit(pCode, m_pShowChars ? m_pShowChars->isChecked() : false);
 
     QMdiSubWindow *mdi = pContainer->addSubWindow(pCode);
     mdi->setWindowTitle(tabname);
@@ -55,6 +80,8 @@ QMdiSubWindow *FmtCodeTabBase::AddTab(const QString &tabname, const QString &cod
     CodeEditor *pCode = new CodeEditor(this);
     pCode->setReadOnly(true);
     pCode->setPlainText(code);
+    setWordWrapToEdit(pCode, m_pWordWrap ? m_pWordWrap->isChecked() : true);
+    setAllCharsModeToEdit(pCode, m_pShowChars ? m_pShowChars->isChecked() : false);
     setHighlighter(pCode, Syntax);
     pCode->rehighlight();
 
@@ -74,6 +101,19 @@ void FmtCodeTabBase::updateRibbonState()
 {
     m_pCut->setEnabled(false);
     m_pPaste->setEnabled(false);
+
+    QMdiSubWindow *Current = pContainer->currentSubWindow();
+    if (!Current)
+    {
+        m_pSave->setEnabled(false);
+        m_pCopy->setEnabled(false);
+        m_pConvertPg->setEnabled(false);
+    }
+}
+
+void FmtCodeTabBase::preInitDefaultActions()
+{
+
 }
 
 void FmtCodeTabBase::initDefaultPanel()
@@ -86,6 +126,8 @@ void FmtCodeTabBase::initDefaultPanel()
 
     m_pTabsPannel = new SARibbonPannel(tr("Вкладки"));
     m_pRibbonCategory->addPannel(m_pTabsPannel);
+
+    preInitDefaultActions();
 
     m_pSave = createAction(tr("Сохранить"), "Save");
     m_pActionPannel->addLargeAction(m_pSave);
@@ -214,9 +256,6 @@ void FmtCodeTabBase::initRibbonPanels()
     // Настраиваем категорию
     m_pRibbonCategory->setObjectName(ribbonCategoryName());
 
-    // Создаем панели и действия
-    setupRibbonActions();
-
     // Обновляем состояние
     updateRibbonState();
 
@@ -240,9 +279,4 @@ void FmtCodeTabBase::deactivateRibbon()
 void FmtCodeTabBase::setWordWrap(const bool &val)
 {
     m_pWordWrap->setChecked(val);
-}
-
-void FmtCodeTabBase::setupRibbonActions()
-{
-
 }

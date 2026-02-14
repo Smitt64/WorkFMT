@@ -8,14 +8,49 @@
 #include <QFileDialog>
 #include <errorsmodel.h>
 #include <errordlg.h>
+#include <SARibbon.h>
+#include <QTemporaryFile>
+#include <QTextStream>
+
+class SubWindowEventFilter : public QObject
+{
+public:
+    SubWindowEventFilter(FmtScriptWindow *parent) :
+        QObject(parent),
+        m_parent(parent)
+    {
+    }
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override
+    {
+        if (event->type() == QEvent::Close)
+        {
+            QMdiSubWindow *wnd = qobject_cast<QMdiSubWindow*>(obj);
+
+            if (wnd && wnd->property(Prop_WndType).toInt() == WndTypeCode)
+                m_parent->closeLinkedWindow(wnd);
+            else
+            {
+                QMdiSubWindow *code = reinterpret_cast<QMdiSubWindow*>(wnd->property(Prop_LinkedWnd).toInt());
+                code->setProperty(Prop_LinkedWnd, 0);
+            }
+        }
+
+        return QObject::eventFilter(obj, event);
+    }
+
+private:
+    FmtScriptWindow *m_parent;
+};
+
+// -------------------------------------------------------------------------------------
 
 FmtScriptWindow::FmtScriptWindow(QSharedPointer<FmtTable> &table, QWidget *parent) :
-    QMainWindow(parent)
+    FmtCodeTabBase(parent)
 {
-    CreateMdi();
-    CreateActions();
-    //CreateScriptEngine();
-
+    m_pEventFilter = new SubWindowEventFilter(this);
+    pContainer->setTabsClosable(true);
     pTable = table;
     OnNew();
 }
@@ -25,66 +60,107 @@ FmtScriptWindow::~FmtScriptWindow()
 
 }
 
-void FmtScriptWindow::CreateActions()
+
+void FmtScriptWindow::closeLinkedWindow(QMdiSubWindow *window)
 {
-    m_pToolBar = addToolBar(tr("Main"));
-    m_pToolBar->setFloatable(false);
-    m_pToolBar->setMovable(false);
-    m_pToolBar->setIconSize(QSize(16, 16));
+    if (!window)
+        return;
 
-    pNew = m_pToolBar->addAction(QIcon(":/img/NewDocumentHS.png"), tr("Новый"));
-    pOpen = m_pToolBar->addAction(QIcon(":/img/openfolderHS.png"), tr("Открыть"));
-    pSave = m_pToolBar->addAction(QIcon(":/save"), tr("Сохранить"));
-    m_pToolBar->addSeparator();
-    pExecute = m_pToolBar->addAction(QIcon(":/img/FormRunHS.png"), tr("Выполнить"));
-    pExecuteDebug = m_pToolBar->addAction(QIcon(":/img/rundebug.png"), tr("Выполнить c отладкой"));
-    m_pToolBar->addSeparator();
-    pClear = m_pToolBar->addAction(tr("Очистить вывод"));
+    // Получаем связанное окно
+    int linkedWndId = window->property(Prop_LinkedWnd).toInt();
+    if (linkedWndId)
+    {
+        QMdiSubWindow *linkedWindow = reinterpret_cast<QMdiSubWindow*>(linkedWndId);
 
-    connect(pNew, SIGNAL(triggered(bool)), SLOT(OnNew()));
-    connect(pExecute, SIGNAL(triggered(bool)), SLOT(OnExecute()));
-    connect(pExecuteDebug, SIGNAL(triggered(bool)), SLOT(OnExecuteDebug()));
-    connect(pClear, SIGNAL(triggered(bool)), pOutput, SLOT(clear()));
-    connect(pOpen, SIGNAL(triggered(bool)), SLOT(OnOpen()));
-    connect(pSave, SIGNAL(triggered(bool)), SLOT(OnSave()));
+        // Удаляем ссылку у связанного окна
+        linkedWindow->setProperty(Prop_LinkedWnd, QVariant());
+
+        // Закрываем связанное окно
+        linkedWindow->close();
+    }
+
+    // Очищаем ссылку у текущего окна
+    window->setProperty(Prop_LinkedWnd, QVariant());
 }
 
-void FmtScriptWindow::CreateMdi()
+QString FmtScriptWindow::ribbonCategoryName() const
 {
-    pOutput = new CodeEditor(this);
-    pSplitter = new QSplitter(Qt::Vertical, this);
-
-    pEditor = new CodeEditor(this);
-    ToolApplyHighlighter(pEditor, HighlighterRsl);
-    pSplitter->addWidget(pEditor);
-    pSplitter->addWidget(pOutput);
-    setCentralWidget(pSplitter);
-
-    pOutput->setReadOnly(true);
-    ToolApplyHighlighter(pOutput, HighlighterPlain);
+    return tr("Макрос");
 }
 
-void FmtScriptWindow::CreateScriptEngine()
+void FmtScriptWindow::initRibbonPanels()
 {
-    /*pEngine = new QScriptEngine(this);
-    QScriptValue result = pEngine->importExtension("fmt");
-    if (!result.isUndefined())
-        qDebug() << "Uncaught exception: " << pEngine->uncaughtException().toString();
+    FmtCodeTabBase::initRibbonPanels();
+}
 
-    QScriptValue fun = pEngine->newFunction(myPrintFunction);
-    fun.setData(pEngine->newQObject(pOutput));
-    pEngine->globalObject().setProperty("Print", fun);
+void FmtScriptWindow::activateRibbon()
+{
+    FmtCodeTabBase::activateRibbon();
+}
 
-    QScriptValue impfun = pEngine->newFunction(myImportFunction);
-    pEngine->globalObject().setProperty("ImportExt", impfun);*/
+void FmtScriptWindow::deactivateRibbon()
+{
+    FmtCodeTabBase::deactivateRibbon();
+}
+
+void FmtScriptWindow::setupRibbonActions()
+{
+    m_pRslPanel = new SARibbonPannel(tr("Скрипт"));
+    m_pRibbonCategory->addPannel(m_pRslPanel);
+
+    m_pRunAction = createAction(tr("Выполнить\nс отладкой"), "Run");
+    m_pRslPanel->addLargeAction(m_pRunAction);
+
+    m_pClearOutput = createAction(tr("Очистить\nвывод"), "CleanData");
+    m_pRslPanel->addLargeAction(m_pClearOutput);
+
+    m_pSave->disconnect();
+    m_pCopy->disconnect();
+    m_pCut->disconnect();
+    m_pPaste->disconnect();
+
+    connect(m_pRunAction, &QAction::triggered, [=]()
+    {
+        ExecuteEx(true);
+    });
+
+    connect(m_pClearOutput, &QAction::triggered, [=]()
+    {
+        QMdiSubWindow *Current = pContainer->currentSubWindow();
+
+        if (!Current)
+            return;
+
+        if (Current->property(Prop_WndType).toInt() != WndTypeOutput)
+            return;
+
+        CodeEditor *pOutput = editorFromWindow(Current);
+        pOutput->clear();
+    });
+}
+
+void FmtScriptWindow::preInitDefaultActions()
+{
+    m_pCreateAction = createAction(tr("Новый\nмакрос"), "NewFile");
+    m_pActionPannel->addLargeAction(m_pCreateAction);
+
+    m_pOpenAction = createAction(tr("Открыть\nмакрос"), "OpenFile");
+    m_pActionPannel->addLargeAction(m_pOpenAction);
+
+    //
+    connect(m_pCreateAction, &QAction::triggered, this, &FmtScriptWindow::OnNew);
+    connect(m_pOpenAction, &QAction::triggered, this, &FmtScriptWindow::OnOpen);
 }
 
 void FmtScriptWindow::OnNew()
 {
     QString sample = toolReadTextFileContent(":/txt/samplescript.mac", "IBM 866");
 
-    pEditor->setPlainText(sample);
-    pEditor->setWindowFilePath(QString());
+    QMdiSubWindow *wnd = AddTab("samplescript", sample, HighlighterRsl);
+    editorFromWindow(wnd)->setReadOnly(false);
+    wnd->setProperty(Prop_WndType, WndTypeCode);
+
+    wnd->installEventFilter(m_pEventFilter);
 }
 
 void FmtScriptWindow::OnOpen()
@@ -95,21 +171,16 @@ void FmtScriptWindow::OnOpen()
     {
         QFileInfo fi(file);
         QString sample = toolReadTextFileContent(file, "IBM 866");
-        pEditor->setPlainText(sample);
-        pEditor->setWindowFilePath(file);
+
+        QMdiSubWindow *wnd = AddTab(fi.baseName(), sample, HighlighterRsl);
+        editorFromWindow(wnd)->setReadOnly(false);
+        wnd->setProperty(Prop_WndType, WndTypeCode);
+        wnd->installEventFilter(m_pEventFilter);
+        wnd->setWindowFilePath(file);
     }
 }
 
-void FmtScriptWindow::OnExecute()
-{
-    ExecuteEx(false);
-}
-
-void FmtScriptWindow::OnExecuteDebug()
-{
-    ExecuteEx(true);
-}
-
+/*
 bool FmtScriptWindow::save()
 {
     QString filename;
@@ -143,57 +214,86 @@ bool FmtScriptWindow::save()
 void FmtScriptWindow::OnSave()
 {
     save();
-}
+}*/
 
-void FmtScriptWindow::SetupScriptEngineValues(CodeEditor *pEditor)
+QMdiSubWindow *FmtScriptWindow::outputWnd(QMdiSubWindow *CodeWnd)
 {
-    /*QScriptValue global = pEngine->globalObject();
-    QScriptValue obj = global.property("FmtTablePtr").construct();
-    global.setProperty("pTable", pEngine->newVariant(obj, QVariant::fromValue(pTable)));
+    if (CodeWnd->property(Prop_WndType).toInt() != WndTypeCode)
+        return nullptr;
 
-    QString macroFile = pEditor->windowFilePath();
-    if (macroFile.isEmpty())
+    if (!CodeWnd->property(Prop_LinkedWnd).isValid() || !CodeWnd->property(Prop_LinkedWnd).toInt())
     {
-        QDir d = qApp->applicationDirPath();
-        if (!d.cd("mac"))
-        {
-            d = QDir::current();
-            d.cd("mac");
-        }
-        macroFile = d.absolutePath();
-    }
-    else
-    {
-        QFileInfo fi(macroFile);
-        macroFile = fi.path();
+        QMdiSubWindow *wnd = AddTab(tr("Output: %1").arg(CodeWnd->windowTitle()), QString(), HighlighterPlain);
+        wnd->setProperty(Prop_WndType, WndTypeOutput);
+        wnd->setProperty(Prop_LinkedWnd, reinterpret_cast<int>(CodeWnd));
+        CodeWnd->setProperty(Prop_LinkedWnd, reinterpret_cast<int>(wnd));
+        wnd->installEventFilter(m_pEventFilter);
+
+        return wnd;
     }
 
-    global.setProperty("$macroDirPath", macroFile, QScriptValue::ReadOnly | QScriptValue::Undeletable);*/
+    QMdiSubWindow *wnd = reinterpret_cast<QMdiSubWindow*>(CodeWnd->property(Prop_LinkedWnd).toInt());
+    return wnd;
 }
 
 void FmtScriptWindow::ExecuteEx(bool useDebug)
 {
-    MainWindow *pMainWindow = qobject_cast<MainWindow*>(qApp->activeWindow());
-
-    if (!pMainWindow)
+    QMdiSubWindow *Current = pContainer->currentSubWindow();
+    if (!Current)
         return;
 
-    QMdiSubWindow *old = pMainWindow->currentMdiWindow();
-    QString macroFile = pEditor->windowFilePath();
-    QScopedPointer<ToolbarActionExecutor> executor(new ToolbarActionExecutor(pMainWindow));
-
-    if (!save())
+    if (Current->property(Prop_WndType).toInt() != WndTypeCode)
         return;
 
-    pMainWindow->SetActiveFmtWindow(old);
-    macroFile = pEditor->windowFilePath();
+    QTemporaryFile tmp;
+    QScopedPointer<ToolbarActionExecutor> executor(new ToolbarActionExecutor(pTable, this));
+
+    QString fileName = Current->windowFilePath();
+    if (fileName.isEmpty())
+    {
+        tmp.open();
+        QTextStream stream(&tmp);
+        stream.setCodec("IBM 866");
+        stream << editorFromWindow(Current)->toPlainText();
+        stream.flush();
+
+        fileName = tmp.fileName();
+    }
+    else
+    {
+        // save
+    }
+
+    QMdiSubWindow *pOutputWnd = outputWnd(Current);
+    CodeEditor *pOutput = editorFromWindow(pOutputWnd);
     connect(executor.data(), &ToolbarActionExecutor::WriteOut, [=](const QString &out)
     {
         QTextCursor cursor = pOutput->textCursor();
         cursor.movePosition(QTextCursor::End);
         cursor.insertText(out);
-        //pOutput->ad
     });
-    executor->playRep(macroFile);
+
+    executor->playRep(fileName);
+    pContainer->setActiveSubWindow(pOutputWnd);
+    updateRibbonState();
 }
 
+void FmtScriptWindow::updateRibbonState()
+{
+    m_pConvertPg->setEnabled(false);
+
+    FmtCodeTabBase::updateRibbonState();
+    QMdiSubWindow *Current = pContainer->currentSubWindow();
+
+    if (!Current)
+    {
+        m_pRunAction->setEnabled(false);
+        m_pClearOutput->setEnabled(false);
+
+        return;
+    }
+
+    int type = Current->property(Prop_WndType).toInt();
+    m_pClearOutput->setEnabled(type == WndTypeOutput);
+    m_pRunAction->setEnabled(type == WndTypeCode);
+}
