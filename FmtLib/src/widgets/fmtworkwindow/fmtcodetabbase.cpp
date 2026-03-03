@@ -108,8 +108,72 @@ void FmtCodeTabBase::updateRibbonState()
         m_pSave->setEnabled(false);
         m_pCopy->setEnabled(false);
         m_pConvertPg->setEnabled(false);
+        m_pUndoAction->setEnabled(false);
+        m_pRedoAction->setEnabled(false);
+
+        return;
+    }
+
+    CodeEditor *pCode = editorFromWindow(Current);
+    if (!pCode)
+    {
+        m_pCopy->setEnabled(false);
+        m_pCut->setEnabled(false);
+        m_pPaste->setEnabled(false);
+        m_pUndoAction->setEnabled(false);
+        m_pRedoAction->setEnabled(false);
+
+        return;
+    }
+
+    m_pUndoAction->setEnabled(pCode->document()->isUndoAvailable());
+    m_pRedoAction->setEnabled(pCode->document()->isRedoAvailable());
+
+    // Обновляем статус Undo/Redo при изменениях в документе
+    if (pCode)
+    {
+        QList<QMdiSubWindow*> windows = pContainer->subWindowList();
+
+        for (QMdiSubWindow *wnd : qAsConst(windows))
+        {
+            CodeEditor *Code = editorFromWindow(wnd);
+            QObject::disconnect(Code->document(), &QTextDocument::undoAvailable, this, &FmtCodeTabBase::undoUpdate);
+            QObject::disconnect(Code->document(), &QTextDocument::undoAvailable, this, &FmtCodeTabBase::redoUpdate);
+        }
+
+        connect(pCode->document(), &QTextDocument::undoAvailable, this, &FmtCodeTabBase::undoUpdate);
+        connect(pCode->document(), &QTextDocument::redoAvailable, this, &FmtCodeTabBase::redoUpdate);
     }
 }
+
+void FmtCodeTabBase::undoUpdate(bool available)
+{
+    QMdiSubWindow *Current = pContainer->currentSubWindow();
+
+    if (!Current)
+    {
+        m_pUndoAction->setEnabled(false);
+        return;
+    }
+
+    if (pContainer->currentSubWindow() == Current)
+        m_pUndoAction->setEnabled(available);
+}
+
+void FmtCodeTabBase::redoUpdate(bool available)
+{
+    QMdiSubWindow *Current = pContainer->currentSubWindow();
+
+    if (!Current)
+    {
+        m_pRedoAction->setEnabled(false);
+        return;
+    }
+
+    if (pContainer->currentSubWindow() == Current)
+        m_pRedoAction->setEnabled(available);
+}
+
 
 void FmtCodeTabBase::preInitDefaultActions()
 {
@@ -143,6 +207,18 @@ void FmtCodeTabBase::initDefaultPanel()
 
     m_pActionPannel->addSeparator();
 
+    m_pUndoAction = createAction(tr("Отменить"), "Undo");
+    m_pUndoAction->setShortcut(QKeySequence::Undo);
+    m_pUndoAction->setEnabled(false);
+    m_pActionPannel->addMediumAction(m_pUndoAction);
+
+    m_pRedoAction = createAction(tr("Повторить"), "Redo");
+    m_pRedoAction->setShortcut(QKeySequence::Redo);
+    m_pRedoAction->setEnabled(false);
+    m_pActionPannel->addMediumAction(m_pRedoAction);
+
+    m_pActionPannel->addSeparator();
+
     m_pConvertPg = createAction(tr("Конвертировать в PostgreSQL"), "DataSourceTarget");
     m_pActionPannel->addLargeAction(m_pConvertPg);
 
@@ -163,7 +239,7 @@ void FmtCodeTabBase::initDefaultPanel()
     m_pNextTab = createAction(tr("Следующее окно"), "NextBookmark");
     m_pTabsPannel->addLargeAction(m_pNextTab);
 
-    connect(m_pSave, &QAction::triggered, [=]()
+    m_SaveConnection = connect(m_pSave, &QAction::triggered, [=]()
     {
         QMdiSubWindow *window = pContainer->currentSubWindow();
 
@@ -174,11 +250,14 @@ void FmtCodeTabBase::initDefaultPanel()
         if (pCode)
         {
             int Syntax = pCode->property(FmtSyntaxProperty).toInt();
-            saveDialog(Syntax, pCode->toPlainText());
+            QString filename = saveDialog(Syntax, pCode->toPlainText(), window->windowFilePath());
+
+            if (!filename.isEmpty())
+                window->setWindowFilePath(filename);
         }
     });
 
-    connect(m_pCopy, &QAction::triggered, [=]()
+    m_CopyConnection = connect(m_pCopy, &QAction::triggered, [=]()
     {
         QMdiSubWindow *window = pContainer->currentSubWindow();
 
@@ -237,6 +316,32 @@ void FmtCodeTabBase::initDefaultPanel()
 
                 AddTab(QString("%1 (PostgreSQL)").arg(window->windowTitle()), sql);
             }
+        }
+    });
+
+    connect(m_pUndoAction, &QAction::triggered, [=]()
+    {
+        QMdiSubWindow *window = pContainer->currentSubWindow();
+        if (!window) return;
+
+        CodeEditor *pCode = editorFromWindow(window);
+        if (pCode && !pCode->isReadOnly())
+        {
+            pCode->undo();
+            updateRibbonState();
+        }
+    });
+
+    connect(m_pRedoAction, &QAction::triggered, [=]()
+    {
+        QMdiSubWindow *window = pContainer->currentSubWindow();
+        if (!window) return;
+
+        CodeEditor *pCode = editorFromWindow(window);
+        if (pCode && !pCode->isReadOnly())
+        {
+            pCode->redo();
+            updateRibbonState();
         }
     });
 

@@ -35,6 +35,7 @@ private slots:
 
 signals:
     void tableDbClicked(quint32);
+    void selectionChanged();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event);

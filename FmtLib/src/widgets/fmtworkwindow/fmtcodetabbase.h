@@ -35,6 +35,10 @@ public:
 
     void setWordWrap(const bool &val);
 
+private slots:
+    void undoUpdate(bool available);
+    void redoUpdate(bool available);
+
 protected:
     virtual void preInitDefaultActions();
     virtual void updateRibbonState();
@@ -43,6 +47,9 @@ protected:
 
     SARibbonPannel* m_pActionPannel, *m_pViewPannel, *m_pTabsPannel;
     QAction *m_pSave, *m_pCopy, *m_pCut, *m_pPaste, *m_pWordWrap, *m_pShowChars;
+    QAction *m_pUndoAction, *m_pRedoAction;
+
+    QMetaObject::Connection m_SaveConnection, m_CopyConnection;
 
     QAction *m_pConvertPg;
     QAction *m_pPrevTab, *m_pNextTab;

@@ -74,8 +74,8 @@ void FmtWindowTabInterface::initRibbonPanels()
     if (m_pRibbon && !m_pRibbonCategory)
         m_pRibbonCategory = new SARibbonCategory(ribbonCategoryName());
 
-    setupRibbonActions();
     initDefaultPanel();
+    setupRibbonActions();
 }
 
 void FmtWindowTabInterface::addCategoryToParentContext()
@@ -214,7 +214,7 @@ void FmtWindowTabInterface::copyFromEdit(QPlainTextEdit *pEdit)
     }
 }
 
-void FmtWindowTabInterface::saveDialog(const int &ContentType, const QString &text)
+QString FmtWindowTabInterface::saveDialog(const int &ContentType, const QString &text, const QString &filename)
 {
     QString filter;
     switch(ContentType)
@@ -225,14 +225,19 @@ void FmtWindowTabInterface::saveDialog(const int &ContentType, const QString &te
     case HighlighterCpp:
         filter = "C++ files(*.c *.cpp *.h *.hpp)";
         break;
+    case HighlighterRsl:
+        filter = "C++ files(*.mac)";
+        break;
     default:
         filter = "Text files(*.txt)";
     }
 
-    QString fname = QFileDialog::getSaveFileName(this, QString(), QString(), filter);
+    QString fname = filename;
+    if (filename.isEmpty())
+        fname = QFileDialog::getSaveFileName(this, QString(), QString(), filter);
 
     if (fname.isEmpty())
-        return;
+        return QString();
 
     QFile f(fname);
     if (f.open(QIODevice::WriteOnly))
@@ -242,4 +247,6 @@ void FmtWindowTabInterface::saveDialog(const int &ContentType, const QString &te
         stream << text;
         f.close();
     }
+
+    return fname;
 }

@@ -1,12 +1,17 @@
 #include "fmtribbonmainwindow.h"
 #include "connectioninfo.h"
+#include "errordlg.h"
+#include "errorsmodel.h"
 #include "fmtfromrichtext.h"
+#include "fmtimpexpwrp.h"
 #include "fmttable.h"
 #include "fmttablelistdelegate.h"
 #include "fmtworkwindow.h"
 #include "options/externaltoolspage.h"
 #include "options/fmtoptionsdlg.h"
 #include "oracleauthdlg.h"
+#include "selectconnectiondlg.h"
+#include "selectfolderdlg.h"
 #include "src/debugconnect.h"
 #include "src/widgets/guiconverterdlg.h"
 #include "src/widgets/sqlconvertordlg.h"
@@ -26,7 +31,8 @@
 
 FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     SARibbonMainWindow(parent),
-    m_LastActiveWindow(nullptr)
+    m_LastActiveWindow(nullptr),
+    pTablesDock(nullptr)
 {
     setWindowIcon(QIcon("://app-icon.svg"));
     setWindowTitle(tr("WorkFMT"));
@@ -37,6 +43,7 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
 
     pTableListDelegate = new FmtTableListDelegate(this);
     pTablesDock->setItemDelegate(pTableListDelegate);
+    pTablesDock->setEventFilter(this);
 
     //m_pMdiStyle = new MDIProxyStyle(qApp->style());
     //setStyle(m_pMdiStyle);
@@ -62,6 +69,8 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     InitQuickAccessBar();
 
     connect(pTablesDock, &TablesDock::tableDbClicked, this, &FmtRibbonMainWindow::TableClicked);
+    connect(pTablesDock, &TablesDock::selectionChanged, this, &FmtRibbonMainWindow::UpdateActions);
+
     connect(pMdi, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
     {
         // subWindowActivated
@@ -340,8 +349,6 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
 
     m_pActionCreateGroup = TablePannel->addLargeMenu(m_pMenuCreate, QToolButton::MenuButtonPopup);
 
-    m_pMenuCreate->addAction("TEST");
-
     m_pActionCopyTable = createAction(tr("Копировать таблицу"), "CopyTable");
     TablePannel->addSmallAction(m_pActionCopyTable);
 
@@ -375,6 +382,14 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     m_pActionConvertScript = createAction(tr("Конвертировать скрипт"), "TransferStoredProcedure");
     ToolsPannel->addMediumAction(m_pActionConvertScript);
 
+    m_pActionEdit = createAction(tr("Редактировать"), "EditTableRow");
+    m_pFakeActionInit = createAction(tr("Создать в БД"), "TableAdapter");
+    m_pFakeUnloadToDbf = createAction(tr("Выгрузить в *.dat"), "UnloadDbf");
+    m_pFakeLoadFromDbf = createAction(tr("Загрузить из *.dat"), "LoadDbf");
+    m_pFakeCreateTablesSql = createAction(tr("Экспорт CreateTablesSql"), "CreateTablesSql");
+    m_pFakeCreateDiffToScript = createAction(tr("Скрипт изменений (Diff To Script)"), "DiffToScript");
+    m_pActionDeleteFmt = createAction(tr("Удалить запись"), "DeleteTable");
+
     auto FuncActionCreate = [=]()
     {
         ConnectionInfo *current = CurrentConnection();
@@ -386,6 +401,12 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
         }
     };
 
+    connect(m_pFakeActionInit, &QAction::triggered, [=](){ ExecuteCurrentFmtWindowSlot("InitDB"); });
+    connect(m_pFakeUnloadToDbf, &QAction::triggered, [=](){ ExecuteCurrentFmtWindowSlot("UnloadToDbf"); });
+    connect(m_pFakeLoadFromDbf, &QAction::triggered, [=](){ ExecuteCurrentFmtWindowSlot("LoadFromDbf"); });
+    connect(m_pFakeCreateTablesSql, &QAction::triggered, [=](){ ExecuteCurrentFmtWindowSlot("CreateTableSql"); });
+    connect(m_pFakeCreateDiffToScript, &QAction::triggered, [=](){ ExecuteCurrentFmtWindowSlot("DiffToScript", true); });
+
     connect(m_pActionCreateGroup, &QAction::triggered, FuncActionCreate);
     connect(m_pActionCreate, &QAction::triggered, FuncActionCreate);
 
@@ -395,7 +416,14 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     connect(m_pActionGuiConverter, &QAction::triggered, this, &FmtRibbonMainWindow::StartGuiConverter);
     connect(m_pSqliteAction, &QAction::triggered, this, &FmtRibbonMainWindow::UnloadSqlite);
     connect(m_pConnectionsGallery, &SARibbonGallery::triggered, this, &FmtRibbonMainWindow::ConnectionActionSelected);
+    connect(m_pActionImportDir, &QAction::triggered, this, &FmtRibbonMainWindow::ImpDirAction);
+    connect(m_pActionImport, &QAction::triggered, this, &FmtRibbonMainWindow::ImportAction);
+    connect(m_pActionExport, &QAction::triggered, this, &FmtRibbonMainWindow::ExportTableXml);
+    connect(m_pActionEdit, &QAction::triggered, this, &FmtRibbonMainWindow::ActionEditFmt);
 
+    connect(m_pActionCopyTable, &QAction::triggered, this, &FmtRibbonMainWindow::CopyTable);
+    connect(m_pActionCopyTableTmp, &QAction::triggered, this, &FmtRibbonMainWindow::CopyTableToTmp);
+    connect(m_pActionCopyTableTo, &QAction::triggered, this, &FmtRibbonMainWindow::CopyTableTo);
 
     QDir dir = QApplication::applicationDirPath();
     if (!QFile::exists(dir.absoluteFilePath("DumpTool.exe")))
@@ -404,6 +432,46 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     connect(m_pActionDiffTool, &QAction::triggered, [=]()
     {
         QProcess::startDetached(dir.absoluteFilePath("DiffToScript.exe"), QStringList());
+    });
+
+    connect(m_pActionDeleteFmt, &QAction::triggered, [=]()
+    {
+        ConnectionInfo *current = CurrentConnection();
+
+        if (!current)
+            return;
+
+        QListView *view = pTablesDock->tablesWidget()->listView();
+        if (view->selectionModel()->hasSelection())
+        {
+            QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+            QSharedPointer<FmtTable> table(new FmtTable(current));
+
+            if (table->load(index.data(Qt::UserRole).toString()))
+            {
+                // Запрашиваем подтверждение перед удалением
+                QString tableName = table->name();
+                QMessageBox::StandardButton reply = QMessageBox::question(
+                    this,
+                    tr("Подтверждение удаления"),
+                    tr("Вы действительно хотите удалить запись о таблице <b>%1</b> из FMT словаря?").arg(tableName),
+                    QMessageBox::Yes | QMessageBox::No
+                    );
+
+                if (reply == QMessageBox::Yes)
+                {
+                    if (!table->removeFmtTable())  // Исправлено: ! для проверки неудачи
+                    {
+                        QMessageBox::information(this, tr("Успешно"), tr("Запись о таблице <b>%1</b> удалена из FMT словаря").arg(tableName));
+                        current->updateFmtList();
+                    }
+                    else
+                    {
+                        QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось удалить запись о таблице <b>%1</b> из FMT словаря").arg(tableName));
+                    }
+                }
+            }
+        }
     });
 
     connect(m_pActionDumpTool, &QAction::triggered, [=]()
@@ -480,6 +548,80 @@ void FmtRibbonMainWindow::setupAction(QAction *act, const QString& text, const Q
     act->setIcon(QIcon::fromTheme(iconname));
     act->setObjectName(text);
     act->setShortcut(key);
+}
+
+void FmtRibbonMainWindow::CopyTable()
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            QSharedPointer<FmtTable> cTable(new FmtTable(current));
+            table->copyTo(cTable);
+            CreateDocument(cTable)->show();
+        }
+    }
+}
+
+void FmtRibbonMainWindow::CopyTableTo()
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            SelectConnectionDlg dlg(m_pConnections, this);
+            dlg.setWindowTitle(tr("Копировать в..."));
+            if (dlg.exec() == QDialog::Accepted)
+            {
+                QList<ConnectionInfo*> checkedItems = dlg.checkedItems();
+                foreach (ConnectionInfo *info, checkedItems) {
+                    QSharedPointer<FmtTable> cTable(new FmtTable(info));
+                    table->copyTo(cTable);
+                    CreateDocument(cTable)->show();
+                }
+            }
+        }
+    }
+}
+
+void FmtRibbonMainWindow::CopyTableToTmp()
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+
+        if (table->load(index.data(Qt::UserRole).toString()))
+        {
+            QSharedPointer<FmtTable> cTable(new FmtTable(current));
+            table->copyToAsTmp(cTable);
+            CreateDocument(cTable)->show();
+        }
+    }
 }
 
 void FmtRibbonMainWindow::ActionConnectTriggered()
@@ -837,6 +979,8 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateDocument(QSharedPointer<FmtTable> &tab
 
 void FmtRibbonMainWindow::TableClicked(const quint32 &id)
 {
+    UpdateActions();
+
     ConnectionInfo *current = CurrentConnection();
 
     if (!current)
@@ -886,17 +1030,26 @@ void FmtRibbonMainWindow::UpdateActions()
     ConnectionInfo *cur = CurrentConnection();
 
     bool HasConnection = cur ? true : false;
+    bool CanSaveToXml = HasConnection && cur->hasFeature(ConnectionInfo::CanSaveToXml);
+    bool HasSelectedTable = false;
+
+    if (pTablesDock)
+    {
+        QListView *view = pTablesDock->tablesWidget()->listView();
+        if (view && view->selectionModel() && view->selectionModel()->hasSelection())
+            HasSelectedTable = true;
+    }
 
     m_pActionDisconnect->setEnabled(HasConnection);
     m_pSqliteAction->setEnabled(HasConnection);
     m_pActionImport->setEnabled(HasConnection);
-    m_pActionExport->setEnabled(HasConnection);
+    m_pActionExport->setEnabled(CanSaveToXml && HasSelectedTable);
     m_pActionImportDir->setEnabled(HasConnection);
 
     m_pActionCreateGroup->setEnabled(HasConnection);
-    m_pActionCopyTable->setEnabled(HasConnection);
-    m_pActionCopyTableTmp->setEnabled(HasConnection);
-    m_pActionCopyTableTo->setEnabled(HasConnection);
+    m_pActionCopyTable->setEnabled(HasConnection && HasSelectedTable);
+    m_pActionCopyTableTmp->setEnabled(HasConnection && HasSelectedTable);
+    m_pActionCopyTableTo->setEnabled(HasConnection && HasSelectedTable);
 
     m_pActionDebug->setEnabled(HasConnection && cur->type() == ConnectionInfo::CON_ORA);
 
@@ -910,10 +1063,8 @@ void FmtRibbonMainWindow::UpdateActions()
     if (!QFile::exists(dir.absoluteFilePath("DiffToScript.exe")))
         m_pActionDiffTool->setEnabled(false);
 
-    /*if (!cur)
-    {
+    if (!cur)
         return;
-    }*/
 
     /*if (cur->type() != ConnectionInfo::CON_ORA)
         ui->actionEditContent->setEnabled(false);
@@ -1043,4 +1194,268 @@ void FmtRibbonMainWindow::DisconnectCurrent()
     delete current;
 
     UpdateActions();
+}
+
+void FmtRibbonMainWindow::ImpDirAction()
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    if (!CheckConnectionType(current, { ConnectionInfo::CON_ORA, ConnectionInfo::CON_POSTGRESQL }, true, this))
+        return;
+
+    FmtImpExpWrp imp(current, this);
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Импорт каталога"), imp.lastImportDir());
+
+    if (dir.isEmpty())
+        return;
+
+    QProgressDialog dlg(tr("Загрузка xml файлов из каталога."), tr("Прервать"), 0, 0, this);
+    QEventLoop loop;
+
+    dlg.open(&imp, SIGNAL(finished()));
+    connect(&imp, SIGNAL(finished(int)), &loop, SLOT(quit()));
+    connect(&dlg, SIGNAL(canceled()), &imp, SLOT(cancel()));
+    connect(&dlg, SIGNAL(canceled()), &loop, SLOT(quit()));
+    imp.importDir(dir);
+
+    if (imp.isRunning())
+    {
+        loop.exec();
+
+        ErrorsModel log;
+        imp.parseProtocol(&log);
+
+        ErrorDlg edlg(ErrorDlg::ModeInformation, this);
+        edlg.setErrors(&log);
+        edlg.setMessage(tr("Протокол загрузки xml файлов: "));
+        edlg.exec();
+    }
+}
+
+void FmtRibbonMainWindow::ImportAction()
+{
+    ConnectionInfo *current = CurrentConnection();
+    if (!current)
+        return;
+
+    if (!CheckConnectionType(current, { ConnectionInfo::CON_ORA, ConnectionInfo::CON_POSTGRESQL }, true, this))
+        return;
+
+    FmtImpExpWrp imp(current, this);
+    QStringList files = QFileDialog::getOpenFileNames(this, tr("Импорт файлов"), imp.lastImportDir(), "Xml файлы(*.xml)");
+
+    if (files.isEmpty())
+        return;
+
+    imp.addTable(files);
+    QProgressDialog dlg(tr("Загрузка xml файлов из каталога."), tr("Прервать"), 0, files.size(), this);
+    QEventLoop loop;
+
+    dlg.open(&imp, SIGNAL(finished()));
+    connect(&imp, SIGNAL(finished(int)), &loop, SLOT(quit()));
+    connect(&dlg, SIGNAL(canceled()), &imp, SLOT(cancel()));
+    connect(&dlg, SIGNAL(canceled()), &loop, SLOT(quit()));
+
+    int pos = 0;
+    ErrorsModel log;
+    foreach (const QString &file, files)
+    {
+        imp.importFile(file);
+
+        if (imp.isRunning())
+        {
+            dlg.setValue(pos);
+            loop.exec();
+            pos ++;
+            imp.parseProtocol(&log);
+        }
+    }
+
+    if (!log.isEmpty())
+    {
+        ErrorDlg edlg(ErrorDlg::ModeInformation, this);
+        edlg.setErrors(&log);
+        edlg.setMessage(tr("Протокол загрузки xml файлов: "));
+        edlg.exec();
+    }
+}
+
+void FmtRibbonMainWindow::ExportTableXml()
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    if (!CheckConnectionType(current, { ConnectionInfo::CON_ORA, ConnectionInfo::CON_POSTGRESQL }, true, this))
+        return;
+
+    QString table = m_pActionExport->data().toString();
+
+    SelectFolderDlg folder(RsFmtUnlDirContext, tr("Экспорт в xml файл"), this);
+    if (folder.exec() == QDialog::Accepted)
+    {
+        ExportFmtToXml(current, QStringList()
+                       << table, folder.selectedPath(), true, true, this);
+    }
+}
+
+void FmtRibbonMainWindow::ActionEditFmt()
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    QString ntable = m_pActionEdit->data().toString();
+    QMdiSubWindow *wnd = HasTableWindow(ntable);
+
+    if (wnd == Q_NULLPTR)
+    {
+        QSharedPointer<FmtTable> table(new FmtTable(current));
+        if (table->load(ntable))
+        {
+            QMdiSubWindow *window = CreateDocument(table);
+            window->show();
+        }
+    }
+    else
+        SetActiveFmtWindow(wnd);
+}
+
+void FmtRibbonMainWindow::ExecuteCurrentFmtWindowSlot(const QString &Function, bool OpenWindow)
+{
+    ConnectionInfo *current = CurrentConnection();
+
+    if (!current)
+        return;
+
+    QListView *view = pTablesDock->tablesWidget()->listView();
+    if (view->selectionModel()->hasSelection())
+    {
+        QModelIndex index = view->selectionModel()->selectedIndexes().at(0);
+
+        QString id = index.data(Qt::UserRole).toString();
+        QMdiSubWindow *wnd = HasTableWindow(index.data(Qt::UserRole).toString());
+
+        if (wnd)
+        {
+            FmtWorkWindow *_interface = qobject_cast<FmtWorkWindow*>(wnd->widget());
+
+            if (_interface)
+                QMetaObject::invokeMethod(_interface, Function.toLocal8Bit());
+
+            if (OpenWindow)
+                pMdi->setActiveSubWindow(wnd);
+        }
+        else
+        {
+            QSharedPointer<FmtTable> table(new FmtTable(current));
+            if (table->load(id))
+            {
+                FmtWorkWindow *_interface = nullptr;
+                wnd = CreateDocument(table, &_interface);
+
+                if (_interface)
+                    QMetaObject::invokeMethod(_interface, Function.toLocal8Bit());
+
+                if (OpenWindow)
+                {
+                    wnd->show();
+                    pMdi->setActiveSubWindow(wnd);
+                }
+                else
+                    delete wnd;
+            }
+        }
+    }
+}
+
+void FmtRibbonMainWindow::TablesContextMenu(QContextMenuEvent *event, QListView *view)
+{
+    UpdateActions();
+
+    QMenu menu(this);
+    menu.addAction(m_pActionEdit);
+    menu.setActiveAction(m_pActionEdit);
+    menu.setDefaultAction(m_pActionEdit);
+    menu.addSeparator();
+    menu.addAction(m_pFakeActionInit);
+    menu.addSeparator();
+
+    menu.addAction(m_pActionCopyTable);
+    menu.addAction(m_pActionCopyTableTmp);
+    menu.addAction(m_pActionCopyTableTo);
+
+    menu.addSeparator();
+    menu.addAction(m_pActionExport);
+    menu.addAction(m_pFakeCreateTablesSql);
+    menu.addSeparator();
+    menu.addAction(m_pFakeUnloadToDbf);
+    menu.addAction(m_pFakeLoadFromDbf);
+    menu.addAction(m_pFakeCreateDiffToScript);
+    menu.addSeparator();
+    menu.addAction(m_pActionDeleteFmt);
+
+    if (view->selectionModel()->hasSelection())
+    {
+        QString table = view->selectionModel()->selectedIndexes().at(0).data(Qt::UserRole).toString();
+        m_pActionEdit->setEnabled(true);
+        m_pActionEdit->setData(table);
+
+        m_pActionExport->setEnabled(true);
+        m_pActionExport->setData(table);
+    }
+    else
+    {
+        m_pActionEdit->setEnabled(false);
+        m_pActionEdit->setData("");
+
+        m_pActionExport->setEnabled(false);
+        m_pActionExport->setData("");
+    }
+
+    menu.exec(event->globalPos());
+}
+
+bool FmtRibbonMainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (pTablesDock && obj == pTablesDock->tablesWidget())
+    {
+        bool hr = false;
+        QListView *view = pTablesDock->tablesWidget()->listView();
+
+        if (!view->isEnabled())
+            return false;
+
+        if (event->type() == QEvent::ContextMenu)
+        {
+            TablesContextMenu((QContextMenuEvent*)event, view);
+            hr =  true;
+        }
+        else if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent *e = (QKeyEvent*)event;
+
+            if (e->key() == Qt::Key_Return)
+            {
+                if (view->selectionModel()->hasSelection())
+                {
+                    QString table = view->selectionModel()->selectedIndexes().at(0).data(Qt::UserRole).toString();
+                    m_pActionEdit->setData(table);
+                    emit m_pActionEdit->triggered();
+                    hr = true;
+                }
+
+                UpdateActions();
+            }
+        }
+
+        return hr;
+    }
+
+    return SARibbonMainWindow::eventFilter(obj, event);
 }

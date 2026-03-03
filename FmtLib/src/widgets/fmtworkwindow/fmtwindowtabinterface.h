@@ -47,7 +47,7 @@ protected:
     void setWordWrapToEdit(QPlainTextEdit *pEdit, bool flag);
     void setAllCharsModeToEdit(QPlainTextEdit *pEdit, bool flag);
 
-    void saveDialog(const int &ContentType, const QString &text);
+    QString saveDialog(const int &ContentType, const QString &text, const QString &filename = QString());
 
     void copyFromEdit(QPlainTextEdit *pEdit);
     void showCopyNotification(QPlainTextEdit *pEdit, const QString &text, bool hasSelection = false);

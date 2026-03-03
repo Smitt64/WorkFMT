@@ -27,6 +27,7 @@ public:
     FmtRibbonMainWindow(QWidget *parent = nullptr);
     virtual ~FmtRibbonMainWindow();
 
+    virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     void OpenConnection(const QString &connectionString);
 
     QMdiSubWindow *CreateMdiWindow(MdiSubInterface *window, ConnectionInfo *pConnection);
@@ -44,16 +45,26 @@ private slots:
     void StartGuiConverter();
     void TableClicked(const quint32 &id);
     void UnloadSqlite();
+    void ImpDirAction();
+    void ImportAction();
+    void ExportTableXml();
+    void ActionEditFmt();
+
+    void CopyTable();
+    void CopyTableTo();
+    void CopyTableToTmp();
 
 protected:
-    //virtual void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
     virtual void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
     virtual void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private:
+    void TablesContextMenu(QContextMenuEvent *event, QListView *view);
     void ConnectionActionSelected(QAction *action);
     ConnectionInfo* openConnection();
     QAction *CreateConnectionActio(ConnectionInfo *info);
+
+    void ExecuteCurrentFmtWindowSlot(const QString &Function, bool OpenWindow = false);
 
     void SetActiveFmtWindow(QMdiSubWindow *wnd);
     QMdiSubWindow *HasTableWindow(const QString &tableName);
@@ -96,7 +107,9 @@ private:
 
     QMenu *m_pMenuCreate;
     QAction *m_pActionCreate, *m_pActionCreateGroup, *m_pActionCreateText, *m_pActionCreateXml;
-    QAction *m_pActionCopyTable, *m_pActionCopyTableTmp, *m_pActionCopyTableTo;
+    QAction *m_pActionCopyTable, *m_pActionCopyTableTmp, *m_pActionCopyTableTo, *m_pActionDeleteFmt;
+    QAction *m_pActionEdit, *m_pFakeActionInit, *m_pFakeUnloadToDbf, *m_pFakeLoadFromDbf;
+    QAction *m_pFakeCreateTablesSql, *m_pFakeCreateDiffToScript;
 
     QAction *m_pActionDumpTool, *m_pActionDiffTool, *m_pActionGuiConverter, *m_pActionDebug, *m_pActionConvertScript;
 

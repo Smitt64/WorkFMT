@@ -354,6 +354,7 @@ TablesDock::TablesDock(const QString &title, QWidget *parent, Qt::WindowFlags fl
     pAddButton->setEnabled(false);
 
     connect(tablesWidget, SIGNAL(tableDbClicked(quint32)), SIGNAL(tableDbClicked(quint32)));
+    connect(tablesWidget, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
     connect(pAddButton, &QPushButton::clicked, this, &TablesDock::addFilterTab);
     connect(pTabBar, &QTabWidget::tabCloseRequested, this, &TablesDock::tabCloseRequested);
 }
@@ -434,6 +435,7 @@ void TablesDock::setConnection(ConnectionInfo *info)
             tablesWidget->installEventFilter(pEventFilter);
             pTabBar->addTab(tablesWidget, QString(FILTER_TITLE) + QString::number(pInfo->getFilterIndex(i)));
             connect(tablesWidget, SIGNAL(tableDbClicked(quint32)), SIGNAL(tableDbClicked(quint32)));
+            connect(tablesWidget, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
         }
     }
 
@@ -463,6 +465,7 @@ void TablesDock::addFilterTab()
     tablesWidget->installEventFilter(pEventFilter);
     pTabBar->addTab(tablesWidget, QString(FILTER_TITLE) + QString::number(pInfo->lastIndex()));
     connect(tablesWidget, SIGNAL(tableDbClicked(quint32)), SIGNAL(tableDbClicked(quint32)));
+    connect(tablesWidget, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
     pTabBar->setCurrentIndex(pTabBar->count() - 1);
 }
 

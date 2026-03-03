@@ -114,10 +114,8 @@ void FmtScriptWindow::setupRibbonActions()
     m_pClearOutput = createAction(tr("Очистить\nвывод"), "CleanData");
     m_pRslPanel->addLargeAction(m_pClearOutput);
 
-    m_pSave->disconnect();
-    m_pCopy->disconnect();
-    m_pCut->disconnect();
-    m_pPaste->disconnect();
+    m_pSave->disconnect(m_SaveConnection);
+    m_pCopy->disconnect(m_CopyConnection);
 
     connect(m_pRunAction, &QAction::triggered, [=]()
     {
@@ -261,7 +259,13 @@ void FmtScriptWindow::ExecuteEx(bool useDebug)
     }
     else
     {
-        // save
+        CodeEditor *pCode = editorFromWindow(Current);
+
+        int Syntax = pCode->property(FmtSyntaxProperty).toInt();
+        QString filename = saveDialog(Syntax, pCode->toPlainText(), Current->windowFilePath());
+
+        if (!filename.isEmpty())
+            Current->setWindowFilePath(filename);
     }
 
     QMdiSubWindow *pOutputWnd = outputWnd(Current);
@@ -294,6 +298,25 @@ void FmtScriptWindow::updateRibbonState()
     }
 
     int type = Current->property(Prop_WndType).toInt();
+    bool isCodeWindow = (type == WndTypeCode);
+    //bool isOutputWindow = (type == WndTypeOutput);
+
     m_pClearOutput->setEnabled(type == WndTypeOutput);
     m_pRunAction->setEnabled(type == WndTypeCode);
+
+    CodeEditor *pCode = editorFromWindow(Current);
+    if (!pCode)
+    {
+        m_pCopy->setEnabled(false);
+        m_pCut->setEnabled(false);
+        m_pPaste->setEnabled(false);
+        m_pUndoAction->setEnabled(false);
+        m_pRedoAction->setEnabled(false);
+
+        return;
+    }
+
+    m_pCopy->setEnabled(pCode->textCursor().hasSelection());
+    m_pCut->setEnabled(isCodeWindow && !pCode->isReadOnly() && pCode->textCursor().hasSelection());
+    m_pPaste->setEnabled(isCodeWindow && !pCode->isReadOnly());
 }

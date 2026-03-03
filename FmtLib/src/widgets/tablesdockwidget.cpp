@@ -10,6 +10,7 @@ static int Index = 0;
 
 TablesDockWidget::TablesDockWidget(QWidget *parent) :
     QMainWindow(parent),
+    pTables(Q_NULLPTR),
     pInitTableAction(Q_NULLPTR),
     pRebuildOffsets(Q_NULLPTR),
     pFilterByGroup(Q_NULLPTR)
@@ -18,6 +19,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
     pTables = new QListView(this);
     //pTables->setResizeMode(QListView::Adjust);
     pTables->setContextMenuPolicy(Qt::ActionsContextMenu);
+    pTables->setCurrentIndex(QModelIndex());
     setCentralWidget(pTables);
     setIconSize(QSize(16, 16));
 
@@ -38,7 +40,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
     pFilterAction->setMenu(pFilterMenu);
     pMainToolBar->addWidget(pFilterAction);
 
-    pApplyFilterAction = pFilterMenu->addAction(QIcon(":/img/Filter2HS.png"), tr("Фильтр"), this, SLOT(filterTriggered(bool)));//new QAction(QIcon(":/img/Filter2HS.png"), tr("Фильтр"), this);
+    pApplyFilterAction = pFilterMenu->addAction(QIcon::fromTheme("Filter"), tr("Фильтр"), this, SLOT(filterTriggered(bool)));//new QAction(QIcon(":/img/Filter2HS.png"), tr("Фильтр"), this);
     pApplyFilterAction->setCheckable(true);
     connect(pApplyFilterAction, SIGNAL(triggered(bool)), SLOT(filterTriggered(bool)));
 
@@ -83,6 +85,7 @@ void TablesDockWidget::setModel(FmtTablesModel *model)
 {
     pTables->setModel(model);
     pModel = model;
+
     if (model)
     {
         pTables->setModelColumn(fnc_Name);
@@ -98,6 +101,9 @@ void TablesDockWidget::setModel(FmtTablesModel *model)
         pFilterEdit->setEnabled(false);
         pTables->setEnabled(false);
     }
+
+    connect(pTables->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SIGNAL(selectionChanged()));
+    connect(pTables, SIGNAL(clicked(QModelIndex)), SIGNAL(selectionChanged()));
 }
 
 void TablesDockWidget::filterTriggered(bool checked)
@@ -150,6 +156,7 @@ void TablesDockWidget::doubleClicked(const QModelIndex &index)
 
     if (id)
     {
+        emit selectionChanged();
         emit tableDbClicked(id);
     }
 }

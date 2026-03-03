@@ -28,6 +28,7 @@ public slots:
     void forceRepaint();
 
 signals:
+    void selectionChanged();
     void tableDbClicked(quint32);
 
 private slots:
