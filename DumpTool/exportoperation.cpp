@@ -21,7 +21,8 @@ void ExportOperation::run()
 
     QString ExportService = wzrd->field("ExportService").toString();
     QString ExportFrom = wzrd->field("ExportFrom").toString();
-    QString ExportPass = wzrd->field("ExportPass").toString();
+    QString ExportSys = wzrd->field("ExportSys").toString();
+    QString ExportSysPass = wzrd->field("ExportSysPass").toString();
     QString ExportPath = wzrd->field("ExportPath").toString();
 
     QDir fileDir(ExportPath);
@@ -53,10 +54,11 @@ void ExportOperation::run()
 
     QStringList params = QStringList()
             << "expdp"
-            << QString("%1/%2@%3").arg(ExportFrom, ExportPass, ExportService)
+            << QString("%1/%2@%3").arg(ExportSys, ExportSysPass, ExportService)
             << QString("directory=%1").arg(wzrd->userValName(ExportPath))
             << QString("logfile=%1.log").arg(ExportFrom)
-            << QString("dumpfile=%1.dmp").arg(ExportFrom);
+            << QString("dumpfile=%1.dmp").arg(ExportFrom)
+            << QString("schemas=%1").arg(ExportFrom);
 
     connect(m_Proc.data(), &QProcess::readyReadStandardOutput, [this]() -> void
     {
@@ -65,7 +67,7 @@ void ExportOperation::run()
 
     CoreStartProcess(m_Proc.data(), "fmtdatapumpwrp.exe",
                      params, true, true,
-                     std::numeric_limits<int>::max());
+                     std::numeric_limits<int>::max(), true);
 
     emit finished();
 }

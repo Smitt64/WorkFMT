@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
@@ -39,43 +39,46 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="systemEdit">
+        <widget class="QLineEdit" name="userEdit">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Пароль пользователя, из которого сливаем данные:</string>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLineEdit" name="syspswdEdit">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="copyButton">
-           <property name="toolTip">
-            <string>Копировать имя в пароль</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../FmtLib/res/fmt.qrc">
-             <normaloff>:/img/CopyHS.png</normaloff>:/img/CopyHS.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Имя системного пользователя:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="systemEdit">
+         <property name="text">
+          <string>SYSTEM</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Пароль системного пользователя:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="syspswdEdit">
+         <property name="text">
+          <string>system</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="label_2">
@@ -123,8 +126,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../FmtLib/res/fmt.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

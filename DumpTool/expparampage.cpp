@@ -21,18 +21,14 @@ ExpParamPage::ExpParamPage(QWidget *parent) :
     ui->serviceBox->setItemDelegate(m_DataSourceDelegate);
 
     registerField("ExportService", ui->serviceBox, "currentText", SIGNAL(currentTextChanged(QString)));
-    registerField("ExportFrom", ui->systemEdit, "text", SIGNAL(textChanged(QString)));
-    registerField("ExportPass", ui->syspswdEdit, "text", SIGNAL(textChanged(QString)));
+    registerField("ExportFrom", ui->userEdit, "text", SIGNAL(textChanged(QString)));
+    registerField("ExportSys", ui->systemEdit, "text", SIGNAL(textChanged(QString)));
+    registerField("ExportSysPass", ui->syspswdEdit, "text", SIGNAL(textChanged(QString)));
     registerField("ExportPath", fakeDirEdit, "text", SIGNAL(textChanged(QString)));
 
     connect(ui->systemEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->syspswdEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->serviceBox, SIGNAL(currentTextChanged(QString)), this, SIGNAL(completeChanged()));
-
-    connect(ui->copyButton, &QToolButton::clicked, [=]() -> void
-    {
-        ui->syspswdEdit->setText(ui->systemEdit->text());
-    });
 }
 
 ExpParamPage::~ExpParamPage()

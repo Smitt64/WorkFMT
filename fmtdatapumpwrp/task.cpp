@@ -81,7 +81,7 @@ bool Task::SetupOra()
             if (query.next())
             {
                 QString directory_path = query.value("directory_path").toString().mid(2);
-                m_DumpDir = QString("\\\\%1%2").arg(host, directory_path);
+                m_DumpDir = QDir::toNativeSeparators(QString("\\\\%1%2").arg(host, directory_path));
             }
         }
     }
@@ -91,12 +91,12 @@ bool Task::SetupOra()
         return false;
     }
 
-    QString FullLogFile = m_DumpDir.absoluteFilePath(m_LogFile);
+    QString FullLogFile = QDir::toNativeSeparators(m_DumpDir.absoluteFilePath(m_LogFile));
     if (QFile::exists(FullLogFile))
         QFile::remove(FullLogFile);
 
     m_Process.reset(new QProcess());
-    m_Process->setWorkingDirectory(m_OraHome);
+    m_Process->setWorkingDirectory(QDir::toNativeSeparators(m_OraHome));
 
     m_Action = QString("%1.exe").arg(m_Action);
 
@@ -110,7 +110,7 @@ bool Task::SetupPostgres()
     m_DumpDir = m_TempDir->path();
     m_LogFile = "pg_op.txt";
     m_Action = "pg_op.cmd";
-    QFile f(m_DumpDir.absoluteFilePath(m_Action));
+    QFile f(QDir::toNativeSeparators(m_DumpDir.absoluteFilePath(m_Action)));
 
     if (!f.open(QIODevice::WriteOnly))
         return false;
@@ -125,7 +125,7 @@ bool Task::SetupPostgres()
     stream << PostgresDir.absoluteFilePath(ActionParam) << ".exe\"";
 
     bool NeedAddBracers = false;
-    for (const QString &prm : m_Params)
+    for (const QString &prm : qAsConst(m_Params))
     {
         if (!NeedAddBracers)
             stream << " " << prm;
@@ -140,12 +140,12 @@ bool Task::SetupPostgres()
 
     }
 
-    stream << " 2>\"" << m_DumpDir.absoluteFilePath("pg_op.txt") << "\"";
+    stream << " 2>\"" << QDir::toNativeSeparators(m_DumpDir.absoluteFilePath("pg_op.txt")) << "\"";
     f.close();
     m_Params.clear();
 
     m_Process.reset(new QProcess());
-    m_Process->setWorkingDirectory(m_DumpDir.path());
+    m_Process->setWorkingDirectory(QDir::toNativeSeparators(m_DumpDir.path()));
 
     m_Action = "cmd.exe";
     m_Params.append({"/C", f.fileName()});
@@ -168,6 +168,12 @@ void Task::run()
     connect(m_Process.data(), SIGNAL(started()), m_Timer.data(), SLOT(start()));
     connect(m_Process.data(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus)
     {
+        QByteArray stdouterr = m_Process->readAllStandardError();
+
+        QTextStream out(stdout);
+        out.setCodec("IBM 866");
+        out << QString::fromLocal8Bit(stdouterr);
+
         m_Timer->stop();
         emit finished();
     });
@@ -182,7 +188,9 @@ void Task::onTimeOut()
 {
     QTextStream out(stdout);
     out.setCodec("IBM 866");
-    QFile f(m_DumpDir.absoluteFilePath(m_LogFile));
+
+    QString FullLogFile = QDir::toNativeSeparators(m_DumpDir.absoluteFilePath(m_LogFile));
+    QFile f(FullLogFile);
 
     if (f.open(QIODevice::ReadOnly))
     {
