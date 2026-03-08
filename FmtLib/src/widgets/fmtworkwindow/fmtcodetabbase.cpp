@@ -5,6 +5,10 @@
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <SARibbon.h>
+#include <QToolTip>
+#include <toolsruntime.h>
+#include <QApplication>
+#include <QTimer>
 
 FmtCodeTabBase::FmtCodeTabBase(QWidget *parent) :
     FmtWindowTabInterface(parent),
@@ -18,18 +22,21 @@ FmtCodeTabBase::FmtCodeTabBase(QWidget *parent) :
     m_pPaste(nullptr),
     m_pWordWrap(nullptr),
     m_pShowChars(nullptr),
+    pLastActiveWindow(nullptr),
     m_pConvertPg(nullptr),
     m_pPrevTab(nullptr),
     m_pNextTab(nullptr)
 {
     pContainer = new QMdiArea(this);
-    pContainer->setDocumentMode(true);
+    //pContainer->setDocumentMode(true);
     pContainer->setViewMode(QMdiArea::TabbedView);
     pContainer->setTabsClosable(false);
+    pContainer->setToolTip(tr("Область отображения кода с поддержкой нескольких вкладок"));
     setCentralWidget(pContainer);
 
     connect(pContainer, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
     {
+        pLastActiveWindow = window;
         updateRibbonState();
     });
 }
@@ -44,10 +51,20 @@ QString FmtCodeTabBase::ribbonCategoryName() const
     return tr("Код");
 }
 
-void FmtCodeTabBase::setHighlighter(CodeEditor *edidor, const qint16 &Syntax)
+void FmtCodeTabBase::setHighlighter(CodeEditor *editor, const qint16 &Syntax)
 {
-    edidor->setProperty(FmtSyntaxProperty, Syntax);
-    ToolApplyHighlighter(edidor, Syntax, FmtCodeTabStyle);
+    editor->setProperty(FmtSyntaxProperty, Syntax);
+    ToolApplyHighlighter(editor, Syntax, FmtCodeTabStyle);
+
+    QString syntaxName;
+    switch(Syntax)
+    {
+    case HighlighterSql: syntaxName = tr("SQL"); break;
+    case HighlighterCpp: syntaxName = tr("C++"); break;
+    case HighlighterXml: syntaxName = tr("XML"); break;
+    default: syntaxName = tr("Текст"); break;
+    }
+    editor->setToolTip(tr("Редактор кода (%1)").arg(syntaxName));
 }
 
 CodeEditor *FmtCodeTabBase::editorFromWindow(QMdiSubWindow *wnd)
@@ -60,6 +77,7 @@ QMdiSubWindow* FmtCodeTabBase::AddTab(const QString &tabname, const QString &ico
 {
     CodeEditor *pCode = new CodeEditor(this);
     pCode->setReadOnly(true);
+    pCode->setToolTip(tr("Редактор кода: %1").arg(tabname));
     setWordWrapToEdit(pCode, m_pWordWrap ? m_pWordWrap->isChecked() : true);
     setAllCharsModeToEdit(pCode, m_pShowChars ? m_pShowChars->isChecked() : false);
 
@@ -67,6 +85,7 @@ QMdiSubWindow* FmtCodeTabBase::AddTab(const QString &tabname, const QString &ico
     mdi->setWindowTitle(tabname);
     mdi->setAttribute(Qt::WA_DeleteOnClose);
     mdi->setWindowIcon(QIcon::fromTheme(icon));
+    mdi->setToolTip(tr("Вкладка: %1").arg(tabname));
     mdi->showMaximized();
 
     m_pWindows.insert(tabname, mdi);
@@ -80,6 +99,7 @@ QMdiSubWindow *FmtCodeTabBase::AddTab(const QString &tabname, const QString &cod
     CodeEditor *pCode = new CodeEditor(this);
     pCode->setReadOnly(true);
     pCode->setPlainText(code);
+    pCode->setToolTip(tr("Редактор кода: %1").arg(tabname));
     setWordWrapToEdit(pCode, m_pWordWrap ? m_pWordWrap->isChecked() : true);
     setAllCharsModeToEdit(pCode, m_pShowChars ? m_pShowChars->isChecked() : false);
     setHighlighter(pCode, Syntax);
@@ -89,6 +109,7 @@ QMdiSubWindow *FmtCodeTabBase::AddTab(const QString &tabname, const QString &cod
     mdi->setWindowTitle(tabname);
     mdi->setAttribute(Qt::WA_DeleteOnClose);
     mdi->setWindowIcon(QIcon::fromTheme(icon));
+    mdi->setToolTip(tr("Вкладка: %1").arg(tabname));
     mdi->showMaximized();
 
     m_pWindows.insert(tabname, mdi);
@@ -102,7 +123,7 @@ void FmtCodeTabBase::updateRibbonState()
     m_pCut->setEnabled(false);
     m_pPaste->setEnabled(false);
 
-    QMdiSubWindow *Current = pContainer->currentSubWindow();
+    QMdiSubWindow *Current = pContainer->currentSubWindow() ? pContainer->currentSubWindow() : pLastActiveWindow;
     if (!Current)
     {
         m_pSave->setEnabled(false);
@@ -148,7 +169,7 @@ void FmtCodeTabBase::updateRibbonState()
 
 void FmtCodeTabBase::undoUpdate(bool available)
 {
-    QMdiSubWindow *Current = pContainer->currentSubWindow();
+    QMdiSubWindow *Current = pContainer->currentSubWindow() ? pContainer->currentSubWindow() : pLastActiveWindow;
 
     if (!Current)
     {
@@ -162,7 +183,7 @@ void FmtCodeTabBase::undoUpdate(bool available)
 
 void FmtCodeTabBase::redoUpdate(bool available)
 {
-    QMdiSubWindow *Current = pContainer->currentSubWindow();
+    QMdiSubWindow *Current = getWindow();
 
     if (!Current)
     {
@@ -194,15 +215,27 @@ void FmtCodeTabBase::initDefaultPanel()
     preInitDefaultActions();
 
     m_pSave = createAction(tr("Сохранить"), "Save");
+    toolAddActionWithTooltip(m_pSave,
+                             tr("Сохранить содержимое текущей вкладки в файл"),
+                             QKeySequence::Save);
     m_pActionPannel->addLargeAction(m_pSave);
 
     m_pCopy = createAction(tr("Копировать"), "Copy");
+    toolAddActionWithTooltip(m_pCopy,
+                             tr("Копировать выделенный текст в буфер обмена"),
+                             QKeySequence::Copy);
     m_pActionPannel->addSmallAction(m_pCopy);
 
     m_pCut = createAction(tr("Вырезать"), "Cut");
+    toolAddActionWithTooltip(m_pCut,
+                             tr("Вырезать выделенный текст в буфер обмена"),
+                             QKeySequence::Cut);
     m_pActionPannel->addSmallAction(m_pCut);
 
     m_pPaste = createAction(tr("Вставить"), "Paste");
+    toolAddActionWithTooltip(m_pPaste,
+                             tr("Вставить текст из буфера обмена"),
+                             QKeySequence::Paste);
     m_pActionPannel->addSmallAction(m_pPaste);
 
     m_pActionPannel->addSeparator();
@@ -210,63 +243,121 @@ void FmtCodeTabBase::initDefaultPanel()
     m_pUndoAction = createAction(tr("Отменить"), "Undo");
     m_pUndoAction->setShortcut(QKeySequence::Undo);
     m_pUndoAction->setEnabled(false);
+    toolAddActionWithTooltip(m_pUndoAction,
+                             tr("Отменить последнее действие"),
+                             QKeySequence::Undo);
     m_pActionPannel->addMediumAction(m_pUndoAction);
 
     m_pRedoAction = createAction(tr("Повторить"), "Redo");
     m_pRedoAction->setShortcut(QKeySequence::Redo);
     m_pRedoAction->setEnabled(false);
+    toolAddActionWithTooltip(m_pRedoAction,
+                             tr("Повторить отмененное действие"),
+                             QKeySequence::Redo);
     m_pActionPannel->addMediumAction(m_pRedoAction);
 
     m_pActionPannel->addSeparator();
 
     m_pConvertPg = createAction(tr("Конвертировать в PostgreSQL"), "DataSourceTarget");
+    toolAddActionWithTooltip(m_pConvertPg,
+                             tr("Конвертировать SQL скрипт из Oracle синтаксиса в PostgreSQL"));
     m_pActionPannel->addLargeAction(m_pConvertPg);
 
     m_pWordWrap = createAction(tr("Перенос строк"), "WordWrap");
     m_pWordWrap->setCheckable(true);
-    //m_pWordWrap->setChecked(true);
+    toolAddActionWithTooltip(m_pWordWrap,
+                             tr("Включить/выключить перенос длинных строк по словам"));
     m_pViewPannel->addLargeAction(m_pWordWrap);
 
     m_pShowChars = createAction(tr("Все символы"), "Paragraph");
     m_pShowChars->setCheckable(true);
+    toolAddActionWithTooltip(m_pShowChars,
+                             tr("Показывать непечатаемые символы (пробелы, табуляцию, концы строк)"));
     m_pViewPannel->addLargeAction(m_pShowChars);
 
     m_pWordWrap->setChecked(true);
 
     m_pPrevTab = createAction(tr("Предыдущее окно"), "PreviousBookmark");
+    toolAddActionWithTooltip(m_pPrevTab,
+                             tr("Переключиться на предыдущую вкладку"),
+                             QKeySequence::PreviousChild);
     m_pTabsPannel->addLargeAction(m_pPrevTab);
 
     m_pNextTab = createAction(tr("Следующее окно"), "NextBookmark");
+    toolAddActionWithTooltip(m_pNextTab,
+                             tr("Переключиться на следующую вкладку"),
+                             QKeySequence::NextChild);
     m_pTabsPannel->addLargeAction(m_pNextTab);
 
     m_SaveConnection = connect(m_pSave, &QAction::triggered, [=]()
+   {
+       QMdiSubWindow *window = getWindow();
+
+       if (!window)
+           return;
+
+       CodeEditor *pCode = qobject_cast<CodeEditor*>(window->widget());
+       if (pCode)
+       {
+           int Syntax = pCode->property(FmtSyntaxProperty).toInt();
+           QString filename = saveDialog(Syntax, pCode->toPlainText(), window->windowFilePath());
+
+           if (!filename.isEmpty())
+           {
+               window->setWindowFilePath(filename);
+               QToolTip::showText(QCursor::pos(),
+                                  tr("Файл сохранен: %1").arg(filename),
+                                  this, QRect(), 2000);
+           }
+       }
+   });
+
+    m_CopyConnection = connect(m_pCopy, &QAction::triggered, [=]()
+   {
+       QMdiSubWindow *window = getWindow();
+
+       if (!window)
+           return;
+
+       CodeEditor *pCode = qobject_cast<CodeEditor*>(window->widget());
+       if (pCode)
+       {
+           copyFromEdit(pCode);
+           QToolTip::showText(QCursor::pos(),
+                              tr("Текст скопирован в буфер обмена"),
+                              this, QRect(), 1500);
+       }
+   });
+
+    connect(m_pCut, &QAction::triggered, [=]()
     {
-        QMdiSubWindow *window = pContainer->currentSubWindow();
+        QMdiSubWindow *window = getWindow();
 
         if (!window)
             return;
 
         CodeEditor *pCode = qobject_cast<CodeEditor*>(window->widget());
-        if (pCode)
+        if (pCode && !pCode->isReadOnly())
         {
-            int Syntax = pCode->property(FmtSyntaxProperty).toInt();
-            QString filename = saveDialog(Syntax, pCode->toPlainText(), window->windowFilePath());
-
-            if (!filename.isEmpty())
-                window->setWindowFilePath(filename);
+            pCode->cut();
+            QToolTip::showText(QCursor::pos(),
+                               tr("Текст вырезан в буфер обмена"),
+                               this, QRect(), 1500);
         }
     });
 
-    m_CopyConnection = connect(m_pCopy, &QAction::triggered, [=]()
+    connect(m_pPaste, &QAction::triggered, [=]()
     {
-        QMdiSubWindow *window = pContainer->currentSubWindow();
+        QMdiSubWindow *window = getWindow();
 
         if (!window)
             return;
 
         CodeEditor *pCode = qobject_cast<CodeEditor*>(window->widget());
-        if (pCode)
-            copyFromEdit(pCode);
+        if (pCode && !pCode->isReadOnly())
+        {
+            pCode->paste();
+        }
     });
 
     connect(m_pWordWrap, &QAction::toggled, [=](bool value)
@@ -279,6 +370,10 @@ void FmtCodeTabBase::initDefaultPanel()
             if (pCode)
                 setWordWrapToEdit(pCode, value);
         }
+
+        QToolTip::showText(QCursor::pos(),
+                           value ? tr("Перенос строк включен") : tr("Перенос строк выключен"),
+                           this, QRect(), 1500);
     });
 
     connect(m_pShowChars, &QAction::toggled, [=](bool value)
@@ -291,11 +386,15 @@ void FmtCodeTabBase::initDefaultPanel()
             if (pCode)
                 setAllCharsModeToEdit(pCode, value);
         }
+
+        QToolTip::showText(QCursor::pos(),
+                           value ? tr("Отображение непечатаемых символов включено") : tr("Отображение непечатаемых символов выключено"),
+                           this, QRect(), 1500);
     });
 
     connect(m_pConvertPg, &QAction::triggered, [=]()
     {
-        QMdiSubWindow *window = pContainer->currentSubWindow();
+        QMdiSubWindow *window = getWindow();
 
         if (!window)
             return;
@@ -308,20 +407,43 @@ void FmtCodeTabBase::initDefaultPanel()
 
             if (Syntax == HighlighterSql)
             {
-                SqlConversionResult result = convertSql(pCode->toPlainText()/*,pTable->connection()->user()*/);
+                SqlConversionResult result = convertSql(pCode->toPlainText());
                 QString sql = result.result;
 
                 if (!result.error.isEmpty())
                     sql = result.error;
 
-                AddTab(QString("%1 (PostgreSQL)").arg(window->windowTitle()), sql);
+                QString newTabName = QString("%1 (PostgreSQL)").arg(window->windowTitle());
+                QMdiSubWindow *newWindow = AddTab(newTabName, sql, HighlighterSql, "DataSourceTarget");
+
+                if (result.error.isEmpty())
+                {
+                    newWindow->setToolTip(tr("Результат конвертации SQL в PostgreSQL"));
+                    QToolTip::showText(QCursor::pos(),
+                                       tr("Конвертация завершена успешно"),
+                                       this, QRect(), 2000);
+                }
+                else
+                {
+                    newWindow->setToolTip(tr("Ошибка конвертации: %1").arg(result.error));
+                    QToolTip::showText(QCursor::pos(),
+                                       tr("Ошибка конвертации"),
+                                       this, QRect(), 2000);
+                }
+            }
+            else
+            {
+                QToolTip::showText(QCursor::pos(),
+                                   tr("Конвертация доступна только для SQL скриптов"),
+                                   this, QRect(), 2000);
             }
         }
     });
 
     connect(m_pUndoAction, &QAction::triggered, [=]()
     {
-        QMdiSubWindow *window = pContainer->currentSubWindow();
+        QMdiSubWindow *window = getWindow();
+
         if (!window) return;
 
         CodeEditor *pCode = editorFromWindow(window);
@@ -334,7 +456,8 @@ void FmtCodeTabBase::initDefaultPanel()
 
     connect(m_pRedoAction, &QAction::triggered, [=]()
     {
-        QMdiSubWindow *window = pContainer->currentSubWindow();
+        QMdiSubWindow *window = getWindow();
+
         if (!window) return;
 
         CodeEditor *pCode = editorFromWindow(window);
@@ -360,6 +483,7 @@ void FmtCodeTabBase::initRibbonPanels()
 
     // Настраиваем категорию
     m_pRibbonCategory->setObjectName(ribbonCategoryName());
+    m_pRibbonCategory->setToolTip(tr("Инструменты для работы с кодом"));
 
     // Обновляем состояние
     updateRibbonState();
@@ -384,4 +508,16 @@ void FmtCodeTabBase::deactivateRibbon()
 void FmtCodeTabBase::setWordWrap(const bool &val)
 {
     m_pWordWrap->setChecked(val);
+}
+
+QMdiSubWindow *FmtCodeTabBase::getWindow()
+{
+    QTabBar *tabBar = pContainer->findChild<QTabBar*>();
+    if (tabBar && tabBar->count())
+    {
+        QList<QMdiSubWindow*> list = pContainer->subWindowList();
+        return list[tabBar->currentIndex()];
+    }
+
+    return nullptr;
 }

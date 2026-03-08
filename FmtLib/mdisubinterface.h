@@ -32,10 +32,10 @@ public:
     virtual void clearRibbonTabs();
     virtual QList<QWidget*> statusBarSections();
 
-    void setupAction(QAction *act, const QString& text, const QString& iconname);
+    void setupAction(QAction *act, const QString& text, const QString& iconname, const QKeySequence& shortcut = QKeySequence());
 
     template<class T = QAction>
-    T* createAction(const QString& text, const QString& iconname)
+    T* createAction(const QString& text, const QString& iconname, const QKeySequence& shortcut = QKeySequence())
     {
         T *action = new T(this);
         setupAction(action, text, iconname);

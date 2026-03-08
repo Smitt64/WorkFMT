@@ -2,6 +2,7 @@
 #define FMTCODETABBASE_H
 
 #include <QMap>
+#include <QPointer>
 #include "fmtwindowtabinterface.h"
 
 #define FmtSyntaxProperty "Syntax"
@@ -27,6 +28,8 @@ public:
 
     CodeEditor *editorFromWindow(QMdiSubWindow *wnd);
 
+    QMdiSubWindow *getWindow();
+
     virtual QString ribbonCategoryName() const override;
 
     virtual void initRibbonPanels() override;
@@ -49,6 +52,7 @@ protected:
     QAction *m_pSave, *m_pCopy, *m_pCut, *m_pPaste, *m_pWordWrap, *m_pShowChars;
     QAction *m_pUndoAction, *m_pRedoAction;
 
+    QMdiSubWindow *pLastActiveWindow;
     QMetaObject::Connection m_SaveConnection, m_CopyConnection;
 
     QAction *m_pConvertPg;

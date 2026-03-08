@@ -72,126 +72,126 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     connect(pTablesDock, &TablesDock::selectionChanged, this, &FmtRibbonMainWindow::UpdateActions);
 
     connect(pMdi, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
-    {
-        // subWindowActivated
-        if (!window)
-        {
-            if (m_LastActiveWindow)
             {
-                MdiSubInterface *lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
-
-                if (lastwnd)
+                // subWindowActivated
+                if (!window)
                 {
-                    QList<QWidget*> status = lastwnd->statusBarSections();
-                    lastwnd->clearRibbonTabs();
+                    if (m_LastActiveWindow)
+                    {
+                        MdiSubInterface *lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
 
-                    for (auto widget : qAsConst(status))
-                        m_pStatusBar->removeWidget(widget);
+                        if (lastwnd)
+                        {
+                            QList<QWidget*> status = lastwnd->statusBarSections();
+                            lastwnd->clearRibbonTabs();
+
+                            for (auto widget : qAsConst(status))
+                                m_pStatusBar->removeWidget(widget);
+                        }
+                    }
+
+                    QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
+                    for (auto all : qAsConst(allCategoryes))
+                    {
+                        if (all->categoryCount())
+                            ribbonBar()->showContextCategory(all);
+                        else
+                            ribbonBar()->hideContextCategory(all);
+                    }
+
+                    m_LastActiveWindow = nullptr;
+
+                    return;
                 }
-            }
 
-            QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
-            for (auto all : qAsConst(allCategoryes))
-            {
-                if (all->categoryCount())
-                    ribbonBar()->showContextCategory(all);
-                else
-                    ribbonBar()->hideContextCategory(all);
-            }
+                if (m_LastActiveWindow == window)
+                {
+                    return;
+                }
 
-            m_LastActiveWindow = nullptr;
+                MdiSubInterface *lastwnd = nullptr;
+                MdiSubInterface *wnd = qobject_cast<MdiSubInterface*>(window->widget());
 
-            return;
-        }
+                if (m_LastActiveWindow)
+                    lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
 
-        if (m_LastActiveWindow == window)
-        {
-            return;
-        }
-
-        MdiSubInterface *lastwnd = nullptr;
-        MdiSubInterface *wnd = qobject_cast<MdiSubInterface*>(window->widget());
-
-        if (m_LastActiveWindow)
-            lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
-
-        if (!wnd)
-        {
-            /*m_ToolBoxDock->setModel(nullptr);
+                if (!wnd)
+                {
+                    /*m_ToolBoxDock->setModel(nullptr);
             m_PropertyDock->setPropertyModel(nullptr);
             m_PropertyDock->setStructModel(nullptr);*/
 
-            /*m_pActionUndo->setSource(nullptr);
+                    /*m_pActionUndo->setSource(nullptr);
             m_pActionRedo->setSource(nullptr);
             m_pUndoActionWidget->setUndoStack(nullptr);*/
 
-            if (lastwnd)
-            {
-                QList<QWidget*> status = lastwnd->statusBarSections();
-                lastwnd->clearRibbonTabs();
+                    if (lastwnd)
+                    {
+                        QList<QWidget*> status = lastwnd->statusBarSections();
+                        lastwnd->clearRibbonTabs();
 
-                for (auto widget : qAsConst(status))
-                    m_pStatusBar->removeWidget(widget);
-            }
+                        for (auto widget : qAsConst(status))
+                            m_pStatusBar->removeWidget(widget);
+                    }
 
-            m_LastActiveWindow = nullptr;
-        }
-        else
-        {
-            /*m_ToolBoxDock->setModel(wnd->toolBox());
+                    m_LastActiveWindow = nullptr;
+                }
+                else
+                {
+                    /*m_ToolBoxDock->setModel(wnd->toolBox());
             m_PropertyDock->setPropertyModel(wnd->propertyModel());
             m_PropertyDock->setStructModel(wnd->structModel());*/
 
-            /*m_pActionUndo->setSource(wnd->undoAction());
+                    /*m_pActionUndo->setSource(wnd->undoAction());
             m_pActionRedo->setSource(wnd->redoAction());
             m_pUndoActionWidget->setUndoStack(wnd->undoStack());*/
 
-            QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
-            pWindowsComboBox->setCurrentIndex(index);
+                    QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
+                    pWindowsComboBox->setCurrentIndex(index);
 
-            m_LastRibbonTabName.lock();
+                    m_LastRibbonTabName.lock();
 
-            ribbonBar()->setUpdatesEnabled(false);
-            if (lastwnd)
-            {
-                QList<QWidget*> status = lastwnd->statusBarSections();
-                lastwnd->clearRibbonTabs();
+                    ribbonBar()->setUpdatesEnabled(false);
+                    if (lastwnd)
+                    {
+                        QList<QWidget*> status = lastwnd->statusBarSections();
+                        lastwnd->clearRibbonTabs();
 
-                for (auto widget : qAsConst(status))
-                    m_pStatusBar->removeWidget(widget);
-            }
+                        for (auto widget : qAsConst(status))
+                            m_pStatusBar->removeWidget(widget);
+                    }
 
-            wnd->updateRibbonTabs();
+                    wnd->updateRibbonTabs();
 
-            if (!m_LastRibbonTabName.get().isEmpty())
-                ribbonBar()->raiseCategory(ribbonBar()->categoryByName(m_LastRibbonTabName));
+                    if (!m_LastRibbonTabName.get().isEmpty())
+                        ribbonBar()->raiseCategory(ribbonBar()->categoryByName(m_LastRibbonTabName));
 
-            QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
-            for (auto all : qAsConst(allCategoryes))
-            {
-                if (all->categoryCount())
-                    ribbonBar()->showContextCategory(all);
-                else
-                    ribbonBar()->hideContextCategory(all);
-            }
-            ribbonBar()->setUpdatesEnabled(true);
+                    QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
+                    for (auto all : qAsConst(allCategoryes))
+                    {
+                        if (all->categoryCount())
+                            ribbonBar()->showContextCategory(all);
+                        else
+                            ribbonBar()->hideContextCategory(all);
+                    }
+                    ribbonBar()->setUpdatesEnabled(true);
 
-            QList<QWidget*> status = wnd->statusBarSections();
-            for (auto widget : qAsConst(status))
-            {
-                m_pStatusBar->addPermanentWidget(widget);
-                widget->show();
-            }
+                    QList<QWidget*> status = wnd->statusBarSections();
+                    for (auto widget : qAsConst(status))
+                    {
+                        m_pStatusBar->addPermanentWidget(widget);
+                        widget->show();
+                    }
 
-            m_LastActiveWindow = window;
-            m_LastRibbonTabName.unlock();
-        }
-        /*if (wnd)
+                    m_LastActiveWindow = window;
+                    m_LastRibbonTabName.unlock();
+                }
+                /*if (wnd)
         {
             QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
             pWindowsComboBox->setCurrentIndex(index);
         }*/
-    });
+            });
 
     UpdateActions();
 }
@@ -287,6 +287,9 @@ void FmtRibbonMainWindow::InitQuickAccessBar()
     pSearchLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     pSearchLine->setClearButtonEnabled(true);
 
+    toolAddActionWithTooltip(pSearchLine,
+                             tr("Поиск и фильтрация таблиц в списке по имени"));
+
     rightBar->addWidget(pSearchLine);
 
     connect(pSearchLine, SIGNAL(textChanged(QString)), pTableListDelegate, SLOT(setHighlightText(QString)));
@@ -302,93 +305,159 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     SARibbonCategory *mainPage = new SARibbonCategory("Главная");
     ribbon->addCategoryPage(mainPage);
 
+    // Панель "Подключение"
     SARibbonPannel* connectionPannel = new SARibbonPannel(tr("Подключение"));
     mainPage->addPannel(connectionPannel);
 
     m_pActionConnect = createAction(tr("Новое подключение"), "ConnectToDatabase", QKeySequence::Open);
+    toolAddActionWithTooltip(m_pActionConnect,
+                             tr("Создание нового подключения к базе данных Oracle"),
+                             QKeySequence::Open);
     connectionPannel->addLargeAction(m_pActionConnect);
 
     m_pOpenConnection = createAction(tr("Открыть подключение"), "OpenDatabase");
+    toolAddActionWithTooltip(m_pOpenConnection,
+                             tr("Открыть существующее подключение из файла (sqlite/rsreq.ini)"));
     connectionPannel->addSmallAction(m_pOpenConnection);
 
     m_pActionDisconnect = createAction(tr("Закрыть подключение"), "DatabaseOffline");
+    toolAddActionWithTooltip(m_pActionDisconnect,
+                             tr("Закрыть текущее подключение к базе данных"));
     connectionPannel->addSmallAction(m_pActionDisconnect);
 
     m_pSqliteAction = createAction(tr("Выгрузить в sqlite базу"), "Export");
+    toolAddActionWithTooltip(m_pSqliteAction,
+                             tr("Выгрузить структуру FMT словаря в SQLite базу данных"));
     connectionPannel->addSmallAction(m_pSqliteAction);
 
+    // Панель "Импорт/Экспорт"
     SARibbonPannel* ImportExportPannel = new SARibbonPannel(tr("Импорт/Экспорт"));
     mainPage->addPannel(ImportExportPannel);
 
     m_pActionImport = createAction(tr("Импорт из xml файлов"), "ImportPackage");
+    toolAddActionWithTooltip(m_pActionImport,
+                             tr("Импортировать данные из XML файлов в выбранные таблицы"));
     ImportExportPannel->addSmallAction(m_pActionImport);
 
     m_pActionImportDir = createAction(tr("Импорт xml из каталога"), "ImportCatalogPart");
+    toolAddActionWithTooltip(m_pActionImportDir,
+                             tr("Импортировать все XML файлы из указанного каталога"));
     ImportExportPannel->addSmallAction(m_pActionImportDir);
 
     m_pActionExport = createAction(tr("Экспорт в xml файл"), "ExportTableToFile");
+    toolAddActionWithTooltip(m_pActionExport,
+                             tr("Экспортировать выбранную таблицу в XML файл"));
     ImportExportPannel->addSmallAction(m_pActionExport);
 
-    // Создать запись
+    // Панель "Таблицы"
     SARibbonPannel* TablePannel = new SARibbonPannel(tr("Таблицы"));
     mainPage->addPannel(TablePannel);
 
     m_pMenuCreate = new QMenu(this);
     m_pMenuCreate->setIcon(QIcon::fromTheme("CreateTable"));
     m_pMenuCreate->setTitle(tr("Создать запись"));
+    toolAddActionWithTooltip(m_pMenuCreate,
+                             tr("Создать новую запись в FMT словаре различными способами"));
 
     m_pActionCreate = createAction(tr("Создать запись"), "CreateTable", QKeySequence::New);
+    toolAddActionWithTooltip(m_pActionCreate,
+                             tr("Создать новую пустую запись в FMT словаре"),
+                             QKeySequence::New);
     m_pMenuCreate->addAction(m_pActionCreate);
     m_pMenuCreate->setDefaultAction(m_pActionCreate);
 
     m_pActionCreateText = createAction(tr("Создать из текста"), "CreateTableFromText", Qt::SHIFT + Qt::CTRL + Qt::Key_N);
+    toolAddActionWithTooltip(m_pActionCreateText,
+                             tr("Создать запись на основе текстового описания структуры таблицы"),
+                             Qt::SHIFT + Qt::CTRL + Qt::Key_N);
     m_pMenuCreate->addAction(m_pActionCreateText);
 
     m_pActionCreateXml = createAction(tr("Cоздать из xml"), "CreateTableFromXml");
+    toolAddActionWithTooltip(m_pActionCreateXml,
+                             tr("Создать запись на основе XML файла с описанием таблицы"));
     m_pMenuCreate->addAction(m_pActionCreateXml);
 
     m_pActionCreateGroup = TablePannel->addLargeMenu(m_pMenuCreate, QToolButton::MenuButtonPopup);
 
     m_pActionCopyTable = createAction(tr("Копировать таблицу"), "CopyTable");
+    toolAddActionWithTooltip(m_pActionCopyTable,
+                             tr("Создать копию выбранной таблицы в текущем подключении"));
     TablePannel->addSmallAction(m_pActionCopyTable);
 
     m_pActionCopyTableTmp = createAction(tr("Копировать как временную"), "CopyTableTmp");
+    toolAddActionWithTooltip(m_pActionCopyTableTmp,
+                             tr("Создать временную копию таблицы (с префиксом TMP_)"));
     TablePannel->addSmallAction(m_pActionCopyTableTmp);
 
     m_pActionCopyTableTo = createAction(tr("Копировать таблицу в..."), "CopyTableTo");
+    toolAddActionWithTooltip(m_pActionCopyTableTo,
+                             tr("Копировать таблицу в другое подключение"));
     TablePannel->addSmallAction(m_pActionCopyTableTo);
 
+    // Панель "Активные подключения"
     SARibbonPannel *ConnectionsGallary = mainPage->addPannel(tr("Активные подключения"));
     m_pConnectionsGallery = ConnectionsGallary->addGallery();
     m_pConnectionsGalleryGroup = m_pConnectionsGallery->addCategoryActions(tr("Подключения"), {});
     m_pConnectionsGalleryGroup->setGridMinimumWidth(128);
     m_pConnectionsGallery->currentViewGroup()->setGridMinimumWidth(128);
 
+    // Панель "Инструменты"
     SARibbonPannel* ToolsPannel = new SARibbonPannel(tr("Инструменты"));
     mainPage->addPannel(ToolsPannel);
 
     m_pActionDiffTool = createAction(tr("Запустить Diff to Script"), "DiffToScript");
+    toolAddActionWithTooltip(m_pActionDiffTool,
+                             tr("Запустить утилиту для создания скриптов изменений структуры БД"));
     ToolsPannel->addLargeAction(m_pActionDiffTool);
 
-    m_pActionDebug = createAction(tr("Настроить отлаку на схеме"), "DebugXSLT");
+    m_pActionDebug = createAction(tr("Настроить отладку на схеме"), "DebugXSLT");
+    toolAddActionWithTooltip(m_pActionDebug,
+                             tr("Выполнить запросы для включения отладки SQL скриптов на схеме Oracle"));
     ToolsPannel->addMediumAction(m_pActionDebug);
 
     m_pActionGuiConverter = createAction(tr("Запустить GuiConverter"), "GuiConverter");
+    toolAddActionWithTooltip(m_pActionGuiConverter,
+                             tr("Утилита для конвертации Oracle в PostgreSQL"));
     ToolsPannel->addMediumAction(m_pActionGuiConverter);
 
     m_pActionDumpTool = createAction(tr("Обработка дампов"), "DumpTool");
+    toolAddActionWithTooltip(m_pActionDumpTool,
+                             tr("Инструменты для работы с дампами базы данных"));
     ToolsPannel->addMediumAction(m_pActionDumpTool);
 
     m_pActionConvertScript = createAction(tr("Конвертировать скрипт"), "TransferStoredProcedure");
+    toolAddActionWithTooltip(m_pActionConvertScript,
+                             tr("Конвертация скриптов из Oracle в PostgreSQL"));
     ToolsPannel->addMediumAction(m_pActionConvertScript);
 
+    // Действия для контекстного меню
     m_pActionEdit = createAction(tr("Редактировать"), "EditTableRow");
+    toolAddActionWithTooltip(m_pActionEdit,
+                             tr("Открыть выбранную таблицу для редактирования"));
+
     m_pFakeActionInit = createAction(tr("Создать в БД"), "TableAdapter");
+    toolAddActionWithTooltip(m_pFakeActionInit,
+                             tr("Создать таблицу и ее индексы в базе данных на основе записи в словаре"));
+
     m_pFakeUnloadToDbf = createAction(tr("Выгрузить в *.dat"), "UnloadDbf");
+    toolAddActionWithTooltip(m_pFakeUnloadToDbf,
+                             tr("Выгрузить данные таблицы в DAT файл (DBF формат) для SQL*Loader"));
+
     m_pFakeLoadFromDbf = createAction(tr("Загрузить из *.dat"), "LoadDbf");
+    toolAddActionWithTooltip(m_pFakeLoadFromDbf,
+                             tr("Загрузить данные таблицы из DAT файла (DBF формат) для SQL*Loader"));
+
     m_pFakeCreateTablesSql = createAction(tr("Экспорт CreateTablesSql"), "CreateTablesSql");
+    toolAddActionWithTooltip(m_pFakeCreateTablesSql,
+                             tr("Сгенерировать CREATE TABLE инструкцию на основе описания в словаре"));
+
     m_pFakeCreateDiffToScript = createAction(tr("Скрипт изменений (Diff To Script)"), "DiffToScript");
+    toolAddActionWithTooltip(m_pFakeCreateDiffToScript,
+                             tr("Создать скрипт с INSERT инструкциями по данным Diff конкретной таблицы"));
+
     m_pActionDeleteFmt = createAction(tr("Удалить запись"), "DeleteTable");
+    toolAddActionWithTooltip(m_pActionDeleteFmt,
+                             tr("Удалить запись о таблице из FMT словаря"));
 
     auto FuncActionCreate = [=]()
     {
@@ -752,8 +821,10 @@ void FmtRibbonMainWindow::InitWindowsCombo()
 
     pWindowsComboBox = new TreeComboBox(this);
     pWindowsComboBox->setMinimumWidth(250);
-    pWindowsModel = new SubWindowsModel(this);
+    toolAddActionWithTooltip(pWindowsComboBox,
+                             tr("Переключение между открытыми окнами с таблицами"));
 
+    pWindowsModel = new SubWindowsModel(this);
     pWindowsComboBox->setModel(pWindowsModel);
     pWindowsComboBox->setMaxVisibleItems(15);
 
@@ -764,13 +835,13 @@ void FmtRibbonMainWindow::InitWindowsCombo()
 
     connect(pWindowsModel, &SubWindowsModel::windowsUpdated, (QTreeView*)pWindowsComboBox->view(), &QTreeView::expandAll);
     connect(pWindowsComboBox, &TreeComboBox::modelIndexChanged, [=](const QModelIndex &index)
-    {
-        // subWindowIndexChanged
-        QMdiSubWindow *wnd = pWindowsModel->window(index);
+            {
+                // subWindowIndexChanged
+                QMdiSubWindow *wnd = pWindowsModel->window(index);
 
-        if (wnd)
-            SetActiveFmtWindow(wnd);
-    });
+                if (wnd)
+                    SetActiveFmtWindow(wnd);
+            });
 }
 
 void FmtRibbonMainWindow::showEvent(QShowEvent *event)
@@ -929,18 +1000,18 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateMdiWindow(MdiSubInterface *window, Con
     //window->setPalette(m_pMdiStyle->standardPalette());
 
     connect(window, &MdiSubInterface::destroyed, [=](QObject *wnd)
-    {
-        // WorkWindowDestroyed
-        const FmtWorkWindow *window = static_cast<const FmtWorkWindow*>(wnd);
+            {
+                // WorkWindowDestroyed
+                const FmtWorkWindow *window = static_cast<const FmtWorkWindow*>(wnd);
 
-        if (window)
-        {
-            ConnectionInfo *connection = window->connection();
+                if (window)
+                {
+                    ConnectionInfo *connection = window->connection();
 
-            if (m_Windows[connection].contains((QWidget*)window))
-                m_Windows[connection].removeOne((QWidget*)window);
-        }
-    });
+                    if (m_Windows[connection].contains((QWidget*)window))
+                        m_Windows[connection].removeOne((QWidget*)window);
+                }
+            });
 
     QModelIndex index = pWindowsModel->addWindow(pConnection, wnd);
     pWindowsComboBox->setCurrentIndex(index);
@@ -963,13 +1034,13 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateDocument(QSharedPointer<FmtTable> &tab
     connect(window, &FmtWorkWindow::accepted, wnd, &FmtRibbonMainWindow::deleteLater);
     connect(window, &FmtWorkWindow::rejected, wnd, &FmtRibbonMainWindow::deleteLater);
     connect(window, &FmtWorkWindow::needUpdateTableList, [=]()
-    {
-        // OnTableChangeUpdtList
-        TablesDockWidget *list = pTablesDock->tablesWidget();
+            {
+                // OnTableChangeUpdtList
+                TablesDockWidget *list = pTablesDock->tablesWidget();
 
-        if (list->isFiltered())
-            list->updateList();
-    });
+                if (list->isFiltered())
+                    list->updateList();
+            });
 
     if (pWindow)
         *pWindow = window;
@@ -1152,9 +1223,9 @@ void FmtRibbonMainWindow::DisconnectCurrent()
     if (!m_Windows[current].isEmpty())
     {
         if (QMessageBox::question(this, tr("Закрытие соеденения."), tr("Имеются незакрытые окна, работающие с соеденением <b>%1</b>. Завершить подключение?")
-                                  .arg(current->schemeName()),
+                                                                        .arg(current->schemeName()),
                                   QMessageBox::Yes | QMessageBox::No) == QMessageBox::No
-        )
+            )
             NeedClose = false;
     }
 

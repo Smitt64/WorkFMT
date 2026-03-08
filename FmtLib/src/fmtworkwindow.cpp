@@ -9,7 +9,6 @@
 #include "fmtfildsmodel.h"
 #include "dbinitdlg.h"
 #include "fmtfielddlg.h"
-#include "fmtcore.h"
 #include "errorsmodel.h"
 #include "errordlg.h"
 #include "fmtcore.h"
@@ -52,6 +51,11 @@
 #include <QDirIterator>
 #include <QSpacerItem>
 
+// Внешние функции для добавления tooltips
+extern void toolAddActionWithTooltip(QAction* action, const QString& description, const QKeySequence& shortcut = QKeySequence());
+extern void toolAddActionWithTooltip(QMenu* menu, const QString& description, const QKeySequence& shortcut = QKeySequence());
+extern void toolAddActionWithTooltip(QToolButton* button, const QString& description, const QKeySequence& shortcut = QKeySequence());
+
 FmtFieldsTableViewFilterController::FmtFieldsTableViewFilterController(FmtFieldsDelegate *delegate) :
     pDelegate(delegate)
 {
@@ -66,11 +70,13 @@ QWidget *FmtFieldsTableViewFilterController::create(const int &index)
     {
         connect(w, &QLineEdit::textChanged, pDelegate, &FmtFieldsDelegate::setNameText);
         w->setPlaceholderText(tr("Значение для поиска"));
+        w->setToolTip(tr("Фильтрация полей по имени"));
     }
     if (index == FmtFildsModel::fld_Comment)
     {
         connect(w, &QLineEdit::textChanged, pDelegate, &FmtFieldsDelegate::setCommentText);
         w->setPlaceholderText(tr("Значение для поиска"));
+        w->setToolTip(tr("Фильтрация полей по комментарию"));
     }
     else if (index == FmtFildsModel::fld_Type)
         w->setEnabled(false);
@@ -124,6 +130,21 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     m_pLastActiveFmtTab(nullptr)
 {
     ui->setupUi(this);
+
+    // Добавляем tooltips для элементов интерфейса
+    ui->toolStdBlobSize->setToolTip(tr("Установить стандартный размер BLOB (16384)"));
+    ui->blobCombo->setToolTip(tr("Выбрать тип хранения больших данных:\n"
+                                 "- Нет - без BLOB полей\n"
+                                 "- BLOB - двоичные данные\n"
+                                 "- CLOB - символьные данные"));
+    ui->nameEdit->setToolTip(tr("Имя таблицы в словаре (максимум %1 символов)").arg(fmtm_TableNameMaxSize));
+    ui->commentEdit->setToolTip(tr("Комментарий к таблице (максимум %1 символов)").arg(fmtm_TableCommentMaxSize));
+    ui->idEdit->setToolTip(tr("Уникальный идентификатор записи (генерируется автоматически)"));
+    ui->keyComboBox->setToolTip(tr("Выбрать первичный ключ таблицы из списка уникальных индексов"));
+    ui->isTemp->setToolTip(tr("Отметить таблицу как временную (Temporary)"));
+    ui->isRec->setToolTip(tr("Отметить таблицу как запись (Record)"));
+    ui->blobLen->setToolTip(tr("Размер BLOB поля в байтах"));
+
     m_pGeneratorsModel = new GenInterfaceFactoryModel(this);
     m_pGeneratorsProxyModel = new GeneratorsProxyModel(this);
     m_pGeneratorsProxyModel->setSourceModel(m_pGeneratorsModel);
@@ -148,7 +169,8 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
 
     ui->tabWidget->widget(0)->layout()->addWidget(pFilteredTableView);
 
-    pAddIndex = new QPushButton("Добавить индекс", ui->tabWidget->widget(1));
+    pAddIndex = new QPushButton(tr("Добавить индекс"), ui->tabWidget->widget(1));
+    pAddIndex->setToolTip(tr("Добавить новый индекс для текущей таблицы"));
     pHorizontalSpacer = new QSpacerItem(100, 20, QSizePolicy::Expanding);
     pHBoxLayout = new QHBoxLayout;
     pHBoxLayout->addWidget(pAddIndex);
@@ -158,23 +180,22 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
 
     ui->toolStdBlobSize->setIcon(QIcon::fromTheme("CatalogZone"));
     connect(ui->toolStdBlobSize, &QToolButton::clicked, [=]()
-    {
-        //ui->blobLen->setValue(16384);
-        pTable->setBlobLen(16384);
-    });
+            {
+                pTable->setBlobLen(16384);
+                QToolTip::showText(QCursor::pos(),
+                                   tr("Установлен стандартный размер BLOB: 16384"),
+                                   this, QRect(), 1500);
+            });
 
     connect(ui->blobCombo, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
-    {
-        if (index == COMBO_No)
-            pTable->setBlobType(BT_BLOB_NO);
-        else if (index == COMBO_BLOB)
-            pTable->setBlobType(BT_BLOB_VAR);
-        else
-            pTable->setBlobType(BT_CLOB);
-    });
-
-    //ui->tabWidget->setDocumentMode(true);
-
+            {
+                if (index == COMBO_No)
+                    pTable->setBlobType(BT_BLOB_NO);
+                else if (index == COMBO_BLOB)
+                    pTable->setBlobType(BT_BLOB_VAR);
+                else
+                    pTable->setBlobType(BT_CLOB);
+            });
 
     QList<QAbstractButton*> pButtomList = ui->buttonBox->buttons();
     foreach (QAbstractButton *pBtn, pButtomList)
@@ -188,10 +209,10 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     }
 
     pCopyMenu = new QMenu(tr("Шаблон строки"), this);
+    toolAddActionWithTooltip(pCopyMenu, tr("Копировать имя таблицы в различных форматах в буфер обмена"));
 
     ui->nameEdit->setMaxLength(fmtm_TableNameMaxSize);
     ui->commentEdit->setMaxLength(fmtm_TableCommentMaxSize);
-    //ui->scriptButton->setEnabled(false);
 
     SetUnclosableSystemTabs();
 
@@ -202,7 +223,6 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
     connect(pTreeView, SIGNAL(clicked(QModelIndex)), SLOT(SegmentButtonClicked(QModelIndex)));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), SLOT(TabCloseRequested(int)));
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &FmtWorkWindow::currentTabChanged);
-    //connect(ui->scriptButton, SIGNAL(clicked(bool)), SLOT(OpenScriptEditorWindow()));
 }
 
 FmtWorkWindow::~FmtWorkWindow()
@@ -215,20 +235,7 @@ FmtWorkWindow::~FmtWorkWindow()
 
 void FmtWorkWindow::setupFind()
 {
-    /*pFindLineEdit = new LineEditAction(this);
-    pFindBtn = new QToolButton(this);
-    pFindMenu = new QMenu(this);
-    pFindShortcut = new QShortcut(QKeySequence::Find, this);
-
-    pFindBtn->setIcon(QIcon("://img/FindHS.png"));
-    pFindBtn->setPopupMode(QToolButton::InstantPopup);
-    pFindBtn->setMenu(pFindMenu);
-    pUndoRedoLayout->addWidget(pFindBtn);
-    pFindMenu->addAction(pFindLineEdit);
-
-    connect(pFindLineEdit, SIGNAL(textChanged(QString)), pFieldsDelegate, SLOT(setHighlightText(QString)));
-    connect(pFindMenu, SIGNAL(aboutToShow()), pFindLineEdit, SLOT(setFocus()));
-    connect(pFindShortcut, SIGNAL(activated()), pFindBtn, SLOT(showMenu()));*/
+    // Метод для настройки поиска
 }
 
 void FmtWorkWindow::SetUnclosableSystemTabs()
@@ -254,8 +261,6 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     pMapper->addMapping(ui->nameEdit, FmtTable::fld_Name);
     pMapper->addMapping(ui->commentEdit, FmtTable::fld_Comment);
     pMapper->addMapping(ui->blobLen, FmtTable::fld_BlobLen, "value");
-    /*pMapper->addMapping(ui->isTemp, FmtTable::fld_isTemporary);
-    pMapper->addMapping(ui->isRec, FmtTable::fld_isRecord);*/
     pMapper->addMapping(ui->keyComboBox, FmtTable::fld_PkIndx, "currentText");
 
     pMapper->toFirst();
@@ -265,10 +270,10 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     pTreeView->setModel(pTable->indecesModel());
 
     static QList<int> m_Width = QList<int>()
-            << 150 << 65 << 50 << 200 << 150 << 50;
+                                << 150 << 65 << 50 << 200 << 150 << 50;
 
     static QList<int> m_iWidth = QList<int>()
-            << 175 << 65 << 35 << 40 << 70 << 35 << 40 << 70 << 50 << 50 << 175;
+                                 << 175 << 65 << 35 << 40 << 70 << 35 << 40 << 70 << 50 << 50 << 175;
 
     for (int i = 0; i < m_iWidth.size(); i++)
         pTreeView->setColumnWidth(i, m_iWidth[i]);
@@ -297,14 +302,6 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
         if (m_TableObjects)
             m_TableObjects->setEnabled(false);
     }
-
-/*#ifndef QT_DEBUG
-    if (info->type() != ConnectionInfo::CON_ORA)
-    {
-        ui->pushButton->setEnabled(false);
-        m_saveToXml->setEnabled(false);
-    }
-#endif*/
 
     if (!info->hasFeature(ConnectionInfo::CanCreateTable))
     {
@@ -346,8 +343,6 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
             m_loadDbf->setEnabled(false);
     }
 
-    //ui->scriptButton->setEnabled(true);
-
     ui->blobCombo->blockSignals(true);
     if (pTable->blobType() == BT_BLOB_NO)
         ui->blobCombo->setCurrentIndex(COMBO_No);
@@ -357,9 +352,6 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
         ui->blobCombo->setCurrentIndex(COMBO_CLOB);
     ui->blobCombo->blockSignals(false);
 
-    /*pTableView->horizontalHeader()->setSectionResizeMode(FmtIndecesModelItem::fld_Comment, QHeaderView::Stretch);
-    pTableView->horizontalHeader()->setSectionResizeMode(FmtIndecesModelItem::fld_Panel, QHeaderView::Fixed);*/
-
     connect(pTable->indecesModel(), SIGNAL(modelReset()), SLOT(indexModelReseted()));
     connect(pTable->indecesModel(), SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(indexModelInserted(QModelIndex,int,int)));
     connect(pTable.data(), SIGNAL(indexAdded(FmtIndex*)), SLOT(FillIndecesList()));
@@ -367,12 +359,9 @@ void FmtWorkWindow::setFmtTable(FmtSharedTablePtr &table)
     connect(pTable.data(), SIGNAL(indexChanged(FmtIndex*)), SLOT(OnIndexChanged(FmtIndex*)));
     connect(pTable.data(), SIGNAL(nameChanged(QString)), SLOT(UpdateCopyMenu(QString)));
     connect(fieldsModel, SIGNAL(AddedToLast(FmtField*, const QModelIndex&)), SLOT(AddedToLast(FmtField*,QModelIndex)));
-    /*connect(pTable.data(), SIGNAL(isTemporaryChanged(bool)), SLOT(isTemporaryTableChanged(bool)));
-    connect(pTable.data(), SIGNAL(isRecordChanged(bool)), SLOT(isRecordTableChanged(bool)));*/
 
     connect(ui->isRec, &QCheckBox::toggled, this, &FmtWorkWindow::isRecordTableChanged);
     connect(ui->isTemp, &QCheckBox::toggled, this, &FmtWorkWindow::isTemporaryTableChanged);
-    //connect(m_rebuildOffsets, SIGNAL(triggered(bool)), pTable.data(), SLOT(rebuildOffsets()));
 }
 
 void FmtWorkWindow::setupUndoRedo()
@@ -387,8 +376,11 @@ void FmtWorkWindow::setupUndoRedo()
     pUndoBtn->setDefaultAction(pUndoActionWrp);
     pUndoBtn->setPopupMode(QToolButton::MenuButtonPopup);
     pUndoBtn->setMinimumHeight(16);
+    pUndoBtn->setToolTip(tr("Отменить последнее действие"));
+
     pRedoBtn = new QToolButton(this);
     pRedoBtn->setMinimumHeight(16);
+    pRedoBtn->setToolTip(tr("Повторить отмененное действие"));
 
     pUndoRedoLayout = new QHBoxLayout();
     pUndoRedoLayout->addWidget(pUndoBtn);
@@ -426,12 +418,14 @@ void FmtWorkWindow::undoActionChanged()
     {
         pUndoActionWrp->setIcon(QIcon::fromTheme("Undo"));
         pUndoActionWrp->setText(tr("Отменить: %1...")
-                                .arg(undoText.mid(0, 10)));
+                                    .arg(undoText.mid(0, 10)));
+        pUndoBtn->setToolTip(tr("Отменить: %1").arg(undoText));
     }
     else
     {
         pUndoActionWrp->setIcon(undoDisabled);
         pUndoActionWrp->setText(tr("Отменить"));
+        pUndoBtn->setToolTip(tr("Отменить последнее действие"));
     }
 }
 
@@ -635,9 +629,20 @@ void FmtWorkWindow::UpdateCopyMenu(const QString &table)
             pCopyMenuAction->setEnabled(true);
 
         QStringList lst = FmtTableStringList(table);
-        foreach (const QString &str, lst)
+        QStringList descriptions = {
+            tr("Копировать имя таблицы как есть"),
+            tr("Копировать имя таблицы в верхнем регистре"),
+            tr("Копировать имя таблицы в нижнем регистре"),
+            tr("Копировать имя таблицы в CamelCase нотации"),
+            tr("Копировать имя таблицы для использования в C++ коде"),
+            tr("Копировать полное имя с префиксом")
+        };
+
+        for (int i = 0; i < lst.size(); i++)
         {
-            QAction *action = pCopyMenu->addAction(str);
+            QAction *action = pCopyMenu->addAction(lst[i]);
+            if (i < descriptions.size())
+                action->setToolTip(descriptions[i]);
             connect(action, SIGNAL(triggered(bool)), SLOT(CopyAction()));
         }
 
@@ -657,8 +662,7 @@ void FmtWorkWindow::CopyAction()
 
     QToolTip::showText(QCursor::pos(),
                        tr("Текст скопирован: %1").arg(action->text()),
-                       nullptr, QRect(), 2000); // 2 секунды
-    //QToolTip::showText(mapToGlobal(pCopyMenuAction->pos()), tr("Текст скопирован: %1").arg(action->text()), this, QRect(), 1000);
+                       nullptr, QRect(), 2000);
 }
 
 void FmtWorkWindow::keyPressEvent(QKeyEvent *event)
@@ -765,13 +769,11 @@ void FmtWorkWindow::TabCloseRequested(int index)
 {
     QWidget *tabWidget = ui->tabWidget->widget(index);
 
-    // Если это FmtWindowTabInterface, деактивируем ленту
     FmtWindowTabInterface *fmtTab = qobject_cast<FmtWindowTabInterface*>(tabWidget);
     if (fmtTab)
     {
         fmtTab->deactivateRibbon();
 
-        // Если это была последняя активная вкладка, сбрасываем указатель
         if (m_pLastActiveFmtTab == tabWidget)
         {
             m_pLastActiveFmtTab = nullptr;
@@ -780,7 +782,6 @@ void FmtWorkWindow::TabCloseRequested(int index)
 
     ui->tabWidget->removeTab(index);
 
-    // После закрытия вкладки нужно обновить состояние ленты
     int newIndex = ui->tabWidget->currentIndex();
     currentTabChanged(newIndex);
 }
@@ -789,17 +790,14 @@ void FmtWorkWindow::currentTabChanged(int index)
 {
     if (index < 0)
     {
-        // Нет активных вкладок - показываем основную категорию FmtWorkWindow
         if (ribbon())
         {
-            // Показываем главную категорию
             SARibbonCategory *mainCategory = ribbon()->categoryByName("Главная");
             if (mainCategory)
             {
                 ribbon()->raiseCategory(mainCategory);
             }
 
-            // Скрываем контекстную категорию если она пуста
             SARibbonContextCategory *contextCategory = findCategoryByName(FMTTABLE_CONTEXTCATEGORY);
             if (contextCategory)
             {
@@ -809,8 +807,6 @@ void FmtWorkWindow::currentTabChanged(int index)
                 }
                 else
                 {
-                    // Если есть категории, но нет активной вкладки FmtWindowTabInterface,
-                    // нужно убрать все категории кроме основной
                     QList<SARibbonCategory*> categories = contextCategory->categoryList();
                     for (SARibbonCategory *cat : categories)
                     {
@@ -820,7 +816,6 @@ void FmtWorkWindow::currentTabChanged(int index)
                         }
                     }
 
-                    // Если осталась только основная категория, показываем её
                     if (contextCategory->categoryCount() == 1)
                     {
                         ribbon()->showContextCategory(contextCategory);
@@ -838,7 +833,6 @@ void FmtWorkWindow::currentTabChanged(int index)
 
     QWidget *currentWidget = ui->tabWidget->widget(index);
 
-    // Деактивируем ленту у предыдущей активной вкладки FmtWindowTabInterface
     if (m_pLastActiveFmtTab && m_pLastActiveFmtTab != currentWidget)
     {
         FmtWindowTabInterface *lastTab = qobject_cast<FmtWindowTabInterface*>(m_pLastActiveFmtTab);
@@ -849,22 +843,18 @@ void FmtWorkWindow::currentTabChanged(int index)
         m_pLastActiveFmtTab = nullptr;
     }
 
-    // Проверяем, является ли текущая вкладка FmtWindowTabInterface
     FmtWindowTabInterface *fmtTab = qobject_cast<FmtWindowTabInterface*>(currentWidget);
 
     if (fmtTab)
     {
-        // Это вкладка с поддержкой ленты - активируем её
         fmtTab->activateRibbon();
         m_pLastActiveFmtTab = currentWidget;
     }
     else
     {
-        // Это обычная вкладка - показываем основную категорию FmtWorkWindow
         SARibbonContextCategory *contextCategory = findCategoryByName(FMTTABLE_CONTEXTCATEGORY);
         if (contextCategory && ribbon())
         {
-            // Убираем все категории кроме основной FMTTABLE_CONTEXTCATEGORY
             QList<SARibbonCategory*> categories = contextCategory->categoryList();
             for (SARibbonCategory *cat : categories)
             {
@@ -874,12 +864,10 @@ void FmtWorkWindow::currentTabChanged(int index)
                 }
             }
 
-            // Показываем контекстную категорию только если в ней есть категории
             if (contextCategory->categoryCount() > 0)
             {
                 ribbon()->showContextCategory(contextCategory);
 
-                // Находим и активируем категорию FmtWorkWindow
                 for (SARibbonCategory *cat : contextCategory->categoryList())
                 {
                     if (cat->categoryName() == FMTTABLE_CONTEXTCATEGORY)
@@ -893,7 +881,6 @@ void FmtWorkWindow::currentTabChanged(int index)
             {
                 ribbon()->hideContextCategory(contextCategory);
 
-                // Показываем главную категорию
                 SARibbonCategory *mainCategory = ribbon()->categoryByName("Главная");
                 if (mainCategory)
                 {
@@ -912,86 +899,11 @@ int FmtWorkWindow::SelectTableFieldsDailog(const QString &title, QList<FmtField*
 void FmtWorkWindow::AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
 {
     OpenCodeTab(title, HighlighterSql, code, OpenTab, WordWrap);
-    /*CodeEditor *editor = new CodeEditor();
-    ToolApplyHighlighter(editor, HighlighterSql);
-
-    editor->highlighter()->addType(pTable->name());
-    editor->highlighter()->addType(pTable->name().toUpper());
-    editor->setReadOnly(true);
-    editor->setPlainText(code);
-
-    if (WordWrap)
-        editor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-
-    QWidget *tabWidget = new QWidget();
-    QVBoxLayout *tabLayout = new QVBoxLayout(tabWidget);
-    tabLayout->setContentsMargins(0, 0, 0, 0);
-    tabLayout->setSpacing(0);
-
-    if (AddConvertButton)
-    {
-        QWidget *buttonWidget = new QWidget();
-        QHBoxLayout *buttonLayout = new QHBoxLayout(buttonWidget);
-        buttonLayout->setContentsMargins(5, 5, 5, 5);
-        buttonLayout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-
-        QPushButton *convertButton = new QPushButton("Конвертировать в PostgreSQL");
-        //convertButton->setFixedSize(120, 30);
-        convertButton->setStyleSheet(
-                    "QPushButton {"
-                    "    background-color: #4CAF50;"
-                    "    color: white;"
-                    "    border: none;"
-                    "    border-radius: 4px;"
-                    "    font-weight: bold;"
-                    "    padding: 5px;"
-                    "}"
-                    "QPushButton:hover {"
-                    "    background-color: #45a049;"
-                    "}"
-                    "QPushButton:pressed {"
-                    "    background-color: #3d8b40;"
-                    "}"
-                    );
-
-        // Подключаем сигнал конвертации
-        connect(convertButton, &QPushButton::clicked, [this, editor, title]()
-        {
-            SqlConversionResult result = convertSql(editor->toPlainText(), pTable->connection()->user());
-
-            QString sql = result.result;
-
-            if (!result.error.isEmpty())
-                sql = result.error;
-
-            AddSqlCodeTab(QString("%1 (PostgreSQL)").arg(title), sql, true, false, false);
-        });
-
-        buttonLayout->addWidget(convertButton);
-        tabLayout->addWidget(buttonWidget);
-    }
-
-    tabLayout->addWidget(editor);
-
-    int tab = ui->tabWidget->addTab(tabWidget, title);
-    if (OpenTab) ui->tabWidget->setCurrentIndex(tab);*/
 }
 
 void FmtWorkWindow::AddCppCodeTab(const QString &title, const QString &code, bool OpenTab, bool WordWrap)
 {
     OpenCodeTab(title, HighlighterCpp, code, OpenTab, WordWrap);
-    /*CodeEditor *editor = new CodeEditor();
-    ToolApplyHighlighter(editor, HighlighterCpp);
-
-    editor->highlighter()->addType(FmtTableStructName(pTable->name()));
-    editor->setReadOnly(true);
-    editor->setPlainText(code);
-
-    if (WordWrap)
-        editor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-
-    int tab = ui->tabWidget->addTab(editor, title);
-    if (OpenTab) ui->tabWidget->setCurrentIndex(tab);*/
 }
 
 void FmtWorkWindow::GenDeleteFiledsScript()
@@ -1024,11 +936,6 @@ void FmtWorkWindow::GenAddFiledsScript()
     group.addButton(newAlgRadio);
     group.addButton(oldAlgRadio);
 
-    /*connect(newAlgRadio, &QRadioButton::toggled, [&newAlg](bool value)
-    {
-        newAlg = value;
-    });*/
-
     oldAlgRadio->setChecked(true);
     if (SelectTableFieldsDailog(tr("Выбор полей для скрипта обновления"), &FldList, containert) == QDialog::Accepted)
     {
@@ -1048,8 +955,8 @@ void FmtWorkWindow::GenModifyTableFields()
     QList<FmtField*> FldList;
     if (SelectTableFieldsDailog(tr("Выбор полей для скрипта изменения типа"), &FldList) == QDialog::Accepted)
     {
-            QString code = FmtGenModifyColumnScript(FldList);
-            AddSqlCodeTab(tr("Скрипт изменения типа полей"), code);
+        QString code = FmtGenModifyColumnScript(FldList);
+        AddSqlCodeTab(tr("Скрипт изменения типа полей"), code);
     }
 }
 
@@ -1198,7 +1105,6 @@ void FmtWorkWindow::PasteFields()
         QMap<quint16,QVariant> fldDataMap;
         stream >> fldDataMap;
         pTable->addField(fldDataMap);
-        //qDebug() << fldDataMap;
     }
 }
 
@@ -1229,8 +1135,8 @@ QString FmtWorkWindow::makeWindowTitle()
     QString schemeName = connection()->dsn();
     QString tableName = pTable->name();
     QString name = QString("%1@%2")
-            .arg(tableName)
-            .arg(schemeName.trimmed());
+                       .arg(tableName)
+                       .arg(schemeName.trimmed());
     return name;
 }
 
@@ -1328,7 +1234,7 @@ void FmtWorkWindow::DiffToScript()
 
     QString err;
     QString connectionString = QString("CONNSTRING=dsn=%1;user id=%2;password=%3")
-            .arg(conn->dsn(), conn->user(), conn->password());
+                                   .arg(conn->dsn(), conn->user(), conn->password());
     QString result = FmtGenDiffToScript(filename,
                                         connectionString,
                                         conn->isUnicode(),
@@ -1365,16 +1271,6 @@ void FmtWorkWindow::CheckAction()
 
 void FmtWorkWindow::OpenCodeTab(const QString &title, int syntax, const QString &code, bool OpenTab, bool WordWrap)
 {
-    /*CodeEditor *editor = new CodeEditor();
-    ToolApplyHighlighter(editor, syntax);
-
-    editor->highlighter()->addType(FmtTableStructName(pTable->name()));
-    editor->setReadOnly(true);
-    editor->setPlainText(code);
-
-    if (WordWrap)
-        editor->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);*/
-
     FmtCodeTabBase *editor = new FmtCodeTabBase();
     editor->AddTab(title, code, syntax);
 
@@ -1468,30 +1364,50 @@ void FmtWorkWindow::initRibbonFmtPanel()
 
     m_pInitTableMenu = new QMenu(tr("Создать в БД"), this);
     m_pInitTableMenu->setIcon(QIcon::fromTheme("TableAdapter"));
+    toolAddActionWithTooltip(m_pInitTableMenu,
+                             tr("Создание объектов базы данных на основе записи в словаре"));
+
     m_pInitCreateTableAction = m_pInitTableMenu->addAction(tr("Создать/пересоздать таблицу"));
+    toolAddActionWithTooltip(m_pInitCreateTableAction,
+                             tr("Создать или пересоздать таблицу в базе данных. ВНИМАНИЕ: пересоздание приведет к потере данных!"));
+
     m_pInitCreateIndexAction = m_pInitTableMenu->addAction(tr("Создать/пересоздать индексы"));
+    toolAddActionWithTooltip(m_pInitCreateIndexAction,
+                             tr("Создать или обновить индексы для таблицы в базе данных"));
 
     m_pInitTableMenuAction = FmtPannel->addLargeMenu(m_pInitTableMenu, QToolButton::MenuButtonPopup);
     m_pInitTableMenuAction->setIcon(QIcon::fromTheme("TableAdapter"));
 
     m_pCheckAction = createAction(tr("Проверить"), "Test");
+    toolAddActionWithTooltip(m_pCheckAction,
+                             tr("Проверить структуру таблицы на наличие ошибок и предупреждений"));
     FmtPannel->addSmallAction(m_pCheckAction);
 
     m_pCompareFmt = createAction(tr("Сравнить структуры"), "CompareFmt");
+    toolAddActionWithTooltip(m_pCompareFmt,
+                             tr("Сравнить структуру текущей таблицы с другой таблицей, XML файлом или эталонной структурой"));
     FmtPannel->addSmallAction(m_pCompareFmt);
 
     m_rebuildOffsets = createAction(tr("Перестроить смещения"), "Step");
+    toolAddActionWithTooltip(m_rebuildOffsets,
+                             tr("Пересчитать смещения полей в структуре таблицы"));
     FmtPannel->addSmallAction(m_rebuildOffsets);
     FmtPannel->addSeparator();
 
     pCopyMenuAction = FmtPannel->addLargeMenu(pCopyMenu, QToolButton::MenuButtonPopup);
     pCopyMenuAction->setIcon(QIcon::fromTheme("DictionaryContains"));
+    toolAddActionWithTooltip(pCopyMenuAction,
+                             tr("Скопировать имя таблицы в различных форматах в буфер обмена"));
     FmtPannel->addSeparator();
 
     m_saveToXml = createAction(tr("Экспорт в XML"), "ExportFmtXml");
+    toolAddActionWithTooltip(m_saveToXml,
+                             tr("Экспортировать структуру таблицы в XML файл"));
     FmtPannel->addLargeAction(m_saveToXml);
 
     m_createTableSql = createAction(tr("Экспорт CreateTablesSql"), "CreateTablesSql");
+    toolAddActionWithTooltip(m_createTableSql,
+                             tr("Сгенерировать SQL скрипт CREATE TABLE для создания таблицы"));
     FmtPannel->addLargeAction(m_createTableSql);
 
     connect(m_pCheckAction, &QAction::triggered, this, &FmtWorkWindow::CheckTable);
@@ -1606,9 +1522,20 @@ void FmtWorkWindow::initRibbonFieldsPanel()
     m_pFmtCategory->addPannel(Pannel);
 
     m_MassRemoveFields = createAction(tr("Удалить"), "RemoveRow");
+    toolAddActionWithTooltip(m_MassRemoveFields,
+                             tr("Удалить выбранные поля из структуры таблицы"));
+
     m_AddFieldsToEnd = createAction(tr("Добавить в конец"), "AddField");
+    toolAddActionWithTooltip(m_AddFieldsToEnd,
+                             tr("Добавить новые поля в конец структуры таблицы на основе текстового описания"));
+
     m_InsertFields = createAction(tr("Добавить перед..."), "InsertField");
+    toolAddActionWithTooltip(m_InsertFields,
+                             tr("Вставить новые поля перед выбранным полем на основе текстового описания"));
+
     m_CamelCaseAction = createAction(tr("Преобразовать в CamelCase"), "HighlightText");
+    toolAddActionWithTooltip(m_CamelCaseAction,
+                             tr("Преобразовать имена выбранных полей в CamelCase нотацию"));
 
     Pannel->addLargeAction(m_MassRemoveFields);
     Pannel->addMediumAction(m_AddFieldsToEnd);
@@ -1616,9 +1543,15 @@ void FmtWorkWindow::initRibbonFieldsPanel()
     Pannel->addSeparator();
 
     m_CopyFields = createAction(tr("Копировать"), "CopyField");
+    toolAddActionWithTooltip(m_CopyFields,
+                             tr("Копировать выбранные поля в буфер обмена для последующей вставки"));
+
     Pannel->addLargeAction(m_CopyFields);
 
     m_PasteFields = createAction(tr("Вставить"), "PasteField");
+    toolAddActionWithTooltip(m_PasteFields,
+                             tr("Вставить ранее скопированные поля в текущую таблицу"));
+
     Pannel->addLargeAction(m_PasteFields);
     Pannel->addSeparator();
 
@@ -1638,15 +1571,23 @@ void FmtWorkWindow::initRibbonDataPanel()
     m_pFmtCategory->addPannel(Pannel);
 
     m_unloadDbf = createAction(tr("Выгрузить в *.dat"), "UnloadDbf");
+    toolAddActionWithTooltip(m_unloadDbf,
+                             tr("Выгрузить данные таблицы в DAT файл (DBF формат) для загрузки через SQL*Loader"));
     Pannel->addLargeAction(m_unloadDbf);
 
     m_loadDbf = createAction(tr("Загрузить из *.dat"), "LoadDbf");
+    toolAddActionWithTooltip(m_loadDbf,
+                             tr("Загрузить данные таблицы из DAT файла (DBF формат) с помощью SQL*Loader"));
     Pannel->addSmallAction(m_loadDbf);
 
     m_ImportFromTable = createAction(tr("Загрузить из Word"), "ImportRichText");
+    toolAddActionWithTooltip(m_ImportFromTable,
+                             tr("Импортировать структуру таблицы из документа Word или текстового описания"));
     Pannel->addSmallAction(m_ImportFromTable);
 
     m_EditContent = createAction(tr("Редактировать содержимое"), "EditTableRow");
+    toolAddActionWithTooltip(m_EditContent,
+                             tr("Открыть редактор содержимого для просмотра и редактирования данных таблицы"));
     Pannel->addSmallAction(m_EditContent);
 
     connect(m_unloadDbf, &QAction::triggered, this, &FmtWorkWindow::UnloadToDbf);
@@ -1661,13 +1602,19 @@ void FmtWorkWindow::initRibbonCodeTemplatesPanel()
     m_pFmtCategory->addPannel(Pannel);
 
     m_DiffToScript = createAction(tr("Diff To Script"), "DiffToScript");
+    toolAddActionWithTooltip(m_DiffToScript,
+                             tr("Создать скрипт обновления записей на основе DAT файла из репозитория"));
     Pannel->addLargeAction(m_DiffToScript);
 
     pGenCppCodeMenu = new QMenu(tr("Шаблоны"), this);
     pGenCppCodeMenu->setIcon(QIcon::fromTheme("GenerateAndRecordCode"));
+    toolAddActionWithTooltip(pGenCppCodeMenu,
+                             tr("Генерация C++ кода и пользовательских макросов на основе структуры таблицы"));
 
     pGenCppCodeAction = Pannel->addLargeMenu(pGenCppCodeMenu, QToolButton::MenuButtonPopup);
     pGenCppCodeAction->setIcon(QIcon::fromTheme("GenerateAndRecordCode"));
+    toolAddActionWithTooltip(pGenCppCodeAction,
+                             tr("Генерация C++ кода и пользовательских макросов"));
 
     bool HasMacroSeparator = false;
     for (int i = 0; i < m_pGeneratorsProxyModel->rowCount(); i++)
@@ -1691,33 +1638,67 @@ void FmtWorkWindow::initRibbonCodeTemplatesPanel()
             pGenCppCodeMenu->insertAction(pGenCppCodeMenu->actions().at(0), action);
             pGenCppCodeMenu->setDefaultAction(action);
         }
-        action->setData(id);
 
+        // Добавляем tooltip для каждого шаблона
+        QString description;
+        if (id == "FmtGenCppTemplate")
+            description = tr("Сгенерировать C++ структуру данных для таблицы");
+        else if (id == "FmtGenCppDaoTemplate")
+            description = tr("Сгенерировать DAO класс для работы с таблицей");
+        else if (id == "FmtGenCppClassTemplate")
+            description = tr("Сгенерировать C++ класс с методами доступа");
+        else if (id.startsWith("macro:"))
+            description = tr("Выполнить пользовательский макрос");
+        else
+            description = tr("Сгенерировать код на основе шаблона");
+
+        toolAddActionWithTooltip(action, description);
+
+        action->setData(id);
         connect(action, &QAction::triggered, [=]()
-        {
-            OpenGeneratorTab(action->data().toString(), action->text());
-        });
+                {
+                    OpenGeneratorTab(action->data().toString(), action->text());
+                });
     }
 
     pCodeGenMenu = new QMenu(tr("Скрипты SQL"), this);
     pCodeGenMenu->setIcon(QIcon::fromTheme("GenerateChangeScript"));
+    toolAddActionWithTooltip(pCodeGenMenu,
+                             tr("Генерация SQL скриптов для модификации структуры таблицы"));
 
     m_GenCreateTbSql = pCodeGenMenu->addAction(tr("Создание таблицы"));
+    toolAddActionWithTooltip(m_GenCreateTbSql,
+                             tr("Сгенерировать SQL скрипт CREATE TABLE для создания таблицы"));
     pCodeGenMenu->setDefaultAction(m_GenCreateTbSql);
 
     m_GenAddScript = pCodeGenMenu->addAction(tr("Добавление полей"));
+    toolAddActionWithTooltip(m_GenAddScript,
+                             tr("Сгенерировать SQL скрипт ALTER TABLE ADD для добавления новых полей"));
+
     m_GenModifyScript = pCodeGenMenu->addAction(tr("Изменение полей"));
+    toolAddActionWithTooltip(m_GenModifyScript,
+                             tr("Сгенерировать SQL скрипт ALTER TABLE MODIFY для изменения типов полей"));
+
     m_GenDelScript = pCodeGenMenu->addAction(tr("Удаления полей"));
+    toolAddActionWithTooltip(m_GenDelScript,
+                             tr("Сгенерировать SQL скрипт ALTER TABLE DROP для удаления полей"));
+
     pCodeGenMenu->addSeparator();
 
     m_TableObjects = pCodeGenMenu->addAction(tr("Объекты таблицы"));
+    toolAddActionWithTooltip(m_TableObjects,
+                             tr("Показать все объекты базы данных, связанные с таблицей (индексы, триггеры, ограничения)"));
+
     pCodeGenMenu->addSeparator();
 
     m_GenInsertTemplate = pCodeGenMenu->addAction(tr("Прочие инструкции"));
-    //ui->pushActions->setMenu(pActionsMenu);//pUserActionsMenu
+    toolAddActionWithTooltip(m_GenInsertTemplate,
+                             tr("Сгенерировать шаблоны INSERT, UPDATE и C++ кода для работы с данными"));
 
     pGenCodeAction = Pannel->addLargeMenu(pCodeGenMenu, QToolButton::MenuButtonPopup);
     pGenCodeAction->setIcon(QIcon::fromTheme("GenerateChangeScript"));
+    toolAddActionWithTooltip(pGenCodeAction,
+                             tr("Генерация SQL скриптов для модификации структуры таблицы"));
 
     pUserActionsMenu = nullptr;
     CreateUserCommandsMenu(&pUserActionsMenu, tr("Польз. действия"),
@@ -1725,12 +1706,19 @@ void FmtWorkWindow::initRibbonCodeTemplatesPanel()
 
     if (pUserActionsMenu)
     {
+        toolAddActionWithTooltip(pUserActionsMenu,
+                                 tr("Выполнить пользовательские макросы и действия"));
+
         // UserCode
         m_pUserCode = Pannel->addLargeMenu(pUserActionsMenu);
         m_pUserCode->setIcon(QIcon::fromTheme("UserCode"));
+        toolAddActionWithTooltip(m_pUserCode,
+                                 tr("Выполнить пользовательские макросы"));
     }
 
     m_pEditMacro = createAction(tr("Редактировать макрос"), "ScriptManager");
+    toolAddActionWithTooltip(m_pEditMacro,
+                             tr("Открыть редактор макросов для создания и модификации пользовательских скриптов"));
     Pannel->addLargeAction(m_pEditMacro);
 
     connect(m_DiffToScript, &QAction::triggered, this, &FmtWorkWindow::DiffToScript);
@@ -1744,15 +1732,14 @@ void FmtWorkWindow::initRibbonCodeTemplatesPanel()
     connect(m_pEditMacro, &QAction::triggered, this, &FmtWorkWindow::OpenScriptEditorWindow);
 
     connect(pGenCppCodeAction, &QAction::triggered, [=]
-    {
-        OpenGeneratorTab("FmtGenCppTemplate", fmtGenInterfaceAlias("FmtGenCppTemplate"));
-    });
+            {
+                OpenGeneratorTab("FmtGenCppTemplate", fmtGenInterfaceAlias("FmtGenCppTemplate"));
+            });
 }
 
 void FmtWorkWindow::initRibbonPanels()
 {
     m_pFmtCategory = new SARibbonCategory(FMTTABLE_CONTEXTCATEGORY, ribbon());
-    //m_pFmtCategory->setObjectName(pTable->name());
 
     initRibbonFmtPanel();
     initRibbonDataPanel();
@@ -1844,7 +1831,6 @@ void FmtWorkWindow::OpenGeneratorTab(const QString &interfaceid, const QString &
         if (GenTmp && GenTmp->interfaceId() == interfaceid)
         {
             ui->tabWidget->setCurrentIndex(i);
-            // Активируем ленту для этой вкладки
             currentTabChanged(i);
             return;
         }
@@ -1866,10 +1852,8 @@ void FmtWorkWindow::OpenGeneratorTab(const QString &interfaceid, const QString &
 
     int tabIndex = ui->tabWidget->addTab(GenWnd, title);
 
-    // Сохраняем указатель на новую вкладку
     if (!m_pLastActiveFmtTab)
         m_pLastActiveFmtTab = GenWnd;
 
-    // Устанавливаем текущую вкладку и активируем ленту
     ui->tabWidget->setCurrentIndex(tabIndex);
 }

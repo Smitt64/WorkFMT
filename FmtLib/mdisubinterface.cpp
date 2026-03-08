@@ -82,9 +82,12 @@ QList<QWidget*> MdiSubInterface::statusBarSections()
             .arg(pTable->name());
 }*/
 
-void MdiSubInterface::setupAction(QAction *act, const QString& text, const QString& iconname)
+void MdiSubInterface::setupAction(QAction *act, const QString& text, const QString& iconname, const QKeySequence &shortcut)
 {
     act->setText(text);
     act->setIcon(QIcon::fromTheme(iconname));
     act->setObjectName(text);
+
+    if (!shortcut.isEmpty())
+        act->setShortcut(shortcut);
 }
