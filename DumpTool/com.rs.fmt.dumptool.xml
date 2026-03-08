@@ -1,5 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="DumpTool">
+    <version ver="1.0.1.4">
+        <add>Дампы схем Oracle теперь выгружаются от имени системного пользователя;</add>
+        <fix>Исправлена ошибка при формировании путей к каталогам сервера;</fix>
+    </version>
     <version ver="1.0.1.3">
         <add>Кнопка помощи перенесена в левую сторону мастера;</add>
     </version>
