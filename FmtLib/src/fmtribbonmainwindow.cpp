@@ -12,6 +12,7 @@
 #include "oracleauthdlg.h"
 #include "selectconnectiondlg.h"
 #include "selectfolderdlg.h"
+#include "src/core/FieldSplitterProcess.h"
 #include "src/debugconnect.h"
 #include "src/widgets/guiconverterdlg.h"
 #include "src/widgets/sqlconvertordlg.h"
@@ -34,6 +35,9 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     m_LastActiveWindow(nullptr),
     pTablesDock(nullptr)
 {
+    fieldSplitterProcessInstance()->start();
+    connect(fieldSplitterProcessInstance(), &FieldSplitterProcess::statusChanged, this, &FmtRibbonMainWindow::onSplitterStatusChanged);
+
     setWindowIcon(QIcon("://app-icon.svg"));
     setWindowTitle(tr("WorkFMT"));
     setMinimumSize(800, 600);
@@ -59,6 +63,7 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
 
     m_pStatusBar = new QStatusBar();
     setStatusBar(m_pStatusBar);
+    InitStatusBar();
 
     InitWindowsCombo();
     InitMainRibbonTab();
@@ -72,126 +77,126 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     connect(pTablesDock, &TablesDock::selectionChanged, this, &FmtRibbonMainWindow::UpdateActions);
 
     connect(pMdi, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
-            {
-                // subWindowActivated
-                if (!window)
-                {
-                    if (m_LastActiveWindow)
-                    {
-                        MdiSubInterface *lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
-
-                        if (lastwnd)
-                        {
-                            QList<QWidget*> status = lastwnd->statusBarSections();
-                            lastwnd->clearRibbonTabs();
-
-                            for (auto widget : qAsConst(status))
-                                m_pStatusBar->removeWidget(widget);
-                        }
-                    }
-
-                    QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
-                    for (auto all : qAsConst(allCategoryes))
-                    {
-                        if (all->categoryCount())
-                            ribbonBar()->showContextCategory(all);
-                        else
-                            ribbonBar()->hideContextCategory(all);
-                    }
-
-                    m_LastActiveWindow = nullptr;
-
-                    return;
-                }
-
-                if (m_LastActiveWindow == window)
-                {
-                    return;
-                }
-
-                MdiSubInterface *lastwnd = nullptr;
-                MdiSubInterface *wnd = qobject_cast<MdiSubInterface*>(window->widget());
-
-                if (m_LastActiveWindow)
-                    lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
-
-                if (!wnd)
-                {
-                    /*m_ToolBoxDock->setModel(nullptr);
-            m_PropertyDock->setPropertyModel(nullptr);
-            m_PropertyDock->setStructModel(nullptr);*/
-
-                    /*m_pActionUndo->setSource(nullptr);
-            m_pActionRedo->setSource(nullptr);
-            m_pUndoActionWidget->setUndoStack(nullptr);*/
-
-                    if (lastwnd)
-                    {
-                        QList<QWidget*> status = lastwnd->statusBarSections();
-                        lastwnd->clearRibbonTabs();
-
-                        for (auto widget : qAsConst(status))
-                            m_pStatusBar->removeWidget(widget);
-                    }
-
-                    m_LastActiveWindow = nullptr;
-                }
-                else
-                {
-                    /*m_ToolBoxDock->setModel(wnd->toolBox());
-            m_PropertyDock->setPropertyModel(wnd->propertyModel());
-            m_PropertyDock->setStructModel(wnd->structModel());*/
-
-                    /*m_pActionUndo->setSource(wnd->undoAction());
-            m_pActionRedo->setSource(wnd->redoAction());
-            m_pUndoActionWidget->setUndoStack(wnd->undoStack());*/
-
-                    QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
-                    pWindowsComboBox->setCurrentIndex(index);
-
-                    m_LastRibbonTabName.lock();
-
-                    ribbonBar()->setUpdatesEnabled(false);
-                    if (lastwnd)
-                    {
-                        QList<QWidget*> status = lastwnd->statusBarSections();
-                        lastwnd->clearRibbonTabs();
-
-                        for (auto widget : qAsConst(status))
-                            m_pStatusBar->removeWidget(widget);
-                    }
-
-                    wnd->updateRibbonTabs();
-
-                    if (!m_LastRibbonTabName.get().isEmpty())
-                        ribbonBar()->raiseCategory(ribbonBar()->categoryByName(m_LastRibbonTabName));
-
-                    QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
-                    for (auto all : qAsConst(allCategoryes))
-                    {
-                        if (all->categoryCount())
-                            ribbonBar()->showContextCategory(all);
-                        else
-                            ribbonBar()->hideContextCategory(all);
-                    }
-                    ribbonBar()->setUpdatesEnabled(true);
-
-                    QList<QWidget*> status = wnd->statusBarSections();
-                    for (auto widget : qAsConst(status))
-                    {
-                        m_pStatusBar->addPermanentWidget(widget);
-                        widget->show();
-                    }
-
-                    m_LastActiveWindow = window;
-                    m_LastRibbonTabName.unlock();
-                }
-                /*if (wnd)
+    {
+        // subWindowActivated
+        if (!window)
         {
+            if (m_LastActiveWindow)
+            {
+                MdiSubInterface *lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
+
+                if (lastwnd)
+                {
+                    QList<QWidget*> status = lastwnd->statusBarSections();
+                    lastwnd->clearRibbonTabs();
+
+                    for (auto widget : qAsConst(status))
+                        m_pStatusBar->removeWidget(widget);
+                }
+            }
+
+            QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
+            for (auto all : qAsConst(allCategoryes))
+            {
+                if (all->categoryCount())
+                    ribbonBar()->showContextCategory(all);
+                else
+                    ribbonBar()->hideContextCategory(all);
+            }
+
+            m_LastActiveWindow = nullptr;
+
+            return;
+        }
+
+        if (m_LastActiveWindow == window)
+        {
+            return;
+        }
+
+        MdiSubInterface *lastwnd = nullptr;
+        MdiSubInterface *wnd = qobject_cast<MdiSubInterface*>(window->widget());
+
+        if (m_LastActiveWindow)
+            lastwnd = dynamic_cast<MdiSubInterface*>(m_LastActiveWindow->widget());
+
+        if (!wnd)
+        {
+            /*m_ToolBoxDock->setModel(nullptr);
+    m_PropertyDock->setPropertyModel(nullptr);
+    m_PropertyDock->setStructModel(nullptr);*/
+
+            /*m_pActionUndo->setSource(nullptr);
+    m_pActionRedo->setSource(nullptr);
+    m_pUndoActionWidget->setUndoStack(nullptr);*/
+
+            if (lastwnd)
+            {
+                QList<QWidget*> status = lastwnd->statusBarSections();
+                lastwnd->clearRibbonTabs();
+
+                for (auto widget : qAsConst(status))
+                    m_pStatusBar->removeWidget(widget);
+            }
+
+            m_LastActiveWindow = nullptr;
+        }
+        else
+        {
+            /*m_ToolBoxDock->setModel(wnd->toolBox());
+    m_PropertyDock->setPropertyModel(wnd->propertyModel());
+    m_PropertyDock->setStructModel(wnd->structModel());*/
+
+            /*m_pActionUndo->setSource(wnd->undoAction());
+    m_pActionRedo->setSource(wnd->redoAction());
+    m_pUndoActionWidget->setUndoStack(wnd->undoStack());*/
+
             QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
             pWindowsComboBox->setCurrentIndex(index);
-        }*/
-            });
+
+            m_LastRibbonTabName.lock();
+
+            ribbonBar()->setUpdatesEnabled(false);
+            if (lastwnd)
+            {
+                QList<QWidget*> status = lastwnd->statusBarSections();
+                lastwnd->clearRibbonTabs();
+
+                for (auto widget : qAsConst(status))
+                    m_pStatusBar->removeWidget(widget);
+            }
+
+            wnd->updateRibbonTabs();
+
+            if (!m_LastRibbonTabName.get().isEmpty())
+                ribbonBar()->raiseCategory(ribbonBar()->categoryByName(m_LastRibbonTabName));
+
+            QList<SARibbonContextCategory*> allCategoryes = ribbonBar()->contextCategoryList();
+            for (auto all : qAsConst(allCategoryes))
+            {
+                if (all->categoryCount())
+                    ribbonBar()->showContextCategory(all);
+                else
+                    ribbonBar()->hideContextCategory(all);
+            }
+            ribbonBar()->setUpdatesEnabled(true);
+
+            QList<QWidget*> status = wnd->statusBarSections();
+            for (auto widget : qAsConst(status))
+            {
+                m_pStatusBar->addPermanentWidget(widget);
+                widget->show();
+            }
+
+            m_LastActiveWindow = window;
+            m_LastRibbonTabName.unlock();
+        }
+        /*if (wnd)
+{
+    QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
+    pWindowsComboBox->setCurrentIndex(index);
+}*/
+    });
 
     UpdateActions();
 }
@@ -877,6 +882,8 @@ void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
     s->setValue("State", saveState());
     //pUpdateChecker->requestInterruption();
     //pUpdateChecker->deleteLater();
+
+    fieldSplitterProcessInstance()->stop();
     event->accept();
 }
 
@@ -1517,6 +1524,8 @@ bool FmtRibbonMainWindow::eventFilter(QObject *obj, QEvent *event)
                 {
                     QString table = view->selectionModel()->selectedIndexes().at(0).data(Qt::UserRole).toString();
                     m_pActionEdit->setData(table);
+
+
                     emit m_pActionEdit->triggered();
                     hr = true;
                 }
@@ -1529,4 +1538,28 @@ bool FmtRibbonMainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
     return SARibbonMainWindow::eventFilter(obj, event);
+}
+
+void FmtRibbonMainWindow::InitStatusBar()
+{
+    m_FieldSplitterStatusIconLabel = new QLabel(this);
+    statusBar()->addPermanentWidget(m_FieldSplitterStatusIconLabel);
+
+    m_FieldSplitterStatusIconLabel->setPixmap(QIcon::fromTheme("HighlightTextGreen").pixmap(16, 16, QIcon::Disabled));
+
+    toolAddActionWithTooltip(m_FieldSplitterStatusIconLabel, tr("Индикатор состояния процесса разбиения полей"));
+}
+
+void FmtRibbonMainWindow::onSplitterStatusChanged(bool ready)
+{
+    if (ready)
+    {
+        m_FieldSplitterStatusIconLabel->setPixmap(QIcon::fromTheme("HighlightTextGreen").pixmap(16, 16));
+        toolAddActionWithTooltip(m_FieldSplitterStatusIconLabel, tr("Процесс разбиения полей готов к работе"));
+    }
+    else
+    {
+        m_FieldSplitterStatusIconLabel->setPixmap(QIcon::fromTheme("HighlightTextGreen").pixmap(16, 16, QIcon::Disabled));
+        toolAddActionWithTooltip(m_FieldSplitterStatusIconLabel, tr("Процесс разбиения полей не запущен"));
+    }
 }

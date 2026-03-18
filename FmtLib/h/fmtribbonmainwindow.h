@@ -54,11 +54,15 @@ private slots:
     void CopyTableTo();
     void CopyTableToTmp();
 
+    void onSplitterStatusChanged(bool ready);
+
 protected:
     virtual void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
     virtual void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private:
+    void InitStatusBar();
+
     void TablesContextMenu(QContextMenuEvent *event, QListView *view);
     void ConnectionActionSelected(QAction *action);
     ConnectionInfo* openConnection();
@@ -115,6 +119,8 @@ private:
 
     SARibbonGallery* m_pConnectionsGallery;
     SARibbonGalleryGroup *m_pConnectionsGalleryGroup;
+
+    QLabel *m_FieldSplitterStatusIconLabel;
 };
 
 #endif // FMTRIBBONMAINWINDOW_H

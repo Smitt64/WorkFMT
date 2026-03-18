@@ -36,6 +36,7 @@
 #include <QMenu>
 #include <limits>
 #include "DataStructure.hpp"
+#include "src/core/fieldsplitterprocess.h"
 
 #undef max
 
@@ -1522,6 +1523,7 @@ int CoreStartProcess(QProcess *exe, const QString &program, const QStringList& a
         stat = -1;
     });
     exe->start(program, arguments);
+    qCInfo(logCore()) << "Pid: " << exe->processId();
 
     if (waitForStarted)
         exe->waitForStarted();
@@ -1819,19 +1821,8 @@ QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force)
     if (!settings()->value("AutoCamelCase", true).toBool() && !force)
         return result;
 
-    QDir d = QDir::current();
-    QScopedPointer<QProcess> proc(new QProcess());
-    proc->setProgram(d.absoluteFilePath("CapitalizeField.exe"));
-
-    QStringList args;
-    args << "--fieldlist" << result.join(";");
-    proc->setArguments(args);
-
-    CoreStartProcess(proc.data(), proc->program(), proc->arguments());
-    proc->waitForFinished();
-
-    QString str = proc->readAllStandardOutput().simplified();
-    result = str.split(";");
+    result.clear();
+    result = fieldSplitterProcessInstance()->splitFields(undecoratedfield);
 
     return result;
 }
