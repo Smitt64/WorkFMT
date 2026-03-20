@@ -30,7 +30,9 @@ LONG CALLBACK ExceptionFilter(PEXCEPTION_POINTERS pExInfo)
 #endif
 
 FmtApplication::FmtApplication(int &argc, char **argv)  :
-    QApplication(argc, argv)
+    QApplication(argc, argv),
+    pSettings(nullptr),
+    pTnsModel(nullptr)
 {
 #ifdef Q_OS_WIN
     hOldFilter = Q_NULLPTR;
@@ -62,6 +64,13 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
 
 FmtApplication::~FmtApplication()
 {
+    qDeleteAll(m_pMainWindows);
+
+    if (pSettings)
+        delete pSettings;
+
+    if (pTnsModel)
+        delete pTnsModel;
 #ifdef Q_OS_WIN
     if (hOldFilter)
         SetUnhandledExceptionFilter(hOldFilter);
@@ -99,7 +108,7 @@ void FmtApplication::init()
     else
         qCWarning(logCore()) << "Can't find translations folder";
 
-    initDbgHelp();
+    //initDbgHelp();
 
     registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate", tr("Шаблоны btrv"));
     registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql", tr("Скрипт TablesSql"));

@@ -33,12 +33,6 @@ int main(int argc, char **argv)
     InitIconTheme();
     FmtApplication a(argc, argv);
 
-    QStyle *windows = QStyleFactory::create("WindowsVista");
-    QScopedPointer<MDIProxyStyle> OfficeStyle(new MDIProxyStyle());
-    OfficeStyle->setBaseStyle(windows);
-    a.setStyle(OfficeStyle.data());
-    //a.setPalette(OfficeStyle->standardPalette());
-
     QCommandLineParser parser;
     QCommandLineOption helpOption = parser.addHelpOption();
     Q_UNUSED(helpOption)
@@ -64,14 +58,11 @@ int main(int argc, char **argv)
     parser.addOption(logOption);
     parser.addOption(logruleOption);
 
-    //qDebug() << a.arguments();
     parser.process(a.arguments());
 
-    //MainWindow *w = (MainWindow*)a.addMainWindow();
     FmtRibbonMainWindow *w = a.addMainWindow<FmtRibbonMainWindow>();
     ProcessLoggingOption(&a, &parser, logOption, logruleOption);
     a.init();
-    //a.applyStyle();
 
     // строка подключения
     if (parser.isSet(connectionStringOption))
@@ -90,6 +81,8 @@ int main(int argc, char **argv)
             ProcessRsreqOption(w, cstr);
         }
     }
+
+    w->ApplyRibbonProxy();
 
     return a.exec();
 }

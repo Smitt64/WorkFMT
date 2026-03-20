@@ -1,4 +1,5 @@
 #include "fmtribbonmainwindow.h"
+#include "aboutdlg.h"
 #include "connectioninfo.h"
 #include "errordlg.h"
 #include "errorsmodel.h"
@@ -7,6 +8,7 @@
 #include "fmttable.h"
 #include "fmttablelistdelegate.h"
 #include "fmtworkwindow.h"
+#include "mdiproxystyle.h"
 #include "options/externaltoolspage.h"
 #include "options/fmtoptionsdlg.h"
 #include "oracleauthdlg.h"
@@ -33,8 +35,11 @@
 FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     SARibbonMainWindow(parent),
     m_LastActiveWindow(nullptr),
-    pTablesDock(nullptr)
+    pTablesDock(nullptr),
+    m_pOfficeStyle(nullptr)
 {
+    SARibbonSystemButtonBar* wbar = windowButtonBar();
+    wbar->setWindowFlag(Qt::WindowContextHelpButtonHint, true);
     fieldSplitterProcessInstance()->start();
     connect(fieldSplitterProcessInstance(), &FieldSplitterProcess::statusChanged, this, &FmtRibbonMainWindow::onSplitterStatusChanged);
 
@@ -49,16 +54,11 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
     pTablesDock->setItemDelegate(pTableListDelegate);
     pTablesDock->setEventFilter(this);
 
-    //m_pMdiStyle = new MDIProxyStyle(qApp->style());
-    //setStyle(m_pMdiStyle);
-    //qApp->setStyle(m_pMdiStyle);
-
     pMdi = new QMdiArea(this);
     pMdi->setDocumentMode(true);
     pMdi->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     pMdi->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     pMdi->setBackground(QColor("#EBEFF2"));
-    //pMdi->setStyle(m_pMdiStyle);
     setCentralWidget(pMdi);
 
     m_pStatusBar = new QStatusBar();
@@ -67,14 +67,18 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
 
     InitWindowsCombo();
     InitMainRibbonTab();
-    /*SARibbonCategory *viewPage = new SARibbonCategory("Вид");
-    ribbon->addCategoryPage(viewPage);*/
+
+    m_pActionAbout = createAction(tr("О программе"), "HelpApplication");
+    toolAddActionWithTooltip(m_pActionAbout, tr("Показать информацию о программе"));
+    wbar->addAction(m_pActionAbout);
+    wbar->addSeparator();
 
     InitContextCategoryes();
     InitQuickAccessBar();
 
     connect(pTablesDock, &TablesDock::tableDbClicked, this, &FmtRibbonMainWindow::TableClicked);
     connect(pTablesDock, &TablesDock::selectionChanged, this, &FmtRibbonMainWindow::UpdateActions);
+    //connect(m_pActionAbout, &QAction::triggered, this, &FmtRibbonMainWindow::About);
 
     connect(pMdi, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
     {
@@ -122,14 +126,6 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
 
         if (!wnd)
         {
-            /*m_ToolBoxDock->setModel(nullptr);
-    m_PropertyDock->setPropertyModel(nullptr);
-    m_PropertyDock->setStructModel(nullptr);*/
-
-            /*m_pActionUndo->setSource(nullptr);
-    m_pActionRedo->setSource(nullptr);
-    m_pUndoActionWidget->setUndoStack(nullptr);*/
-
             if (lastwnd)
             {
                 QList<QWidget*> status = lastwnd->statusBarSections();
@@ -143,14 +139,6 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
         }
         else
         {
-            /*m_ToolBoxDock->setModel(wnd->toolBox());
-    m_PropertyDock->setPropertyModel(wnd->propertyModel());
-    m_PropertyDock->setStructModel(wnd->structModel());*/
-
-            /*m_pActionUndo->setSource(wnd->undoAction());
-    m_pActionRedo->setSource(wnd->redoAction());
-    m_pUndoActionWidget->setUndoStack(wnd->undoStack());*/
-
             QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
             pWindowsComboBox->setCurrentIndex(index);
 
@@ -191,11 +179,6 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
             m_LastActiveWindow = window;
             m_LastRibbonTabName.unlock();
         }
-        /*if (wnd)
-{
-    QModelIndex index = pWindowsModel->findWindow(wnd->connection(), window);
-    pWindowsComboBox->setCurrentIndex(index);
-}*/
     });
 
     UpdateActions();
@@ -203,7 +186,13 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
 
 FmtRibbonMainWindow::~FmtRibbonMainWindow()
 {
+}
 
+void FmtRibbonMainWindow::ApplyRibbonProxy()
+{
+    m_pOfficeStyle = new MDIProxyStyle();
+    m_pOfficeStyle->setBaseStyle(qApp->style());
+    qApp->setStyle(m_pOfficeStyle);
 }
 
 void FmtRibbonMainWindow::OpenConnection(const QString &connectionString)
@@ -875,6 +864,56 @@ void FmtRibbonMainWindow::showEvent(QShowEvent *event)
 
 void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
 {
+    if (!m_pConnections.isEmpty())
+    {
+
+        QDialog *dialog = new QDialog(this);
+        dialog->setWindowTitle("Подтверждение закрытия");
+        dialog->setModal(true);
+        dialog->setFixedWidth(500);
+
+        QVBoxLayout *mainLayout = new QVBoxLayout(dialog);
+        QLabel *questionLabel = new QLabel("Имеются активные подключения. "
+            "Вы действительно хотите закрыть приложение?", dialog);
+        mainLayout->addWidget(questionLabel);
+
+        // TreeView для отображения модели
+        QTreeView *treeView = new QTreeView(dialog);
+        treeView->setModel(pWindowsModel);
+        treeView->setHeaderHidden(false);
+        treeView->setAlternatingRowColors(true);
+        treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+        // Настройка колонок (если нужно)
+        // treeView->setColumnWidth(0, 200); // пример настройки ширины
+
+        // Ограничиваем высоту tree view
+        treeView->setMaximumHeight(300);
+        treeView->setMinimumHeight(150);
+        treeView->setMinimumWidth(300);
+        treeView->setRootIsDecorated(false);
+        treeView->setHeaderHidden(true);
+        treeView->setExpandsOnDoubleClick(false);
+        treeView->expandAll();
+
+        mainLayout->addWidget(treeView);
+
+        QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Yes | QDialogButtonBox::No, Qt::Horizontal, dialog);
+        buttonBox->button(QDialogButtonBox::No)->setDefault(true);
+        connect(buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
+        connect(buttonBox, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
+        mainLayout->addWidget(buttonBox);
+
+        // Показываем диалог
+        if (dialog->exec() != QDialog::Accepted)
+        {
+            delete dialog;
+            event->ignore();
+            return;
+        }
+
+        delete dialog;
+    }
     SARibbonMainWindow::closeEvent(event);
 
     QSettings *s = settings();
@@ -884,6 +923,22 @@ void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
     //pUpdateChecker->deleteLater();
 
     fieldSplitterProcessInstance()->stop();
+
+    pMdi->closeAllSubWindows();
+    m_Windows.clear();
+
+    for (ConnectionInfo *info : m_pConnections)
+        info->close();
+
+    qDeleteAll(m_pConnections);
+    m_pConnections.clear();
+
+    if (m_pOfficeStyle)
+    {
+        QStyle *tmp = QStyleFactory::create("WindowsVista");
+        qApp->setStyle(tmp);
+    }
+
     event->accept();
 }
 
@@ -1562,4 +1617,10 @@ void FmtRibbonMainWindow::onSplitterStatusChanged(bool ready)
         m_FieldSplitterStatusIconLabel->setPixmap(QIcon::fromTheme("HighlightTextGreen").pixmap(16, 16, QIcon::Disabled));
         toolAddActionWithTooltip(m_FieldSplitterStatusIconLabel, tr("Процесс разбиения полей не запущен"));
     }
+}
+
+void FmtRibbonMainWindow::About()
+{
+    AboutDlg dlg(":/AboutDlg", this);
+    dlg.exec();
 }

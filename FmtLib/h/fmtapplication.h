@@ -34,6 +34,8 @@ public:
         T *w = new T();
         w->show();
 
+        m_pMainWindows.append(w);
+
         return w;
     }
 
@@ -59,6 +61,8 @@ private:
     QSettings *pSettings;
     OracleTnsListModel *pTnsModel;
     QTranslator qt_translator;
+
+    QList<QMainWindow*> m_pMainWindows;
 };
 
 #endif // FMTAPPLICATION_H

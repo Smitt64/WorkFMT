@@ -39,6 +39,8 @@ public:
 
     void DisconnectCurrent();
 
+    void ApplyRibbonProxy();
+
 private slots:
     void ActionConnectTriggered();
     void OpenConnectionFile();
@@ -53,6 +55,7 @@ private slots:
     void CopyTable();
     void CopyTableTo();
     void CopyTableToTmp();
+    void About();
 
     void onSplitterStatusChanged(bool ready);
 
@@ -107,7 +110,7 @@ private:
     QList<ConnectionInfo*> m_pConnections;
 
     QAction *m_pActionConnect, *m_pActionDisconnect, *m_pOpenConnection, *m_pSqliteAction;
-    QAction *m_pActionImport, *m_pActionImportDir, *m_pActionExport;
+    QAction *m_pActionImport, *m_pActionImportDir, *m_pActionExport, *m_pActionAbout;
 
     QMenu *m_pMenuCreate;
     QAction *m_pActionCreate, *m_pActionCreateGroup, *m_pActionCreateText, *m_pActionCreateXml;
@@ -121,6 +124,8 @@ private:
     SARibbonGalleryGroup *m_pConnectionsGalleryGroup;
 
     QLabel *m_FieldSplitterStatusIconLabel;
+
+    MDIProxyStyle *m_pOfficeStyle;
 };
 
 #endif // FMTRIBBONMAINWINDOW_H
