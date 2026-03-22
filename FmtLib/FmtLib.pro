@@ -24,6 +24,7 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    fmtapplicationwidget.cpp \
     options/externaltoolspage.cpp \
     options/fmtcommandspage.cpp \
     options/fmtoptionsdlg.cpp \
@@ -235,6 +236,7 @@ RESOURCES += \
     res/fmt.qrc
 
 HEADERS += \
+    fmtapplicationwidget.h \
     h/fmtribbonmainwindow.h \
     h/gensqltemplatedlg.h \
     h/DataStructure.hpp \

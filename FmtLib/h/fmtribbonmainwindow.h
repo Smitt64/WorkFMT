@@ -20,6 +20,7 @@ class FmtWorkWindow;
 class FmtTable;
 class MDIProxyStyle;
 class MdiSubInterface;
+class FmtApplicationWidget;
 class FMTLIBSHARED_EXPORT FmtRibbonMainWindow : public SARibbonMainWindow
 {
     using WorkWindowList = QList<QWidget*>;
@@ -126,6 +127,7 @@ private:
     QLabel *m_FieldSplitterStatusIconLabel;
 
     MDIProxyStyle *m_pOfficeStyle;
+    FmtApplicationWidget *m_pAppWidget;
 };
 
 #endif // FMTRIBBONMAINWINDOW_H

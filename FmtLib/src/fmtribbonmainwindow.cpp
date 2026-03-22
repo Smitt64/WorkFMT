@@ -3,6 +3,7 @@
 #include "connectioninfo.h"
 #include "errordlg.h"
 #include "errorsmodel.h"
+#include "fmtapplicationwidget.h"
 #include "fmtfromrichtext.h"
 #include "fmtimpexpwrp.h"
 #include "fmttable.h"
@@ -78,7 +79,7 @@ FmtRibbonMainWindow::FmtRibbonMainWindow(QWidget *parent) :
 
     connect(pTablesDock, &TablesDock::tableDbClicked, this, &FmtRibbonMainWindow::TableClicked);
     connect(pTablesDock, &TablesDock::selectionChanged, this, &FmtRibbonMainWindow::UpdateActions);
-    //connect(m_pActionAbout, &QAction::triggered, this, &FmtRibbonMainWindow::About);
+    connect(m_pActionAbout, &QAction::triggered, this, &FmtRibbonMainWindow::About);
 
     connect(pMdi, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window)
     {
@@ -463,6 +464,14 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
             CreateDocument(table)->show();
         }
     };
+
+    m_pAppWidget = new FmtApplicationWidget(this);
+    m_pAppWidget->hide();
+    connect(ribbon->applicationButton(), &QAbstractButton::clicked, [this](bool c)
+    {
+        Q_UNUSED(c);
+        m_pAppWidget->show();
+    });
 
     connect(m_pFakeActionInit, &QAction::triggered, [=](){ ExecuteCurrentFmtWindowSlot("InitDB"); });
     connect(m_pFakeUnloadToDbf, &QAction::triggered, [=](){ ExecuteCurrentFmtWindowSlot("UnloadToDbf"); });
@@ -1057,23 +1066,19 @@ QMdiSubWindow *FmtRibbonMainWindow::CreateMdiWindow(MdiSubInterface *window, Con
     window->setParentWnd(wnd);
     window->setConnection(pConnection);
     window->setRibbonBar(ribbonBar());
-    //window->setPalette(m_pMdiStyle->standardPalette());
-
-    //window->setPalette(m_pMdiStyle->standardPalette());
 
     connect(window, &MdiSubInterface::destroyed, [=](QObject *wnd)
-            {
-                // WorkWindowDestroyed
-                const FmtWorkWindow *window = static_cast<const FmtWorkWindow*>(wnd);
+    {
+        const FmtWorkWindow *window = static_cast<const FmtWorkWindow*>(wnd);
 
-                if (window)
-                {
-                    ConnectionInfo *connection = window->connection();
+        if (window)
+        {
+            ConnectionInfo *connection = window->connection();
 
-                    if (m_Windows[connection].contains((QWidget*)window))
-                        m_Windows[connection].removeOne((QWidget*)window);
-                }
-            });
+            if (m_Windows[connection].contains((QWidget*)window))
+                m_Windows[connection].removeOne((QWidget*)window);
+        }
+    });
 
     QModelIndex index = pWindowsModel->addWindow(pConnection, wnd);
     pWindowsComboBox->setCurrentIndex(index);
