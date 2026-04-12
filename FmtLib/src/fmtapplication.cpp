@@ -88,7 +88,9 @@ void FmtApplication::applyStyle()
 void FmtApplication::init()
 {
     pTnsModel = new OracleTnsListModel(this);
+
     FmtInit();
+    //toolLoadFonts();
 
     qCInfo(logCore()) << "Application path: " << qApp->applicationDirPath();
     qCInfo(logCore()) << "Current path: " << QDir::current().path();

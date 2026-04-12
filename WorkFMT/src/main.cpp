@@ -32,6 +32,7 @@ int main(int argc, char **argv)
 
     InitIconTheme();
     FmtApplication a(argc, argv);
+    a.init();
 
     QCommandLineParser parser;
     QCommandLineOption helpOption = parser.addHelpOption();
@@ -62,7 +63,6 @@ int main(int argc, char **argv)
 
     FmtRibbonMainWindow *w = a.addMainWindow<FmtRibbonMainWindow>();
     ProcessLoggingOption(&a, &parser, logOption, logruleOption);
-    a.init();
 
     // строка подключения
     if (parser.isSet(connectionStringOption))

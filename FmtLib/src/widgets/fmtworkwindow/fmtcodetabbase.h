@@ -3,10 +3,10 @@
 
 #include <QMap>
 #include <QPointer>
+#include "fmtcore.h"
 #include "fmtwindowtabinterface.h"
 
 #define FmtSyntaxProperty "Syntax"
-#define FmtCodeTabStyle "office2013_highlighter"
 
 class QMdiArea;
 class GenInterfaceFactoryModel;

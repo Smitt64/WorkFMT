@@ -71,6 +71,7 @@ SOURCES += \
     src/widgets/fmtworkwindow/fmtwindowtabinterface.cpp \
     src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
+    src/widgets/sqlconvertorcategory.cpp \
     src/widgets/sqlconvertordlg.cpp \
     src/widgets/tablestructsqldlg.cpp \
     src/windowslistdlg.cpp \
@@ -385,6 +386,7 @@ HEADERS += \
     src/widgets/fmtworkwindow/fmtsqltab.h \
     src/widgets/fmtworkwindow/fmtwindowtabinterface.h \
     src/widgets/guiconverterdlg.h \
+    src/widgets/sqlconvertorcategory.h \
     src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h \
     src/wizards/MassCompareTables/fmttablecollection.h \
@@ -414,6 +416,9 @@ ICONS_SRC =  \
     $$PWD/../FmtLib/res/icons \
     $$PWD/../ToolsRuntimeProj/ToolsRuntime/icons
 
+FONT_SRC =  \
+    $$PWD/../ToolsRuntimeProj/ToolsRuntime/fonts
+
 defineTest(copyToDestDir) {
     files = $$1
     dir = $$2
@@ -432,5 +437,6 @@ defineTest(copyToDestDir) {
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../WorkFMT/debug/mac)
 copyToDestDir($$ICONS_SRC, $$OUT_PWD/../bin/resources/icons)
+copyToDestDir($$FONT_SRC, $$OUT_PWD/../bin/resources/fonts)
 
 OTHER_FILES += com.rs.fmt.workfmt.xml

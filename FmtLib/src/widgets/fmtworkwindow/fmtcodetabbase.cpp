@@ -259,8 +259,7 @@ void FmtCodeTabBase::initDefaultPanel()
     m_pActionPannel->addSeparator();
 
     m_pConvertPg = createAction(tr("Конвертировать в PostgreSQL"), "DataSourceTarget");
-    toolAddActionWithTooltip(m_pConvertPg,
-                             tr("Конвертировать SQL скрипт из Oracle синтаксиса в PostgreSQL"));
+    toolAddActionWithTooltip(m_pConvertPg, tr("Конвертировать SQL скрипт из Oracle синтаксиса в PostgreSQL"));
     m_pActionPannel->addLargeAction(m_pConvertPg);
 
     m_pWordWrap = createAction(tr("Перенос строк"), "WordWrap");

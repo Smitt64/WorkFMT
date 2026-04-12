@@ -408,22 +408,22 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     m_pActionDebug = createAction(tr("Настроить отладку на схеме"), "DebugXSLT");
     toolAddActionWithTooltip(m_pActionDebug,
                              tr("Выполнить запросы для включения отладки SQL скриптов на схеме Oracle"));
-    ToolsPannel->addMediumAction(m_pActionDebug);
+    ToolsPannel->addSmallAction(m_pActionDebug);
 
     m_pActionGuiConverter = createAction(tr("Запустить GuiConverter"), "GuiConverter");
     toolAddActionWithTooltip(m_pActionGuiConverter,
                              tr("Утилита для конвертации Oracle в PostgreSQL"));
-    ToolsPannel->addMediumAction(m_pActionGuiConverter);
+    ToolsPannel->addSmallAction(m_pActionGuiConverter);
 
     m_pActionDumpTool = createAction(tr("Обработка дампов"), "DumpTool");
     toolAddActionWithTooltip(m_pActionDumpTool,
                              tr("Инструменты для работы с дампами базы данных"));
-    ToolsPannel->addMediumAction(m_pActionDumpTool);
+    ToolsPannel->addSmallAction(m_pActionDumpTool);
 
-    m_pActionConvertScript = createAction(tr("Конвертировать скрипт"), "TransferStoredProcedure");
+    /*m_pActionConvertScript = createAction(tr("Конвертировать скрипт"), "TransferStoredProcedure");
     toolAddActionWithTooltip(m_pActionConvertScript,
                              tr("Конвертация скриптов из Oracle в PostgreSQL"));
-    ToolsPannel->addMediumAction(m_pActionConvertScript);
+    ToolsPannel->addMediumAction(m_pActionConvertScript);*/
 
     // Действия для контекстного меню
     m_pActionEdit = createAction(tr("Редактировать"), "EditTableRow");
@@ -558,7 +558,7 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
         dlg.exec();
     });
 
-    connect(m_pActionConvertScript, &QAction::triggered, [=]()
+    /*connect(m_pActionConvertScript, &QAction::triggered, [=]()
     {
         ConnectionInfo *connection = CurrentConnection();
 
@@ -569,7 +569,7 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
             dlg.setUserName(connection->user());
 
         dlg.exec();
-    });
+    });*/
 
     connect(m_pActionCreateText, &QAction::triggered, [=]()
     {
@@ -705,6 +705,7 @@ ConnectionInfo* FmtRibbonMainWindow::openConnection()
 {
     OracleAuthDlg dlg(this);
     ConnectionInfo *info = nullptr;
+    dlg.setWindowIcon(QIcon::fromTheme("ConnectToDatabase"));
 
     if (dlg.exec() == QDialog::Accepted)
     {
@@ -875,7 +876,6 @@ void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
 {
     if (!m_pConnections.isEmpty())
     {
-
         QDialog *dialog = new QDialog(this);
         dialog->setWindowTitle("Подтверждение закрытия");
         dialog->setModal(true);
@@ -923,8 +923,6 @@ void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
 
         delete dialog;
     }
-    SARibbonMainWindow::closeEvent(event);
-
     QSettings *s = settings();
     s->setValue("Geometry", saveGeometry());
     s->setValue("State", saveState());
@@ -933,14 +931,23 @@ void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
 
     fieldSplitterProcessInstance()->stop();
 
+    delete m_pAppWidget;
     pMdi->closeAllSubWindows();
     m_Windows.clear();
+    pMdi->update();
 
     for (ConnectionInfo *info : m_pConnections)
+    {
         info->close();
+        pWindowsModel->removeConnection(info);
+    }
 
     qDeleteAll(m_pConnections);
     m_pConnections.clear();
+    update();
+    QApplication::processEvents();
+
+    SARibbonMainWindow::closeEvent(event);
 
     if (m_pOfficeStyle)
     {
@@ -958,7 +965,7 @@ void FmtRibbonMainWindow::StartGuiConverter()
     QString path = setting->value("path").toString();
     setting->endGroup();
 
-    if (path.isEmpty())
+    /*if (path.isEmpty())
     {
         FmtOptionsDlg dlg(CurrentConnection(), setting, this);
         OptionsPage *page = dlg.findPage<ExternalToolsPage*>();
@@ -973,7 +980,7 @@ void FmtRibbonMainWindow::StartGuiConverter()
                 setting->endGroup();
             }
         }
-    }
+    }*/
 
     if (path.isEmpty())
     {
@@ -1271,6 +1278,7 @@ void FmtRibbonMainWindow::ConnectionActionSelected(QAction *action)
 {
     ConnectionInfo *info = reinterpret_cast<ConnectionInfo*>(action->data().toInt());
     pTablesDock->setConnection(info);
+    m_pAppWidget->setCurrentConnection(info);
 
     UpdateActions();
 }
@@ -1298,6 +1306,9 @@ void FmtRibbonMainWindow::DisconnectCurrent()
 
     if (!NeedClose)
         return;
+
+    if (m_pAppWidget)
+        m_pAppWidget->setCurrentConnection(nullptr);
 
     current->db().close();
     pTablesDock->closeConnection();

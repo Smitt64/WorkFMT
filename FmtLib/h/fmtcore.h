@@ -28,6 +28,8 @@
 
 #define HEX_COLOR_REGEX QString("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
 
+#define FmtCodeTabStyle "office2013_highlighter"
+
 enum FmtNamesColumn
 {
     fnc_Id,
