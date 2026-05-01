@@ -156,6 +156,7 @@ private:
     void initRibbonDataPanel();
     void initRibbonCodeTemplatesPanel();
 
+    int addTab(QWidget *widget, const QString &title);
     int CheckAppy();
     int SaveTable();
     void setupUndoRedo();

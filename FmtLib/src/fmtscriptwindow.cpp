@@ -379,6 +379,7 @@ void FmtScriptWindow::updateRibbonState()
         return;
 
     m_pConvertPg->setEnabled(false);
+    m_pExecuteSql->setEnabled(false);
 
     FmtCodeTabBase::updateRibbonState();
     QMdiSubWindow *Current = pContainer->currentSubWindow();

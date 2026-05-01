@@ -990,7 +990,7 @@ void FmtWorkWindow::OpenScriptEditorWindow()
         script->initRibbonPanels();
     }
 
-    int tab = ui->tabWidget->addTab(script, tr("Скрипт"));
+    int tab = addTab(script, tr("Скрипт"));//ui->tabWidget->addTab(script, tr("Скрипт"));
     ui->tabWidget->setCurrentIndex(tab);
     currentTabChanged(ui->tabWidget->currentIndex());
 }
@@ -1058,7 +1058,7 @@ void FmtWorkWindow::EditContent()
     if (!pTable->isRecord())
     {
         FmtEditContentWindow *content = new FmtEditContentWindow(pTable);
-        int tab = ui->tabWidget->addTab(content, tr("Содержимое"));
+        int tab = addTab(content, tr("Содержимое"));//ui->tabWidget->addTab(content, tr("Содержимое"));
         ui->tabWidget->setCurrentIndex(tab);
     }
 }
@@ -1284,7 +1284,7 @@ void FmtWorkWindow::OpenCodeTab(const QString &title, int syntax, const QString 
 
     editor->setWordWrap(WordWrap);
 
-    int tab = ui->tabWidget->addTab(editor, title);
+    int tab = addTab(editor, title);//ui->tabWidget->addTab(editor, title);
     if (OpenTab) ui->tabWidget->setCurrentIndex(tab);
     currentTabChanged(ui->tabWidget->currentIndex());
 }
@@ -1345,7 +1345,7 @@ void FmtWorkWindow::CompareStruct()
             tabView->setLists(pTable.data(), table2);
         }
 
-        int tab = ui->tabWidget->addTab(tabView, tr("Результат сравнения"));
+        int tab = addTab(tabView, tr("Результат сравнения"));//ui->tabWidget->addTab(tabView, tr("Результат сравнения"));
         ui->tabWidget->setCurrentIndex(tab);
     }
 }
@@ -1850,10 +1850,20 @@ void FmtWorkWindow::OpenGeneratorTab(const QString &interfaceid, const QString &
     GenWnd->setTable(pTable);
     GenWnd->generate();
 
-    int tabIndex = ui->tabWidget->addTab(GenWnd, title);
+    int tabIndex = addTab(GenWnd, title);//ui->tabWidget->addTab(GenWnd, title);
 
     if (!m_pLastActiveFmtTab)
         m_pLastActiveFmtTab = GenWnd;
 
     ui->tabWidget->setCurrentIndex(tabIndex);
+}
+
+int FmtWorkWindow::addTab(QWidget *widget, const QString &title)
+{
+    FmtWindowTabInterface *Interface = qobject_cast<FmtWindowTabInterface*>(widget);
+
+    if (Interface)
+        Interface->setConnection(pTable->connection());
+
+    return ui->tabWidget->addTab(widget, title);
 }

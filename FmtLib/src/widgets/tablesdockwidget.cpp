@@ -56,7 +56,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
     pAddToGroupAction = pFilterMenu->addAction(tr("Добавить в группу"));
     pCreateGroupAction = pFilterMenu->addAction(tr("Создать группу"));
     pFilterMenu->addSeparator();
-    pMuiltyLineText = pFilterMenu->addAction(QIcon(":/img/text.png"), tr("Из многострочногго текста"), this, SLOT(fromMuiltyLineText()));
+    pMuiltyLineText = pFilterMenu->addAction(QIcon::fromTheme("Text"), tr("Из многострочного текста"), this, SLOT(fromMuiltyLineText()));
 
     Index ++;
     QString name = QString("TablesDock%1").arg(Index);

@@ -78,6 +78,8 @@ private:
     QProgressDialog *pUserAddDlg;
     int m_UserAddIndex;
     bool m_SingleSelection;
+
+    QIcon m_TableIcon;
 };
 
 #endif // TABLESSELECTWIDGET_H

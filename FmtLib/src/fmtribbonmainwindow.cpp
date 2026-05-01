@@ -216,6 +216,7 @@ void FmtRibbonMainWindow::OpenConnection(const QString &connectionString)
             {
                 CreateConnectionActio(info);
                 info->updateFmtList();
+                m_pAppWidget->setCurrentConnection(info);
                 s->setValue("LastOpenConnectionDir", finfo.absolutePath());
                 s->sync();
             }
@@ -470,6 +471,7 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
     connect(ribbon->applicationButton(), &QAbstractButton::clicked, [this](bool c)
     {
         Q_UNUSED(c);
+        //m_pAppWidget->setCurrentConnection(CurrentConnection());
         m_pAppWidget->show();
     });
 
@@ -788,6 +790,8 @@ void FmtRibbonMainWindow::OpenConnectionFile()
                 info->updateFmtList();
                 s->setValue("LastOpenConnectionDir", finfo.absolutePath());
                 s->sync();
+
+                m_pAppWidget->setCurrentConnection(info);
             }
         }
         else if (suffix == "ini")

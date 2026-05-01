@@ -8,6 +8,7 @@ class SARibbonPannel;
 class SARibbonCategory;
 class SARibbonContextCategory;
 class QPlainTextEdit;
+class ConnectionInfo;
 class FmtWindowTabInterface : public QMainWindow
 {
     Q_OBJECT
@@ -41,6 +42,9 @@ public:
         return action;
     }
 
+    void setConnection(ConnectionInfo *pConnection);
+    ConnectionInfo *connection();
+
 protected:
     virtual void setupRibbonActions();
     virtual void initDefaultPanel();
@@ -56,6 +60,8 @@ protected:
     SARibbonContextCategory *m_pParentContextCategory;
     SARibbonCategory *m_pRibbonCategory;
     bool m_CategoryAddedToContext;
+
+    ConnectionInfo *m_pConnection;
 
 signals:
 };

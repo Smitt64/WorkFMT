@@ -41,11 +41,22 @@ public:
 private slots:
     void undoUpdate(bool available);
     void redoUpdate(bool available);
+    void executeSqlAction();
 
 protected:
     virtual void preInitDefaultActions();
     virtual void updateRibbonState();
     void setHighlighter(CodeEditor *edidor, const qint16 &Syntax);
+
+    bool saveSqlScriptToFile(const QString& scriptPath, const QString& sqlScript);
+    bool createBatFileForOracle(const QString& batPath, const QString& sqlPath, const QString& logPath, ConnectionInfo* connInfo);
+    bool createBatFileForPostgres(const QString& batPath, const QString& sqlPath, const QString& logPath, ConnectionInfo* connInfo);
+    QString executeBatFileAndGetLog(const QString& batPath, const QString& logPath, ConnectionInfo* connInfo, const QString& tempPath);
+    void showExecutionResult(bool hasError, const QString& logContent,
+                             const QString& tempPath, const QString& logFilePath,
+                             ConnectionInfo* connInfo, int dbType);
+    void executeSqlScript(const QString& sqlScript, ConnectionInfo* connInfo);
+
     QMdiArea *pContainer;
 
     SARibbonPannel* m_pActionPannel, *m_pViewPannel, *m_pTabsPannel;
@@ -55,7 +66,7 @@ protected:
     QMdiSubWindow *pLastActiveWindow;
     QMetaObject::Connection m_SaveConnection, m_CopyConnection;
 
-    QAction *m_pConvertPg;
+    QAction *m_pConvertPg, *m_pExecuteSql;
     QAction *m_pPrevTab, *m_pNextTab;
 
     QMap<QString, QMdiSubWindow*> m_pWindows;

@@ -9,6 +9,8 @@
 #include <QStandardItemModel>
 #include <QtWidgets>
 
+#define TABLE_GROUPS_PAGE QObject::tr("Группы таблиц")
+
 FmtApplicationWidget::FmtApplicationWidget(SARibbonMainWindow *parent) :
     ApplicationWidgetBase(parent),
     m_pOptionsWidget(nullptr),
@@ -35,16 +37,16 @@ FmtApplicationWidget::FmtApplicationWidget(SARibbonMainWindow *parent) :
     m_pOptionsWidget->addPage(tr("Общие"), QIcon::fromTheme("IFrame"), m_pGeneralOptions);
     m_pOptionsWidget->addPage(tr("Внешние утилиты"), QIcon::fromTheme("Utility"), m_pExternalToolsPage); // m_TableGroupItem
 
-    m_pTableGroupOptions = new TableGroupOptions(nullptr);
+    /*m_pTableGroupOptions = new TableGroupOptions(nullptr);
     int item = m_pOptionsWidget->addPage(tr("Внешние утилиты"), QIcon::fromTheme("Utility"), m_pTableGroupOptions);
-    m_TableGroupItem = m_pOptionsWidget->listWidget()->item(item);
+    m_TableGroupItem = m_pOptionsWidget->listWidget()->item(item);*/
 
     m_pOptionsWidget->addRslPage(QIcon::fromTheme("RunTestDialog"));
     m_pOptionsWidget->addLogPage(QIcon::fromTheme("Log"), "WorkFmt");
 
     FmtApplication *app = qobject_cast<FmtApplication*>(qApp);
     m_pOptionsWidget->setSettings(app->settings());
-    setupTabs();
+    //setupTabs();
 
     addTab(tr("Конвертировать SQL"), converter);
     addTab(tr("Параметры"), m_pOptionsWidget);
@@ -64,7 +66,19 @@ FmtApplicationWidget::~FmtApplicationWidget()
 
 void FmtApplicationWidget::setCurrentConnection(ConnectionInfo *info)
 {
+    QListWidgetItem *grpups = m_pOptionsWidget->findListItem(TABLE_GROUPS_PAGE);
 
+    if (grpups)
+    {
+        int index = m_pOptionsWidget->listWidget()->row(grpups);
+        m_pOptionsWidget->deletePage(index);
+    }
+
+    if (info)
+    {
+        TableGroupOptions *tableGroups = new TableGroupOptions(info);
+        m_pOptionsWidget->addPage(1, TABLE_GROUPS_PAGE, QIcon::fromTheme("FilterUser"), tableGroups);
+    }
 }
 
 void FmtApplicationWidget::InitExternalToolsPage()

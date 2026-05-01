@@ -11,7 +11,8 @@ FmtWindowTabInterface::FmtWindowTabInterface(QWidget *parent)
     : QMainWindow{parent}, m_pRibbon(nullptr),
     m_pParentContextCategory(nullptr)
     , m_pRibbonCategory(nullptr)
-    , m_CategoryAddedToContext(false)
+    , m_CategoryAddedToContext(false),
+    m_pConnection(nullptr)
 {
 
 }
@@ -249,4 +250,14 @@ QString FmtWindowTabInterface::saveDialog(const int &ContentType, const QString 
     }
 
     return fname;
+}
+
+void FmtWindowTabInterface::setConnection(ConnectionInfo *pConnection)
+{
+    m_pConnection = pConnection;
+}
+
+ConnectionInfo *FmtWindowTabInterface::connection()
+{
+    return m_pConnection;
 }
