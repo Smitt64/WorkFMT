@@ -5,6 +5,8 @@
 #include "dbfileobject.h"
 #include "dbttoolwizard.h"
 #include "exportobject.h"
+#include "export/exporterfactory.h"
+#include "connectioninfo.h"
 #include <fmtcore.h>
 #include <QDebug>
 #include <QRunnable>
@@ -96,8 +98,6 @@ RsExpOperation::RsExpOperation(DbtToolWizard *Wizard, ExportPage *parent) :
 
 void RsExpOperation::run()
 {
-    QString programmPath, ociPath, oraociPath;
-
     QDir dir(pWizard->field("ExportPath").toString());
     QStringList lst;
     QVariant val = pWizard->userField("TableList");
@@ -105,7 +105,7 @@ void RsExpOperation::run()
     if (val.isValid())
         lst = val.toStringList();
 
-    foreach (const QString &table, lst)
+    /*foreach (const QString &table, lst)
     {
         emit procMessage("*************** Start unloading ***************");
 
@@ -116,7 +116,28 @@ void RsExpOperation::run()
 
         obj->setClobMode((ExportObject::ClobMode)ClobMode);
         obj->exportTable(table, dir);
+    }*/
+    QString options;
+    QScopedPointer<ConnectionInfo> info(new ConnectionInfo());
+
+    if (!info->open(QRSD_DRIVER, pWizard->field("User").toString(),
+                    pWizard->field("Password").toString(),
+                    pWizard->field("Service").toString(), options))
+    {
+        pParent->m_Complete = true;
+        emit pParent->completeChanged();
+
+        return;
     }
+
+    QScopedPointer<ExporterBase> pExporter(ExporterFactory::createExporter(info.data()));
+
+    pExporter->setConnectionInfo(info.data());
+    pExporter->setClobMode((ExporterBase::ClobMode)ClobMode);
+    pExporter->setOutputDirectory(dir);
+
+    for (const QString &table : qAsConst(lst))
+        pExporter->exportTable(table);
 
     pParent->m_Complete = true;
     emit pParent->completeChanged();

@@ -59,9 +59,16 @@ bool UserConnectionPage::validatePage()
             while (query.next())
             {
                 QString directory_name = query.value("directory_name").toString();
-                QString directory_path = query.value("directory_path").toString().mid(2);
+                QString real_directory_path = query.value("directory_path").toString();
+                QString directory_path;
 
-                QString dir = QString("\\\\%1%2").arg(host, directory_path);
+                // Если в пути указан диск
+                if (real_directory_path.indexOf(":") != -1)
+                    directory_path = real_directory_path.mid(2);
+                else
+                    directory_path = real_directory_path;
+
+                QString dir = QString("\\\\%1%2").arg(host, QDir::toNativeSeparators(directory_path));
                 wzrd->addUserField(directory_name, dir);
             }
 

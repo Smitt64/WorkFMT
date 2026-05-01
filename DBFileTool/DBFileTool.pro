@@ -38,6 +38,10 @@ SOURCES += main.cpp \
     dbfileobject.cpp \
     dbmainwindow.cpp \
     dbttoolwizard.cpp \
+    export/exporterbase.cpp \
+    export/exporterfactory.cpp \
+    export/oraexporter.cpp \
+    export/pgexporter.cpp \
     exportobject.cpp \
     exportpage.cpp \
     loghighlighter.cpp \
@@ -64,6 +68,10 @@ HEADERS += \
     dbfileobject.h \
     dbmainwindow.h \
     dbttoolwizard.h \
+    export/exporterbase.h \
+    export/exporterfactory.h \
+    export/oraexporter.h \
+    export/pgexporter.h \
     exportobject.h \
     exportpage.h \
     loghighlighter.h \
