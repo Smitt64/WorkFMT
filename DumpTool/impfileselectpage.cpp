@@ -13,7 +13,9 @@ ImpFileSelectPage::ImpFileSelectPage(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->widgetFtp->setVisible(false);
     ui->fileButton->setVisible(false);
+    ui->ftpBox->setEnabled(false);
 
     setTitle(tr("Параметры файла дампа"));
     registerField("Location", ui->locationBox, "currentIndex");
@@ -24,6 +26,10 @@ ImpFileSelectPage::ImpFileSelectPage(QWidget *parent) :
     registerField("ImportPath", ui->importEdit);
 
     connect(ui->locationBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImpFileSelectPage::LoacationChanged);
+    connect(ui->ftpBox, &QCheckBox::toggled, [this](bool checked)
+    {
+        ui->widgetFtp->setVisible(checked);
+    });
 
     connect(ui->locationBox, SIGNAL(currentTextChanged(QString)), this, SIGNAL(completeChanged()));
     connect(ui->pathEdit, SIGNAL(textChanged(QString)), this, SIGNAL(completeChanged()));
@@ -149,6 +155,10 @@ void ImpFileSelectPage::on_fileButton_clicked()
     if (location == SameServer || location == ImpdpServer || location == OtherServer)
     {
         FileListDialog dlg(ui->pathEdit->text(), this);
+
+        if (ui->ftpBox->isChecked())
+            dlg.setFtpMode(ui->ftpPortBox->value(), ui->ftpUserEdit->text(), ui->ftpPwdEdit->text());
+
         if (dlg.exec() == QDialog::Accepted)
         {
             ui->dumpEdit->setText(dlg.fileName());
