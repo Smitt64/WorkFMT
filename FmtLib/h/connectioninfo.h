@@ -23,6 +23,8 @@ class FMTLIBSHARED_EXPORT ConnectionInfo : public QObject
     Q_PROPERTY(QString user READ user CONSTANT)
     Q_PROPERTY(QString password READ password CONSTANT)
     Q_PROPERTY(QString dsn READ dsn CONSTANT)
+    Q_PROPERTY(QString host READ host CONSTANT)
+    Q_PROPERTY(qint32 port READ port CONSTANT)
     Q_PROPERTY(QObject *db READ sqlDatabaseObj CONSTANT)
 
     Q_PROPERTY(QString connectionName READ connectionName CONSTANT)
@@ -72,11 +74,12 @@ public:
     QString schemeName() const { return m_SchemeName; }
     QString connectionName() const { return m_Alias; }
 
-    QString host() const { return m_Host; }
-    QString service() const { return m_Service; }
-    QString user() const { return m_User; }
-    QString password() const { return m_Password; }
-    QString dsn() const { return m_DSN; }
+    const QString &host() const { return m_Host; }
+    const QString &service() const { return m_Service; }
+    const QString &user() const { return m_User; }
+    const QString &password() const { return m_Password; }
+    const QString &dsn() const { return m_DSN; }
+    const qint32 &port() const { return m_Port; }
 
     QObject *sqlDatabaseObj() { return m_SqlDatabaseObj; }
 

@@ -15,6 +15,9 @@
 #include <QTemporaryDir>
 #include <QProgressDialog>
 #include <QProcess>
+#include "errorsmodel.h"
+#include "errordlg.h"
+#include "src/core/encodingfixer.h"
 
 FmtCodeTabBase::FmtCodeTabBase(QWidget *parent) :
     FmtWindowTabInterface(parent),
@@ -533,18 +536,22 @@ QMdiSubWindow *FmtCodeTabBase::getWindow()
     return nullptr;
 }
 
-bool FmtCodeTabBase::saveSqlScriptToFile(const QString& scriptPath, const QString& sqlScript)
+bool FmtCodeTabBase::saveSqlScriptToFile(const QString& scriptPath, const QString& sqlScript, ConnectionInfo* connInfo, ErrorsModel *errors)
 {
     QFile sqlFile(scriptPath);
     if (!sqlFile.open(QIODevice::WriteOnly))
     {
-        QMessageBox::critical(this, tr("Ошибка"),
-                              tr("Не удалось создать SQL файл: %1").arg(sqlFile.errorString()));
+        errors->appendError(tr("Не удалось создать SQL файл: %1").arg(sqlFile.errorString()));
         return false;
     }
 
     QTextStream sqlStream(&sqlFile);
-    sqlStream.setCodec("IBM 866");
+
+    if (connInfo->type() == ConnectionInfo::CON_ORA)
+        sqlStream.setCodec("IBM 866");
+    else
+        sqlStream.setCodec("UTF-8");
+
     sqlStream << sqlScript;
     sqlFile.close();
 
@@ -552,13 +559,13 @@ bool FmtCodeTabBase::saveSqlScriptToFile(const QString& scriptPath, const QStrin
 }
 
 bool FmtCodeTabBase::createBatFileForOracle(const QString& batPath, const QString& sqlPath,
-                                            const QString& logPath, ConnectionInfo* connInfo)
+                                            const QString& logPath, ConnectionInfo* connInfo,
+                                            ErrorsModel *errors)
 {
     QFile batFile(batPath);
     if (!batFile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        QMessageBox::critical(this, tr("Ошибка"),
-                              tr("Не удалось создать bat файл для Oracle: %1").arg(batFile.errorString()));
+        errors->appendError(tr("Не удалось создать bat файл для Oracle: %1").arg(batFile.errorString()));
         return false;
     }
 
@@ -576,7 +583,7 @@ bool FmtCodeTabBase::createBatFileForOracle(const QString& batPath, const QStrin
     batStream << "echo ---------------------------------------- >> %LOG_FILE%\n\n";
     batStream << "set NLS_LANG=AMERICAN_AMERICA.RU8PC866\n";
     batStream << "echo Connecting to Oracle: " << user << "@" << tns << " >> %LOG_FILE%\n";
-    batStream << "sqlplus -S " << user << "/" << password << "@" << tns
+    batStream << "echo exit | sqlplus -S " << user << "/" << password << "@" << tns
               << " @" << sqlPath << " >> %LOG_FILE% 2>&1\n\n";
     batStream << "echo ---------------------------------------- >> %LOG_FILE%\n";
     batStream << "echo Execution finished at %DATE% %TIME% >> %LOG_FILE%\n";
@@ -587,29 +594,31 @@ bool FmtCodeTabBase::createBatFileForOracle(const QString& batPath, const QStrin
 }
 
 bool FmtCodeTabBase::createBatFileForPostgres(const QString& batPath, const QString& sqlPath,
-                                              const QString& logPath, ConnectionInfo* connInfo)
+                                              const QString& logPath, ConnectionInfo* connInfo,
+                                              ErrorsModel *errors)
 {
     QFile batFile(batPath);
     if (!batFile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        QMessageBox::critical(this, tr("Ошибка"),
-                              tr("Не удалось создать bat файл для PostgreSQL: %1").arg(batFile.errorString()));
+        errors->appendError(tr("Не удалось создать bat файл для PostgreSQL: %1").arg(batFile.errorString()));
         return false;
     }
 
     QString user = connInfo->user();
     QString password = connInfo->password();
     QString host = connInfo->host();
-    QString service = connInfo->service();
-    int port = connInfo->property("port").toInt();
-    if (port == 0) port = 5432; // Стандартный порт PostgreSQL
+    QString service = connInfo->dsn();
+    int port = connInfo->port();
+    if (port == 0)
+        port = 5432; // Стандартный порт PostgreSQL
 
     QTextStream batStream(&batFile);
-    batStream.setCodec("IBM 866");
+    batStream.setCodec("UTF-8");
 
     batStream << "@echo off\n";
-    batStream << "chcp 866 > nul\n\n";
+    batStream << "chcp 65001 > nul\n\n";
     batStream << "set LOG_FILE=" << logPath << "\n";
+    batStream << "SET PGCLIENTENCODING=UTF8\n\n";
     batStream << "echo Execution started at %DATE% %TIME% > %LOG_FILE%\n";
     batStream << "echo ---------------------------------------- >> %LOG_FILE%\n\n";
     batStream << "set PGPASSWORD=" << password << "\n";
@@ -624,186 +633,124 @@ bool FmtCodeTabBase::createBatFileForPostgres(const QString& batPath, const QStr
     return true;
 }
 
-QString FmtCodeTabBase::executeBatFileAndGetLog(const QString& batPath, const QString& logPath,
-                                                ConnectionInfo* connInfo, const QString& tempPath)
+QString FmtCodeTabBase::executeBatFileAndGetLog(const QString& batPath, const QString& logPath, ConnectionInfo* connInfo, const QString& tempPath, ErrorsModel *errors)
 {
     QProcess process;
-    QProgressDialog *progressDlg = new QProgressDialog(
-        tr("Выполнение SQL скрипта...\nПодключение: %1\nПожалуйста, подождите...")
-            .arg(connInfo->typeName()),
-        tr("Отмена"),
-        0, 0, this);
-    progressDlg->setWindowTitle(tr("Выполнение SQL"));
-    progressDlg->setModal(true);
-    progressDlg->setMinimumDuration(0);
-    progressDlg->setAutoReset(false);
-    progressDlg->setAutoClose(false);
-
     QString logContent;
-    bool hasError = false;
-    QString errorDetails;
 
-    // Запускаем процесс
-    process.start(batPath);
+    toolStartProcess(&process, batPath, {});
 
     if (!process.waitForStarted(5000))
     {
-        delete progressDlg;
-        QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось выполнить скрипт"));
+        errors->appendError(tr("Не удалось выполнить скрипт"));
         return QString();
     }
 
-    progressDlg->show();
+    QProgressDialog progressDialog(tr("Выполнение скрипта..."), tr("Отмена"), 0, 0, nullptr);
+    progressDialog.setWindowModality(Qt::WindowModal);
+    progressDialog.setMinimumDuration(0);
+    progressDialog.setAutoClose(false);
+    progressDialog.setAutoReset(false);
 
-    // Обработка отмены
-    connect(progressDlg, &QProgressDialog::canceled, [&]() {
-        process.kill();
-        process.waitForFinished(3000);
-        QMessageBox::information(this, tr("Отмена"), tr("Выполнение SQL скрипта отменено"));
+    QEventLoop loop;
+    QTimer timer;
+    bool cancelled = false;
+    bool finished = false;
+
+    // Проверяем состояние процесса каждые 100 мс
+    QObject::connect(&timer, &QTimer::timeout, [&]()
+    {
+        if (progressDialog.wasCanceled())
+        {
+            cancelled = true;
+            process.terminate();
+            process.kill();
+            loop.quit();
+        }
+        else if (process.state() == QProcess::NotRunning)
+        {
+            finished = true;
+            loop.quit();
+        }
     });
 
-    // Ждем завершения (таймаут 10 минут)
-    if (!process.waitForFinished(10 * 60 * 1000))
+    // Если процесс завершится сам, выходим из цикла
+    QObject::connect(&process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [&](int exitCode, QProcess::ExitStatus exitStatus)
     {
-        process.terminate();
-        progressDlg->close();
-        QMessageBox::warning(this, tr("Таймаут"),
-                             tr("Превышено время ожидания выполнения скрипта (10 минут)"));
+        Q_UNUSED(exitCode)
+        Q_UNUSED(exitStatus)
+        if (!cancelled)
+        {
+            finished = true;
+            loop.quit();
+        }
+    });
+
+    timer.start(100);
+
+    // Запускаем цикл событий (не более 10 минут)
+    QTimer timeoutTimer;
+    bool timeout = false;
+    QObject::connect(&timeoutTimer, &QTimer::timeout, [&]()
+    {
+        timeout = true;
+        loop.quit();
+    });
+    timeoutTimer.setSingleShot(true);
+    timeoutTimer.start(10 * 60 * 1000);
+
+    loop.exec(); // Блокируем, но обрабатываем события
+
+    timer.stop();
+    timeoutTimer.stop();
+
+    // Обработка результата
+    if (cancelled)
+    {
+        errors->appendError(tr("Выполнение скрипта отменено пользователем"));
         return QString();
     }
 
-    progressDlg->close();
+    if (timeout)
+    {
+        process.terminate();
+        process.kill();
+        errors->appendError(tr("Превышено время ожидания выполнения скрипта (10 минут)"));
+        return QString();
+    }
 
-    // Читаем лог файл
+    if (!finished)
+    {
+        errors->appendError(tr("Ошибка ожидания завершения процесса"));
+        return QString();
+    }
+
+    // Чтение лога (без изменений)
     QFile logFile(logPath);
     if (logFile.open(QIODevice::ReadOnly))
     {
-        QTextStream logStream(&logFile);
-        logStream.setCodec("IBM 866");
-        logContent = logStream.readAll();
+        QByteArray rawData = logFile.readAll();
         logFile.close();
+
+        QByteArray fixed = EncodingFixer::normalizeEncoding(rawData, "UTF-8", {"Windows-1251", "IBM 866"});
+        logContent = QString::fromUtf8(fixed);
     }
     else
-    {
-        logContent = tr("Не удалось прочитать лог файл: %1").arg(logFile.errorString());
-        hasError = true;
-    }
+        errors->appendError(tr("Не удалось прочитать лог файл: %1").arg(logFile.errorString()));
 
-    // Анализируем результат выполнения
     if (process.exitStatus() == QProcess::CrashExit)
-    {
-        hasError = true;
-        errorDetails = tr("Процесс аварийно завершился");
-    }
+        errors->appendError(tr("Процесс аварийно завершился"));
     else if (process.exitCode() != 0)
-    {
-        hasError = true;
-        errorDetails = tr("Процесс завершился с кодом ошибки: %1").arg(process.exitCode());
-    }
-
-    // Анализируем лог на наличие ошибок SQL
-    if (logContent.contains("ERROR", Qt::CaseInsensitive) ||
-        logContent.contains("ORA-", Qt::CaseInsensitive) ||
-        logContent.contains("SQL error", Qt::CaseInsensitive) ||
-        logContent.contains("syntax error", Qt::CaseInsensitive) ||
-        logContent.contains("ERROR:", Qt::CaseInsensitive))
-    {
-        hasError = true;
-        if (errorDetails.isEmpty())
-            errorDetails = tr("Обнаружены ошибки в SQL скрипте");
-    }
-
-    if (hasError && !errorDetails.isEmpty())
-    {
-        logContent = tr("=== ОШИБКА: %1 ===\n\n").arg(errorDetails) + logContent;
-    }
-
-    delete progressDlg;
+        errors->appendError(tr("Процесс завершился с кодом ошибки: %1").arg(process.exitCode()));
 
     return logContent;
-}
-
-void FmtCodeTabBase::showExecutionResult(bool hasError, const QString& logContent,
-                                         const QString& tempPath, const QString& logFilePath,
-                                         ConnectionInfo* connInfo, int dbType)
-{
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle(hasError ? tr("Выполнение SQL завершено с ошибками")
-                                   : tr("Выполнение SQL завершено успешно"));
-
-    if (hasError)
-    {
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.setText(tr("SQL скрипт выполнен с ошибками"));
-        msgBox.setInformativeText(tr("Подробности в детальной информации"));
-    }
-    else
-    {
-        msgBox.setIcon(QMessageBox::Information);
-        msgBox.setText(tr("SQL скрипт выполнен успешно"));
-
-        // Пытаемся подсчитать количество выполненных операторов
-        int successCount = logContent.count("rows affected");
-        if (successCount == 0)
-            successCount = logContent.count("INSERT");
-        if (successCount == 0)
-            successCount = logContent.count("UPDATE");
-        if (successCount == 0)
-            successCount = logContent.count("DELETE");
-        if (successCount == 0)
-            successCount = logContent.count("CREATE");
-
-        if (successCount > 0)
-        {
-            msgBox.setInformativeText(tr("Выполнено операторов: %1").arg(successCount));
-        }
-    }
-
-    // Формируем детальную информацию
-    QString detailedText = tr("Тип БД: %1\n").arg(connInfo->typeName());
-    detailedText += tr("Пользователь: %1\n").arg(connInfo->user());
-
-    if (dbType == ConnectionInfo::CON_ORA)
-        detailedText += tr("TNS: %1\n").arg(connInfo->dsn());
-    else if (dbType == ConnectionInfo::CON_POSTGRESQL)
-        detailedText += tr("База данных: %1\n").arg(connInfo->service());
-    else if (dbType == ConnectionInfo::CON_SQLITE)
-        detailedText += tr("Файл БД: %1\n").arg(connInfo->dsn());
-
-    detailedText += tr("\nВременная директория: %1\n").arg(tempPath);
-    detailedText += tr("Лог файл: %1\n\n").arg(logFilePath);
-    detailedText += tr("========== СОДЕРЖИМОЕ ЛОГА ==========\n");
-    detailedText += logContent;
-
-    // Ограничиваем размер детального текста (макс 1MB)
-    if (detailedText.size() > 1024 * 1024)
-    {
-        detailedText = detailedText.left(1024 * 1024 - 1000);
-        detailedText += "\n\n... (лог урезан до 1MB) ...\n";
-        detailedText += tr("Полный лог доступен по пути: %1").arg(logFilePath);
-    }
-
-    msgBox.setDetailedText(detailedText);
-
-    // Добавляем кнопку для открытия папки с логами
-    QPushButton *openFolderButton = msgBox.addButton(tr("Открыть папку с логами"),
-                                                     QMessageBox::ActionRole);
-    msgBox.addButton(QMessageBox::Ok);
-
-    msgBox.exec();
-
-    if (msgBox.clickedButton() == openFolderButton)
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(tempPath));
-    }
 }
 
 void FmtCodeTabBase::executeSqlScript(const QString& sqlScript, ConnectionInfo* connInfo)
 {
     if (!connInfo || !connInfo->isOpen())
     {
-        QMessageBox::warning(this, tr("Ошибка"),
-                             tr("Нет активного подключения к базе данных"));
+        QMessageBox::warning(this, tr("Ошибка"), tr("Нет активного подключения к базе данных"));
         return;
     }
 
@@ -811,8 +758,7 @@ void FmtCodeTabBase::executeSqlScript(const QString& sqlScript, ConnectionInfo* 
     QTemporaryDir tempDir;
     if (!tempDir.isValid())
     {
-        QMessageBox::critical(this, tr("Ошибка"),
-                              tr("Не удалось создать временную директорию"));
+        QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось создать временную директорию"));
         return;
     }
 
@@ -825,52 +771,51 @@ void FmtCodeTabBase::executeSqlScript(const QString& sqlScript, ConnectionInfo* 
     // Создаем директорию для логов
     QDir().mkpath(logDirPath);
 
-    // Сохраняем SQL скрипт
-    if (!saveSqlScriptToFile(sqlFileName, sqlScript))
+    ErrorsModel errors;
+    if (!saveSqlScriptToFile(sqlFileName, sqlScript, connInfo, &errors))
         return;
 
-    // Создаем bat файл в зависимости от типа БД
     int dbType = connInfo->type();
     bool batCreated = false;
 
     if (dbType == ConnectionInfo::CON_ORA)
-    {
-        batCreated = createBatFileForOracle(batFileName, sqlFileName, logFilePath, connInfo);
-    }
+        batCreated = createBatFileForOracle(batFileName, sqlFileName, logFilePath, connInfo, &errors);
     else if (dbType == ConnectionInfo::CON_POSTGRESQL)
-    {
-        batCreated = createBatFileForPostgres(batFileName, sqlFileName, logFilePath, connInfo);
-    }
-    /*else if (dbType == ConnectionInfo::CON_SQLITE)
-    {
-        batCreated = createBatFileForSqlite(batFileName, sqlFileName, logFilePath, connInfo);
-    }*/
+        batCreated = createBatFileForPostgres(batFileName, sqlFileName, logFilePath, connInfo, &errors);
     else
     {
-        QMessageBox::warning(this, tr("Предупреждение"),
-                             tr("Тип базы данных '%1' не поддерживается для автоматического выполнения")
-                                 .arg(connInfo->typeName()));
-        return;
+        errors.appendError(tr("Тип базы данных '%1' не поддерживается для автоматического выполнения").arg(connInfo->typeName()));
+        batCreated = false;
     }
 
     if (!batCreated)
+    {
+        ErrorDlg dlg(ErrorDlg::ModeMessageBox, this);
+        dlg.setErrors(&errors);
+        dlg.setMessage(tr("Не удалось выполнить скрипт"));
+        dlg.exec();
         return;
+    }
 
-    // Выполняем bat файл
-    QString logContent = executeBatFileAndGetLog(batFileName, logFilePath, connInfo, tempPath);
-    if (logContent.isEmpty())
-        return;
-
-    // Определяем наличие ошибок
+    QString logContent = executeBatFileAndGetLog(batFileName, logFilePath, connInfo, tempPath, &errors);
     bool hasError = logContent.contains("ERROR", Qt::CaseInsensitive) ||
-                    logContent.contains("ORA-", Qt::CaseInsensitive) ||
-                    logContent.contains("SQL error", Qt::CaseInsensitive) ||
-                    logContent.contains("syntax error", Qt::CaseInsensitive) ||
-                    logContent.contains("ERROR:", Qt::CaseInsensitive) ||
-                    logContent.contains("failed", Qt::CaseInsensitive);
+            logContent.contains("ORA-", Qt::CaseInsensitive) ||
+            logContent.contains("SQL error", Qt::CaseInsensitive) ||
+            logContent.contains("syntax error", Qt::CaseInsensitive) ||
+            logContent.contains("ERROR:", Qt::CaseInsensitive) ||
+            logContent.contains("ОШИБКА: ", Qt::CaseInsensitive) ||
+            logContent.contains("SP2-", Qt::CaseInsensitive) ||
+            logContent.contains("failed", Qt::CaseInsensitive);
 
-    // Показываем результат
-    showExecutionResult(hasError, logContent, tempPath, logFilePath, connInfo, dbType);
+    if (hasError)
+        errors.appendError(logContent);
+    else
+        errors.addMessage(logContent);
+
+    ErrorDlg dlg(ErrorDlg::ModeMessageBox, this);
+    dlg.setErrors(&errors);
+    dlg.setMessage(tr("Результат выполнение скрипта"));
+    dlg.exec();
 }
 
 void FmtCodeTabBase::executeSqlAction()
@@ -879,9 +824,7 @@ void FmtCodeTabBase::executeSqlAction()
 
     if (!window)
     {
-        QToolTip::showText(QCursor::pos(),
-                           tr("Нет активного окна с кодом"),
-                           this, QRect(), 2000);
+        QToolTip::showText(QCursor::pos(), tr("Нет активного окна с кодом"), this, QRect(), 2000);
         return;
     }
 
@@ -889,19 +832,14 @@ void FmtCodeTabBase::executeSqlAction()
 
     if (!pCode)
     {
-        QToolTip::showText(QCursor::pos(),
-                           tr("Активное окно не является редактором кода"),
-                           this, QRect(), 2000);
+        QToolTip::showText(QCursor::pos(), tr("Активное окно не является редактором кода"), this, QRect(), 2000);
         return;
     }
 
     int Syntax = pCode->property(FmtSyntaxProperty).toInt();
-
     if (Syntax != HighlighterSql)
     {
-        QToolTip::showText(QCursor::pos(),
-                           tr("Выполнение SQL доступно только для SQL скриптов"),
-                           this, QRect(), 2000);
+        QToolTip::showText(QCursor::pos(), tr("Выполнение SQL доступно только для SQL скриптов"), this, QRect(), 2000);
         return;
     }
 
@@ -909,15 +847,10 @@ void FmtCodeTabBase::executeSqlAction()
 
     if (sqlScript.trimmed().isEmpty())
     {
-        QToolTip::showText(QCursor::pos(),
-                           tr("SQL скрипт пуст"),
-                           this, QRect(), 2000);
+        QToolTip::showText(QCursor::pos(), tr("SQL скрипт пуст"), this, QRect(), 2000);
         return;
     }
 
-    // Получаем текущее подключение к БД
     ConnectionInfo *connInfo = connection();
-
-    // Выполняем скрипт
     executeSqlScript(sqlScript, connInfo);
 }

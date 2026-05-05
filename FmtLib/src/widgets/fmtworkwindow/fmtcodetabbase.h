@@ -16,6 +16,7 @@ class GeneratorsProxyModel;
 class QMdiSubWindow;
 class SARibbonCategory;
 class SARibbonPannel;
+class ErrorsModel;
 class FmtCodeTabBase : public FmtWindowTabInterface
 {
     Q_OBJECT
@@ -48,13 +49,10 @@ protected:
     virtual void updateRibbonState();
     void setHighlighter(CodeEditor *edidor, const qint16 &Syntax);
 
-    bool saveSqlScriptToFile(const QString& scriptPath, const QString& sqlScript);
-    bool createBatFileForOracle(const QString& batPath, const QString& sqlPath, const QString& logPath, ConnectionInfo* connInfo);
-    bool createBatFileForPostgres(const QString& batPath, const QString& sqlPath, const QString& logPath, ConnectionInfo* connInfo);
-    QString executeBatFileAndGetLog(const QString& batPath, const QString& logPath, ConnectionInfo* connInfo, const QString& tempPath);
-    void showExecutionResult(bool hasError, const QString& logContent,
-                             const QString& tempPath, const QString& logFilePath,
-                             ConnectionInfo* connInfo, int dbType);
+    bool saveSqlScriptToFile(const QString& scriptPath, const QString& sqlScript, ConnectionInfo *connInfo, ErrorsModel *errors);
+    bool createBatFileForOracle(const QString& batPath, const QString& sqlPath, const QString& logPath, ConnectionInfo* connInfo, ErrorsModel *errors);
+    bool createBatFileForPostgres(const QString& batPath, const QString& sqlPath, const QString& logPath, ConnectionInfo* connInfo, ErrorsModel *errors);
+    QString executeBatFileAndGetLog(const QString& batPath, const QString& logPath, ConnectionInfo* connInfo, const QString& tempPath, ErrorsModel *errors);
     void executeSqlScript(const QString& sqlScript, ConnectionInfo* connInfo);
 
     QMdiArea *pContainer;

@@ -247,7 +247,15 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
         if (isOracle())
             m_Type = CON_ORA;
         else if (isPostgre())
+        {
              m_Type = CON_POSTGRESQL;
+
+             QSettings params("HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI", QSettings::NativeFormat);
+             params.beginGroup(m_DSN);
+             m_Host = params.value("Servername").toString();
+             m_Port = params.value("Port").toInt();
+             params.endGroup();
+        }
         else if (isSqlite())
             m_Type = CON_SQLITE;
 

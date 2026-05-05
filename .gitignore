@@ -204,3 +204,11 @@ DatViewer/debug/
 .qtcreator/
 
 HfProjects/debug/
+
+DatViewer/release/
+
+DiffToScriptlib/release/
+
+HfProjects/release/
+
+RegparmTool/release/

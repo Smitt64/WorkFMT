@@ -35,6 +35,7 @@ SOURCES += \
     rslexecutors/generatorrslexecutor.cpp \
     rslexecutors/toolbaractionexecutor.cpp \
     src/core/colormanager.cpp \
+    src/core/encodingfixer.cpp \
     src/core/fieldsplitterprocess.cpp \
     src/core/fmttablecomparemodel.cpp \
     src/core/mdiproxystyle.cpp \
@@ -326,6 +327,7 @@ HEADERS += \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
     src/core/colormanager.h \
+    src/core/encodingfixer.h \
     src/core/fieldsplitterprocess.h \
     src/core/fmttablecomparemodel.h \
     h/mdiproxystyle.h \
