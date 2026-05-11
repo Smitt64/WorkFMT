@@ -12,12 +12,18 @@
 typedef struct ColumnInfo
 {
     QString name;
-    QString type;
+    QString type, pgtype;
     bool isLargeObject;
 
     ColumnInfo() : isLargeObject(false) {}
-    ColumnInfo(const QString &n, const QString &t)
-        : name(n), type(t), isLargeObject(t == "CLOB" || t == "TEXT") {}
+    ColumnInfo(const QString &n, const QString &t, const QString &pt = QString())
+        : name(n),
+          type(t),
+          pgtype(pt),
+          isLargeObject(t == "CLOB" || t == "TEXT")
+    {
+
+    }
 } ColumnInfo;
 
 class ConnectionInfo;
@@ -50,15 +56,20 @@ signals:
     void tableStarted(const QString &table);
     void tableFinished(const QString &table, bool success);
     void error(const QString &message);
+    void procMessage(const QString &str);
 
 protected:
+    void WriteLog(QTextStream &stream, const QString &str);
+    QString variantNumberToString(const QVariant& value);
+
     // Виртуальные методы - специфичные для каждой БД
     virtual QStringList getTableColumns(const QString &table) = 0;
     virtual QString getColumnType(const QString &table, const QString &column) = 0;
     virtual QString getOrderByClause(const QString &table) = 0;
     virtual bool hasLargeObjectFields(const QString &table) = 0;
     virtual QString formatValueForSqlLoader(const QVariant &value,
-                                           const QString &columnType) = 0;
+                                            const ColumnInfo &col,
+                                            const bool &isNull) = 0;
     virtual QString getSelectQuery(const QString &table,
                                    const QStringList &columns) = 0;
     virtual QString getTableExistsQuery(const QString &table) = 0;
@@ -68,8 +79,8 @@ protected:
     // Общие вспомогательные методы
     bool executeQuery(QSqlQuery *query, const QString &errorContext = QString());
     void writeControlFile(const QString &table,
-                         const QStringList &columns,
-                         const QStringList &largeObjectColumns);
+                          const QStringList &columns,
+                          const QStringList &largeObjectColumns);
     void writeDataFile(const QString &table,
                        const QStringList &columns,
                        const QStringList &largeObjectColumns);
@@ -79,13 +90,13 @@ protected:
 
     virtual bool loadTableMetadata(const QString &table);
 
-        // Получение типов из кеша (быстро)
-        QString getCachedColumnType(const QString &column) const;
-        const QList<ColumnInfo>& getCachedColumns() const { return m_columnsCache; }
+    // Получение типов из кеша (быстро)
+    QString getCachedColumnType(const QString &column) const;
+    const QList<ColumnInfo>& getCachedColumns() const { return m_columnsCache; }
 
-        // Убираем старый метод getColumnType из виртуальных
-        // Вместо него добавляем метод загрузки метаданных
-        virtual bool loadTableMetadataImpl(const QString &table, QList<ColumnInfo> &columns) = 0;
+    // Убираем старый метод getColumnType из виртуальных
+    // Вместо него добавляем метод загрузки метаданных
+    virtual bool loadTableMetadataImpl(const QString &table, QList<ColumnInfo> &columns) = 0;
 
     // Данные
     ConnectionInfo *m_connection = nullptr;

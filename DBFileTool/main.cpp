@@ -2,12 +2,15 @@
 #include "dbfileobject.h"
 #include <QApplication>
 #include "task.h"
+#include "iconthememanager.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("DBFileTool");
     QCoreApplication::setOrganizationDomain("DBFileTool");
     QCoreApplication::setApplicationName("DBFileTool");
+
+    IconThemeManager::initialize("vs_theme");
     QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
 
     QDir current(QDir::current());

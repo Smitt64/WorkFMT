@@ -2,6 +2,7 @@
 #include "rsddriver.h"
 #include <stdlib.h>
 #include <QSqlField>
+#include <exception>
 #include <QRegularExpression>
 #include <QDebug>
 
@@ -107,15 +108,23 @@ bool RsdSqlResult::fetch(int index)
         quint32 count = m_RecSet->getRecCount();
         if (index < count)
         {
-            ok = m_RecSet->moveFirst();
-
-            if (ok)
+            try
             {
-                ok = m_RecSet->move(index, RSDO_RELATIVE);
-                setAt(index);
+                ok = m_RecSet->moveFirst();
 
                 if (ok)
-                    MakeRecord();
+                {
+                    ok = m_RecSet->move(index, RSDO_RELATIVE);
+                    setAt(index);
+
+                    if (ok)
+                        MakeRecord();
+                }
+            }
+            catch (XRsdError &e)
+            {
+                setLastRsdError(e);
+                ok = false;
             }
 
             return ok;
@@ -134,8 +143,16 @@ bool RsdSqlResult::fetch(int index)
 
             if (!ok)
             {
-                ok = m_RecSet->moveLast();
-                setAt(pos - 1);
+                try
+                {
+                    ok = m_RecSet->moveLast();
+                    setAt(pos - 1);
+                }
+                catch (XRsdError &e)
+                {
+                    setLastRsdError(e);
+                    ok = false;
+                }
             }
             else
             {
@@ -148,13 +165,21 @@ bool RsdSqlResult::fetch(int index)
         }
         else
         {
-            ok = m_RecSet->moveFirst();
-
-            if (ok)
+            try
             {
-                ok = m_RecSet->move(index, RSDO_RELATIVE);
-                setAt(index);
-                MakeRecord();
+                ok = m_RecSet->moveFirst();
+
+                if (ok)
+                {
+                    ok = m_RecSet->move(index, RSDO_RELATIVE);
+                    setAt(index);
+                    MakeRecord();
+                }
+            }
+            catch (XRsdError &e)
+            {
+                setLastRsdError(e);
+                ok = false;
             }
 
             return ok;
@@ -169,10 +194,19 @@ bool RsdSqlResult::fetchFirst()
         return false;
 
     bool result = false;
-    if (at() == QSql::BeforeFirstRow)
-        result = m_RecSet->moveNext();
-    else
-        result = m_RecSet->moveFirst();
+
+    try
+    {
+        if (at() == QSql::BeforeFirstRow)
+            result = m_RecSet->moveNext();
+        else
+            result = m_RecSet->moveFirst();
+    }
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
+    }
 
     if (result)
     {
@@ -185,16 +219,25 @@ bool RsdSqlResult::fetchFirst()
 
 bool RsdSqlResult::fetchLast()
 {
+    bool result = true;
     if (!m_RecSet)
         return false;
 
-    bool result = m_RecSet->moveFirst();
-    while(result)
+    try
     {
-        result = fetchNext();
+        result = m_RecSet->moveFirst();
+        while(result)
+        {
+            result = fetchNext();
 
-        if (result)
-            MakeRecord();
+            if (result)
+                MakeRecord();
+        }
+    }
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
     }
 
     return result;
@@ -205,21 +248,30 @@ bool RsdSqlResult::fetchNext()
     if (!m_RecSet || !isActive())
         return false;
 
+    bool result = true;
     const int currentRow = m_RecSet->getCurPos();
     if (currentRow == QSql::BeforeFirstRow)
         return fetchFirst();
     if (currentRow == QSql::AfterLastRow)
         return false;
 
-    bool result = m_RecSet->moveNext();
-
-    if (result)
+    try
     {
-        setAt(currentRow + 1);
-        MakeRecord();
+        result = m_RecSet->moveNext();
+
+        if (result)
+        {
+            setAt(currentRow + 1);
+            MakeRecord();
+        }
+        else
+            setAt(QSql::AfterLastRow);
     }
-    else
-        setAt(QSql::AfterLastRow);
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
+    }
 
     return result;
 }
@@ -230,7 +282,17 @@ bool RsdSqlResult::fetchPrevious()
         return false;
 
     const int currentRow = at();
-    bool result = m_RecSet->movePrev();
+    bool result = true;
+
+    try
+    {
+        result = m_RecSet->movePrev();
+    }
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
+    }
 
     if (result)
     {
@@ -255,7 +317,7 @@ bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
         if (isForwardOnly())
             CursorType = RSDVAL_FORWARD_ONLY;
 
-        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, CursorType));// RSDVAL_CLIENT, RSDVAL_FORWARD_ONLY
+        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, CursorType, 1000));// RSDVAL_CLIENT, RSDVAL_FORWARD_ONLY
         m_RecSet->open();
 
         setSelect(true);
@@ -591,8 +653,8 @@ QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld, const int &loble
 
 QSqlField RsdSqlResult::MakeField(const CRsdField &fld, const bool &isnull, const int &loblen)
 {
-    QSqlField qfld;
     QString fldname = fld.getName();
+    QSqlField qfld(fldname, QVariant::Invalid);
     qfld.setName(fldname);
 
     if (!isnull || loblen)
@@ -602,6 +664,7 @@ QSqlField RsdSqlResult::MakeField(const CRsdField &fld, const bool &isnull, cons
         if (value.isValid())
             qfld.setValue(value);
     }
+
     return qfld;
 }
 

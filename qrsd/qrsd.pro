@@ -39,6 +39,8 @@ DISTFILES += \
     res/qrsd.rc
 #RC_FILE = res/qrsd.rc
 
+OTHER_FILES += com.rs.fmt.workfmt.rsddriver.xml
+
 #_MBCS
 INCLUDEPATH += $$PWD/rsd/include $$PWD/tools/h $$PWD/rsd/include/SqlConverter
 

@@ -135,6 +135,7 @@ void RsExpOperation::run()
     pExporter->setConnectionInfo(info.data());
     pExporter->setClobMode((ExporterBase::ClobMode)ClobMode);
     pExporter->setOutputDirectory(dir);
+    connect(pExporter.data(), &ExporterBase::procMessage, this, &RsExpOperation::procMessage);
 
     for (const QString &table : qAsConst(lst))
         pExporter->exportTable(table);
@@ -153,6 +154,7 @@ ExportPage::ExportPage(QWidget *parent) :
     m_Complete = false;
     logColor = new LogHighlighter(ui->plainTextEdit->document());
     setFinalPage(true);
+    setTitle(tr("Экспорт данных в *.dat файл"));
 }
 
 ExportPage::~ExportPage()

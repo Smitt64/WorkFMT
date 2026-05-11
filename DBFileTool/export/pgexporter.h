@@ -16,7 +16,8 @@ protected:
     virtual QString getOrderByClause(const QString &table) override;
     virtual bool hasLargeObjectFields(const QString &table) override;
     virtual QString formatValueForSqlLoader(const QVariant &value,
-                                           const QString &columnType) override;
+                                            const ColumnInfo &col,
+                                            const bool &isNull) override;
     virtual QString getSelectQuery(const QString &table,
                                    const QStringList &columns) override;
     virtual QString getTableExistsQuery(const QString &table) override;

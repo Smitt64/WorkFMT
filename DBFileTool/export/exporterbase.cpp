@@ -34,6 +34,14 @@ void ExporterBase::setClobMode(ClobMode mode)
     m_clobMode = mode;
 }
 
+void ExporterBase::WriteLog(QTextStream &stream, const QString &str)
+{
+    stream << str << Qt::endl;
+    stream.flush();
+
+    emit procMessage(str);
+}
+
 bool ExporterBase::executeQuery(QSqlQuery *query, const QString &errorContext)
 {
     QString error;
@@ -78,16 +86,13 @@ int ExporterBase::getTableRowCount(const QString &table)
     return -1;
 }
 
-void ExporterBase::writeControlFile(const QString &table,
-                                    const QStringList &columns,
-                                    const QStringList &largeObjectColumns)
+void ExporterBase::writeControlFile(const QString &table, const QStringList &columns, const QStringList &largeObjectColumns)
 {
-    QString datFilePath = m_outputDir.absoluteFilePath(
-        QString("%1.dat").arg(table.toUpper())
-    );
+    QString datFilePath = m_outputDir.absoluteFilePath(QString("%1.dat").arg(table.toUpper()));
 
     QFile datFile(datFilePath);
-    if (!datFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+    if (!datFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+    {
         emit error(QString("Cannot create control file: %1").arg(datFilePath));
         return;
     }
@@ -100,9 +105,10 @@ void ExporterBase::writeControlFile(const QString &table,
     // Заголовок SQL*Loader
     stream << "LOAD DATA" << Qt::endl;
 
-    if (!fHasClobFields || m_clobMode != ClobMode_SplitFile) {
+    if (!fHasClobFields || m_clobMode != ClobMode_SplitFile)
         stream << "INFILE *" << Qt::endl;
-    } else {
+    else
+    {
         stream << QString("INFILE '%1.rec' \"str '<endrec>\\r\\n'\"")
                   .arg(table) << Qt::endl;
     }
@@ -110,71 +116,62 @@ void ExporterBase::writeControlFile(const QString &table,
     stream << "INTO TABLE " << table.toUpper() << Qt::endl;
     stream << "FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY X'27'" << Qt::endl;
     stream << "TRAILING NULLCOLS" << Qt::endl;
-    stream << "(" << Qt::endl;
+    stream << "(";
 
-    // Описание колонок
-    for (int i = 0; i < m_columnsCache.size(); ++i) {
+    for (int i = 0; i < m_columnsCache.size(); ++i)
+    {
         const ColumnInfo &col = m_columnsCache[i];
 
         if (i > 0) {
             stream << "," << Qt::endl;
         }
 
-        stream << "  " << col.name;
+        stream << col.name;
 
-        if (col.type == "CLOB") {
-            if (m_clobMode == ClobMode_SplitFile) {
-                stream << QString(" CHAR(%1) ENCLOSED BY '<startlob>' AND '<endlob>'")
-                          .arg(RSD_BLOB_MAX_LEN);
+        if (col.type == "CLOB")
+        {
+            if (m_clobMode == ClobMode_SplitFile)
+                stream << QString(" CHAR(%1) ENCLOSED BY '<startlob>' AND '<endlob>'").arg(RSD_BLOB_MAX_LEN);
+            else
+            {
+                if (col.pgtype == "bytea")
+                    stream << " CHAR(32000)";
             }
-            // Для других режимов CLOB пишется как есть
         }
-        else if (col.type == "CHAR") {
+        else if (col.type == "CHAR")
             stream << " \"REPLACE(:" << col.name << ", chr(2), chr(0))\"";
-        }
-        else if (col.type == "VARCHAR2") {
+        else if (col.type == "VARCHAR2")
             stream << " CHAR(4000) \"REPLACE(:" << col.name << ",'chr(10)',chr(10))\"";
-        }
-        else if (col.type == "DATE") {
+        else if (col.type == "DATE")
             stream << " DATE 'DD-MM-YYYY:HH24:MI:SS'";
-        }
-        else if (col.type == "NUMBER" || col.type == "FLOAT") {
-            // Никаких дополнительных масок для чисел
-        }
-        else if (col.type == "BLOB") {
+        else if (col.type == "BLOB" || col.pgtype == "bytea")
             stream << " CHAR(32000)";
-        }
-        else {
-            // VARCHAR2 и другие типы
-            stream << " CHAR(4000)";
-        }
     }
 
-    stream << Qt::endl << ")" << Qt::endl;
+    stream << ")" << Qt::endl << Qt::endl << Qt::endl;
 
-    // Если не режим SplitFile, добавляем секцию BEGINDATA
-    if (!fHasClobFields || m_clobMode != ClobMode_SplitFile) {
-        stream << Qt::endl << "BEGINDATA" << Qt::endl;
-    }
+    if (!fHasClobFields || m_clobMode != ClobMode_SplitFile)
+        stream << "BEGINDATA" << Qt::endl;
 
     datFile.close();
 
-    // Если есть BLOB поля, генерируем дополнительный SQL файл
     bool hasBlob = false;
-    for (const ColumnInfo &col : m_columnsCache) {
-        if (col.type == "BLOB") {
+    for (const ColumnInfo &col : qAsConst(m_columnsCache))
+    {
+        if (col.type == "BLOB")
+        {
             hasBlob = true;
             break;
         }
     }
 
-    if (hasBlob) {
-        QString blobFileName = m_outputDir.absoluteFilePath(
-            QString("%1_BLOB.sql").arg(table.toUpper())
-        );
-        QFile blobFile(blobFileName);
+    if (hasBlob)
+    {
+        QString blobFileName = m_outputDir.absoluteFilePath(QString("%1_BLOB.sql").arg(table.toUpper()));
 
-        if (blobFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        QFile blobFile(blobFileName);
+        if (blobFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        {
             QString blobTemplate = toolReadTextFileContent(":/res/BlobTemplate.sql");
             blobTemplate = blobTemplate.arg(table.toUpper());
 
@@ -186,18 +183,15 @@ void ExporterBase::writeControlFile(const QString &table,
     }
 }
 
-void ExporterBase::writeDataFile(const QString &table,
-                                 const QStringList &columns,
-                                 const QStringList &largeObjectColumns)
+void ExporterBase::writeDataFile(const QString &table, const QStringList &columns, const QStringList &largeObjectColumns)
 {
     Q_UNUSED(columns)
 
-    QString datFilePath = m_outputDir.absoluteFilePath(
-        QString("%1.dat").arg(table.toUpper())
-    );
+    QString datFilePath = m_outputDir.absoluteFilePath(QString("%1.dat").arg(table.toUpper()));
 
     QFile datFile(datFilePath);
-    if (!datFile.open(QIODevice::Append | QIODevice::Text)) {
+    if (!datFile.open(QIODevice::Append | QIODevice::Text))
+    {
         emit error(QString("Cannot open data file: %1").arg(datFilePath));
         return;
     }
@@ -205,125 +199,117 @@ void ExporterBase::writeDataFile(const QString &table,
     QTextStream stream(&datFile);
     stream.setCodec("IBM 866");
 
-    // Для SplitFile режима открываем отдельный файл для CLOB
     QFile linesFile;
     QTextStream linesStream;
     bool splitFileMode = !largeObjectColumns.isEmpty() && m_clobMode == ClobMode_SplitFile;
 
-    if (splitFileMode) {
-        QString linesFilePath = m_outputDir.absoluteFilePath(
-            QString("%1.rec").arg(table)
-        );
+    if (splitFileMode)
+    {
+        QString linesFilePath = m_outputDir.absoluteFilePath(QString("%1.rec").arg(table));
+
         linesFile.setFileName(linesFilePath);
-        if (!linesFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        if (!linesFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        {
             emit error(QString("Cannot create CLOB file: %1").arg(linesFilePath));
             return;
         }
+
         linesStream.setDevice(&linesFile);
         linesStream.setCodec("IBM 866");
     }
 
-    // Формируем SELECT запрос
     QStringList columnNames;
-    for (const ColumnInfo &col : m_columnsCache) {
+    for (const ColumnInfo &col : qAsConst(m_columnsCache))
         columnNames << col.name;
-    }
 
     QString queryStr = getSelectQuery(table, columnNames);
     QSqlQuery query(m_connection->db());
     query.setForwardOnly(true);
     query.prepare(queryStr);
 
-    if (!executeQuery(&query, QString("Select data from: %1").arg(table))) {
+    QString msg = QString("Select data from: %1").arg(table);
+    if (!executeQuery(&query, msg))
         return;
-    }
 
     int totalRows = getTableRowCount(table);
-    if (totalRows < 0) {
+    if (totalRows < 0)
         totalRows = 0;
-    }
 
     int rowCount = 0;
 
     QTextStream stdOutput(stdout);
     stdOutput.setCodec("IBM 866");
 
-    // Для отслеживания прогресса
     int lastProgressPercent = -1;
-
-    while (query.next()) {
+    while (query.next())
+    {
         QStringList rowValues;
 
-        // Формируем значения для всех колонок
-        for (int i = 0; i < m_columnsCache.size(); ++i) {
+        for (int i = 0; i < m_columnsCache.size(); ++i)
+        {
             const ColumnInfo &col = m_columnsCache[i];
             QVariant value = query.value(i);
+            bool isNull = query.record().isNull(i);
 
             QString formatted;
-
-            // NULL значения
-            if (value.isNull()) {
-                formatted = "";
-            }
-            // Обработка в зависимости от типа
-            else if (col.type == "CLOB") {
-                formatted = formatValueForSqlLoader(value, col.type);
+            if (col.type == "CLOB")
+            {
+                formatted = formatValueForSqlLoader(value, col, isNull);
                 if (splitFileMode) {
                     // В основном файле будет номер строки, а CLOB в отдельный файл
                     continue;
                 }
             }
-            else if (col.type == "BLOB") {
-                formatted = formatValueForSqlLoader(value, col.type);
-            }
-            else {
-                formatted = formatValueForSqlLoader(value, col.type);
-            }
+            else if (col.type == "BLOB")
+                formatted = formatValueForSqlLoader(value, col, isNull);
+            else
+                formatted = formatValueForSqlLoader(value, col, isNull);
 
             rowValues << formatted;
         }
 
-        // Запись данных
-        if (splitFileMode) {
-            // В основном файле пишем номер записи
+        if (splitFileMode)
+        {
             stream << rowCount + 1 << Qt::endl;
 
-            // В отдельный файл пишем CLOB значения
-            for (int i = 0; i < m_columnsCache.size(); ++i) {
+            for (int i = 0; i < m_columnsCache.size(); ++i)
+            {
                 const ColumnInfo &col = m_columnsCache[i];
-                if (col.type == "CLOB") {
+                if (col.type == "CLOB")
+                {
                     QVariant value = query.value(i);
-                    QString clobValue = formatValueForSqlLoader(value, col.type);
+                    bool isNull = query.record().isNull(i);
+
+                    QString clobValue = formatValueForSqlLoader(value, col, isNull);
                     linesStream << "<startlob>" << clobValue << "<endlob>";
                 }
             }
+
             linesStream << "<endrec>" << Qt::endl;
-        } else {
-            // Обычный режим - пишем все значения в одну строку
+        }
+        else
+        {
             stream << rowValues.join(",") << Qt::endl;
         }
 
         rowCount++;
 
-        // Отображение прогресса каждые 1000 строк или каждые 5%
         int currentPercent = (totalRows > 0) ? (rowCount * 100 / totalRows) : 0;
-        if (rowCount % 1000 == 0 || currentPercent > lastProgressPercent + 5) {
-            stdOutput << QString("Processing... %1 rows (%2%)")
-                         .arg(rowCount)
-                         .arg(currentPercent) << Qt::endl;
-            stdOutput.flush();
+        if (rowCount % 1000 == 0 || currentPercent > lastProgressPercent + 5)
+        {
+            WriteLog(stdOutput, QString("Processing... %1 rows (%2%)")
+                     .arg(rowCount)
+                     .arg(currentPercent));
             emit progress(rowCount, totalRows);
             lastProgressPercent = currentPercent;
         }
     }
 
     datFile.close();
-    if (splitFileMode) {
+    if (splitFileMode)
         linesFile.close();
-    }
 
-    stdOutput << QString("Total rows processed: %1").arg(rowCount) << Qt::endl;
-    stdOutput.flush();
+    WriteLog(stdOutput, QString("Total rows processed: %1").arg(rowCount));
 }
 
 QString ExporterBase::escapeForSqlLoader(const QString &value)
@@ -336,7 +322,8 @@ QString ExporterBase::escapeForSqlLoader(const QString &value)
 
 bool ExporterBase::exportTable(const QString &table)
 {
-    if (!m_connection || !m_connection->isOpen()) {
+    if (!m_connection || !m_connection->isOpen())
+    {
         emit error("Database not connected");
         return false;
     }
@@ -346,9 +333,10 @@ bool ExporterBase::exportTable(const QString &table)
     QTextStream stdOutput(stdout);
     stdOutput.setCodec("IBM 866");
 
-    // Загружаем метаданные таблицы ОДИН РАЗ
-    stdOutput << QString("Loading table metadata...") << Qt::endl;
-    if (!loadTableMetadata(table)) {
+    WriteLog(stdOutput, QString("Loading table metadata..."));
+
+    if (!loadTableMetadata(table))
+    {
         emit error(QString("Failed to load metadata for table: %1").arg(table));
         emit tableFinished(table, false);
         return false;
@@ -357,11 +345,12 @@ bool ExporterBase::exportTable(const QString &table)
     // Получаем колонки из кеша
     QStringList columns;
     QStringList largeObjectColumns;
-    for (const ColumnInfo &col : m_columnsCache) {
+    for (const ColumnInfo &col : qAsConst(m_columnsCache))
+    {
         columns << col.name;
-        if (col.isLargeObject) {
+
+        if (col.isLargeObject)
             largeObjectColumns << col.name;
-        }
     }
 
     if (columns.isEmpty()) {
@@ -370,34 +359,34 @@ bool ExporterBase::exportTable(const QString &table)
         return false;
     }
 
-    // Проверка существования таблицы
-    stdOutput << QString("Checking exists table...") << Qt::endl;
-    if (!checkTableExists(table)) {
+    WriteLog(stdOutput, QString("Checking exists table..."));
+    if (!checkTableExists(table))
+    {
         stdOutput << QString("Table does not exist or cannot be accessed: %1").arg(table) << Qt::endl;
         emit error(QString("Table does not exist: %1").arg(table));
         emit tableFinished(table, false);
         return false;
     }
 
-    // Получаем общее количество строк
     int totalRows = getTableRowCount(table);
-    if (totalRows < 0) {
+    if (totalRows < 0)
+    {
         emit error(QString("Cannot get row count for table: %1").arg(table));
         emit tableFinished(table, false);
         return false;
     }
 
-    stdOutput << QString("Total rows to export: %1").arg(totalRows) << Qt::endl;
+    WriteLog(stdOutput, QString("Total rows to export: %1").arg(totalRows));
 
     // Пишем управляющий файл (использует кеш)
-    stdOutput << QString("Writing control file...") << Qt::endl;
+    WriteLog(stdOutput, QString("Writing control file..."));
     writeControlFile(table, columns, largeObjectColumns);
 
     // Пишем файл данных (использует кеш)
-    stdOutput << QString("Writing data file...") << Qt::endl;
+    WriteLog(stdOutput, QString("Writing data file..."));
     writeDataFile(table, columns, largeObjectColumns);
 
-    stdOutput << QString("Unloading finished for table: %1").arg(table) << Qt::endl;
+    WriteLog(stdOutput, QString("Unloading finished for table: %1").arg(table));
     emit tableFinished(table, true);
 
     // Очищаем кеш для следующей таблицы
@@ -410,25 +399,25 @@ bool ExporterBase::exportTable(const QString &table)
 bool ExporterBase::exportTables(const QStringList &tables)
 {
     bool allSuccess = true;
-    for (const QString &table : tables) {
-        if (!exportTable(table)) {
+    for (const QString &table : tables)
+    {
+        if (!exportTable(table))
             allSuccess = false;
-        }
     }
     return allSuccess;
 }
 
 bool ExporterBase::loadTableMetadata(const QString &table)
 {
-    if (m_metadataLoaded && m_currentTable == table) {
-        return true; // Уже загружено
-    }
+    if (m_metadataLoaded && m_currentTable == table)
+        return true;
 
     m_columnsCache.clear();
     m_currentTable = table;
     m_metadataLoaded = false;
 
-    if (!loadTableMetadataImpl(table, m_columnsCache)) {
+    if (!loadTableMetadataImpl(table, m_columnsCache))
+    {
         emit error(QString("Failed to load metadata for table: %1").arg(table));
         return false;
     }
@@ -439,10 +428,52 @@ bool ExporterBase::loadTableMetadata(const QString &table)
 
 QString ExporterBase::getCachedColumnType(const QString &column) const
 {
-    for (const ColumnInfo &info : m_columnsCache) {
-        if (info.name.compare(column, Qt::CaseInsensitive) == 0) {
+    for (const ColumnInfo &info : m_columnsCache)
+    {
+        if (info.name.compare(column, Qt::CaseInsensitive) == 0)
             return info.type;
-        }
     }
+
     return "VARCHAR2";
+}
+
+QString ExporterBase::variantNumberToString(const QVariant& value)
+{
+    if (value.type() == QVariant::Int ||
+        value.type() == QVariant::UInt ||
+        value.type() == QVariant::LongLong ||
+        value.type() == QVariant::ULongLong)
+    {
+        return QString::number(value.toLongLong());
+    }
+
+    if (value.type() == QVariant::Double)
+    {
+        double d = value.toDouble();
+        // Проверяем, является ли число целым (без дробной части)
+        if (std::abs(d - std::round(d)) < 0.0000001)
+            return QString::number(static_cast<long long>(d));
+
+        // Форматируем с 2 знаками, затем убираем trailing zeros
+        QString result = QString::number(d, 'f', 2);
+
+        // Убираем .00 (хотя это уже покрыто предыдущим условием, оставим для страховки)
+        if (result.endsWith(".00"))
+            return result.left(result.length() - 3);
+
+        // Убираем последний ноль: 2.50 -> 2.5
+        if (result.endsWith("0") && result.contains('.'))
+        {
+            result.chop(1);
+            // Если после удаления осталось .5, оставляем .5 (не удаляем точку)
+        }
+
+        // Преобразуем 0.01 -> .01 (убираем ноль перед точкой)
+        if (result.startsWith("0.") && result != "0.0" && result != "0.00")
+            result.remove(0, 1); // Удаляем первый символ '0'
+
+        return result;
+    }
+
+    return value.toString();
 }
