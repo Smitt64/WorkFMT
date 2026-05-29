@@ -75,6 +75,8 @@ public:
     Q_INVOKABLE QStringList disableEnableAutoIncTrigger(ScriptTable* datTable, bool enable = false, int depth = 1);
 
 private:
+    QString replaceChr10(const QString& value) const;
+
     QSharedPointer<DiffConnection> _connection;
     QSharedPointer<DbSpelling> _dbSpelling;
 

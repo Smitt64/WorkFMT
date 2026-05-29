@@ -212,3 +212,5 @@ DiffToScriptlib/release/
 HfProjects/release/
 
 RegparmTool/release/
+
+.claude/settings.json

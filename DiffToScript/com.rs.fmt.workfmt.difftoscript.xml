@@ -1,5 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Diff to Script">
+    <version ver="1.0.2.2">
+        <add>Добавлена замена текстового &quot;chr(10)&quot; на вызов функции CHR(10) при генерации SQL для строковых типов (STRING, CHR, UCHR)</add>
+        <fix>Исправлена обработка пустых кавычек &apos;&apos; для типа STRING — теперь заменяются на CHR(1) (Oracle) или glob_func.chr(1) (PostgreSQL)</fix>
+    </version>
     <version ver="1.0.2.1">
         <fix>Исправлено дублирование скриптов</fix>
         <fix>Исправлена ошибка формирования строк с русскими символами (для &quot;chr(1)&quot;)</fix>
