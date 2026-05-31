@@ -187,6 +187,14 @@ FmtWorkWindow::FmtWorkWindow(QWidget *parent) :
                                    this, QRect(), 1500);
             });
 
+    ui->toolClearBlobSize->setToolTip(tr("Очистить размер BLOB"));
+    ui->toolClearBlobSize->setIcon(QIcon::fromTheme("EditDelete"));
+    ui->toolClearBlobSize->setIcon(QIcon::fromTheme("CleanData"));
+    connect(ui->toolClearBlobSize, &QToolButton::clicked, [=]()
+            {
+                pTable->setBlobLen(0);
+            });
+
     connect(ui->blobCombo, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index)
             {
                 if (index == COMBO_No)
