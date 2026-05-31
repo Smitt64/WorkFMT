@@ -21,7 +21,7 @@
 DiffWizard::DiffWizard(QWidget *parent) :
     QWizard(parent)
 {
-    setWindowIcon(QIcon(":/img/DiffToScript.png"));
+    setWindowIcon(QIcon(":/res/app-icon.svg"));
     setFixedSize(800, 600);
 
     m_pActionPage = new ActionPage(this);

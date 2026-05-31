@@ -41,7 +41,7 @@ DumpToolWizard::DumpToolWizard() :
     setWindowTitle(tr("Мастер импорта/экспорта файла дампа"));
     setMinimumSize(QSize(800, 600));
 
-    setWindowIcon(QIcon(":/img/VCProject.dll_I000d_0409.ico"));
+    setWindowIcon(QIcon(":/res/app-icon.svg"));
 
     m_HelpButton = button(QWizard::HelpButton);
     setOption(QWizard::HelpButtonOnRight, false);

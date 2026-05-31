@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>res/app-icon.svg</file>
         <file>res/gitlogo.svg</file>
         <file>res/svnlogo.svg</file>
     </qresource>
