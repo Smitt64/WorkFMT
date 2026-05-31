@@ -214,3 +214,5 @@ HfProjects/release/
 RegparmTool/release/
 
 .claude/settings.json
+
+DiffToScript/__pycache__/
