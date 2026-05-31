@@ -1,6 +1,10 @@
-<?xml version = "1.0" encoding = "UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <changelog project="Diff to Script">
     <version ver="1.0.2.2">
+        <add>Для таблицы DLNS_MULTYSELECT_DBT (макрос DLNS_MULTYSELECT.mac): Первоначальная реализация макроса</add>
+        <add>Для таблицы DLNS_REFTOHIGHRISK_DBT (макрос DLNS_REFTOHIGHRISK.mac): Первоначальная реализация макроса</add>
+        <add>Для таблицы ddilacond_dbt (макрос ddilacond_dbt.mac): Первоначальная реализация макроса</add>
+        <add>Для таблицы DPURPLE_DBT (макрос dpurple_dbt.mac): Первоначальная реализация макроса</add>
         <add>Добавлена замена текстового &quot;chr(10)&quot; на вызов функции CHR(10) при генерации SQL для строковых типов (STRING, CHR, UCHR)</add>
         <fix>Исправлена обработка пустых кавычек &apos;&apos; для типа STRING — теперь заменяются на CHR(1) (Oracle) или glob_func.chr(1) (PostgreSQL)</fix>
     </version>
@@ -28,8 +32,8 @@
     <version ver="1.0.1.5">
         <fix>По причине непредсказуемого поведения утилиты обновления, секция &quot;drop&quot; функций для &quot;PostgreSQL&quot; в ветке конвертации для &quot;Oracle&quot; удалена</fix>
     </version>
-	<version ver="1.0.1.4">
-        <add>Добавлена команда &quot;DEFINE usr_name = 'DummyUser';&quot; перед блоком удаления функций</add>
+    <version ver="1.0.1.4">
+        <add>Добавлена команда &quot;DEFINE usr_name = &apos;DummyUser&apos;;&quot; перед блоком удаления функций</add>
     </version>
     <version ver="1.0.1.3">
         <fix>Исправлена ошибка генерации скриптов по данным из новых dat файлов для таблиц, у которых нет уникальных индексов</fix>
@@ -53,7 +57,7 @@
     <version ver="1.0.0.11">
         <add>Добавлен суффикс &quot;__&quot; к наименованим функций вставки записей в таблицу, во избежание пересечений с рукописными функциями</add>
     </version>
-	<version ver="1.0.0.10">
+    <version ver="1.0.0.10">
         <add>Добавлен параметр &quot;--updtbl&quot; - который генерирует alter table скрипты по дыннм изменений</add>
         <fix>Исправлена генерация insert функции для связанных таблиц с автоинкрементным полем у родительской таблицы. Теперь insert корректно помещается в блок &quot;IF THEN&quot;</fix>
         <fix>Исправлена передача параметров в insert функцию, теперь не будут передаваться астоинкрементные поля</fix>
@@ -82,9 +86,9 @@
         <add>Insert скрипты теперь добавляют значения по умолчанию для отсутствующих в *.dat файле колонок</add>
         <add>Добавлено сообщене, если набор полей в *.dat файле не соответствует набору в fmt словаре</add>
     </version>
-	<version ver="1.0.0.3">
-		<add>Добавлена обработка исключений DUP_VAL_ON_INDEX (in Oracle) и UNIQUE_VIOLATION (in PostgreSQL) для insert скриптов</add>
-		<add>Добавлена обертка HEXTORAW для blob полей (in Oracle)</add>
+    <version ver="1.0.0.3">
+        <add>Добавлена обработка исключений DUP_VAL_ON_INDEX (in Oracle) и UNIQUE_VIOLATION (in PostgreSQL) для insert скриптов</add>
+        <add>Добавлена обертка HEXTORAW для blob полей (in Oracle)</add>
         <add>Добавлено игнорирование инструкции &quot;\ No newline at end of file&quot;</add>
         <add>Добавлен вызов rsb_ainc.disable_trigger, rsb_ainc.enable_trigger и rsb_ainc.restore_seq для таблиц с автоинкрементным индексом</add>
         <add>Добавлена обертка в функции/процедуры для insert запросов</add>
@@ -101,7 +105,7 @@
     </version>
     <version ver="1.0.0.1">
         <add>Добавлены перечисления полей из структуры dat файлов для insert запросов</add>
-        <fix>Исправлена генерация запросов для "новых" файлов</fix>
+        <fix>Исправлена генерация запросов для &quot;новых&quot; файлов</fix>
         <fix>Исправлена ситуация, когда некоторые скрипты дублировались при генерации в интерфейсном режиме</fix>
     </version>
     <version ver="1.0.0.0">
