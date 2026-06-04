@@ -13,6 +13,7 @@
 #include "options/externaltoolspage.h"
 #include "options/fmtoptionsdlg.h"
 #include "oracleauthdlg.h"
+#include "ribbon/ribbonaboutdlg.h"
 #include "selectconnectiondlg.h"
 #include "selectfolderdlg.h"
 #include "src/core/FieldSplitterProcess.h"
@@ -1641,6 +1642,6 @@ void FmtRibbonMainWindow::onSplitterStatusChanged(bool ready)
 
 void FmtRibbonMainWindow::About()
 {
-    AboutDlg dlg(":/AboutDlg", this);
+    RibbonAboutDlg dlg(":/AboutDlg", QColor(0x21, 0x73, 0x46), this);
     dlg.exec();
 }
