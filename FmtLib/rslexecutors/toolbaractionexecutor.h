@@ -12,6 +12,7 @@ class ToolbarActionExecutor : public RslExecutor
 public:
     ToolbarActionExecutor(MainWindow *parent = nullptr);
     ToolbarActionExecutor(FmtSharedTablePtr Table, QWidget *parent = nullptr);
+    ToolbarActionExecutor(ConnectionInfo *info, QWidget *parent = nullptr);
     virtual ~ToolbarActionExecutor();
 
     void playRep(const QString &filename, const QString &output = QString(), RslExecutorProc proc = RslExecutorProc());

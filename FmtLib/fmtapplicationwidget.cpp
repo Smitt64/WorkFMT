@@ -1,4 +1,6 @@
 #include "fmtapplicationwidget.h"
+#include "fmtribbonmainwindow.h"
+#include "fmtcore.h"
 #include "options/externaltoolspage.h"
 #include "options/tablegroupoptions.h"
 #include "ribbon/categorycontentwidget.h"
@@ -6,6 +8,12 @@
 #include "options/generaloptions.h"
 #include "fmtapplication.h"
 #include "src/widgets/sqlconvertorcategory.h"
+#include "SARibbon.h"
+#include "ribbon/ribboncommandscontentwidget.h"
+#include "rslexecutor.h"
+#include "windowactionsregistry.h"
+#include "rsscript/registerobjlist.hpp"
+#include "toolsruntime.h"
 #include <QStandardItemModel>
 #include <QtWidgets>
 
@@ -21,6 +29,8 @@ FmtApplicationWidget::FmtApplicationWidget(SARibbonMainWindow *parent) :
     , m_insertWidget(nullptr)
     , m_viewWidget(nullptr)
     , m_TableGroupItem(nullptr)
+    , m_actionsManager(nullptr)
+    , m_executor(nullptr)
 {
     setMenuPanelColor(QColor(0x217346));
 
@@ -62,6 +72,44 @@ FmtApplicationWidget::FmtApplicationWidget(SARibbonMainWindow *parent) :
 FmtApplicationWidget::~FmtApplicationWidget()
 {
     delete m_pOptionsWidget;
+}
+
+void FmtApplicationWidget::initMacroCommands()
+{
+    if (m_actionsManager)
+        return;
+
+    FmtRibbonMainWindow *mainWindow = qobject_cast<FmtRibbonMainWindow*>(parent());
+    if (!mainWindow)
+        return;
+
+    m_actionsManager = new SARibbonActionsManager(mainWindow->ribbonBar());
+    m_actionsManager->setParent(this);
+    m_executor = new RslExecutor(this);
+    windowActionsRegistry()->setRslExecutor(m_executor);
+    windowActionsRegistry()->setCodeDialogStyle(FmtCodeTabStyle);
+
+    addMacroActionsContentWidget(m_actionsManager, tr("Лента"));
+
+    RibbonCommandsContentWidget *macroWidget = macroActionsContentWidget();
+    if (macroWidget)
+    {
+        FmtApplication *app = qobject_cast<FmtApplication*>(qApp);
+        if (app)
+            macroWidget->load(app->settings());
+
+        auto connectMacroAction = [mainWindow](QAction *action)
+        {
+            if (!action)
+                return;
+            connect(action, &QAction::triggered, mainWindow, &FmtRibbonMainWindow::execMacroAction, Qt::UniqueConnection);
+        };
+
+        for (QAction *action : macroWidget->macroActions())
+            connectMacroAction(action);
+
+        connect(macroWidget, &RibbonCommandsContentWidget::macroActionAdded, this, connectMacroAction);
+    }
 }
 
 void FmtApplicationWidget::setCurrentConnection(ConnectionInfo *info)

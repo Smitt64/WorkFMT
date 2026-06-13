@@ -9,6 +9,9 @@ class ExternalToolsPage;
 class ConnectionInfo;
 class TableGroupOptions;
 class AppOptionsContentWidget;
+class SARibbonActionsManager;
+class RslExecutor;
+
 class FmtApplicationWidget : public ApplicationWidgetBase
 {
     Q_OBJECT
@@ -17,6 +20,7 @@ public:
     virtual ~FmtApplicationWidget();
 
     void setCurrentConnection(ConnectionInfo *info);
+    void initMacroCommands();
 
 protected:
     void setupTabs();
@@ -46,6 +50,8 @@ private:
     ExternalToolsPage *m_pExternalToolsPage;
     GeneralOptions *m_pGeneralOptions;
     TableGroupOptions *m_pTableGroupOptions;
+    SARibbonActionsManager *m_actionsManager;
+    RslExecutor *m_executor;
 };
 
 #endif // FMTAPPLICATIONWIDGET_H

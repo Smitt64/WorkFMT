@@ -138,6 +138,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     pActionExecutor = new ToolbarActionExecutor(this);
     windowActionsRegistry()->setRslExecutor(pActionExecutor);
+    windowActionsRegistry()->setCodeDialogStyle(FmtCodeTabStyle);
 
     windowActionsRegistry()->scanActions(ui->menuFile);
     windowActionsRegistry()->scanActions(ui->menuService);

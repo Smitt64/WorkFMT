@@ -23,6 +23,7 @@ class MdiSubInterface;
 class FmtApplicationWidget;
 class FMTLIBSHARED_EXPORT FmtRibbonMainWindow : public SARibbonMainWindow
 {
+    Q_OBJECT
     using WorkWindowList = QList<QWidget*>;
 public:
     FmtRibbonMainWindow(QWidget *parent = nullptr);
@@ -41,6 +42,9 @@ public:
     void DisconnectCurrent();
 
     void ApplyRibbonProxy();
+
+public slots:
+    void execMacroAction();
 
 private slots:
     void ActionConnectTriggered();
@@ -93,6 +97,7 @@ private:
     void InitQuickAccessBar();
     void InitMainRibbonTab();
     void InitContextCategoryes();
+    void makeRibbonElementsNonCustomizable();
 
     QMdiArea *pMdi;
     QMdiSubWindow *m_LastActiveWindow;

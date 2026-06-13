@@ -14,6 +14,7 @@
 #include "options/fmtoptionsdlg.h"
 #include "oracleauthdlg.h"
 #include "ribbon/ribbonaboutdlg.h"
+#include "ribbon/ribboncommandscontentwidget.h"
 #include "selectconnectiondlg.h"
 #include "selectfolderdlg.h"
 #include "src/core/FieldSplitterProcess.h"
@@ -23,6 +24,7 @@
 #include "stringlistdlg.h"
 #include "subwindowsmodel.h"
 #include "tablesdock.h"
+#include "rslexecutors/toolbaractionexecutor.h"
 #include "recentconnectionlist.h"
 #include "tablesdockwidget.h"
 #include "treecombobox.h"
@@ -469,6 +471,10 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
 
     m_pAppWidget = new FmtApplicationWidget(this);
     m_pAppWidget->hide();
+
+    makeRibbonElementsNonCustomizable();
+
+    m_pAppWidget->initMacroCommands();
     connect(ribbon->applicationButton(), &QAbstractButton::clicked, [this](bool c)
     {
         Q_UNUSED(c);
@@ -609,6 +615,35 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
             }
         }
     });
+}
+
+void FmtRibbonMainWindow::makeRibbonElementsNonCustomizable()
+{
+    SARibbonBar *ribbon = ribbonBar();
+    if (!ribbon)
+        return;
+
+    for (SARibbonCategory *category : ribbon->categoryPages())
+    {
+        if (!category)
+            continue;
+
+        category->setCanCustomize(false);
+
+        for (SARibbonPannel *panel : category->pannelList())
+        {
+            if (!panel)
+                continue;
+
+            panel->setCanCustomize(false);
+
+            for (SARibbonToolButton *btn : panel->ribbonToolButtons())
+            {
+                if (btn && btn->defaultAction())
+                    SARibbonCustomizeData::setCanCustomize(btn->defaultAction(), false);
+            }
+        }
+    }
 }
 
 void FmtRibbonMainWindow::InitContextCategoryes()
@@ -935,6 +970,9 @@ void FmtRibbonMainWindow::closeEvent(QCloseEvent *event)
     //pUpdateChecker->deleteLater();
 
     fieldSplitterProcessInstance()->stop();
+
+    if (m_pAppWidget && m_pAppWidget->macroActionsContentWidget())
+        m_pAppWidget->macroActionsContentWidget()->save(s);
 
     delete m_pAppWidget;
     pMdi->closeAllSubWindows();
@@ -1638,6 +1676,24 @@ void FmtRibbonMainWindow::onSplitterStatusChanged(bool ready)
         m_FieldSplitterStatusIconLabel->setPixmap(QIcon::fromTheme("HighlightTextGreen").pixmap(16, 16, QIcon::Disabled));
         toolAddActionWithTooltip(m_FieldSplitterStatusIconLabel, tr("Процесс разбиения полей не запущен"));
     }
+}
+
+void FmtRibbonMainWindow::execMacroAction()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    if (!action)
+        return;
+
+    QString macrofile = action->data().toString();
+    if (macrofile.isEmpty())
+        return;
+
+    ConnectionInfo *info = CurrentConnection();
+    if (!info)
+        return;
+
+    ToolbarActionExecutor executor(info, this);
+    executor.playRep(macrofile);
 }
 
 void FmtRibbonMainWindow::About()

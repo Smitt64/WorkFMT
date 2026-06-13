@@ -1,4 +1,5 @@
 #include "toolbaractionexecutor.h"
+#include "fmtcore.h"
 #include "mdisubinterface.h"
 #include "mainwindow.h"
 #include "fmtworkwindow.h"
@@ -26,6 +27,14 @@ ToolbarActionExecutor::ToolbarActionExecutor(FmtSharedTablePtr Table, QWidget *p
 {
     pTable = Table;
     pInfo = pTable->connection();
+}
+
+ToolbarActionExecutor::ToolbarActionExecutor(ConnectionInfo *info, QWidget *parent)
+    : RslExecutor{parent},
+    pTable(nullptr),
+    pInfo(info),
+    pMainWindow(nullptr)
+{
 }
 
 ToolbarActionExecutor::~ToolbarActionExecutor()
@@ -88,7 +97,7 @@ void ToolbarActionExecutor::playRep(const QString &filename, const QString &outp
             int Highlighter = toolHighlighterByName(meta["Highlighter"]);
 
             QString code = toolReadTextFileContent(outputFileName(), "IBM 866");
-            toolShowCodeDialog(pWidget, title, Highlighter, code);
+            toolShowCodeDialog(pWidget, title, Highlighter, code, FmtCodeTabStyle);
         }
     }
 }

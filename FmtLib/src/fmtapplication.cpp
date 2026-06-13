@@ -95,6 +95,9 @@ void FmtApplication::init()
     qCInfo(logCore()) << "Application path: " << qApp->applicationDirPath();
     qCInfo(logCore()) << "Current path: " << QDir::current().path();
 
+    // Загрузка перевода SARibbon из ресурсов ToolsRuntime
+    toolLoadTranslations();
+
     QDir trDir(applicationDirPath());
     if (trDir.cd("translations"))
     {
