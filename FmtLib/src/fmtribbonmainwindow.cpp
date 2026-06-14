@@ -1381,6 +1381,7 @@ void FmtRibbonMainWindow::DisconnectCurrent()
     pWindowsModel->removeConnection(current);
     m_pConnectionsGallery->update();
     m_pConnectionsGalleryGroup->update();
+    m_pConnections.removeAll(current);
 
     delete action;
     delete current;
