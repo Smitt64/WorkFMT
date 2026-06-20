@@ -256,3 +256,25 @@ bool OracleExporter::loadTableMetadataImpl(const QString &table, QList<ColumnInf
 
     return !columns.isEmpty();
 }
+
+bool OracleExporter::prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns)
+{
+    Q_UNUSED(table)
+    Q_UNUSED(columns)
+    return false;
+}
+
+bool OracleExporter::importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns)
+{
+    Q_UNUSED(datFilePath)
+    Q_UNUSED(table)
+    Q_UNUSED(columns)
+    return false;
+}
+
+QVariant OracleExporter::formatValueForInsert(const QString &rawValue, const ColumnInfo &col)
+{
+    Q_UNUSED(rawValue)
+    Q_UNUSED(col)
+    return QVariant();
+}

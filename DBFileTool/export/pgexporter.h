@@ -26,9 +26,22 @@ protected:
 
     virtual bool loadTableMetadataImpl(const QString &table, QList<ColumnInfo> &columns);
 
+    // Импорт в PostgreSQL
+    virtual bool prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual bool importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual QVariant formatValueForInsert(const QString &rawValue, const ColumnInfo &col) override;
+
 private:
     QString mapPostgresTypeToOracleType(const QString &pgType);
     QStringList getPrimaryKeyColumns(const QString &table);
+
+    bool parseRecFile(const QString &recFilePath, QStringList &clobValues);
+    QString unquoteString(const QString &value) const;
+    bool importInlineFile(const QString &datFilePath, const QString &pgTable, const QList<ColumnInfo> &columns);
+    bool importSplitFile(const QString &datFilePath, const QString &pgTable,
+                         const QList<ColumnInfo> &columns,
+                         const QList<int> &clobIndexes,
+                         const QString &recFilePath);
 };
 
 #endif // PGXPORTER_H

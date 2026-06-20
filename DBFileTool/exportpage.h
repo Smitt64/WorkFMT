@@ -16,6 +16,7 @@ class ExportPage : public QWizardPage
 
     friend class RsExpOperationOld;
     friend class RsExpOperation;
+    friend class RsImpOperation;
 public:
     explicit ExportPage(QWidget *parent = nullptr);
     ~ExportPage();
@@ -63,6 +64,23 @@ public:
     virtual void run() Q_DECL_OVERRIDE;
 
     int ClobMode;
+
+signals:
+    void procMessage(const QString &str);
+    void procInfo(const QString &str);
+    void procError(const QString &str);
+};
+
+class RsImpOperation : public QObject,  public QRunnable
+{
+    Q_OBJECT
+
+    ExportPage *pParent;
+    DbtToolWizard *pWizard;
+
+public:
+    RsImpOperation(DbtToolWizard *Wizard, ExportPage *parent);
+    virtual void run() Q_DECL_OVERRIDE;
 
 signals:
     void procMessage(const QString &str);

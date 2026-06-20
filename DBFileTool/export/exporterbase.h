@@ -8,6 +8,9 @@
 #include <QTextStream>
 #include <QScopedPointer>
 #include <QDateTime>
+#include <QVariant>
+#include <QStringList>
+#include <QFileInfo>
 
 typedef struct ColumnInfo
 {
@@ -51,12 +54,20 @@ public:
     bool exportTable(const QString &table);
     bool exportTables(const QStringList &tables);
 
+    // Основные методы импорта
+    bool importTable(const QString &datFilePath);
+    bool importTables(const QStringList &datFiles);
+
 signals:
     void progress(int currentRow, int totalRows);
     void tableStarted(const QString &table);
     void tableFinished(const QString &table, bool success);
     void error(const QString &message);
     void procMessage(const QString &str);
+
+    void importStarted(const QString &datFile);
+    void importFinished(const QString &datFile, bool success);
+    void importProgress(int currentRow, int totalRows);
 
 protected:
     void WriteLog(QTextStream &stream, const QString &str);
@@ -89,6 +100,14 @@ protected:
     QString escapeForSqlLoader(const QString &value);
 
     virtual bool loadTableMetadata(const QString &table);
+
+    // Виртуальные методы импорта - специфичные для каждой БД
+    virtual bool prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns) = 0;
+    virtual bool importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns) = 0;
+    virtual QVariant formatValueForInsert(const QString &rawValue, const ColumnInfo &col) = 0;
+
+    // Чтение списка колонок из DAT-заголовка
+    QStringList readDatColumns(const QString &datFilePath);
 
     // Получение типов из кеша (быстро)
     QString getCachedColumnType(const QString &column) const;

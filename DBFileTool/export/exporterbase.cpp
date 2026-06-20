@@ -7,6 +7,8 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QThread>
+#include <QFileInfo>
+#include <QFile>
 
 ExporterBase::ExporterBase(QObject *parent) : QObject(parent)
 {
@@ -435,6 +437,166 @@ QString ExporterBase::getCachedColumnType(const QString &column) const
     }
 
     return "VARCHAR2";
+}
+
+QStringList ExporterBase::readDatColumns(const QString &datFilePath)
+{
+    QStringList columns;
+    QFile file(datFilePath);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        emit error(QString("Cannot open dat file for column parsing: %1").arg(datFilePath));
+        return columns;
+    }
+
+    QTextStream in(&file);
+    in.setCodec("IBM 866");
+    QString fileContent = in.readAll();
+    file.close();
+
+    int startPos = fileContent.indexOf('(');
+    if (startPos == -1)
+    {
+        emit error(QString("Column section not found in dat file: %1").arg(datFilePath));
+        return columns;
+    }
+
+    int begindataPos = fileContent.indexOf("BEGINDATA", startPos);
+    if (begindataPos == -1)
+    {
+        emit error(QString("BEGINDATA section not found in dat file: %1").arg(datFilePath));
+        return columns;
+    }
+
+    QString columnsSection = fileContent.mid(startPos + 1, begindataPos - startPos - 1);
+    QStringList lines = columnsSection.split('\n', Qt::SkipEmptyParts);
+
+    for (const QString &line : qAsConst(lines))
+    {
+        QString trimmedLine = line.trimmed();
+
+        if (trimmedLine.endsWith(')'))
+            trimmedLine.chop(1);
+
+        int spacePos = trimmedLine.indexOf(' ');
+        int commaPos = trimmedLine.indexOf(',');
+
+        int endOfWordPos = -1;
+        if (spacePos != -1 && commaPos != -1)
+            endOfWordPos = qMin(spacePos, commaPos);
+        else if (spacePos != -1)
+            endOfWordPos = spacePos;
+        else if (commaPos != -1)
+            endOfWordPos = commaPos;
+
+        QString column;
+        if (endOfWordPos != -1)
+            column = trimmedLine.left(endOfWordPos).trimmed();
+        else
+            column = trimmedLine;
+
+        if (!column.isEmpty())
+            columns.append(column.toUpper());
+    }
+
+    return columns;
+}
+
+bool ExporterBase::importTable(const QString &datFilePath)
+{
+    if (!m_connection || !m_connection->isOpen())
+    {
+        emit error("Database not connected");
+        return false;
+    }
+
+    emit importStarted(datFilePath);
+
+    QTextStream stdOutput(stdout);
+    stdOutput.setCodec("IBM 866");
+
+    QFileInfo fileInfo(datFilePath);
+    QString table = fileInfo.baseName().toUpper();
+
+    WriteLog(stdOutput, QString("Loading table metadata for: %1").arg(table));
+
+    if (!loadTableMetadata(table))
+    {
+        emit error(QString("Failed to load metadata for table: %1").arg(table));
+        emit importFinished(datFilePath, false);
+        return false;
+    }
+
+    WriteLog(stdOutput, QString("Reading DAT columns from: %1").arg(datFilePath));
+    QStringList datColumns = readDatColumns(datFilePath);
+
+    if (datColumns.isEmpty())
+    {
+        emit error(QString("Cannot read columns from DAT file: %1").arg(datFilePath));
+        emit importFinished(datFilePath, false);
+        return false;
+    }
+
+    // Проверяем соответствие колонок DAT и БД
+    if (datColumns.size() != m_columnsCache.size())
+    {
+        emit error(QString("Column count mismatch for table %1: DAT=%2, DB=%3")
+                   .arg(table)
+                   .arg(datColumns.size())
+                   .arg(m_columnsCache.size()));
+        emit importFinished(datFilePath, false);
+        return false;
+    }
+
+    for (int i = 0; i < datColumns.size(); ++i)
+    {
+        if (datColumns[i].compare(m_columnsCache[i].name, Qt::CaseInsensitive) != 0)
+        {
+            emit error(QString("Column name mismatch at position %1 for table %2: DAT=%3, DB=%4")
+                       .arg(i + 1)
+                       .arg(table)
+                       .arg(datColumns[i])
+                       .arg(m_columnsCache[i].name));
+            emit importFinished(datFilePath, false);
+            return false;
+        }
+    }
+
+    WriteLog(stdOutput, QString("Preparing target table: %1").arg(table));
+    if (!prepareTargetTable(table, m_columnsCache))
+    {
+        emit error(QString("Failed to prepare target table: %1").arg(table));
+        emit importFinished(datFilePath, false);
+        return false;
+    }
+
+    WriteLog(stdOutput, QString("Importing data file: %1").arg(datFilePath));
+    if (!importDataFile(datFilePath, table, m_columnsCache))
+    {
+        emit error(QString("Failed to import data file: %1").arg(datFilePath));
+        emit importFinished(datFilePath, false);
+        return false;
+    }
+
+    WriteLog(stdOutput, QString("Import finished for table: %1").arg(table));
+    emit importFinished(datFilePath, true);
+
+    m_metadataLoaded = false;
+    m_columnsCache.clear();
+
+    return true;
+}
+
+bool ExporterBase::importTables(const QStringList &datFiles)
+{
+    bool allSuccess = true;
+    for (const QString &datFile : datFiles)
+    {
+        if (!importTable(datFile))
+            allSuccess = false;
+    }
+    return allSuccess;
 }
 
 QString ExporterBase::variantNumberToString(const QVariant& value)

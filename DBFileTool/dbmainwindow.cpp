@@ -1,10 +1,12 @@
 #include "dbmainwindow.h"
 #include "ui_dbmainwindow.h"
+#include "importobject.h"
 #include <fmttablesmodel.h>
 #include <oracletnslistmodel.h>
 #include <tablesgroupprovider.h>
 #include <oracleauthdlg.h>
 #include <fmtcore.h>
+#include <connectioninfo.h>
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QInputDialog>
@@ -160,6 +162,24 @@ void DbMainWindow::importTables()
         pTextLog->clear();
         ui->tabWidget->setCurrentIndex(1);
 
+        // Определяем тип подключения
+        QScopedPointer<ConnectionInfo> connInfo(new ConnectionInfo());
+        bool usePostgres = false;
+        if (connInfo->open(QRSD_DRIVER, ui->userEdit->text(), ui->passEdit->text(), ui->serviceBox->currentText(), ""))
+        {
+            usePostgres = (connInfo->type() == ConnectionInfo::CON_POSTGRESQL);
+            connInfo->close();
+        }
+
+        QScopedPointer<ImportObject> importer;
+        if (usePostgres)
+        {
+            importer.reset(new ImportObject(this));
+            connect(importer.data(), SIGNAL(procMessage(QString)), pTextLog, SLOT(appendPlainText(QString)));
+            connect(importer.data(), SIGNAL(procError(QString)), pTextLog, SLOT(appendPlainText(QString)));
+            importer->setConnectionInfo(ui->userEdit->text(), ui->passEdit->text(), ui->serviceBox->currentText(), false);
+        }
+
         QProgressDialog dlg(tr("Выгрузка таблицы"), tr("Прервать"), 0, files.size(), this);
         connect(&dlg, SIGNAL(canceled()), pObj, SLOT(stop()));
         dlg.open();
@@ -174,10 +194,18 @@ void DbMainWindow::importTables()
                                  .arg(++i)
                                  .arg(files.size()));
 
-                pObj->load(ui->userEdit->text(),
-                             ui->passEdit->text(),
-                             ui->serviceBox->currentText(),
-                             str);
+                if (usePostgres)
+                {
+                    QFileInfo fi(str);
+                    importer->importTable(fi.fileName(), fi.absoluteDir());
+                }
+                else
+                {
+                    pObj->load(ui->userEdit->text(),
+                                 ui->passEdit->text(),
+                                 ui->serviceBox->currentText(),
+                                 str);
+                }
             }
         }
         dlg.close();

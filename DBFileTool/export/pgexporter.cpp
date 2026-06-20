@@ -3,6 +3,14 @@
 #include <QSqlRecord>
 #include <connectioninfo.h>
 #include <QThread>
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
+#include <QByteArray>
+#include <QRegularExpression>
+#include <recordparser.h>
+#include <difftableinfo.h>
+#include <difffield.h>
 
 PostgresExporter::PostgresExporter(QObject *parent) : ExporterBase(parent)
 {
@@ -342,4 +350,414 @@ bool PostgresExporter::loadTableMetadataImpl(const QString &table, QList<ColumnI
     }
 
     return !columns.isEmpty();
+}
+
+QString PostgresExporter::unquoteString(const QString &value) const
+{
+    if (value.length() >= 2 && value.startsWith("'") && value.endsWith("'"))
+        return value.mid(1, value.length() - 2);
+    return value;
+}
+
+bool PostgresExporter::parseRecFile(const QString &recFilePath, QStringList &clobValues)
+{
+    QFile recFile(recFilePath);
+    if (!recFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        emit error(QString("Cannot open CLOB rec file: %1").arg(recFilePath));
+        return false;
+    }
+
+    QTextStream stream(&recFile);
+    stream.setCodec("IBM 866");
+
+    QString content = stream.readAll();
+    recFile.close();
+
+    int pos = 0;
+    while (pos < content.length())
+    {
+        int start = content.indexOf("<startlob>", pos);
+        if (start == -1)
+            break;
+
+        start += QString("<startlob>").length();
+        int end = content.indexOf("<endlob>", start);
+        if (end == -1)
+        {
+            emit error(QString("Unclosed <startlob> in rec file: %1").arg(recFilePath));
+            return false;
+        }
+
+        clobValues.append(content.mid(start, end - start));
+        pos = end + QString("<endlob>").length();
+    }
+
+    return true;
+}
+
+bool PostgresExporter::prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns)
+{
+    Q_UNUSED(columns)
+
+    QSqlQuery query(m_connection->db());
+    QString sql = QString("/*@ DisConv */TRUNCATE TABLE %1 RESTART IDENTITY CASCADE").arg(table.toLower());
+    query.prepare(sql);
+
+    return executeQuery(&query, QString("Truncate table: %1").arg(table));
+}
+
+bool PostgresExporter::importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns)
+{
+    Q_UNUSED(table)
+
+    QFileInfo datInfo(datFilePath);
+    QString workDir = datInfo.absoluteDir().path();
+    QString pgTable = datInfo.baseName().toLower();
+
+    bool splitFileMode = (m_clobMode == ClobMode_SplitFile);
+    QList<int> clobIndexes;
+    for (int i = 0; i < columns.size(); ++i)
+    {
+        if (columns[i].type == "CLOB")
+            clobIndexes.append(i);
+    }
+
+    if (splitFileMode && !clobIndexes.isEmpty())
+    {
+        QString recFilePath = QDir(workDir).absoluteFilePath(datInfo.baseName().toUpper() + ".rec");
+        return importSplitFile(datFilePath, pgTable, columns, clobIndexes, recFilePath);
+    }
+
+    return importInlineFile(datFilePath, pgTable, columns);
+}
+
+bool PostgresExporter::importInlineFile(const QString &datFilePath, const QString &pgTable, const QList<ColumnInfo> &columns)
+{
+    QFile datFile(datFilePath);
+    if (!datFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        emit error(QString("Cannot open dat file: %1").arg(datFilePath));
+        return false;
+    }
+
+    QTextStream stream(&datFile);
+    stream.setCodec("IBM 866");
+
+    // Построить DiffFields для RecordParser
+    DiffFields diffFields;
+    for (const ColumnInfo &col : columns)
+    {
+        DiffField *df = new DiffField();
+        df->name = col.name;
+        df->type = 0;
+        // NUMBER и DATE в DAT пишутся без кавычек, остальные типы - в кавычках
+        df->isString = !(col.type == "NUMBER" || col.type == "FLOAT" || col.type == "DATE");
+        diffFields.append(df);
+    }
+
+    QStringList columnNames;
+    for (const ColumnInfo &col : columns)
+        columnNames << col.name;
+
+    RecordParser parser(&diffFields, columnNames);
+
+    // Подготовить INSERT
+    QStringList colNamesLower;
+    QStringList placeholders;
+    for (const ColumnInfo &col : columns)
+    {
+        QString lower = col.name.toLower();
+        colNamesLower << lower;
+        placeholders << QString(":%1").arg(lower);
+    }
+
+    QString insertSql = QString("/*@ DisConv */INSERT INTO %1(%2) VALUES(%3)")
+                        .arg(pgTable)
+                        .arg(colNamesLower.join(", "))
+                        .arg(placeholders.join(", "));
+
+    QSqlDatabase db = m_connection->db();
+    if (!db.transaction())
+    {
+        emit error(QString("Failed to start transaction: %1").arg(db.lastError().text()));
+        datFile.close();
+        return false;
+    }
+
+    bool isDataSection = false;
+    int rowCount = 0;
+    int errorCount = 0;
+    const int maxErrors = 10;
+
+    QTextStream stdOutput(stdout);
+    stdOutput.setCodec("IBM 866");
+
+    while (!stream.atEnd())
+    {
+        QString line = stream.readLine();
+
+        if (!isDataSection)
+        {
+            if (line.contains("BEGINDATA", Qt::CaseInsensitive))
+                isDataSection = true;
+            continue;
+        }
+
+        if (line.trimmed().isEmpty())
+            continue;
+
+        if (!parser.parseRecord(line))
+        {
+            emit error(QString("Parse error in file %1 at row %2: %3")
+                       .arg(datFilePath)
+                       .arg(rowCount + 1)
+                       .arg(parser.getErrors().join("; ")));
+            errorCount++;
+            if (errorCount >= maxErrors)
+            {
+                db.rollback();
+                datFile.close();
+                return false;
+            }
+            continue;
+        }
+
+        QStringList values = parser.getValues();
+        if (values.size() != columns.size())
+        {
+            emit error(QString("Value count mismatch in file %1 at row %2: expected %3, got %4")
+                       .arg(datFilePath)
+                       .arg(rowCount + 1)
+                       .arg(columns.size())
+                       .arg(values.size()));
+            errorCount++;
+            if (errorCount >= maxErrors)
+            {
+                db.rollback();
+                datFile.close();
+                return false;
+            }
+            continue;
+        }
+
+        QSqlQuery insertQuery(db);
+        insertQuery.prepare(insertSql);
+
+        for (int i = 0; i < columns.size(); ++i)
+        {
+            QString raw = unquoteString(values[i]);
+            QVariant val = formatValueForInsert(raw, columns[i]);
+            insertQuery.bindValue(QString(":%1").arg(columns[i].name.toLower()), val);
+        }
+
+        if (!executeQuery(&insertQuery, QString("Insert row %1 into %2").arg(rowCount + 1).arg(pgTable)))
+        {
+            errorCount++;
+            if (errorCount >= maxErrors)
+            {
+                db.rollback();
+                datFile.close();
+                return false;
+            }
+        }
+
+        rowCount++;
+        if (rowCount % 1000 == 0)
+        {
+            WriteLog(stdOutput, QString("Processing... %1 rows").arg(rowCount));
+            emit importProgress(rowCount, -1);
+        }
+    }
+
+    datFile.close();
+
+    if (!db.commit())
+    {
+        emit error(QString("Failed to commit transaction: %1").arg(db.lastError().text()));
+        db.rollback();
+        return false;
+    }
+
+    WriteLog(stdOutput, QString("Total rows imported: %1").arg(rowCount));
+    emit importProgress(rowCount, rowCount);
+    return true;
+}
+
+bool PostgresExporter::importSplitFile(const QString &datFilePath, const QString &pgTable,
+                                        const QList<ColumnInfo> &columns,
+                                        const QList<int> &clobIndexes,
+                                        const QString &recFilePath)
+{
+    Q_UNUSED(datFilePath)
+
+    QStringList clobValues;
+    if (!parseRecFile(recFilePath, clobValues))
+        return false;
+
+    // В SplitFile режиме каждая строка .rec содержит по одному блоку <startlob>...<endlob> на каждое CLOB-поле
+    int clobsPerRow = clobIndexes.size();
+    if (clobValues.size() % clobsPerRow != 0)
+    {
+        emit error(QString("CLOB count mismatch in rec file %1: total %2, expected multiple of %3")
+                   .arg(recFilePath)
+                   .arg(clobValues.size())
+                   .arg(clobsPerRow));
+        return false;
+    }
+
+    QStringList colNamesLower;
+    QStringList placeholders;
+    for (const ColumnInfo &col : columns)
+    {
+        QString lower = col.name.toLower();
+        colNamesLower << lower;
+        placeholders << QString(":%1").arg(lower);
+    }
+
+    QString insertSql = QString("/*@ DisConv */INSERT INTO %1(%2) VALUES(%3)")
+                        .arg(pgTable)
+                        .arg(colNamesLower.join(", "))
+                        .arg(placeholders.join(", "));
+
+    QSqlDatabase db = m_connection->db();
+    if (!db.transaction())
+    {
+        emit error(QString("Failed to start transaction: %1").arg(db.lastError().text()));
+        return false;
+    }
+
+    int rowCount = 0;
+    QTextStream stdOutput(stdout);
+    stdOutput.setCodec("IBM 866");
+
+    for (int row = 0; row < clobValues.size() / clobsPerRow; ++row)
+    {
+        QSqlQuery insertQuery(db);
+        insertQuery.prepare(insertSql);
+
+        int clobOffset = row * clobsPerRow;
+        int clobNum = 0;
+
+        for (int i = 0; i < columns.size(); ++i)
+        {
+            QVariant val;
+            if (clobIndexes.contains(i))
+            {
+                QString raw = clobValues[clobOffset + clobNum];
+                // Убрать окружающие кавычки, если они есть (clob в rec может быть закавычен)
+                if (raw.startsWith("'") && raw.endsWith("'"))
+                    raw = raw.mid(1, raw.length() - 2);
+                val = formatValueForInsert(raw, columns[i]);
+                clobNum++;
+            }
+            else
+            {
+                val = QVariant();
+            }
+            insertQuery.bindValue(QString(":%1").arg(columns[i].name.toLower()), val);
+        }
+
+        if (!executeQuery(&insertQuery, QString("Insert CLOB row %1 into %2").arg(row + 1).arg(pgTable)))
+        {
+            db.rollback();
+            return false;
+        }
+
+        rowCount++;
+        if (rowCount % 1000 == 0)
+        {
+            WriteLog(stdOutput, QString("Processing... %1 CLOB rows").arg(rowCount));
+            emit importProgress(rowCount, -1);
+        }
+    }
+
+    if (!db.commit())
+    {
+        emit error(QString("Failed to commit transaction: %1").arg(db.lastError().text()));
+        db.rollback();
+        return false;
+    }
+
+    WriteLog(stdOutput, QString("Total CLOB rows imported: %1").arg(rowCount));
+    emit importProgress(rowCount, rowCount);
+    return true;
+}
+
+QVariant PostgresExporter::formatValueForInsert(const QString &rawValue, const ColumnInfo &col)
+{
+    // NULL маркеры
+    if (rawValue.isEmpty() || rawValue == QString(QChar(1)) || rawValue == QString(QChar(2)))
+        return QVariant();
+
+    if (col.type == "NUMBER" || col.type == "FLOAT")
+    {
+        bool ok;
+        if (col.pgtype == "integer" || col.pgtype == "smallint" ||
+            col.pgtype == "serial" || col.pgtype == "bigserial")
+        {
+            int val = rawValue.toInt(&ok);
+            if (ok)
+                return QVariant(val);
+        }
+        else if (col.pgtype == "bigint")
+        {
+            qlonglong val = rawValue.toLongLong(&ok);
+            if (ok)
+                return QVariant(val);
+        }
+
+        double val = rawValue.toDouble(&ok);
+        if (ok)
+            return QVariant(val);
+
+        return QVariant();
+    }
+
+    if (col.type == "DATE")
+    {
+        QDateTime dt = QDateTime::fromString(rawValue, "dd-MM-yyyy:HH:mm:ss");
+        if (dt.isValid())
+            return QVariant(dt);
+        return QVariant();
+    }
+
+    if (col.type == "CHAR")
+    {
+        QString value = rawValue;
+        value.replace(QLatin1Char('\x02'), QLatin1Char('\0'));
+        return QVariant(value);
+    }
+
+    if (col.type == "VARCHAR2")
+    {
+        QString value = rawValue;
+        value.replace("chr(10)", "\n");
+        value.replace("chr(13)", "\r");
+        return QVariant(value);
+    }
+
+    if (col.type == "CLOB" || col.pgtype == "text" || col.pgtype == "json" ||
+        col.pgtype == "jsonb" || col.pgtype == "xml")
+    {
+        return QVariant(rawValue);
+    }
+
+    if (col.type == "BLOB" || col.pgtype == "bytea")
+    {
+        QByteArray bytes = QByteArray::fromHex(rawValue.toLatin1());
+        return QVariant(bytes);
+    }
+
+    if (col.pgtype == "boolean")
+    {
+        QString v = rawValue.toUpper();
+        if (v == "1" || v == "Y" || v == "T" || v == "TRUE")
+            return QVariant(true);
+        if (v == "0" || v == "N" || v == "F" || v == "FALSE")
+            return QVariant(false);
+        return QVariant();
+    }
+
+    return QVariant(rawValue);
 }

@@ -26,6 +26,11 @@ protected:
 
     virtual bool loadTableMetadataImpl(const QString &table, QList<ColumnInfo> &columns);
 
+    // Заглушки для импорта - Oracle использует внешний sqlloader
+    virtual bool prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual bool importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual QVariant formatValueForInsert(const QString &rawValue, const ColumnInfo &col) override;
+
 private:
     QStringList getPrimaryKeyColumns(const QString &table);
 };

@@ -1,6 +1,9 @@
 #include "task.h"
 #include "dbttoolwizard.h"
+#include "importobject.h"
 #include <exportobject.h>
+#include <connectioninfo.h>
+#include <fmtcore.h>
 #include <QApplication>
 
 Task::Task(int argc, char *argv[], QObject *parent) : QObject(parent)
@@ -227,17 +230,45 @@ void Task::importTable()
                .arg(user, pswd, dsn) << Qt::endl;
         stout->flush();
 
-        /**stout << tr("Каталог экспорта: %1")
-               .arg(path) << Qt::endl;
-        stout->flush();*/
+        QScopedPointer<ConnectionInfo> connInfo(new ConnectionInfo());
+        QString options;
+        if (parser.isSet(*connectionUnicode.data()))
+            options = RSD_UNICODE;
 
-        QScopedPointer<DBFileObject> w(new DBFileObject);
-        connect(w.data(), SIGNAL(procError(QString)), SLOT(processError(QString)));
-        connect(w.data(), SIGNAL(procInfo(QString)), SLOT(processInfo(QString)));
-        connect(w.data(), SIGNAL(importTableStart(QString)), SLOT(importTableStart(QString)));
+        if (!connInfo->open(QRSD_DRIVER, user, pswd, dsn, options))
+        {
+            *sterr << tr("Не удалось открыть подключение к %1").arg(dsn) << Qt::endl;
+            sterr->flush();
+            return;
+        }
 
         QStringList dbts = parser.value(*dbtOption.data()).split(";");
-        w->load(user, pswd, dsn, dbts);
+
+        if (connInfo->type() == ConnectionInfo::CON_ORA)
+        {
+            QScopedPointer<DBFileObject> w(new DBFileObject);
+            connect(w.data(), SIGNAL(procError(QString)), SLOT(processError(QString)));
+            connect(w.data(), SIGNAL(procInfo(QString)), SLOT(processInfo(QString)));
+            connect(w.data(), SIGNAL(importTableStart(QString)), SLOT(importTableStart(QString)));
+
+            w->load(user, pswd, dsn, dbts);
+        }
+        else if (connInfo->type() == ConnectionInfo::CON_POSTGRESQL)
+        {
+            QScopedPointer<ImportObject> importer(new ImportObject);
+            connect(importer.data(), SIGNAL(procError(QString)), SLOT(processError(QString)));
+            connect(importer.data(), SIGNAL(procMessage(QString)), SLOT(processInfo(QString)));
+            connect(importer.data(), SIGNAL(importTableStart(QString)), SLOT(importTableStart(QString)));
+
+            importer->setConnectionInfo(user, pswd, dsn, parser.isSet(*connectionUnicode.data()));
+            importer->importTables(dbts, QDir::current());
+        }
+        else
+        {
+            *sterr << tr("Неподдерживаемый тип подключения для импорта: %1").arg(connInfo->type()) << Qt::endl;
+            sterr->flush();
+            return;
+        }
 
         *stout << tr("Обработка завершена: %1")
                .arg(parser.value(*dbtOption.data())) << Qt::endl;
