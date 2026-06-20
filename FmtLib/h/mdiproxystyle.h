@@ -4,6 +4,8 @@
 #include <QProxyStyle>
 #include <QPainter>
 #include <QMdiSubWindow>
+#include <QMdiArea>
+#include <QMetaObject>
 #include <QIcon>
 #include "fmtlib_global.h"
 
@@ -81,6 +83,7 @@ private:
     QColor mainAppColor;
 
     QHash<QPair<QWidget*, QStyle::SubElement>, QRect> m_subElementRectW;
+    QHash<QMdiArea*, QMetaObject::Connection> m_mdiConnections;
 
     // Рисуем зеленую рамку для QMdiSubWindow
     void drawMdiSubWindowFrame(const QStyleOption *option,
@@ -107,6 +110,9 @@ private:
                             QPainter *painter, const QWidget *widget,
                             SubControl control, const QIcon &icon,
                             bool isActive) const;
+
+    // Корректно определяет, является ли данное субокно активным в QMdiArea
+    bool isActiveSubWindow(const QMdiSubWindow *subWindow) const;
 };
 
 #endif // MDIPROXYSTYLE_H

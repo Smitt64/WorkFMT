@@ -1,3 +1,4 @@
+#include <QMdiArea>
 #include "fmtworkwindow.h"
 #include "geninterfacefactorymodel.h"
 #include "ui_fmtworkwindow.h"
@@ -684,7 +685,8 @@ void FmtWorkWindow::keyPressEvent(QKeyEvent *event)
 void FmtWorkWindow::paintEvent(QPaintEvent *paintEvent)
 {
     QMdiSubWindow* parentMdiSubWin = qobject_cast<QMdiSubWindow*>(parentWidget());
-    bool isActiveMdiSubWin = parentMdiSubWin ? parentMdiSubWin->isActiveWindow() : false;
+    QMdiArea *mdiArea = parentMdiSubWin ? parentMdiSubWin->mdiArea() : nullptr;
+    bool isActiveMdiSubWin = mdiArea && mdiArea->activeSubWindow() == parentMdiSubWin;
     const QPalette& widgetPalette = qApp->style()->standardPalette();
 
     QPainter p(this);

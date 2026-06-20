@@ -238,7 +238,7 @@ void MDIProxyStyle::drawTitleBarButtons(const QStyleOptionTitleBar *option,
     const QMdiSubWindow *mdiSubWindow = qobject_cast<const QMdiSubWindow*>(widget);
     if (!mdiSubWindow) return;
 
-    bool isActive = mdiSubWindow->isActiveWindow();
+    bool isActive = isActiveSubWindow(mdiSubWindow);
     bool isMinimized = mdiSubWindow->windowState().testFlag(Qt::WindowMinimized);
     bool isMaximized = mdiSubWindow->windowState().testFlag(Qt::WindowMaximized);
 
@@ -279,7 +279,7 @@ void MDIProxyStyle::drawMdiSubWindowTitleBar(const QStyleOptionComplex *option,
     painter->save();
 
     const QMdiSubWindow *mdiSubWindow = qobject_cast<const QMdiSubWindow*>(widget);
-    bool isActive = mdiSubWindow ? mdiSubWindow->isActiveWindow() : false;
+    bool isActive = isActiveSubWindow(mdiSubWindow);
 
     // Цвета заголовка
     QColor titleBarColor = isActive ? titleBarActive() : titleBarInactive();
@@ -505,6 +505,15 @@ void MDIProxyStyle::drawMdiControlButton(const QStyleOptionButton *option,
     painter->restore();
 }
 
+bool MDIProxyStyle::isActiveSubWindow(const QMdiSubWindow *subWindow) const
+{
+    if (!subWindow)
+        return false;
+
+    QMdiArea *area = subWindow->mdiArea();
+    return area && area->activeSubWindow() == subWindow;
+}
+
 void MDIProxyStyle::drawMdiSubWindowFrame(const QStyleOption *option,
                                           QPainter *painter, const QWidget *widget) const
 {
@@ -513,7 +522,7 @@ void MDIProxyStyle::drawMdiSubWindowFrame(const QStyleOption *option,
     painter->save();
 
     const QMdiSubWindow *mdiSubWindow = qobject_cast<const QMdiSubWindow*>(widget);
-    bool isActive = mdiSubWindow ? mdiSubWindow->isActiveWindow() : false;
+    bool isActive = isActiveSubWindow(mdiSubWindow);
 
     // Цвет рамки в зависимости от активности
     QColor frameColor = isActive ? activeFrameColor() : inactiveFrameColor();
@@ -782,6 +791,9 @@ int MDIProxyStyle::styleHint(QStyle::StyleHint hint, const QStyleOption *option,
         return result;
     }
 
+    if (hint == QStyle::SH_UnderlineShortcut)
+        return true;
+
     return QProxyStyle::styleHint(hint, option, widget, returnData);
 }
 
@@ -797,11 +809,31 @@ void MDIProxyStyle::polish(QWidget *widget)
     // Применяем настройки для QMdiArea
     if (QMdiArea *mdiArea = qobject_cast<QMdiArea*>(widget)) {
         mdiArea->setAttribute(Qt::WA_Hover, true);
+
+        // При смене активного субокна перерисовываем рамки всех окон,
+        // так как PE_FrameWindow не перерисовывается автоматически.
+        if (!m_mdiConnections.contains(mdiArea)) {
+            QMetaObject::Connection conn = connect(mdiArea, &QMdiArea::subWindowActivated,
+                this, [mdiArea](QMdiSubWindow*) {
+                    const auto subWindows = mdiArea->subWindowList(QMdiArea::CreationOrder);
+                    for (QMdiSubWindow *subWindow : subWindows)
+                        subWindow->update();
+                });
+            m_mdiConnections.insert(mdiArea, conn);
+        }
     }
 }
 
 void MDIProxyStyle::unpolish(QWidget *widget)
 {
+    if (QMdiArea *mdiArea = qobject_cast<QMdiArea*>(widget)) {
+        auto it = m_mdiConnections.find(mdiArea);
+        if (it != m_mdiConnections.end()) {
+            disconnect(it.value());
+            m_mdiConnections.erase(it);
+        }
+    }
+
     QProxyStyle::unpolish(widget);
 }
 
