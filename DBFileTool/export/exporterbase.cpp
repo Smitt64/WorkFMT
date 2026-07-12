@@ -2,6 +2,7 @@
 #include "connectioninfo.h"
 #include <fmtcore.h>
 #include <toolsruntime.h>
+#include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlField>
 #include <QSqlQuery>
@@ -409,6 +410,12 @@ bool ExporterBase::exportTables(const QStringList &tables)
     return allSuccess;
 }
 
+bool ExporterBase::finalizeImport(const QString &table)
+{
+    Q_UNUSED(table)
+    return true;
+}
+
 bool ExporterBase::loadTableMetadata(const QString &table)
 {
     if (m_metadataLoaded && m_currentTable == table)
@@ -563,18 +570,45 @@ bool ExporterBase::importTable(const QString &datFilePath)
         }
     }
 
+    QSqlDatabase db = m_connection->db();
+    if (!db.transaction())
+    {
+        emit error(QString("Failed to start import transaction: %1").arg(db.lastError().text()));
+        emit importFinished(datFilePath, false);
+        return false;
+    }
+
     WriteLog(stdOutput, QString("Preparing target table: %1").arg(table));
     if (!prepareTargetTable(table, m_columnsCache))
     {
+        db.rollback();
         emit error(QString("Failed to prepare target table: %1").arg(table));
         emit importFinished(datFilePath, false);
         return false;
     }
 
     WriteLog(stdOutput, QString("Importing data file: %1").arg(datFilePath));
-    if (!importDataFile(datFilePath, table, m_columnsCache))
+    bool importOk = importDataFile(datFilePath, table, m_columnsCache);
+
+    if (!importOk)
     {
+        db.rollback();
         emit error(QString("Failed to import data file: %1").arg(datFilePath));
+    }
+    else if (!db.commit())
+    {
+        db.rollback();
+        importOk = false;
+        emit error(QString("Failed to commit import transaction: %1").arg(db.lastError().text()));
+    }
+
+    if (!finalizeImport(table))
+    {
+        WriteLog(stdOutput, QString("Warning: failed to finalize import for table: %1").arg(table));
+    }
+
+    if (!importOk)
+    {
         emit importFinished(datFilePath, false);
         return false;
     }

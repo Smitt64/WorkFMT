@@ -6,6 +6,7 @@
 #include <toolsruntime.h>
 #include <QTextStream>
 #include <QFileInfo>
+#include <QFile>
 
 ImportObject::ImportObject(QObject *parent) :
     QObject(parent),
@@ -25,13 +26,18 @@ void ImportObject::setConnectionInfo(const QString &user, const QString &pswd, c
     _unicode = unicode;
 }
 
-void ImportObject::importTables(const QStringList &datFiles, const QDir &workDir)
+bool ImportObject::importTables(const QStringList &datFiles, const QDir &workDir)
 {
+    bool allSuccess = true;
     for (const QString &datFile : datFiles)
-        importTable(datFile, workDir);
+    {
+        if (!importTable(datFile, workDir))
+            allSuccess = false;
+    }
+    return allSuccess;
 }
 
-void ImportObject::importTable(const QString &datFile, const QDir &workDir)
+bool ImportObject::importTable(const QString &datFile, const QDir &workDir)
 {
     QTextStream stdOutput(stdout);
     stdOutput.setCodec("IBM 866");
@@ -41,6 +47,18 @@ void ImportObject::importTable(const QString &datFile, const QDir &workDir)
             : workDir.absoluteFilePath(datFile);
 
     QFileInfo info(filePath);
+    if (!info.exists() && info.suffix().isEmpty())
+    {
+        QString datPath = filePath + ".dat";
+        if (QFile::exists(datPath))
+        {
+            emit procMessage(QString("DAT file not found by path '%1', using '%2'")
+                             .arg(filePath, datPath));
+            filePath = datPath;
+            info.setFile(filePath);
+        }
+    }
+
     QString table = info.baseName().toUpper();
 
     emit importTableStart(table);
@@ -55,7 +73,8 @@ void ImportObject::importTable(const QString &datFile, const QDir &workDir)
         if (!m_conn->open(QRSD_DRIVER, _user, _pswd, _dsn, options))
         {
             emit procError(QString("Failed to open connection for user %1@%2").arg(_user, _dsn));
-            return;
+            emit importTableFinished(filePath, false, 0);
+            return false;
         }
     }
 
@@ -63,7 +82,8 @@ void ImportObject::importTable(const QString &datFile, const QDir &workDir)
     if (!exporter)
     {
         emit procError(QString("Unsupported database type for import: %1").arg(m_conn->type()));
-        return;
+        emit importTableFinished(filePath, false, 0);
+        return false;
     }
 
     exporter->setConnectionInfo(m_conn.data());
@@ -77,5 +97,15 @@ void ImportObject::importTable(const QString &datFile, const QDir &workDir)
         emit progress(current, total);
     });
 
-    exporter->importTable(filePath);
+    int lastProgress = 0;
+    connect(exporter.data(), &ExporterBase::importProgress, [&lastProgress](int current, int total)
+    {
+        Q_UNUSED(total)
+        if (current > lastProgress)
+            lastProgress = current;
+    });
+
+    bool ok = exporter->importTable(filePath);
+    emit importTableFinished(filePath, ok, lastProgress);
+    return ok;
 }

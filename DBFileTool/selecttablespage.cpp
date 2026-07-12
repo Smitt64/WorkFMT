@@ -4,6 +4,7 @@
 #include <connectioninfo.h>
 #include "fmtcore.h"
 #include "dbttoolwizard.h"
+#include "selectactionpage.h"
 #include "selectfolderdlg.h"
 #include <QDir>
 #include <QMessageBox>
@@ -94,6 +95,20 @@ bool SelectTablesPage::RemoveFunc(const QString &str)
 
 void SelectTablesPage::initializePage()
 {
+    // Заголовок и подпись пути зависят от выбранного режима (импорт/экспорт)
+    const bool isImport = field("Action").toInt() == SelectActionPage::ActionImportOra;
+
+    if (isImport)
+    {
+        setTitle(tr("Выбор файлов для импорта"));
+        m_PathLabel->setText(tr("Путь, откуда загружать:"));
+    }
+    else
+    {
+        setTitle(tr("Выбор таблиц для экспорта"));
+        m_PathLabel->setText(tr("Путь, куда выгружать:"));
+    }
+
     if (m_pTables)
     {
         pLayout->removeWidget(m_pTables);

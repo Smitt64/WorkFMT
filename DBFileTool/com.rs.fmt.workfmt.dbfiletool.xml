@@ -1,5 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="DB file tool">
+    <version ver="1.0.0.16">
+        <add>Добавлена поддержка импорта/экспорта DAT файлов для PostgreSQL;</add>
+        <fix>Исправлен импорт полей bytea в PostgreSQL: hex-данные оборачиваются в glob_func.hextoraw(...);</fix>
+    </version>
     <version ver="1.0.0.15">
         <fix>Заблокирована клавиша Enter для перехода к следующему шагу на странице &#34;Выбор таблиц&#34;</fix>
         <add>В связи с доработками WorkFmt, теперь на странице &#34;Выбор таблиц&#34; добавление/удалени таблиц стало возможно по двойному клику либо по клавишам Enter или Space</add>

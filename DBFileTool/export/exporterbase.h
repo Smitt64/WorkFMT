@@ -106,6 +106,9 @@ protected:
     virtual bool importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns) = 0;
     virtual QVariant formatValueForInsert(const QString &rawValue, const ColumnInfo &col) = 0;
 
+    // Завершающие действия после импорта (например, включение триггеров)
+    virtual bool finalizeImport(const QString &table);
+
     // Чтение списка колонок из DAT-заголовка
     QStringList readDatColumns(const QString &datFilePath);
 

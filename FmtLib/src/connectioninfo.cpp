@@ -357,15 +357,9 @@ ConnectionInfo::operator int() const
 
 bool ConnectionInfo::hasFeature(ConnectionInfo::ConnectionFeature feature) const
 {
-    bool result = true;
-    if (m_Type == CON_POSTGRESQL)
-    {
-        if (feature == ConnectionInfo::CanLoadUnloadDbf)
-            result = false;
-    }
-    /*if (m_Type == CON_ORA)
-        return true;
+    // Выгрузка/загрузка DAT поддерживается для Oracle и PostgreSQL, для SQLite — нет.
+    if (feature == CanLoadUnloadDbf && m_Type == CON_SQLITE)
+        return false;
 
-    return false;*/
-    return result;
+    return true;
 }

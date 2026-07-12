@@ -8,6 +8,7 @@
 #include <QDateTime>
 #include <QByteArray>
 #include <QRegularExpression>
+#include <QVector>
 #include <recordparser.h>
 #include <difftableinfo.h>
 #include <difffield.h>
@@ -352,6 +353,12 @@ bool PostgresExporter::loadTableMetadataImpl(const QString &table, QList<ColumnI
     return !columns.isEmpty();
 }
 
+bool PostgresExporter::isByteaColumn(const ColumnInfo &col) const
+{
+    // Внутренне PostgreSQL bytea отображается как CLOB/BLOB; идентифицируем его по pgtype.
+    return col.type == "BLOB" || col.pgtype.compare("bytea", Qt::CaseInsensitive) == 0;
+}
+
 QString PostgresExporter::unquoteString(const QString &value) const
 {
     if (value.length() >= 2 && value.startsWith("'") && value.endsWith("'"))
@@ -400,11 +407,33 @@ bool PostgresExporter::prepareTargetTable(const QString &table, const QList<Colu
 {
     Q_UNUSED(columns)
 
+    const QString pgTable = table.toLower();
+
+    if (!setTriggersEnabled(pgTable, false))
+        return false;
+
     QSqlQuery query(m_connection->db());
-    QString sql = QString("/*@ DisConv */TRUNCATE TABLE %1 RESTART IDENTITY CASCADE").arg(table.toLower());
+    QString sql = QString("/*@ DisConv */TRUNCATE TABLE %1 RESTART IDENTITY CASCADE").arg(pgTable);
     query.prepare(sql);
 
     return executeQuery(&query, QString("Truncate table: %1").arg(table));
+}
+
+bool PostgresExporter::setTriggersEnabled(const QString &table, bool enabled)
+{
+    QSqlQuery query(m_connection->db());
+    const QString state = enabled ? "ENABLE" : "DISABLE";
+    QString sql = QString("/*@ DisConv */ALTER TABLE %1 %2 TRIGGER USER").arg(table).arg(state);
+    query.prepare(sql);
+
+    return executeQuery(&query, QString("%1 triggers for table: %3")
+                        .arg(state)
+                        .arg(table.toUpper()));
+}
+
+bool PostgresExporter::finalizeImport(const QString &table)
+{
+    return setTriggersEnabled(table.toLower(), true);
 }
 
 bool PostgresExporter::importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns)
@@ -469,7 +498,12 @@ bool PostgresExporter::importInlineFile(const QString &datFilePath, const QStrin
     {
         QString lower = col.name.toLower();
         colNamesLower << lower;
-        placeholders << QString(":%1").arg(lower);
+        // Для BYTEA используем позиционный placeholder внутри glob_func.hextoraw(...).
+        // Именованные placeholder'ы внутри функций не работают с execBatch.
+        if (isByteaColumn(col))
+            placeholders << "glob_func.hextoraw(?)";
+        else
+            placeholders << "?";
     }
 
     QString insertSql = QString("/*@ DisConv */INSERT INTO %1(%2) VALUES(%3)")
@@ -477,18 +511,15 @@ bool PostgresExporter::importInlineFile(const QString &datFilePath, const QStrin
                         .arg(colNamesLower.join(", "))
                         .arg(placeholders.join(", "));
 
-    QSqlDatabase db = m_connection->db();
-    if (!db.transaction())
-    {
-        emit error(QString("Failed to start transaction: %1").arg(db.lastError().text()));
-        datFile.close();
-        return false;
-    }
-
     bool isDataSection = false;
     int rowCount = 0;
     int errorCount = 0;
     const int maxErrors = 10;
+    const int batchSize = 1000;
+
+    // Значения накапливаются по колонкам (column-major) для пакетной вставки.
+    QVector<QVariantList> columnValues(columns.size());
+    int pendingRows = 0;
 
     QTextStream stdOutput(stdout);
     stdOutput.setCodec("IBM 866");
@@ -516,7 +547,6 @@ bool PostgresExporter::importInlineFile(const QString &datFilePath, const QStrin
             errorCount++;
             if (errorCount >= maxErrors)
             {
-                db.rollback();
                 datFile.close();
                 return false;
             }
@@ -534,35 +564,31 @@ bool PostgresExporter::importInlineFile(const QString &datFilePath, const QStrin
             errorCount++;
             if (errorCount >= maxErrors)
             {
-                db.rollback();
                 datFile.close();
                 return false;
             }
             continue;
         }
 
-        QSqlQuery insertQuery(db);
-        insertQuery.prepare(insertSql);
-
         for (int i = 0; i < columns.size(); ++i)
         {
             QString raw = unquoteString(values[i]);
-            QVariant val = formatValueForInsert(raw, columns[i]);
-            insertQuery.bindValue(QString(":%1").arg(columns[i].name.toLower()), val);
+            columnValues[i].append(formatValueForInsert(raw, columns[i]));
         }
 
-        if (!executeQuery(&insertQuery, QString("Insert row %1 into %2").arg(rowCount + 1).arg(pgTable)))
+        pendingRows++;
+        rowCount++;
+
+        if (pendingRows >= batchSize)
         {
-            errorCount++;
-            if (errorCount >= maxErrors)
+            if (!flushInsertBatch(insertSql, columnValues))
             {
-                db.rollback();
                 datFile.close();
                 return false;
             }
+            pendingRows = 0;
         }
 
-        rowCount++;
         if (rowCount % 1000 == 0)
         {
             WriteLog(stdOutput, QString("Processing... %1 rows").arg(rowCount));
@@ -570,14 +596,17 @@ bool PostgresExporter::importInlineFile(const QString &datFilePath, const QStrin
         }
     }
 
-    datFile.close();
-
-    if (!db.commit())
+    // Финальный неполный чанк.
+    if (pendingRows > 0)
     {
-        emit error(QString("Failed to commit transaction: %1").arg(db.lastError().text()));
-        db.rollback();
-        return false;
+        if (!flushInsertBatch(insertSql, columnValues))
+        {
+            datFile.close();
+            return false;
+        }
     }
+
+    datFile.close();
 
     WriteLog(stdOutput, QString("Total rows imported: %1").arg(rowCount));
     emit importProgress(rowCount, rowCount);
@@ -612,7 +641,12 @@ bool PostgresExporter::importSplitFile(const QString &datFilePath, const QString
     {
         QString lower = col.name.toLower();
         colNamesLower << lower;
-        placeholders << QString(":%1").arg(lower);
+        // Для BYTEA используем позиционный placeholder внутри glob_func.hextoraw(...).
+        // Именованные placeholder'ы внутри функций не работают с execBatch.
+        if (isByteaColumn(col))
+            placeholders << "glob_func.hextoraw(?)";
+        else
+            placeholders << "?";
     }
 
     QString insertSql = QString("/*@ DisConv */INSERT INTO %1(%2) VALUES(%3)")
@@ -620,22 +654,17 @@ bool PostgresExporter::importSplitFile(const QString &datFilePath, const QString
                         .arg(colNamesLower.join(", "))
                         .arg(placeholders.join(", "));
 
-    QSqlDatabase db = m_connection->db();
-    if (!db.transaction())
-    {
-        emit error(QString("Failed to start transaction: %1").arg(db.lastError().text()));
-        return false;
-    }
-
     int rowCount = 0;
+    const int batchSize = 1000;
+    QVector<QVariantList> columnValues(columns.size());
+    int pendingRows = 0;
+
     QTextStream stdOutput(stdout);
     stdOutput.setCodec("IBM 866");
 
-    for (int row = 0; row < clobValues.size() / clobsPerRow; ++row)
+    const int totalRows = clobValues.size() / clobsPerRow;
+    for (int row = 0; row < totalRows; ++row)
     {
-        QSqlQuery insertQuery(db);
-        insertQuery.prepare(insertSql);
-
         int clobOffset = row * clobsPerRow;
         int clobNum = 0;
 
@@ -655,16 +684,19 @@ bool PostgresExporter::importSplitFile(const QString &datFilePath, const QString
             {
                 val = QVariant();
             }
-            insertQuery.bindValue(QString(":%1").arg(columns[i].name.toLower()), val);
+            columnValues[i].append(val);
         }
 
-        if (!executeQuery(&insertQuery, QString("Insert CLOB row %1 into %2").arg(row + 1).arg(pgTable)))
-        {
-            db.rollback();
-            return false;
-        }
-
+        pendingRows++;
         rowCount++;
+
+        if (pendingRows >= batchSize)
+        {
+            if (!flushInsertBatch(insertSql, columnValues))
+                return false;
+            pendingRows = 0;
+        }
+
         if (rowCount % 1000 == 0)
         {
             WriteLog(stdOutput, QString("Processing... %1 CLOB rows").arg(rowCount));
@@ -672,11 +704,10 @@ bool PostgresExporter::importSplitFile(const QString &datFilePath, const QString
         }
     }
 
-    if (!db.commit())
+    if (pendingRows > 0)
     {
-        emit error(QString("Failed to commit transaction: %1").arg(db.lastError().text()));
-        db.rollback();
-        return false;
+        if (!flushInsertBatch(insertSql, columnValues))
+            return false;
     }
 
     WriteLog(stdOutput, QString("Total CLOB rows imported: %1").arg(rowCount));
@@ -684,11 +715,50 @@ bool PostgresExporter::importSplitFile(const QString &datFilePath, const QString
     return true;
 }
 
+bool PostgresExporter::flushInsertBatch(const QString &insertSql,
+                                        QVector<QVariantList> &columnValues)
+{
+    if (columnValues.isEmpty() || columnValues.first().isEmpty())
+        return true;
+
+    QSqlQuery query(m_connection->db());
+    if (!query.prepare(insertSql))
+    {
+        emit error(QString("Failed to prepare batch insert: %1").arg(query.lastError().text()));
+        return false;
+    }
+
+    for (int c = 0; c < columnValues.size(); ++c)
+        query.addBindValue(columnValues[c]);
+
+    bool ok = query.execBatch();
+    if (!ok)
+        emit error(QString("Batch insert failed: %1").arg(query.lastError().text()));
+
+    // Очищаем накопленные значения независимо от результата.
+    for (int c = 0; c < columnValues.size(); ++c)
+        columnValues[c].clear();
+
+    return ok;
+}
+
 QVariant PostgresExporter::formatValueForInsert(const QString &rawValue, const ColumnInfo &col)
 {
-    // NULL маркеры
+    // Пустые значения / маркеры пустоты.
     if (rawValue.isEmpty() || rawValue == QString(QChar(1)) || rawValue == QString(QChar(2)))
+    {
+        // Для строковых полей пустое значение сохраняется как значение-заполнитель,
+        // а не NULL (см. fmtGetPgDefaultVal в fmtcore.cpp):
+        //   CHAR     -> CHR(0)
+        //   VARCHAR2 -> CHR(1)
+        // Прочие типы (NUMBER, DATE, CLOB, BLOB, ...) остаются NULL.
+        if (col.type == "CHAR")
+            return QVariant(QString(QChar(0)));
+        if (col.type == "VARCHAR2")
+            return QVariant(QString(QChar(1)));
+
         return QVariant();
+    }
 
     if (col.type == "NUMBER" || col.type == "FLOAT")
     {
@@ -737,16 +807,21 @@ QVariant PostgresExporter::formatValueForInsert(const QString &rawValue, const C
         return QVariant(value);
     }
 
+    // BYTEA обрабатываем до CLOB, потому что внутренне bytea отображается как CLOB.
+    if (isByteaColumn(col))
+    {
+        // В DAT-файле bytea хранится как hex-строка. SQL оборачивает ее в glob_func.hextoraw(...),
+        // поэтому здесь возвращаем саму hex-строку (без префикса \x), а не QByteArray.
+        QString hexValue = rawValue;
+        if (hexValue.startsWith("\\x", Qt::CaseInsensitive))
+            hexValue = hexValue.mid(2);
+        return QVariant(hexValue.toUpper());
+    }
+
     if (col.type == "CLOB" || col.pgtype == "text" || col.pgtype == "json" ||
         col.pgtype == "jsonb" || col.pgtype == "xml")
     {
         return QVariant(rawValue);
-    }
-
-    if (col.type == "BLOB" || col.pgtype == "bytea")
-    {
-        QByteArray bytes = QByteArray::fromHex(rawValue.toLatin1());
-        return QVariant(bytes);
     }
 
     if (col.pgtype == "boolean")

@@ -51,16 +51,43 @@ public:
         void setBuffer(const QDateTime &qdatetime);
     };
 
+    // Хранилище буферов для пакетной (array) вставки одного параметра.
+    // value  - непрерывный буфер из count элементов с фиксированным шагом stride;
+    // indLen - массив из count индикаторов длины/состояния (RSDBS_NULL для NULL).
+    class BatchParam Q_DECL_FINAL
+    {
+    public:
+        BatchParam() : value(nullptr), indLen(nullptr) {}
+        ~BatchParam()
+        {
+            if (value)
+                free(value);
+            if (indLen)
+                free(indLen);
+        }
+
+        void *value;
+        long *indLen;
+    };
+
     RsdCommandEx(CRsdConnection *con, RsdDriver *driver);
     virtual ~RsdCommandEx();
 
     void bindValue(const QString &placeholder, const QVariant &val, QSql::ParamType paramType);
     void bindValue(int index, const QVariant &val, QSql::ParamType paramType);
 
+    // Привязка массива значений одного параметра для пакетной вставки.
+    // Перед серией вызовов должен быть выставлен setParamArraySize(values.size()).
+    void bindBatch(const QString &placeholder, const QVariantList &values, QSql::ParamType paramType);
+
+    // Освобождение буферов пакетной вставки (после/перед clearParams()).
+    void clearBatch();
+
     RsdDriver *driver();
 
 private:
     QVector<BindParam*> m_Params;
+    QVector<BatchParam*> m_BatchParams;
     RsdDriver *m_pDriver;
 };
 

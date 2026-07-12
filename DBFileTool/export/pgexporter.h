@@ -30,6 +30,7 @@ protected:
     virtual bool prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns) override;
     virtual bool importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns) override;
     virtual QVariant formatValueForInsert(const QString &rawValue, const ColumnInfo &col) override;
+    virtual bool finalizeImport(const QString &table) override;
 
 private:
     QString mapPostgresTypeToOracleType(const QString &pgType);
@@ -42,6 +43,15 @@ private:
                          const QList<ColumnInfo> &columns,
                          const QList<int> &clobIndexes,
                          const QString &recFilePath);
+
+    // Пакетная вставка накопленного чанка строк (значения сгруппированы по колонкам).
+    bool flushInsertBatch(const QString &insertSql,
+                          QVector<QVariantList> &columnValues);
+
+    bool setTriggersEnabled(const QString &table, bool enabled);
+
+    // Проверка, что колонка является PostgreSQL BYTEA (hex-данные нужно обернуть в glob_func.hextoraw(...)).
+    bool isByteaColumn(const ColumnInfo &col) const;
 };
 
 #endif // PGXPORTER_H

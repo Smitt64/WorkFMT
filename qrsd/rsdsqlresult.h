@@ -28,6 +28,7 @@ public:
     void bindValue(int index, const QVariant &val, QSql::ParamType paramType) Q_DECL_OVERRIDE;*/
 
     bool exec() Q_DECL_OVERRIDE;
+    bool execBatch(bool arrayBind = false) Q_DECL_OVERRIDE;
     bool prepare(const QString &query) Q_DECL_OVERRIDE;
 
     bool fetch(int index) Q_DECL_OVERRIDE;

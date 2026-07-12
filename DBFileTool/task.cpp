@@ -1,10 +1,13 @@
 #include "task.h"
 #include "dbttoolwizard.h"
 #include "importobject.h"
+#include "export/exporterbase.h"
+#include "export/exporterfactory.h"
 #include <exportobject.h>
 #include <connectioninfo.h>
 #include <fmtcore.h>
 #include <QApplication>
+#include <QDir>
 
 Task::Task(int argc, char *argv[], QObject *parent) : QObject(parent)
 {
@@ -161,32 +164,83 @@ void Task::exportTable()
                .arg(path) << Qt::endl;
         stout->flush();
 
+        QStringList dbts = parser.value(*dbtOption.data()).split(";");
+
+        QScopedPointer<ConnectionInfo> connInfo(new ConnectionInfo());
+        QString options;
+        if (parser.isSet(*connectionUnicode.data()))
+            options = RSD_UNICODE;
+
+        if (!connInfo->open(QRSD_DRIVER, user, pswd, dsn, options))
+        {
+            *sterr << tr("Не удалось открыть подключение к %1").arg(dsn) << Qt::endl;
+            sterr->flush();
+            return;
+        }
+
         if (parser.isSet(*useOld.data()))
         {
+            if (connInfo->type() != ConnectionInfo::CON_ORA)
+            {
+                *sterr << tr("Режим --old поддерживается только для Oracle") << Qt::endl;
+                sterr->flush();
+                return;
+            }
+
             QScopedPointer<DBFileObject> w(new DBFileObject);
             connect(w.data(), SIGNAL(procError(QString)), SLOT(processError(QString)));
             connect(w.data(), SIGNAL(exportTableStart(QString)), SLOT(exportTableStart(QString)));
 
-            QStringList dbts = parser.value(*dbtOption.data()).split(";");
             w->unload(user, pswd, dsn, path, dbts);
-
-            *stout << tr("Обработка завершена: %1")
-                   .arg(parser.value(*dbtOption.data())) << Qt::endl;
-            stout->flush();
         }
         else
         {
-            ExportObject::ClobMode mode = ExportObject::ClobMode_Simplified;
+            if (connInfo->type() == ConnectionInfo::CON_ORA)
+            {
+                ExportObject::ClobMode mode = ExportObject::ClobMode_Simplified;
 
-            if (parser.isSet(*clobMode.data()))
-                mode = (ExportObject::ClobMode)parser.value(*clobMode).toInt();
+                if (parser.isSet(*clobMode.data()))
+                    mode = (ExportObject::ClobMode)parser.value(*clobMode).toInt();
 
-            QStringList dbts = parser.value(*dbtOption.data()).split(";");
-            QScopedPointer<ExportObject> w(new ExportObject);
-            w->setConnectionInfo(user, pswd, dsn, parser.isSet(*connectionUnicode.data()));
-            w->setClobMode(mode);
-            w->exportTable(dbts, path);
+                QScopedPointer<ExportObject> w(new ExportObject);
+                w->setConnectionInfo(user, pswd, dsn, parser.isSet(*connectionUnicode.data()));
+                w->setClobMode(mode);
+                w->exportTable(dbts, path);
+            }
+            else if (connInfo->type() == ConnectionInfo::CON_POSTGRESQL)
+            {
+                ExporterBase::ClobMode mode = ExporterBase::ClobMode_Simplified;
+
+                if (parser.isSet(*clobMode.data()))
+                    mode = (ExporterBase::ClobMode)parser.value(*clobMode).toInt();
+
+                QScopedPointer<ExporterBase> exporter(ExporterFactory::createExporter(connInfo.data(), this));
+                if (!exporter)
+                {
+                    *sterr << tr("Не удалось создать экспортер для подключения %1").arg(dsn) << Qt::endl;
+                    sterr->flush();
+                    return;
+                }
+
+                exporter->setConnectionInfo(connInfo.data());
+                exporter->setOutputDirectory(QDir(path));
+                exporter->setClobMode(mode);
+                connect(exporter.data(), &ExporterBase::error, this, &Task::processError);
+                connect(exporter.data(), &ExporterBase::procMessage, this, &Task::processInfo);
+
+                exporter->exportTables(dbts);
+            }
+            else
+            {
+                *sterr << tr("Неподдерживаемый тип подключения для экспорта: %1").arg(connInfo->type()) << Qt::endl;
+                sterr->flush();
+                return;
+            }
         }
+
+        *stout << tr("Обработка завершена: %1")
+               .arg(parser.value(*dbtOption.data())) << Qt::endl;
+        stout->flush();
     }
 }
 

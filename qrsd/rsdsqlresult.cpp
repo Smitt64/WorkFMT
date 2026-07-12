@@ -490,6 +490,106 @@ bool RsdSqlResult::exec()
     return result;
 }
 
+bool RsdSqlResult::execBatch(bool arrayBind)
+{
+    Q_UNUSED(arrayBind)
+
+    bool result = true;
+
+    setSelect(false);
+    setActive(false);
+
+    try
+    {
+        const int paramCount = boundValueCount();
+        QSqlResult::BindingSyntax syntax = bindingSyntax();
+
+        // Определяем размер массива пакета по первому списочному параметру.
+        int batchSize = -1;
+        for (int i = 0; i < paramCount; ++i)
+        {
+            QVariant value = boundValue(i);
+            if (value.type() == QVariant::List)
+            {
+                batchSize = value.toList().size();
+                break;
+            }
+        }
+
+        // Нет массивов значений — выполняем как обычный одиночный запрос.
+        if (batchSize <= 0)
+            return exec();
+
+        m_Cmd->clearParams();
+        m_Cmd->clearBatch();
+        m_Cmd->setParamArraySize(static_cast<size_t>(batchSize));
+
+        for (int i = 0; i < paramCount; ++i)
+        {
+            QVariant value = boundValue(i);
+            QSql::ParamType type = bindValueType(i);
+
+            QVariantList list;
+            if (value.type() == QVariant::List)
+                list = value.toList();
+            else
+            {
+                // Скаляр привязывается ко всем строкам пакета.
+                for (int k = 0; k < batchSize; ++k)
+                    list.append(value);
+            }
+
+            QString name;
+            if (syntax == QSqlResult::NamedBinding)
+                name = boundValueName(i).mid(1);
+
+            m_Cmd->bindBatch(name, list, type);
+        }
+
+        QSqlResult::setQuery(m_QueryString);
+        setCmdText(m_QueryString);
+
+        QStringList params;
+        QStringList hints = GetSqlHints(m_QueryString);
+        if (HasHint(hints, "DisConv", &params))
+        {
+            if (params.isEmpty())
+                m_Cmd->setDisableOraToPgConverter(true);
+            else
+            {
+                QVariant val = HintValue(params.front());
+
+                if (val.type() == QVariant::Bool)
+                    m_Cmd->setDisableOraToPgConverter(val.toBool());
+            }
+        }
+
+        int slqstat = m_Cmd->execute();
+        if (slqstat == RSDRES_NODATA)
+            slqstat = RSDRES_OK;
+
+        result = RSD_SUCCEEDED(slqstat);
+
+        setActive(true);
+        setAt(QSql::BeforeFirstRow);
+
+        if (result)
+            makeRecordSetFromCmd(m_Cmd);
+    }
+    catch(XRsdError& e)
+    {
+        result = false;
+        setLastRsdError(e, QSqlError::StatementError);
+    }
+    catch(...)
+    {
+        result = false;
+        setLastUnforeseenError(QSqlError::StatementError);
+    }
+
+    return result;
+}
+
 bool RsdSqlResult::prepare(const QString &query)
 {
     bool result = true;

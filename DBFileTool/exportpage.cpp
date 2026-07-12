@@ -19,6 +19,7 @@
 #include <QPushButton>
 #include <QFileInfo>
 #include <QDir>
+#include <QDateTime>
 
 RsExpOperationOld::RsExpOperationOld(DbtToolWizard *Wizard, ExportPage *parent) :
     QObject(),
@@ -165,6 +166,30 @@ void RsImpOperation::run()
     if (val.isValid())
         lst = val.toStringList();
 
+    if (lst.isEmpty())
+    {
+        pParent->m_Complete = true;
+        emit pParent->completeChanged();
+        return;
+    }
+
+    struct ImportStat
+    {
+        QString fileName;
+        int totalRows = 0;
+        int failedRows = 0;
+        bool success = false;
+        qint64 elapsedMs = 0;
+    };
+
+    QList<ImportStat> stats;
+    int totalImported = 0;
+    int totalFailed = 0;
+    int totalFiles = 0;
+    int failedFiles = 0;
+
+    QDateTime runStart = QDateTime::currentDateTime();
+
     QScopedPointer<ConnectionInfo> info(new ConnectionInfo());
 
     if (!info->open(QRSD_DRIVER, pWizard->field("User").toString(),
@@ -212,9 +237,14 @@ void RsImpOperation::run()
 
         for (const QString &importFile : qAsConst(lst))
         {
+            totalFiles++;
             QFileInfo fi(dir.absoluteFilePath(importFile));
             QString table = fi.baseName();
             QString workDirectory = fi.absoluteDir().path();
+            ImportStat stat;
+            stat.fileName = fi.fileName();
+
+            QDateTime fileStart = QDateTime::currentDateTime();
 
             emit procMessage("**************** Start loading ****************");
 
@@ -231,16 +261,12 @@ void RsImpOperation::run()
             proc.start();
             proc.waitForFinished(-1);
 
-            QString logFile = QDir(workDirectory).absoluteFilePath(table + ".log");
-            if (QFile::exists(logFile))
-            {
-                QFile logF(logFile);
-                if (logF.open(QIODevice::ReadOnly | QIODevice::Text))
-                {
-                    emit procInfo(QString::fromLocal8Bit(logF.readAll()));
-                    logF.close();
-                }
-            }
+            stat.success = (proc.exitCode() == 0 && proc.exitStatus() == QProcess::NormalExit);
+            if (!stat.success)
+                failedFiles++;
+            stat.elapsedMs = fileStart.msecsTo(QDateTime::currentDateTime());
+
+            stats.append(stat);
         }
     }
     else if (info->type() == ConnectionInfo::CON_POSTGRESQL)
@@ -253,14 +279,75 @@ void RsImpOperation::run()
 
         connect(importer.data(), &ImportObject::procMessage, this, &RsImpOperation::procMessage);
         connect(importer.data(), &ImportObject::procError, this, &RsImpOperation::procError);
+        connect(importer.data(), &ImportObject::procInfo, this, &RsImpOperation::procInfo);
 
         for (const QString &importFile : qAsConst(lst))
+        {
+            totalFiles++;
+            QFileInfo fi(dir.absoluteFilePath(importFile));
+            ImportStat stat;
+            stat.fileName = fi.fileName();
+
+            QDateTime fileStart = QDateTime::currentDateTime();
+
+            bool fileSuccess = false;
+            int fileRows = 0;
+
+            connect(importer.data(), &ImportObject::importTableFinished, [&fileSuccess, &fileRows](const QString &datFile, bool success, int rows)
+            {
+                Q_UNUSED(datFile)
+                fileSuccess = success;
+                fileRows = rows;
+            });
+
+            emit procMessage(QString("Control File:   %1").arg(fi.fileName()));
+
             importer->importTable(importFile, dir);
+
+            stat.success = fileSuccess;
+            stat.totalRows = fileRows;
+
+            if (!stat.success)
+                failedFiles++;
+
+            stat.elapsedMs = fileStart.msecsTo(QDateTime::currentDateTime());
+            totalImported += stat.totalRows;
+            totalFailed += stat.failedRows;
+
+            stats.append(stat);
+        }
     }
     else
     {
         emit procError(tr("Неподдерживаемый тип подключения для импорта"));
     }
+
+    QDateTime runEnd = QDateTime::currentDateTime();
+
+    // Итоговый лог в стиле SQL*Loader.
+    emit procMessage("");
+    emit procMessage("Summary:");
+    emit procMessage("------------------------------");
+
+    for (const ImportStat &s : qAsConst(stats))
+    {
+        emit procMessage(QString("Table %1:").arg(s.fileName));
+        emit procMessage(QString("  %1 Rows successfully loaded.").arg(s.totalRows));
+        emit procMessage(QString("  %1 Rows not loaded due to data errors.").arg(s.failedRows));
+        emit procMessage("  0 Rows not loaded because all WHEN clauses were failed.");
+        emit procMessage("  0 Rows not loaded because all fields were null.");
+        emit procMessage(QString("  Status: %1").arg(s.success ? tr("OK") : tr("FAILED")));
+        emit procMessage(QString("  Elapsed: %1").arg(QTime::fromMSecsSinceStartOfDay(s.elapsedMs).toString("hh:mm:ss.zzz")));
+        emit procMessage("");
+    }
+
+    emit procMessage(QString("Total files:      %1").arg(totalFiles));
+    emit procMessage(QString("Total rows:       %1").arg(totalImported));
+    emit procMessage(QString("Rows failed:      %1").arg(totalFailed));
+    emit procMessage(QString("Files failed:     %1").arg(failedFiles));
+    emit procMessage(QString("Run began on:     %1").arg(runStart.toString("ddd MMM dd hh:mm:ss yyyy")));
+    emit procMessage(QString("Run ended on:     %1").arg(runEnd.toString("ddd MMM dd hh:mm:ss yyyy")));
+    emit procMessage(QString("Elapsed time was: %1").arg(QTime::fromMSecsSinceStartOfDay(runStart.msecsTo(runEnd)).toString("hh:mm:ss.zzz")));
 
     pParent->m_Complete = true;
     emit pParent->completeChanged();
@@ -293,6 +380,12 @@ void ExportPage::initializePage()
 
     int action = field("Action").toInt();
 
+    // Заголовок страницы зависит от режима (импорт/экспорт)
+    if (action == SelectActionPage::ActionImportOra)
+        setTitle(tr("Импорт данных из *.dat файла"));
+    else
+        setTitle(tr("Экспорт данных в *.dat файл"));
+
     if (action == SelectActionPage::ActionExportOraOld)
     {
         RsExpOperationOld *pObj = new RsExpOperationOld(pWizard, this);
@@ -309,7 +402,6 @@ void ExportPage::initializePage()
     }
     else if (action == SelectActionPage::ActionImportOra)
     {
-        setTitle(tr("Импорт данных из *.dat файла"));
         RsImpOperation *pObj = new RsImpOperation(pWizard, this);
         connect(pObj, SIGNAL(procMessage(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
         connect(pObj, SIGNAL(procInfo(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));

@@ -218,3 +218,7 @@ RegparmTool/release/
 DiffToScript/__pycache__/
 
 __pycache__/
+
+*.FVZigC
+
+test_data/

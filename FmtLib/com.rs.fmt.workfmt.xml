@@ -1,5 +1,10 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.8.4">
+        <add>Разблокированы команды &quot;Выгрузить в *.dat&quot; и &quot;Загрузить из *.dat&quot; для подключений к PostgreSQL (через DBFileTool);</add>
+        <add>DBFileTool: добавлена поддержка экспорта таблиц в DAT файлы для PostgreSQL;</add>
+        <fix>Для SQLite команды выгрузки/загрузки DAT файлов остаются заблокированными;</fix>
+    </version>
     <version ver="1.0.8.3">
         <add>Добавлен мастер генерации скриптов вставки данных из Word таблиц;</add>
     </version>
