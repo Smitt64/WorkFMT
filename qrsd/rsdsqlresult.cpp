@@ -8,6 +8,23 @@
 
 #define BLOB_MAX_LEN 32768
 
+static bool isSelectLikeQuery(const QString &sql)
+{
+    QString s = sql.trimmed();
+
+    // Пропускаем ведущие блочные комментарии/hints вида /*@...*/
+    while (s.startsWith(QLatin1String("/*")))
+    {
+        int end = s.indexOf(QLatin1String("*/"));
+        if (end < 0)
+            break;
+        s = s.mid(end + 2).trimmed();
+    }
+
+    return s.startsWith(QLatin1String("SELECT"), Qt::CaseInsensitive)
+        || s.startsWith(QLatin1String("WITH"), Qt::CaseInsensitive);
+}
+
 RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
     QSqlResult(db),
     BaseErrorSetter<RsdSqlResult>(this)
@@ -473,7 +490,9 @@ bool RsdSqlResult::exec()
         setActive(true);
         setAt(QSql::BeforeFirstRow);
 
-        if (result)
+        // Для INSERT/UPDATE/DELETE создавать RecordSet не нужно и может приводить к ошибкам
+        // (например, при наличии BLOB параметра драйвер падает при попытке получить результирующий набор).
+        if (result && isSelectLikeQuery(m_QueryString))
             makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)
@@ -573,7 +592,7 @@ bool RsdSqlResult::execBatch(bool arrayBind)
         setActive(true);
         setAt(QSql::BeforeFirstRow);
 
-        if (result)
+        if (result && isSelectLikeQuery(m_QueryString))
             makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)

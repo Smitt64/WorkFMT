@@ -16,6 +16,7 @@ QHash<QString, int> RegParmItem::initFieldMap()
     map["T_SECURITY"] = T_SECURITY;
     map["T_ISBRANCH"] = T_ISBRANCH;
     map["T_TEMPLATE"] = T_TEMPLATE;
+    map["T_VALUE"] = T_VALUE;
     return map;
 }
 
@@ -111,12 +112,17 @@ QString RegParmItem::security() const
 
 bool RegParmItem::isBranch() const
 {
-    return m_itemData[T_ISBRANCH].toString() == "1";
+    return m_itemData[T_ISBRANCH].toString().trimmed() == QLatin1String("1");
 }
 
 QString RegParmItem::templateStr() const
 {
     return m_itemData[T_TEMPLATE].toString();
+}
+
+QString RegParmItem::value() const
+{
+    return m_itemData[T_VALUE].toString();
 }
 
 QVariant RegParmItem::field(Field field) const

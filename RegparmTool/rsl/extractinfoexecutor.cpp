@@ -1,18 +1,13 @@
 #include "extractinfoexecutor.h"
 #include "rslmodule/richtext/rttable.h"
 #include "rslmodule/iterableobjectbase.h"
-#include "rsscript/registerobjlist.hpp"
 #include "rsl/reginfoobj.h"
-#include <QDebug>
-
-#define REGISTER_OBJ(Type) RegisterObjList::inst()->RegisterRslObject<Type>(GenInfoUseParentProps | GenInfoUseParentMeths)
-#define ADDTORSL_OBJ(Type, CanCreate) RegisterObjList::inst()->AddObject<Type>(CanCreate)
+#include <QJsonObject>
 
 ExtractInfoExecutor::ExtractInfoExecutor(QObject *parent) :
     RslExecutor(parent),
     m_pDocument(nullptr)
 {
-    REGISTER_OBJ(RegInfoObj);
 }
 
 ExtractInfoExecutor::~ExtractInfoExecutor()
@@ -27,7 +22,6 @@ void ExtractInfoExecutor::setDocument(QTextDocument *pDocument)
 
 void ExtractInfoExecutor::onSetStModuleAdd()
 {
-    ADDTORSL_OBJ(RegInfoObj, true);
     RslExecutor::onSetStModuleAdd();
 }
 
@@ -42,18 +36,14 @@ void ExtractInfoExecutor::PlayRepProc()
          });
 
     m_List.clear();
-    //
-    qDebug() << retVal;
 
     QVariantList lst = retVal.toList();
-    for (auto info : lst)
+    for (const QVariant &info : qAsConst(lst))
     {
-        QObject *obj = info.value<QObject*>();
-        RegInfoObj *InfoObj = dynamic_cast<RegInfoObj*>(obj);
-
-        if (InfoObj)
+        QJsonObject obj = info.toJsonObject();
+        if (!obj.isEmpty())
         {
-            QSharedPointer<RegInfoObj> ptr(new RegInfoObj(*InfoObj));
+            QSharedPointer<RegInfoObj> ptr = RegInfoObj::fromJson(obj);
             m_List.append(ptr);
         }
     }

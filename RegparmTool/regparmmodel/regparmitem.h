@@ -19,6 +19,7 @@ public:
         T_SECURITY,
         T_ISBRANCH,
         T_TEMPLATE,
+        T_VALUE,
         FIELD_COUNT
     };
 
@@ -43,6 +44,7 @@ public:
     QString security() const;
     bool isBranch() const;
     QString templateStr() const;
+    QString value() const;
 
     // Универсальный метод доступа по enum
     QVariant field(Field field) const;

@@ -2,11 +2,16 @@
 #include "fmtcore.h"
 #include <QtSql>
 #include <QDebug>
+#include <QIcon>
+#include <QMetaType>
 
 FmtTablesModel::FmtTablesModel(ConnectionInfo *ConInfo, QObject *parent) :
     QSqlQueryModel(parent),
     pQuery(Q_NULLPTR)
 {
+    if (QMetaType::type("QIcon") == QMetaType::UnknownType)
+        qRegisterMetaType<QIcon>("QIcon");
+
     pInfo = ConInfo;
     tableIcon = QIcon::fromTheme("Table");
     tmpTableIcon = QIcon::fromTheme("TemporalTable");

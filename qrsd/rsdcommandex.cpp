@@ -5,6 +5,7 @@ RsdCommandEx::BindParam::BindParam(const QVariant &value, QSql::ParamType paramT
 {
     this->value = nullptr;
     name = pname;
+    nameBytes = pname.toLocal8Bit();
 
     switch(paramType)
     {
@@ -68,6 +69,18 @@ RsdCommandEx::BindParam::BindParam(const QVariant &value, QSql::ParamType paramT
     {
         setBuffer(value.toDateTime());
         valType = RSDPT_TIMESTAMP;
+    }
+    else if (value.type() == QVariant::ByteArray)
+    {
+        byteArrayValue = value.toByteArray();
+        valType = RSDPT_BLOB;
+        valueSize = sizeof(RSDBLOB);
+        this->value = malloc(static_cast<size_t>(valueSize));
+        memset(this->value, 0, static_cast<size_t>(valueSize));
+
+        RSDBLOB *blob = static_cast<RSDBLOB*>(this->value);
+        blob->data = byteArrayValue.isEmpty() ? nullptr : static_cast<void*>(byteArrayValue.data());
+        blob->size = static_cast<size_t>(byteArrayValue.size());
     }
 }
 
@@ -150,7 +163,13 @@ RsdCommandEx::~RsdCommandEx()
 void RsdCommandEx::bindValue(const QString &placeholder, const QVariant &val, QSql::ParamType paramType)
 {
     RsdCommandEx::BindParam *prm = new RsdCommandEx::BindParam(val, paramType, placeholder, this);
-    addParam(prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
+
+    // Для BLOB параметр передаётся через структуру RSDBLOB: длина и индикатор не нужны,
+    // драйвер сам забирает размер из RSDBLOB.size.
+    if (prm->valType == RSDPT_BLOB)
+        addParam(prm->nameBytes.data(), prm->valType, prm->value, nullptr, 0, prm->dir);
+    else
+        addParam(prm->nameBytes.data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
 
     m_Params.append(prm);
 }
@@ -158,7 +177,11 @@ void RsdCommandEx::bindValue(const QString &placeholder, const QVariant &val, QS
 void RsdCommandEx::bindValue(int index, const QVariant &val, QSql::ParamType paramType)
 {
     RsdCommandEx::BindParam *prm = new RsdCommandEx::BindParam(val, paramType, "", this);
-    insertParam(index, prm->name.toLocal8Bit().data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
+
+    if (prm->valType == RSDPT_BLOB)
+        insertParam(index, prm->nameBytes.data(), prm->valType, prm->value, nullptr, 0, prm->dir);
+    else
+        insertParam(index, prm->nameBytes.data(), prm->valType, prm->value, (long*)&prm->valueSize, prm->valueSize, prm->dir);
 
     m_Params.append(prm);
 }
@@ -240,13 +263,18 @@ void RsdCommandEx::bindBatch(const QString &placeholder, const QVariantList &val
     else if (paramType == QSql::InOut)
         dir = RSDBP_IN_OUT;
 
-    addParam(placeholder.toLocal8Bit().data(), valType, batch->value, batch->indLen, stride, dir);
+    // Сохраняем QByteArray с именем placeholder'а, чтобы addParam получил валидный char*.
+    // toLocal8Bit() возвращает временный объект, без сохранения получается висячий указатель,
+    // что в release-сборке приводит к повреждению имени параметра.
+    m_BatchParamNames.append(placeholder.toLocal8Bit());
+    addParam(m_BatchParamNames.last().data(), valType, batch->value, batch->indLen, stride, dir);
 }
 
 void RsdCommandEx::clearBatch()
 {
     qDeleteAll(m_BatchParams);
     m_BatchParams.clear();
+    m_BatchParamNames.clear();
 }
 
 RsdDriver *RsdCommandEx::driver()

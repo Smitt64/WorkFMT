@@ -3,6 +3,8 @@
 
 #include <QWizardPage>
 
+class ErrorsModel;
+
 namespace Ui {
 class OperationWizardPage;
 }
@@ -19,6 +21,7 @@ public:
 
 private:
     Ui::OperationWizardPage *ui;
+    ErrorsModel *m_pErrorsModel;
 };
 
 #endif // OPERATIONWIZARDPAGE_H

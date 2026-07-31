@@ -3,5 +3,6 @@
         <file>xml/dregparm_dbt.xml</file>
         <file>xml/dregval_dbt.xml</file>
         <file>res/insert_regparm.sql</file>
+        <file>res/regparmtool_icon.svg</file>
     </qresource>
 </RCC>

@@ -21,24 +21,6 @@ DiffTableInfo::~DiffTableInfo()
         delete pMissingFldInDat;
 }
 
-QString BlobTypeToString(int type)
-{
-    switch (type)
-    {
-    case 0:
-        return "BT_BLOB_NO";
-    case 1:
-        return "BT_BLOB_VAR";
-    case 2:
-        return "BT_BLOB_STREAM";
-    case 3:
-        return "BT_CLOB";
-    }
-
-    throw std::runtime_error(QObject::tr("Неизвестное значение типа блоба: %1")
-                             .arg(type).toLocal8Bit().data());
-}
-
 const QString &DiffTableInfo::getName() const
 {
     return name;
@@ -305,6 +287,28 @@ void DiffTableInfo::loadFromFmt(FmtTable *fmtTable, const QString &datfilename)
         }
         else
             qCWarning(logDatTable) << "Can't open dat struct info file: datstruct.info";
+    }
+
+    // Для колонок, которые есть в DAT-файле, но отсутствуют в описании FMT
+    // (например, BLOB-поля), добавляем псевдо-поля, чтобы парсер не падал.
+    for (const QString &realFld : qAsConst(realFields))
+    {
+        bool found = false;
+        for (const DiffField *df : qAsConst(fields))
+        {
+            if (df->name.compare(realFld, Qt::CaseInsensitive) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            DiffField *df = new DiffField(realFld, fmtt_STRING, QStringLiteral("TEXT"), false, true);
+            fields.append(df);
+            qCInfo(logScriptTable) << "Added missing DAT field: " << realFld;
+        }
     }
 }
 

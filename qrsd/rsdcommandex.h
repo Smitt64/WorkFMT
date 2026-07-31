@@ -25,6 +25,8 @@ public:
         RSDValType_t valType;
         RSDBindParamIO_t dir;
         QString name;
+        QByteArray nameBytes; // хранит toLocal8Bit() для передачи в addParam
+        QByteArray byteArrayValue; // хранит сырые данные для RSDPT_BLOB/RSDPT_BINARY
 
     private:
         RsdCommandEx *m_pParent;
@@ -88,6 +90,7 @@ public:
 private:
     QVector<BindParam*> m_Params;
     QVector<BatchParam*> m_BatchParams;
+    QVector<QByteArray> m_BatchParamNames; // хранит имена placeholder'ов для batch привязки
     RsdDriver *m_pDriver;
 };
 

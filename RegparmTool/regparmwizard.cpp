@@ -1,6 +1,7 @@
 #include "regparmwizard.h"
 #include "actionpage.h"
 #include "connactionpage.h"
+#include "settingsselectionpage.h"
 #include "recordparser.h"
 #include "difftableinfo.h"
 #include "fmtcore.h"
@@ -12,8 +13,15 @@
 #include "wordcontentpage.h"
 #include "wordpreviewregpage.h"
 #include "operationwizardpage.h"
+#include "regparmoptionsdlg.h"
 #include <toolsruntime.h>
 #include <rsscript/registerobjlist.hpp>
+#include <QMenu>
+#include <QPushButton>
+#include <QAbstractButton>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QSettings>
 
 RegParmWizard::RegParmWizard(QWidget *parent) :
     QWizard(parent),
@@ -44,12 +52,13 @@ RegParmWizard::~RegParmWizard()
 
 void RegParmWizard::setupUi()
 {
-    setWindowIcon(QIcon(":/img/RegParmWizard.png"));
+    setWindowIcon(QIcon(":/res/regparmtool_icon.svg"));
     setFixedSize(800, 600);
 
     // Создание страниц
     m_pActionPage = new ActionPage(this);
     m_pConnectionPage = new ConnactionPage(this);
+    m_pSettingsSelectionPage = new SettingsSelectionPage(this);
     m_pViewPage = new ViewDatPage(this);
     m_pWordContentPage = new WordContentPage(this);
     m_pWordPreviewRegPage = new WordPreviewRegPage(this);
@@ -60,6 +69,7 @@ void RegParmWizard::setupUi()
     // Добавление страниц
     addPage(m_pActionPage);
     addPage(m_pConnectionPage);
+    addPage(m_pSettingsSelectionPage);
     addPage(m_pViewPage);
     addPage(m_pWordContentPage);
     addPage(m_pWordPreviewRegPage);
@@ -83,34 +93,29 @@ void RegParmWizard::setupUi()
     setButtonText(QWizard::CustomButton1, tr("Настройки"));
     setButtonText(QWizard::CustomButton2, tr("Рестарт"));
 
-    // Настройка меню помощи
-   /* QPushButton *helpBtn = dynamic_cast<QPushButton*>(button(QWizard::HelpButton));
+    // Настройка меню помощи (по аналогии с DiffToScript)
+    QPushButton *helpBtn = qobject_cast<QPushButton*>(button(QWizard::HelpButton));
     if (helpBtn) {
         m_pHelpMenu = new QMenu(helpBtn);
         helpBtn->setMenu(m_pHelpMenu);
 
-        QAction *aboutAction = m_pHelpMenu->addAction(tr("О мастере реестра параметров"));
-        QAction *docsAction = m_pHelpMenu->addAction(tr("Документация"));
+        QAction *aboutAction = m_pHelpMenu->addAction(tr("Мастер работы с реестром параметров"));
         m_pHelpMenu->addSeparator();
-        QAction *examplesAction = m_pHelpMenu->addAction(tr("Примеры использования"));
+        QAction *rslInfoAction = m_pHelpMenu->addAction(tr("Реализация пользовательских операций в WorkFMT с помощью RSL"));
 
         connect(aboutAction, &QAction::triggered, []() {
             QDesktopServices::openUrl(QUrl("https://confluence.softlab.ru/pages/viewpage.action?pageId=629571588"));
         });
 
-        connect(docsAction, &QAction::triggered, []() {
-            QDesktopServices::openUrl(QUrl("https://confluence.softlab.ru/display/DOC/RegParm+Wizard"));
+        connect(rslInfoAction, &QAction::triggered, []() {
+            QDesktopServices::openUrl(QUrl("https://confluence.softlab.ru/pages/viewpage.action?pageId=610865722"));
         });
-
-        connect(examplesAction, &QAction::triggered, []() {
-            QDesktopServices::openUrl(QUrl("https://confluence.softlab.ru/display/EXAMPLES/RegParm+Examples"));
-        });
-    }*/
+    }
 }
 
 void RegParmWizard::setupConnections()
 {
-    /*QAbstractButton *settingsBtn = button(QWizard::CustomButton1);
+    QAbstractButton *settingsBtn = button(QWizard::CustomButton1);
     QAbstractButton *restartBtn = button(QWizard::CustomButton2);
 
     if (settingsBtn) {
@@ -118,8 +123,8 @@ void RegParmWizard::setupConnections()
     }
 
     if (restartBtn) {
-        connect(restartBtn, &QAbstractButton::clicked, this, &RegParmWizard::onRestartClicked);
-    }*/
+        connect(restartBtn, &QAbstractButton::clicked, this, &RegParmWizard::restart);
+    }
 }
 
 void RegParmWizard::addUserField(const QString &name, const QVariant &value)
@@ -144,14 +149,9 @@ RegParmWizard::ActionType RegParmWizard::selectedAction() const
 
 void RegParmWizard::onSettingsClicked()
 {
-    // TODO: Реализовать диалог настроек
-    //qDebug() << "Settings button clicked";
-}
-
-void RegParmWizard::onRestartClicked()
-{
-    // TODO: Реализовать рестарт мастера
-    //qDebug() << "Restart button clicked";
+    QSharedPointer<QSettings> settings = regparmGetSettings();
+    RegparmOptionsDlg dlg(settings.data(), this);
+    dlg.exec();
 }
 
 QAbstractItemModel *RegParmWizard::datModel()
@@ -159,10 +159,20 @@ QAbstractItemModel *RegParmWizard::datModel()
     return m_pDatModel.data();
 }
 
+QSqlDatabase RegParmWizard::datDatabase() const
+{
+    return m_DatDatabase;
+}
+
 void RegParmWizard::resetDatModel()
 {
     if (m_DatDatabase.isOpen())
         m_DatDatabase.close();
+
+    m_DatDatabase = QSqlDatabase();
+    const QString defaultConnection = QSqlDatabase::defaultConnection;
+    if (QSqlDatabase::contains(defaultConnection))
+        QSqlDatabase::removeDatabase(defaultConnection);
 
     m_DatDatabase = QSqlDatabase::addDatabase("QSQLITE");
     m_DatDatabase.setDatabaseName("1_DatDebugDb.sqlite");
@@ -185,6 +195,12 @@ void RegParmWizard::resetDatModel()
     table->loadFromFmtXml("://xml/dregparm_dbt.xml", regparmdat);
 
     diffLoadDatToSqlite(regparmdat, m_DatDatabase, table.data(), false);
+
+    QScopedPointer<DiffTable> valTable(new DiffTable());
+    QString regvaldat = dataDir.absoluteFilePath("DREGVAL_DBT.dat");
+    valTable->loadFromFmtXml("://xml/dregval_dbt.xml", regvaldat);
+
+    diffLoadDatToSqlite(regvaldat, m_DatDatabase, valTable.data(), false);
 
     m_pDatModel.reset(new RegParmModel(m_DatDatabase));
 }
