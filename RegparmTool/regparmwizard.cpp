@@ -175,7 +175,7 @@ void RegParmWizard::resetDatModel()
         QSqlDatabase::removeDatabase(defaultConnection);
 
     m_DatDatabase = QSqlDatabase::addDatabase("QSQLITE");
-    m_DatDatabase.setDatabaseName("1_DatDebugDb.sqlite");
+    m_DatDatabase.setDatabaseName(":memory:"); // SQLite-копия DAT-файлов, живёт только в памяти
     m_DatDatabase.open();
 
     LinesParserMain linesParser;

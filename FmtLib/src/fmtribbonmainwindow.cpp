@@ -33,6 +33,7 @@
 #include <QSettings>
 #include <QMenu>
 #include <QDebug>
+#include <QLayout>
 #include <QPaintEvent>
 #include <QTreeView>
 
@@ -258,6 +259,18 @@ void FmtRibbonMainWindow::InitQuickAccessBar()
     SARibbonButtonGroupWidget* rightBar = ribbonBar()->rightButtonGroup();
     SARibbonQuickAccessBar* quickAccessBar = ribbonBar()->quickAccessBar();
 
+    // Помечает кнопку меню свойством sideMenuArrow, чтобы QSS разместил
+    // стрелку сбоку от иконки, а не поверх неё (см. theme-office2013-green.qss)
+    auto markSideMenuArrow = [quickAccessBar](QAction *menuAction)
+    {
+        if (SARibbonControlButton *btn = quickAccessBar->buttonGroupWidget()->actionToRibbonControlToolButton(menuAction))
+        {
+            btn->setProperty("sideMenuArrow", true);
+            btn->style()->unpolish(btn);
+            btn->style()->polish(btn);
+        }
+    };
+
     RecentConnectionList list;
     if (list.load() && !list.isEmpty())
     {
@@ -276,8 +289,13 @@ void FmtRibbonMainWindow::InitQuickAccessBar()
             //connect(action, SIGNAL(triggered(bool)), SLOT(OpenRecentConnection()));
         }
 
-        quickAccessBar->addMenu(RecentMenu, Qt::ToolButtonIconOnly, QToolButton::InstantPopup);
+        QAction *recentMenuAction = quickAccessBar->addMenu(RecentMenu, Qt::ToolButtonIconOnly, QToolButton::InstantPopup);
+        markSideMenuArrow(recentMenuAction);
     }
+
+    // Меню "Создать запись" (то же, что на панели "Таблицы")
+    QAction *createMenuAction = quickAccessBar->addMenu(m_pMenuCreate, Qt::ToolButtonIconOnly, QToolButton::MenuButtonPopup);
+    markSideMenuArrow(createMenuAction);
 
     pSearchLine = new SARibbonLineEdit(this);
     pSearchLine->setPlaceholderText(tr("Введите текст для поиска..."));
@@ -862,6 +880,33 @@ void FmtRibbonMainWindow::OpenConnectionFile()
 void FmtRibbonMainWindow::InitWindowsCombo()
 {
     SARibbonSystemButtonBar* wbar = windowButtonBar();
+
+    // Отступы у группы кнопок, чтобы подсветка при наведении
+    // не заезжала на границу окна (QSS margin тут не срабатывает)
+    if (QWidget *group = wbar->findChild<QWidget *>(QStringLiteral("SASystemButtonGroup")))
+    {
+        if (QLayout *groupLayout = group->layout())
+            groupLayout->setContentsMargins(0, 3, 0, 3);
+    }
+
+    // Кнопки закрытия окон (перед списком открытых окон)
+    QAction *closeCurrentAction = createAction(tr("Закрыть текущее окно"), "CloseWindow");
+    toolAddActionWithTooltip(closeCurrentAction,
+                             tr("Закрыть активное окно с таблицей"));
+
+    QAction *closeAllAction = createAction(tr("Закрыть все окна"), "CloseAllWindows");
+    toolAddActionWithTooltip(closeAllAction,
+                             tr("Закрыть все открытые окна с таблицами"));
+
+    connect(closeCurrentAction, &QAction::triggered, this, [this]()
+    {
+        if (QMdiSubWindow *active = pMdi->activeSubWindow())
+            active->close();
+    });
+    connect(closeAllAction, &QAction::triggered, pMdi, &QMdiArea::closeAllSubWindows);
+
+    wbar->addAction(closeCurrentAction);
+    wbar->addAction(closeAllAction);
 
     pWindowsComboBox = new TreeComboBox(this);
     pWindowsComboBox->setMinimumWidth(250);
