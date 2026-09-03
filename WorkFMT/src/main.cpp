@@ -30,8 +30,12 @@ int main(int argc, char **argv)
     //SetSysColor(COLOR_WINDOW, RGB(0x33, 0x33, 0x33));
     QDir settingsDir = QDir(argv[0]);
 
-    InitIconTheme();
     FmtApplication a(argc, argv);
+
+    // Только после создания QApplication: без экземпляра applicationDirPath()
+    // пуст, и тема иконок ищется относительно рабочего каталога
+    InitIconTheme();
+
     a.init();
 
     QCommandLineParser parser;

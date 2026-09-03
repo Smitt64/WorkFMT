@@ -10,8 +10,11 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("DBFileTool");
     QCoreApplication::setApplicationName("DBFileTool");
 
-    IconThemeManager::initialize("vs_theme");
     QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
+
+    // Только после создания QApplication: без экземпляра applicationDirPath()
+    // пуст, и тема иконок ищется относительно рабочего каталога
+    IconThemeManager::initialize("vs_theme");
 
     QDir current(QDir::current());
     app->addLibraryPath(QFileInfo(QCoreApplication::applicationFilePath()).path());
