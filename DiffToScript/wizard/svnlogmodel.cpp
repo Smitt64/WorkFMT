@@ -37,7 +37,7 @@ SvnInfoMap SvnGetRepoInfo(const QString &path)
 // -----------------------------------------
 
 SvnLogModel::SvnLogModel(QObject *parent) :
-    QAbstractTableModel(parent), m_VcsType(SvnSatatusModel::VcsType::Auto)
+    QAbstractTableModel(parent), m_VcsType(VcsType::None)
 {
     m_Limit = 100;
 }
@@ -107,7 +107,7 @@ const SvnLogElement &SvnLogModel::element(const int &row) const
     return m_Elements[row];
 }
 
-void SvnLogModel::setVcsType(SvnSatatusModel::VcsType type)
+void SvnLogModel::setVcsType(VcsType type)
 {
     m_VcsType = type;
 }
@@ -129,19 +129,19 @@ void SvnLogModel::refresh()
     beginResetModel();
     m_Elements.clear();
 
-    SvnSatatusModel::VcsType actualVcsType = m_VcsType;
+    VcsType actualVcsType = m_VcsType;
 
     // Если установлен авторежим, определяем тип VCS автоматически
-    if (m_VcsType == SvnSatatusModel::VcsType::Auto)
+    if (m_VcsType == VcsType::None)
     {
         actualVcsType = detectVcsType(m_Path);
     }
 
-    if (actualVcsType == SvnSatatusModel::VcsType::Svn)
+    if (actualVcsType == VcsType::Svn)
     {
         refreshSvn();
     }
-    else if (actualVcsType == SvnSatatusModel::VcsType::Git)
+    else if (actualVcsType == VcsType::Git)
     {
         refreshGit();
     }
@@ -149,20 +149,20 @@ void SvnLogModel::refresh()
     endResetModel();
 }
 
-SvnSatatusModel::VcsType SvnLogModel::detectVcsType(const QString &path)
+VcsType SvnLogModel::detectVcsType(const QString &path)
 {
     QDir dir(path);
 
     // Проверяем наличие каталога .git
     if (dir.exists(".git"))
     {
-        return SvnSatatusModel::VcsType::Git;
+        return VcsType::Git;
     }
 
     // Проверяем наличие каталога .svn
     if (dir.exists(".svn"))
     {
-        return SvnSatatusModel::VcsType::Svn;
+        return VcsType::Svn;
     }
 
     // Рекурсивно проверяем родительские каталоги для Git
@@ -172,13 +172,13 @@ SvnSatatusModel::VcsType SvnLogModel::detectVcsType(const QString &path)
         QDir currentDir(currentPath);
         if (currentDir.exists(".git"))
         {
-            return SvnSatatusModel::VcsType::Git;
+            return VcsType::Git;
         }
 
         // Для SVN проверяем только текущий каталог (не рекурсивно)
         if (currentPath == path && currentDir.exists(".svn"))
         {
-            return SvnSatatusModel::VcsType::Svn;
+            return VcsType::Svn;
         }
 
         // Поднимаемся на уровень выше
@@ -191,7 +191,7 @@ SvnSatatusModel::VcsType SvnLogModel::detectVcsType(const QString &path)
             break;
     }
 
-    return SvnSatatusModel::VcsType::None;
+    return VcsType::None;
 }
 
 void SvnLogModel::refreshSvn()
@@ -230,7 +230,7 @@ void SvnLogModel::refreshSvn()
         if (e.nodeName() == "logentry")
         {
             SvnLogElement element;
-            element.revision = e.attribute("revision").toInt();
+            element.revision = e.attribute("revision");
             element.author = e.firstChildElement("author").text();
             element.date = QDateTime::fromString(e.firstChildElement("date").text(),
                                                  Qt::ISODateWithMs);
@@ -278,8 +278,6 @@ void SvnLogModel::refreshGit()
     QString output = QString::fromUtf8(data);
     QStringList lines = output.split('\n', Qt::SkipEmptyParts);
 
-    int revisionCounter = 1;
-
     for (const QString &line : lines)
     {
         if (line.trimmed().isEmpty()) continue;
@@ -288,8 +286,8 @@ void SvnLogModel::refreshGit()
         if (parts.size() >= 4)
         {
             SvnLogElement element;
-            // Для Git используем последовательные номера как ревизии
-            element.revision = revisionCounter++;
+            // Для Git ревизией является хэш коммита
+            element.revision = parts[0];
             element.author = parts[1];
             element.date = QDateTime::fromString(parts[2], Qt::ISODate);
             element.message = parts[3];
@@ -310,7 +308,7 @@ void SvnLogModel::refreshGit()
 // ----------------------------------------------------------------------
 
 SvnLogItemsModel::SvnLogItemsModel(QObject *parent) :
-    QAbstractTableModel(parent), m_VcsType(SvnSatatusModel::VcsType::Auto)
+    QAbstractTableModel(parent), m_VcsType(VcsType::None)
 {
 }
 
@@ -399,7 +397,7 @@ const SvnLogInfoElement &SvnLogItemsModel::element(const int &row) const
     return m_Elements[row];
 }
 
-void SvnLogItemsModel::setVcsType(SvnSatatusModel::VcsType type)
+void SvnLogItemsModel::setVcsType(VcsType type)
 {
     m_VcsType = type;
 }
@@ -415,18 +413,18 @@ void SvnLogItemsModel::refresh(const QString &revision)
     beginResetModel();
     m_Elements.clear();
 
-    SvnSatatusModel::VcsType actualVcsType = m_VcsType;
+    VcsType actualVcsType = m_VcsType;
 
-    if (m_VcsType == SvnSatatusModel::VcsType::Auto)
+    if (m_VcsType == VcsType::None)
     {
         actualVcsType = detectVcsType(m_Path);
     }
 
-    if (actualVcsType == SvnSatatusModel::VcsType::Svn)
+    if (actualVcsType == VcsType::Svn)
     {
         refreshSvn(revision);
     }
-    else if (actualVcsType == SvnSatatusModel::VcsType::Git)
+    else if (actualVcsType == VcsType::Git)
     {
         refreshGit(revision);
     }
@@ -434,20 +432,20 @@ void SvnLogItemsModel::refresh(const QString &revision)
     endResetModel();
 }
 
-SvnSatatusModel::VcsType SvnLogItemsModel::detectVcsType(const QString &path)
+VcsType SvnLogItemsModel::detectVcsType(const QString &path)
 {
     // Та же логика определения, что и в SvnLogModel
     QDir dir(path);
 
-    if (dir.exists(".git")) return SvnSatatusModel::VcsType::Git;
-    if (dir.exists(".svn")) return SvnSatatusModel::VcsType::Svn;
+    if (dir.exists(".git")) return VcsType::Git;
+    if (dir.exists(".svn")) return VcsType::Svn;
 
     QString currentPath = path;
     while (!currentPath.isEmpty() && QDir(currentPath).exists())
     {
         QDir currentDir(currentPath);
-        if (currentDir.exists(".git")) return SvnSatatusModel::VcsType::Git;
-        if (currentPath == path && currentDir.exists(".svn")) return SvnSatatusModel::VcsType::Svn;
+        if (currentDir.exists(".git")) return VcsType::Git;
+        if (currentPath == path && currentDir.exists(".svn")) return VcsType::Svn;
 
         QString parentPath = QDir(currentPath).absolutePath();
         if (parentPath == currentPath) break;
@@ -455,7 +453,7 @@ SvnSatatusModel::VcsType SvnLogItemsModel::detectVcsType(const QString &path)
         if (currentPath == parentPath) break;
     }
 
-    return SvnSatatusModel::VcsType::None;
+    return VcsType::None;
 }
 
 void SvnLogItemsModel::refreshSvn(const QString &revision)

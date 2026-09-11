@@ -6,6 +6,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    BuildTrig \
     ChangeNote \
     DatViewer \
     DiffToScript \
@@ -41,6 +42,7 @@ fmtdatapumpwrp.depends += FmtLib
 DumpTool.depends = FmtLib fmtdatapumpwrp
 DiffToScriptlib.depends += FmtLib ToolsRuntimeProj
 DiffToScript.depends += FmtLib DiffToScriptlib ToolsRuntimeProj
+BuildTrig.depends = FmtLib ToolsRuntimeProj
 FmtRslModule.depends += FmtLib
 RegparmTool.depends += FmtLib ToolsRuntimeProj DiffToScriptlib
 DatViewer.depends += FmtLib ToolsRuntimeProj DiffToScriptlib

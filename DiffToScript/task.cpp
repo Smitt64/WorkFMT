@@ -33,7 +33,7 @@
 #include <rsscript/registerobjlist.hpp>
 #include "rslobj/taskoptionscontainer.h"
 #include "rslobj/fmttableslist.h"
-#include "wizard/svnsatatusmodel.h"
+#include <svn/svnstatusmodel.h>
 #include <QSettings>
 
 QString serializeNormalPathsToJson(const QList<QStringList>& chunks)
@@ -405,16 +405,16 @@ void Task::runScriptTask()
         }
     }
 
-    SvnSatatusModel::VcsType m_VcsType = SvnSatatusModel::VcsType::Svn;
+    VcsType m_VcsType = VcsType::Svn;
     QString checkFormat = is->readLine(100);
     is->seek(0);
 
     if (checkFormat.contains("diff --git ", Qt::CaseInsensitive))
-        m_VcsType = SvnSatatusModel::VcsType::Git;
+        m_VcsType = VcsType::Git;
 
     //Распознование типа строк в исходном файле
     LinesParserMain linesParser;
-    if (m_VcsType == SvnSatatusModel::VcsType::Svn)
+    if (m_VcsType == VcsType::Svn)
         linesParser.setTableParser(new LinesTablePareser("Index: "));
     else
         linesParser.setTableParser(new LinesTablePareser("diff --git "));

@@ -1,48 +1,46 @@
-#ifndef ACTIONPAGE_H
-#define ACTIONPAGE_H
+#ifndef REPOPAGE_H
+#define REPOPAGE_H
 
 #include <QWizardPage>
 #include <QSortFilterProxyModel>
 
 namespace Ui {
-class ActionPage;
+class RepoPage;
 }
 
 class QButtonGroup;
-class QSpinBox;
 class SvnStatusModel;
-class DatSatatusModel;
-class ActionPage : public QWizardPage
+class MacSatatusModel;
+class RepoPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    explicit ActionPage(QWidget *parent = nullptr);
-    ~ActionPage();
+    explicit RepoPage(QWidget *parent = nullptr);
+    ~RepoPage();
 
     virtual bool isComplete() const Q_DECL_OVERRIDE;
     virtual void initializePage() Q_DECL_OVERRIDE;
 
+    QStringList selectedFiles() const;
+
 private slots:
     void on_selFolderBtn_clicked();
-
     void on_logButton_clicked();
 
 private:
-    Ui::ActionPage *ui;
+    Ui::RepoPage *ui;
 
-    QButtonGroup *m_pGroup;
-    QSpinBox *fakeBtn;
-
-    DatSatatusModel *m_pStatusModel;
     SvnStatusModel *m_pModel;
+    MacSatatusModel *m_pStatusModel;
+    QButtonGroup *m_pGroup;
 };
 
-class DatSatatusModel : public QSortFilterProxyModel
+class MacSatatusModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    DatSatatusModel(QObject *parent);
+    MacSatatusModel(QObject *parent);
     QStringList files();
 
     virtual Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -60,4 +58,4 @@ protected:
     QMap<QString, Qt::CheckState> m_CheckSate;
 };
 
-#endif // ACTIONPAGE_H
+#endif // REPOPAGE_H

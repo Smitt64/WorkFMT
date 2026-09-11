@@ -45,7 +45,6 @@ SOURCES += \
     wizard/scriptspage.cpp \
     wizard/svnlogdlg.cpp \
     wizard/svnlogmodel.cpp \
-    wizard/svnsatatusmodel.cpp \
     wizard/svntool.cpp
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
@@ -80,7 +79,6 @@ HEADERS += \
     wizard/scriptspage.h \
     wizard/svnlogdlg.h \
     wizard/svnlogmodel.h \
-    wizard/svnsatatusmodel.h \
     wizard/svntool.h
 
 FORMS += \

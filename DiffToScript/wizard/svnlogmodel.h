@@ -3,11 +3,11 @@
 
 #include <QAbstractTableModel>
 #include <QDateTime>
-#include "svnsatatusmodel.h"
+#include <svn/svnstatusmodel.h>
 
 typedef struct
 {
-    qint32 revision;
+    QString revision;
     QString author, scr, message;
     QString action;
     QDateTime date;
@@ -39,7 +39,7 @@ public:
     explicit SvnLogModel(QObject *parent = nullptr);
     virtual ~SvnLogModel();
 
-    void setVcsType(SvnSatatusModel::VcsType type);
+    void setVcsType(VcsType type);
 
     void setPath(const QString &path, const QString &url);
     void setDateRange(const QDate &from, const QDate &to);
@@ -56,8 +56,8 @@ public slots:
     void refresh();
 
 private:
-    SvnSatatusModel::VcsType m_VcsType;
-    SvnSatatusModel::VcsType detectVcsType(const QString &path);
+    VcsType m_VcsType;
+    VcsType detectVcsType(const QString &path);
     void refreshSvn();
     void refreshGit();
     QList<SvnLogElement> m_Elements;
@@ -83,7 +83,7 @@ public:
     explicit SvnLogItemsModel(QObject *parent = nullptr);
     virtual ~SvnLogItemsModel();
 
-    void setVcsType(SvnSatatusModel::VcsType type);
+    void setVcsType(VcsType type);
     void setPath(const QString &path, const QString &url);
 
     virtual QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -98,8 +98,8 @@ public slots:
     void refresh(const QString &revision);
 
 private:
-    SvnSatatusModel::VcsType m_VcsType;
-    SvnSatatusModel::VcsType detectVcsType(const QString &path);
+    VcsType m_VcsType;
+    VcsType detectVcsType(const QString &path);
     void refreshSvn(const QString &revision);
     void refreshGit(const QString &revision);
     QList<SvnLogInfoElement> m_Elements;
