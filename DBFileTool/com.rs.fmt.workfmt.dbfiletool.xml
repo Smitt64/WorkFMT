@@ -2,6 +2,7 @@
 <changelog project="DB file tool">
     <version ver="1.0.0.16">
         <add>Добавлена поддержка импорта/экспорта DAT файлов для PostgreSQL;</add>
+        <add>Обновлена иконка приложения;</add>
         <fix>Исправлен импорт полей bytea в PostgreSQL: hex-данные оборачиваются в glob_func.hextoraw(...);</fix>
     </version>
     <version ver="1.0.0.15">
