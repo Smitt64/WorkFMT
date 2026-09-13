@@ -127,5 +127,11 @@
         <file>img/base_cylinder_Gray.png</file>
         <file alias="dump_fmt_to_xml_ora.sql">sql/dump_fmt_to_xml_ora.sql</file>
         <file alias="dump_fmt_to_xml_pg.sql">sql/dump_fmt_to_xml_pg.sql</file>
+        <file>theme-office2013-green.qss</file>
+        <file>theme-office2013-subwindow.qss</file>
+        <file>app-icon.svg</file>
+        <file>img/svg/Close_16x.svg</file>
+        <file>img/svg/Close_red_16x.svg</file>
+        <file>office2013_highlighter.json</file>
     </qresource>
 </RCC>

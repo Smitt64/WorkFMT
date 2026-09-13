@@ -15,6 +15,8 @@ namespace Ui {
 class FmtWorkWindow;
 }
 
+#define FMTTABLE_CONTEXTCATEGORY tr("Редактор")
+
 class FmtFieldsDelegate;
 class FmtIndecesDelegate;
 class FmtFieldsTableView;
@@ -27,7 +29,7 @@ class QShortcut;
 class FmtFieldsTableHeaderDelegate;
 class FilteredTableWidget;
 class FmtFieldsTableViewFilterController;
-
+class SARibbonCategory;
 class FmtFieldsTableViewFilterController: public QObject, public FilteredControlHandler
 {
     Q_OBJECT
@@ -39,6 +41,8 @@ private:
     FmtFieldsDelegate *pDelegate;
 };
 
+class GeneratorsProxyModel;
+class GenInterfaceFactoryModel;
 class FMTLIBSHARED_EXPORT FmtWorkWindow : public MdiSubInterface
 {
     Q_OBJECT
@@ -47,8 +51,14 @@ public:
     enum FmtWinTabs
     {
         FmtWinTabs_Columns = 0,
-        FmtWinTabs_Index,
-        FmtWinTabs_Code,
+        FmtWinTabs_Index
+    };
+
+    enum
+    {
+        COMBO_No = 0,
+        COMBO_BLOB,
+        COMBO_CLOB
     };
 
     explicit FmtWorkWindow(QWidget *parent = Q_NULLPTR);
@@ -67,6 +77,10 @@ public:
     QObject* tableProp() const { return pTable.data(); }
 
     void execUserAction(const QString &macro);
+
+    virtual void clearRibbonTabs() Q_DECL_OVERRIDE;
+
+    void UpdateTableIcon();
 
 signals:
 
@@ -89,6 +103,7 @@ public slots:
                      bool OpenTab = true, bool WordWrap = false);
 
 private slots:
+    void currentTabChanged(int index);
     void indexModelReseted();
     void indexModelInserted(const QModelIndex &parent, const int &first, const int &last);
     void AddIndex();
@@ -109,6 +124,7 @@ private slots:
 
     void undoActionChanged();
     void isTemporaryTableChanged(bool value);
+    void isRecordTableChanged(bool value);
 
     void TabCloseRequested(int index);
     void RemoveTableFields();
@@ -128,19 +144,28 @@ private slots:
     void onUserActionTriggered();
 
 protected:
-    void paintEvent(QPaintEvent *paintEvent);
+    void paintEvent(QPaintEvent *paintEvent) override;
     void keyPressEvent(QKeyEvent *event) override;
 
+    virtual void initRibbonPanels() Q_DECL_OVERRIDE;
+    virtual void updateRibbonTabs() Q_DECL_OVERRIDE;
+
 private:
+    void initRibbonFmtPanel();
+    void initRibbonFieldsPanel();
+    void initRibbonDataPanel();
+    void initRibbonCodeTemplatesPanel();
+
+    int addTab(QWidget *widget, const QString &title);
     int CheckAppy();
     int SaveTable();
     void setupUndoRedo();
     void setupFind();
     void SetUnclosableSystemTabs();
-    int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget = nullptr);
-    void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false, bool AddConvertButton = true);
+    int SelectTableFieldsDailog(const QString &title, QList<FmtField*> *pFldList, QWidget *userwidget = nullptr, const QString &icon = QString());
+    void AddSqlCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
     void AddCppCodeTab(const QString &title, const QString &code, bool OpenTab = true, bool WordWrap = false);
-    void SetupActionsMenu();
+    void OpenGeneratorTab(const QString &interfaceid, const QString &title);
     Ui::FmtWorkWindow *ui;
     QSharedPointer<FmtTable> pTable;
 
@@ -157,15 +182,15 @@ private:
     QSpacerItem *pHorizontalSpacer;
     QPushButton *pAddIndex;
 
-    QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu, *pUserActionsMenu;
+    QAction *pCopyMenuAction;
+    QMenu *pCopyMenu, *pActionsMenu, *pCodeGenMenu, *pUserActionsMenu, *pGenCppCodeMenu;
     QAction *m_saveToXml, *m_createTableSql, *m_rebuildOffsets, *m_MassRemoveFields;
     QAction *m_unloadDbf, *m_loadDbf, *m_ImportData, *m_ImportFromTable;
     QAction *m_AddFieldsToEnd, *m_InsertFields, *m_CopyFields, *m_PasteFields, *m_EditContent;
     QAction *m_GenDelScript, *m_GenAddScript, *m_GenCreateTbSql, *m_GenModifyScript;
     QAction *m_GenInsertTemplate, *m_CamelCaseAction, *m_GenDiffToScript, *m_pCompareFmt;
-    QAction *m_TableObjects;
-    QAction *m_CheckAction;
-    FmtWorkWndGen *pCodeGenWidget;
+    QAction *m_TableObjects, *pGenCodeAction, *pGenCppCodeAction;
+    QAction *m_DiffToScript, *m_pUserCode, *m_pEditMacro;
 
     QFrame *pUndoRedoBtnContainer;
     QHBoxLayout *pUndoRedoLayout;
@@ -181,6 +206,17 @@ private:
 
     QColor dcolor;
     QColor color;
+
+    SARibbonCategory* m_pFmtCategory;
+
+    QMenu *m_pInitTableMenu;
+    QAction *m_pInitTableMenuAction, *m_pInitCreateTableAction, *m_pInitCreateIndexAction;
+    QAction *m_pCheckAction;
+
+    GenInterfaceFactoryModel *m_pGeneratorsModel;
+    GeneratorsProxyModel *m_pGeneratorsProxyModel;
+
+    QWidget *m_pLastActiveFmtTab;
 };
 
 #endif // FMTWORKWINDOW_H

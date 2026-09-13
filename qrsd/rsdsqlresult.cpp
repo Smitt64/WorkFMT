@@ -2,10 +2,28 @@
 #include "rsddriver.h"
 #include <stdlib.h>
 #include <QSqlField>
+#include <exception>
 #include <QRegularExpression>
 #include <QDebug>
 
 #define BLOB_MAX_LEN 32768
+
+static bool isSelectLikeQuery(const QString &sql)
+{
+    QString s = sql.trimmed();
+
+    // Пропускаем ведущие блочные комментарии/hints вида /*@...*/
+    while (s.startsWith(QLatin1String("/*")))
+    {
+        int end = s.indexOf(QLatin1String("*/"));
+        if (end < 0)
+            break;
+        s = s.mid(end + 2).trimmed();
+    }
+
+    return s.startsWith(QLatin1String("SELECT"), Qt::CaseInsensitive)
+        || s.startsWith(QLatin1String("WITH"), Qt::CaseInsensitive);
+}
 
 RsdSqlResult::RsdSqlResult(const QSqlDriver *db) :
     QSqlResult(db),
@@ -107,15 +125,23 @@ bool RsdSqlResult::fetch(int index)
         quint32 count = m_RecSet->getRecCount();
         if (index < count)
         {
-            ok = m_RecSet->moveFirst();
-
-            if (ok)
+            try
             {
-                ok = m_RecSet->move(index, RSDO_RELATIVE);
-                setAt(index);
+                ok = m_RecSet->moveFirst();
 
                 if (ok)
-                    MakeRecord();
+                {
+                    ok = m_RecSet->move(index, RSDO_RELATIVE);
+                    setAt(index);
+
+                    if (ok)
+                        MakeRecord();
+                }
+            }
+            catch (XRsdError &e)
+            {
+                setLastRsdError(e);
+                ok = false;
             }
 
             return ok;
@@ -134,8 +160,16 @@ bool RsdSqlResult::fetch(int index)
 
             if (!ok)
             {
-                ok = m_RecSet->moveLast();
-                setAt(pos - 1);
+                try
+                {
+                    ok = m_RecSet->moveLast();
+                    setAt(pos - 1);
+                }
+                catch (XRsdError &e)
+                {
+                    setLastRsdError(e);
+                    ok = false;
+                }
             }
             else
             {
@@ -148,13 +182,21 @@ bool RsdSqlResult::fetch(int index)
         }
         else
         {
-            ok = m_RecSet->moveFirst();
-
-            if (ok)
+            try
             {
-                ok = m_RecSet->move(index, RSDO_RELATIVE);
-                setAt(index);
-                MakeRecord();
+                ok = m_RecSet->moveFirst();
+
+                if (ok)
+                {
+                    ok = m_RecSet->move(index, RSDO_RELATIVE);
+                    setAt(index);
+                    MakeRecord();
+                }
+            }
+            catch (XRsdError &e)
+            {
+                setLastRsdError(e);
+                ok = false;
             }
 
             return ok;
@@ -169,10 +211,19 @@ bool RsdSqlResult::fetchFirst()
         return false;
 
     bool result = false;
-    if (at() == QSql::BeforeFirstRow)
-        result = m_RecSet->moveNext();
-    else
-        result = m_RecSet->moveFirst();
+
+    try
+    {
+        if (at() == QSql::BeforeFirstRow)
+            result = m_RecSet->moveNext();
+        else
+            result = m_RecSet->moveFirst();
+    }
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
+    }
 
     if (result)
     {
@@ -185,16 +236,25 @@ bool RsdSqlResult::fetchFirst()
 
 bool RsdSqlResult::fetchLast()
 {
+    bool result = true;
     if (!m_RecSet)
         return false;
 
-    bool result = m_RecSet->moveFirst();
-    while(result)
+    try
     {
-        result = fetchNext();
+        result = m_RecSet->moveFirst();
+        while(result)
+        {
+            result = fetchNext();
 
-        if (result)
-            MakeRecord();
+            if (result)
+                MakeRecord();
+        }
+    }
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
     }
 
     return result;
@@ -205,21 +265,30 @@ bool RsdSqlResult::fetchNext()
     if (!m_RecSet || !isActive())
         return false;
 
+    bool result = true;
     const int currentRow = m_RecSet->getCurPos();
     if (currentRow == QSql::BeforeFirstRow)
         return fetchFirst();
     if (currentRow == QSql::AfterLastRow)
         return false;
 
-    bool result = m_RecSet->moveNext();
-
-    if (result)
+    try
     {
-        setAt(currentRow + 1);
-        MakeRecord();
+        result = m_RecSet->moveNext();
+
+        if (result)
+        {
+            setAt(currentRow + 1);
+            MakeRecord();
+        }
+        else
+            setAt(QSql::AfterLastRow);
     }
-    else
-        setAt(QSql::AfterLastRow);
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
+    }
 
     return result;
 }
@@ -230,7 +299,17 @@ bool RsdSqlResult::fetchPrevious()
         return false;
 
     const int currentRow = at();
-    bool result = m_RecSet->movePrev();
+    bool result = true;
+
+    try
+    {
+        result = m_RecSet->movePrev();
+    }
+    catch (XRsdError &e)
+    {
+        setLastRsdError(e);
+        result = false;
+    }
 
     if (result)
     {
@@ -255,7 +334,7 @@ bool RsdSqlResult::makeRecordSetFromCmd(QScopedPointer<RsdCommandEx> &cmd)
         if (isForwardOnly())
             CursorType = RSDVAL_FORWARD_ONLY;
 
-        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, CursorType));// RSDVAL_CLIENT, RSDVAL_FORWARD_ONLY
+        m_RecSet.reset(new CRsdRecordset(*m_Cmd.data(), RSDVAL_CLIENT, CursorType, 1000));// RSDVAL_CLIENT, RSDVAL_FORWARD_ONLY
         m_RecSet->open();
 
         setSelect(true);
@@ -411,7 +490,109 @@ bool RsdSqlResult::exec()
         setActive(true);
         setAt(QSql::BeforeFirstRow);
 
-        if (result)
+        // Для INSERT/UPDATE/DELETE создавать RecordSet не нужно и может приводить к ошибкам
+        // (например, при наличии BLOB параметра драйвер падает при попытке получить результирующий набор).
+        if (result && isSelectLikeQuery(m_QueryString))
+            makeRecordSetFromCmd(m_Cmd);
+    }
+    catch(XRsdError& e)
+    {
+        result = false;
+        setLastRsdError(e, QSqlError::StatementError);
+    }
+    catch(...)
+    {
+        result = false;
+        setLastUnforeseenError(QSqlError::StatementError);
+    }
+
+    return result;
+}
+
+bool RsdSqlResult::execBatch(bool arrayBind)
+{
+    Q_UNUSED(arrayBind)
+
+    bool result = true;
+
+    setSelect(false);
+    setActive(false);
+
+    try
+    {
+        const int paramCount = boundValueCount();
+        QSqlResult::BindingSyntax syntax = bindingSyntax();
+
+        // Определяем размер массива пакета по первому списочному параметру.
+        int batchSize = -1;
+        for (int i = 0; i < paramCount; ++i)
+        {
+            QVariant value = boundValue(i);
+            if (value.type() == QVariant::List)
+            {
+                batchSize = value.toList().size();
+                break;
+            }
+        }
+
+        // Нет массивов значений — выполняем как обычный одиночный запрос.
+        if (batchSize <= 0)
+            return exec();
+
+        m_Cmd->clearParams();
+        m_Cmd->clearBatch();
+        m_Cmd->setParamArraySize(static_cast<size_t>(batchSize));
+
+        for (int i = 0; i < paramCount; ++i)
+        {
+            QVariant value = boundValue(i);
+            QSql::ParamType type = bindValueType(i);
+
+            QVariantList list;
+            if (value.type() == QVariant::List)
+                list = value.toList();
+            else
+            {
+                // Скаляр привязывается ко всем строкам пакета.
+                for (int k = 0; k < batchSize; ++k)
+                    list.append(value);
+            }
+
+            QString name;
+            if (syntax == QSqlResult::NamedBinding)
+                name = boundValueName(i).mid(1);
+
+            m_Cmd->bindBatch(name, list, type);
+        }
+
+        QSqlResult::setQuery(m_QueryString);
+        setCmdText(m_QueryString);
+
+        QStringList params;
+        QStringList hints = GetSqlHints(m_QueryString);
+        if (HasHint(hints, "DisConv", &params))
+        {
+            if (params.isEmpty())
+                m_Cmd->setDisableOraToPgConverter(true);
+            else
+            {
+                QVariant val = HintValue(params.front());
+
+                if (val.type() == QVariant::Bool)
+                    m_Cmd->setDisableOraToPgConverter(val.toBool());
+            }
+        }
+
+        int slqstat = m_Cmd->execute();
+        if (slqstat == RSDRES_NODATA)
+            slqstat = RSDRES_OK;
+
+        result = RSD_SUCCEEDED(slqstat);
+
+        setActive(true);
+        setAt(QSql::BeforeFirstRow);
+
+        if (result && isSelectLikeQuery(m_QueryString))
             makeRecordSetFromCmd(m_Cmd);
     }
     catch(XRsdError& e)
@@ -591,8 +772,8 @@ QVariant RsdSqlResult::GetValueFromField(const CRsdField &cfld, const int &loble
 
 QSqlField RsdSqlResult::MakeField(const CRsdField &fld, const bool &isnull, const int &loblen)
 {
-    QSqlField qfld;
     QString fldname = fld.getName();
+    QSqlField qfld(fldname, QVariant::Invalid);
     qfld.setName(fldname);
 
     if (!isnull || loblen)
@@ -602,6 +783,7 @@ QSqlField RsdSqlResult::MakeField(const CRsdField &fld, const bool &isnull, cons
         if (value.isValid())
             qfld.setValue(value);
     }
+
     return qfld;
 }
 

@@ -83,10 +83,19 @@ int ConnactionPage::nextId() const
 {
     // Получаем указатель на wizard и приводим к правильному типу
     RegParmWizard *wzrd = qobject_cast<RegParmWizard*>(wizard());
-    if (wzrd && wzrd->selectedAction() == RegParmWizard::ActionAddFromWord)
+    if (!wzrd)
+        return QWizardPage::nextId();
+
+    if (wzrd->selectedAction() == RegParmWizard::ActionAddFromWord)
     {
         // Для режима добавления из Word переходим на страницу ввода Word таблиц
         return RegParmWizard::PageEnterWordTable;
+    }
+
+    if (wzrd->selectedAction() == RegParmWizard::ActionAddRegToDat)
+    {
+        // Для режима добавления в DAT файлы переходим на страницу выбора настроек
+        return RegParmWizard::PageSettingsSelection;
     }
 
     // Для остальных режимов используем стандартное поведение

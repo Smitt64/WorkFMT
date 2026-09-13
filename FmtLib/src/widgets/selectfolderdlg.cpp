@@ -38,8 +38,11 @@ public:
     explicit FoldersModel(QObject *parent = Q_NULLPTR) :
         QStandardItemModel(parent)
     {
-        QFileIconProvider provider;
-        m_Folder = provider.icon(QFileIconProvider::Folder);
+        if (QIcon::themeName().isEmpty())
+        {
+            QFileIconProvider provider;
+            m_Folder = provider.icon(QFileIconProvider::Folder);
+        }
     }
 
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE

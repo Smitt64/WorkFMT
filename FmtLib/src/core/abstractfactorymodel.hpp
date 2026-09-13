@@ -24,19 +24,19 @@ public:
 
     }
 
-    int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE
+    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE
     {
         Q_UNUSED(parent)
         return m_pFactory->count();
     }
 
-    int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE
+    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE
     {
         Q_UNUSED(parent)
         return 2;
     }
 
-    QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE
     {
         if (!index.isValid())
             return QVariant();

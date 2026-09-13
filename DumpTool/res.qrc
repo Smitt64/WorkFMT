@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>res/app-icon.svg</file>
         <file>img/RefreshDocViewHS.png</file>
         <file>opr/10g-recreateUser.sql</file>
         <file>opr/CrUser_V6.cmd</file>

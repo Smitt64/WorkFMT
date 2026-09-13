@@ -27,6 +27,7 @@ RegInfoObj::RegInfoObj(const RegInfoObj &other, QObject *parent)
     , m_comment(other.m_comment)
     , m_defaultValue(other.m_defaultValue)
     , m_RegPath(other.m_RegPath)
+    , m_regTemplate(other.m_regTemplate)
 {
 }
 
@@ -43,6 +44,7 @@ bool RegInfoObj::isNode() const { return m_isNode; }
 bool RegInfoObj::isSecurity() const { return m_isSecurity; }
 QString RegInfoObj::comment() const { return m_comment; }
 QVariant RegInfoObj::defaultValue() const { return m_defaultValue; }
+QString RegInfoObj::regTemplate() const { return m_regTemplate; }
 
 // Сеттеры
 void RegInfoObj::setFullName(const QString &fullName)
@@ -169,6 +171,57 @@ void RegInfoObj::setDefaultValue(const QVariant &defaultValue)
         m_defaultValue = convertedValue;
         emit defaultValueChanged();
     }
+}
+
+void RegInfoObj::setRegTemplate(const QString &regTemplate)
+{
+    if (m_regTemplate != regTemplate) {
+        m_regTemplate = regTemplate;
+        emit regTemplateChanged();
+    }
+}
+
+QSharedPointer<RegInfoObj> RegInfoObj::fromJson(const QJsonObject &obj)
+{
+    QSharedPointer<RegInfoObj> ptr(new RegInfoObj());
+
+    // RSL-итератор свойств возвращает имена полей в ВЕРХНЕМ регистре
+    ptr->setFullName(obj["FULLNAME"].toString());
+    ptr->setTypeName(obj["TYPENAME"].toString());
+
+    // type может приходить как число или как строка
+    QJsonValue typeVal = obj["TYPE"];
+    if (typeVal.isDouble())
+        ptr->setType(static_cast<qint16>(typeVal.toInt()));
+    else if (typeVal.isString())
+    {
+        bool ok = false;
+        int typeInt = typeVal.toString().toInt(&ok);
+        if (ok)
+            ptr->setType(static_cast<qint16>(typeInt));
+        else
+            ptr->setType(getTypeFromTypeName(typeVal.toString()));
+    }
+    else
+        ptr->setType(getTypeFromTypeName(ptr->typeName()));
+
+    ptr->setIsGlobal(obj["ISGLOBAL"].toBool());
+    ptr->setIsNode(obj["ISNODE"].toBool());
+    ptr->setIsSecurity(obj["ISSECURITY"].toBool());
+    ptr->setComment(obj["COMMENT"].toString());
+    ptr->setRegTemplate(obj["TEMPLATE"].toString());
+
+    QJsonValue defaultVal = obj["DEFAULTVALUE"];
+    if (!defaultVal.isUndefined() && !defaultVal.isNull()) {
+        if (defaultVal.isBool())
+            ptr->setDefaultValue(defaultVal.toBool());
+        else if (defaultVal.isDouble())
+            ptr->setDefaultValue(defaultVal.toVariant());
+        else
+            ptr->setDefaultValue(defaultVal.toVariant());
+    }
+
+    return ptr;
 }
 
 // Вспомогательные методы (статичные)
@@ -387,6 +440,7 @@ QDebug operator<<(QDebug debug, const RegInfoObj &obj)
                     << ", comment:" << obj.comment()
                     << ", defaultValue:" << obj.defaultValue()
                     << ", defaultValueAsString:" << obj.getDefaultValueAsString()
+                    << ", template:" << obj.regTemplate()
                     << ")";
     return debug;
 }
@@ -443,6 +497,7 @@ QVariant RegInfoObjModel::data(const QModelIndex &index, int role) const
         case IsSecurityColumn: return obj->isSecurity();
         case CommentColumn: return obj->comment();
         case DefaultValueColumn: return obj->getDefaultValueAsString();
+        case TemplateColumn: return obj->regTemplate();
         case ColumnCount: return QVariant(); // Не должно достигать
         }
     }
@@ -464,6 +519,7 @@ QVariant RegInfoObjModel::data(const QModelIndex &index, int role) const
         switch (column) {
         case CommentColumn:
         case FullNameColumn:
+        case TemplateColumn:
             return data(index, Qt::DisplayRole);
         case IsGlobalColumn:
             return tr("Глобальный");
@@ -581,6 +637,10 @@ bool RegInfoObjModel::setData(const QModelIndex &index, const QVariant &value, i
                 return false;
             }
             break;
+        case TemplateColumn:
+            obj->setRegTemplate(value.toString());
+            changed = true;
+            break;
         case ColumnCount:
             break; // Не должно достигать
         }
@@ -633,6 +693,7 @@ void RegInfoObjModel::setRegInfoObjects(const RegInfoObjList &objects)
             disconnect(obj.data(), &RegInfoObj::isSecurityChanged, this, &RegInfoObjModel::onObjectDataChanged);
             disconnect(obj.data(), &RegInfoObj::commentChanged, this, &RegInfoObjModel::onObjectDataChanged);
             disconnect(obj.data(), &RegInfoObj::defaultValueChanged, this, &RegInfoObjModel::onObjectDataChanged);
+            disconnect(obj.data(), &RegInfoObj::regTemplateChanged, this, &RegInfoObjModel::onObjectDataChanged);
         }
     }
 
@@ -648,6 +709,7 @@ void RegInfoObjModel::setRegInfoObjects(const RegInfoObjList &objects)
             connect(obj.data(), &RegInfoObj::isSecurityChanged, this, &RegInfoObjModel::onObjectDataChanged);
             connect(obj.data(), &RegInfoObj::commentChanged, this, &RegInfoObjModel::onObjectDataChanged);
             connect(obj.data(), &RegInfoObj::defaultValueChanged, this, &RegInfoObjModel::onObjectDataChanged);
+            connect(obj.data(), &RegInfoObj::regTemplateChanged, this, &RegInfoObjModel::onObjectDataChanged);
         }
     }
 
@@ -670,6 +732,7 @@ void RegInfoObjModel::addRegInfoObject(QSharedPointer<RegInfoObj> obj)
     connect(obj.data(), &RegInfoObj::isSecurityChanged, this, &RegInfoObjModel::onObjectDataChanged);
     connect(obj.data(), &RegInfoObj::commentChanged, this, &RegInfoObjModel::onObjectDataChanged);
     connect(obj.data(), &RegInfoObj::defaultValueChanged, this, &RegInfoObjModel::onObjectDataChanged);
+    connect(obj.data(), &RegInfoObj::regTemplateChanged, this, &RegInfoObjModel::onObjectDataChanged);
 
     endInsertRows();
 
@@ -692,6 +755,7 @@ void RegInfoObjModel::insertRegInfoObject(int row, QSharedPointer<RegInfoObj> ob
     connect(obj.data(), &RegInfoObj::isSecurityChanged, this, &RegInfoObjModel::onObjectDataChanged);
     connect(obj.data(), &RegInfoObj::commentChanged, this, &RegInfoObjModel::onObjectDataChanged);
     connect(obj.data(), &RegInfoObj::defaultValueChanged, this, &RegInfoObjModel::onObjectDataChanged);
+    connect(obj.data(), &RegInfoObj::regTemplateChanged, this, &RegInfoObjModel::onObjectDataChanged);
 
     endInsertRows();
 
@@ -717,6 +781,7 @@ void RegInfoObjModel::removeRegInfoObject(int row)
         disconnect(obj.data(), &RegInfoObj::isSecurityChanged, this, &RegInfoObjModel::onObjectDataChanged);
         disconnect(obj.data(), &RegInfoObj::commentChanged, this, &RegInfoObjModel::onObjectDataChanged);
         disconnect(obj.data(), &RegInfoObj::defaultValueChanged, this, &RegInfoObjModel::onObjectDataChanged);
+        disconnect(obj.data(), &RegInfoObj::regTemplateChanged, this, &RegInfoObjModel::onObjectDataChanged);
     }
 
     endRemoveRows();
@@ -738,6 +803,7 @@ void RegInfoObjModel::clear()
             disconnect(obj.data(), &RegInfoObj::isSecurityChanged, this, &RegInfoObjModel::onObjectDataChanged);
             disconnect(obj.data(), &RegInfoObj::commentChanged, this, &RegInfoObjModel::onObjectDataChanged);
             disconnect(obj.data(), &RegInfoObj::defaultValueChanged, this, &RegInfoObjModel::onObjectDataChanged);
+            disconnect(obj.data(), &RegInfoObj::regTemplateChanged, this, &RegInfoObjModel::onObjectDataChanged);
         }
     }
 
@@ -788,6 +854,7 @@ QString RegInfoObjModel::columnName(RegInfoObjModel::Column column)
     case IsSecurityColumn: return tr("Б");
     case CommentColumn: return tr("Комментарий");
     case DefaultValueColumn: return tr("Значение по умолчанию");
+    case TemplateColumn: return tr("Шаблон значения");
     case ColumnCount: return QString();
     }
     return QString();

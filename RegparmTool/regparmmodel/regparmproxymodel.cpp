@@ -2,7 +2,6 @@
 #include "regparmitem.h"
 #include "regparmmodel.h"
 #include <QModelIndex>
-#include <QDebug>
 
 RegParmProxyModel::RegParmProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -13,7 +12,8 @@ RegParmProxyModel::RegParmProxyModel(QObject *parent)
         RegParmItem::T_GLOBAL,
         RegParmItem::T_SECURITY,
         RegParmItem::T_ISBRANCH,
-        RegParmItem::T_DESCRIPTION
+        RegParmItem::T_DESCRIPTION,
+        RegParmItem::T_VALUE
     };
 
     setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -122,7 +122,6 @@ void RegParmProxyModel::setFilterString(const QString &filter)
 {
     if (m_filterString != filter) {
         m_filterString = filter.trimmed();
-        qDebug() << "Setting filter to:" << m_filterString;
         invalidateFilter();
     }
 }
@@ -131,7 +130,6 @@ void RegParmProxyModel::setShowOnlyMatches(bool showOnly)
 {
     if (m_showOnlyMatches != showOnly) {
         m_showOnlyMatches = showOnly;
-        qDebug() << "Setting showOnlyMatches to:" << m_showOnlyMatches;
         invalidateFilter();
     }
 }

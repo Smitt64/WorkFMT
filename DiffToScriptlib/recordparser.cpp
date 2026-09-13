@@ -44,6 +44,21 @@ bool RecordParser::parseRecord(QString line)
     {
         DiffField *fld = field(_realFields[i]);
 
+        if (!fld)
+        {
+            // Поле есть в DAT, но отсутствует в описании таблицы — пропускаем
+            // значение, чтобы не было падения и смещения колонок.
+            QString value;
+            parseValue(is, value);
+            _values.push_back(value);
+
+            if (!is.atEnd() && getToken(is) == ",")
+                is.read(1);
+
+            readCnt++;
+            continue;
+        }
+
         if (fld->isValid())
         {
             QString value;
@@ -263,37 +278,97 @@ QString diffCreateChangesTableForSqlite(DiffTable *table)
     return sql;
 }
 
+namespace {
+
+static QString prepareValueForSqlite(const QString &rawValue, DiffField *field)
+{
+    if (!field || !field->isString)
+        return rawValue.isEmpty() ? QString("0") : rawValue;
+
+    QString value = rawValue;
+
+    if (value == QChar(1) || value == QChar(2))
+        return QString();
+
+    if (value.endsWith("'"))
+        value.chop(1);
+
+    if (value.startsWith("'"))
+        value = value.mid(1);
+
+    if (value == QChar(1) || value == QChar(2))
+        return QString();
+
+    // DAT использует '' для экранирования апострофа, как и SQL:
+    // раскрываем парные апострофы в одиночный символ.
+    value.replace("''", "'");
+    return value;
+}
+
+static int calculateBatchSize(int columnCount)
+{
+    const int maxSqliteVariables = 900; // SQLITE_MAX_VARIABLE_NUMBER обычно 999
+    if (columnCount <= 0)
+        return 1;
+    return qBound(1, maxSqliteVariables / columnCount, 500);
+}
+
+static bool execBatchInsert(QSqlDatabase &Connection, const QString &tableName,
+                            const QStringList &fields, const QVector<QVariantList> &columnValues)
+{
+    if (columnValues.isEmpty() || columnValues.first().isEmpty())
+        return true;
+
+    QStringList placeholders;
+    for (int i = 0; i < fields.size(); ++i)
+        placeholders.append("?");
+
+    const QString oneRow = "(" + placeholders.join(",") + ")";
+    QString sql = QString("INSERT INTO %1(%2) VALUES %3")
+            .arg(tableName)
+            .arg(fields.join(","))
+            .arg(oneRow);
+
+    QSqlQuery query(Connection);
+    query.prepare(sql);
+
+    for (int i = 0; i < fields.size(); ++i)
+        query.bindValue(i, QVariant(columnValues[i]));
+
+    return query.execBatch();
+}
+
+} // namespace
+
 // ---------------------------------------------------------------------------
 
-void diffLoadChangesToSqlite(QSqlDatabase &Connection, DiffTable *table)
+bool diffLoadChangesToSqlite(QSqlDatabase &Connection, DiffTable *table)
 {
-    QString err;
     QSqlQuery query(Connection);
     query.prepare(QString("DROP TABLE IF EXISTS %1_CHANGE").arg(table->name));
     ExecuteQuery(&query);
 
-    QString CreateTableSql = diffCreateChangesTableForSqlite(table);
-    query.prepare(QString(CreateTableSql));
+    QString createTableSql = diffCreateChangesTableForSqlite(table);
+    query.prepare(createTableSql);
 
-    if (ExecuteQuery(&query, &err))
-        return;
+    if (ExecuteQuery(&query) != 0)
+        return false;
 
-    QStringList params(table->realFields);
-    std::transform(table->realFields.begin(), table->realFields.end(), params.begin(),
-                   [](const QString &value) { return QString(":") + value; });
-    params.append(":change");
+    const QStringList &fields = table->realFields;
+    const int colCount = fields.size();
+    const int batchSize = calculateBatchSize(colCount + 1); // + t_change__
 
-    QString insertsql = QString("insert into %1_CHANGE(%2) values(%3)")
-            .arg(table->name)
-            .arg(table->realFields.join(",") + ",t_change__")
-            .arg(params.join(","));
+    QStringList allFields = fields;
+    allFields.append("t_change__");
 
-    for (int recno = 0; recno < table->records.count(); recno ++)
+    QVector<QVariantList> columnValues(allFields.size());
+
+    for (int recno = 0; recno < table->records.count(); ++recno)
     {
         DatRecord *rec = table->records[recno];
         QStringList values = rec->values;
 
-        switch(rec->lineType)
+        switch (rec->lineType)
         {
         case ltInsert:
             values.append("I");
@@ -302,37 +377,29 @@ void diffLoadChangesToSqlite(QSqlDatabase &Connection, DiffTable *table)
             values.append("D");
             break;
         case ltUpdate:
-            if (rec->lineUpdateType == lutOld)
-                values.append("O");
-            else
-                values.append("N");
+            values.append(rec->lineUpdateType == lutOld ? "O" : "N");
             break;
         }
 
-        QSqlQuery insert(Connection);
-        insert.prepare(insertsql);
-
-        for (int i = 0; i < table->realFields.size(); i++)
+        for (int i = 0; i < colCount; ++i)
         {
-            QString value = values[i];
-            DiffField *field = table->field(table->realFields[i]);
-
-            if (field->isString)
-            {
-                value = value.mid(1, value.size() - 2);
-
-                if (value == QChar(1) || value == QChar(2))
-                    value = QString();
-            }
-
-            insert.bindValue(params[i], value);
+            DiffField *field = table->field(fields[i]);
+            columnValues[i].append(prepareValueForSqlite(values[i], field));
         }
 
-        insert.bindValue(params.last(), values.last());
+        columnValues.last().append(prepareValueForSqlite(values.last(), nullptr));
 
-        ExecuteQuery(&insert, &err);
-        qDebug() << err;
+        if (columnValues.first().size() >= batchSize)
+        {
+            if (!execBatchInsert(Connection, table->name + "_CHANGE", allFields, columnValues))
+                return false;
+
+            for (QVariantList &list : columnValues)
+                list.clear();
+        }
     }
+
+    return execBatchInsert(Connection, table->name + "_CHANGE", allFields, columnValues);
 }
 
 bool diffLoadDatToSqlite(const QString &filename, QSqlDatabase &Connection, DiffTable *table, bool changes)
@@ -341,10 +408,10 @@ bool diffLoadDatToSqlite(const QString &filename, QSqlDatabase &Connection, Diff
     query.prepare(QString("DROP TABLE IF EXISTS %1").arg(table->name));
     ExecuteQuery(&query);
 
-    QString CreateTableSql = diffCreateTableForSqlite(table);
-    query.prepare(QString(CreateTableSql));
+    QString createTableSql = diffCreateTableForSqlite(table);
+    query.prepare(createTableSql);
 
-    if (ExecuteQuery(&query))
+    if (ExecuteQuery(&query) != 0)
         return false;
 
     for (DatIndex *index : table->indexes)
@@ -365,18 +432,18 @@ bool diffLoadDatToSqlite(const QString &filename, QSqlDatabase &Connection, Diff
     if (!f.open(QIODevice::ReadOnly))
         return false;
 
-    QStringList params(table->realFields);
-    std::transform(table->realFields.begin(), table->realFields.end(), params.begin(),
-                   [](const QString &value) { return QString(":") + value; });
+    if (!Connection.transaction())
+        return false;
 
-    QString insertsql = QString("insert into %1(%2) values(%3)")
-            .arg(table->name)
-            .arg(table->realFields.join(","))
-            .arg(params.join(","));
+    const QStringList &fields = table->realFields;
+    const int colCount = fields.size();
+    const int batchSize = calculateBatchSize(colCount);
+
+    QVector<QVariantList> columnValues(colCount);
 
     QScopedPointer<RecordParser> parser(new RecordParser(&table->fields, table->realFields));
 
-    bool IsDataSection = false;
+    bool isDataSection = false;
     QTextStream stream(&f);
     stream.setCodec("IBM 866");
 
@@ -384,63 +451,55 @@ bool diffLoadDatToSqlite(const QString &filename, QSqlDatabase &Connection, Diff
     {
         QString line = stream.readLine();
 
-        if (line.contains("4345"))
-        {
-            qDebug() << line;
-        }
-
-        if (!IsDataSection)
+        if (!isDataSection)
         {
             if (line.contains("BEGINDATA", Qt::CaseInsensitive))
-                IsDataSection = true;
+                isDataSection = true;
+
+            continue;
         }
-        else
+
+        RecordParser *ptrParser = parser.data();
+        if (!ptrParser->parseRecord(line))
+            continue;
+
+        const QStringList values = parser->getValues();
+        for (int i = 0; i < colCount; ++i)
         {
-            RecordParser *ptrParser = parser.data();
-            if (ptrParser->parseRecord(line))
+            DiffField *field = table->field(fields[i]);
+            columnValues[i].append(prepareValueForSqlite(values[i], field));
+        }
+
+        if (columnValues.first().size() >= batchSize)
+        {
+            if (!execBatchInsert(Connection, table->name, fields, columnValues))
             {
-                QSqlQuery insert(Connection);
-                insert.prepare(insertsql);
-
-                QStringList values = parser->getValues();
-                /*QString tmp = values[2];
-                if (values[0] == "596")
-                {
-                    qDebug() << values;
-                }*/
-                for (int i = 0; i < table->realFields.size(); i++)
-                {
-                    QString value = values[i];
-                    DiffField *field = table->field(table->realFields[i]);
-
-                    if (field->isString)
-                    {
-                        if (value == QChar(1) || value == QChar(2))
-                            value = QString();
-                        else
-                        {
-                            //value = value.mid(1, value.size() - 2);
-                            if (value.endsWith("'"))
-                                value.chop(1);
-
-                            if (value.startsWith("'"))
-                                value = value.mid(1);
-
-                            if (value == QChar(1) || value == QChar(2))
-                                value = QString();
-                        }
-                    }
-
-                    insert.bindValue(params[i], value);
-                }
-
-                ExecuteQuery(&insert);
+                Connection.rollback();
+                return false;
             }
+
+            for (QVariantList &list : columnValues)
+                list.clear();
         }
     }
 
-    if (changes)
-        diffLoadChangesToSqlite(Connection, table);
+    if (!execBatchInsert(Connection, table->name, fields, columnValues))
+    {
+        Connection.rollback();
+        return false;
+    }
+
+    if (changes && !diffLoadChangesToSqlite(Connection, table))
+    {
+        Connection.rollback();
+        return false;
+    }
+
+    if (!Connection.commit())
+    {
+        Connection.rollback();
+        return false;
+    }
 
     return true;
 }

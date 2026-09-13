@@ -34,6 +34,7 @@ private:
 
     QVBoxLayout *l;
     TablesSelectWidget *m_Tables;
+    bool m_FlagSkipRealAdd;
 };
 
 #endif // TABLEGROUPOPTIONS_H

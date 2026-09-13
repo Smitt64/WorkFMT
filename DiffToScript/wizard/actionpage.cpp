@@ -1,6 +1,6 @@
 #include "actionpage.h"
 #include "ui_actionpage.h"
-#include "svnsatatusmodel.h"
+#include <svn/svnstatusmodel.h>
 #include "diffwizard.h"
 #include "svnlogdlg.h"
 #include <toolsruntime.h>
@@ -27,7 +27,7 @@ QVariant DatSatatusModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::CheckStateRole)
     {
-        SvnSatatusModel *src = qobject_cast<SvnSatatusModel*>(sourceModel());
+        SvnStatusModel *src = qobject_cast<SvnStatusModel*>(sourceModel());
         const SvnSatatusElement &element = src->element(mapToSource(index).row());
 
         if (!m_CheckSate.contains(element.path))
@@ -43,7 +43,7 @@ bool DatSatatusModel::setData(const QModelIndex &index, const QVariant &value, i
 {
     if (role == Qt::CheckStateRole)
     {
-        SvnSatatusModel *src = qobject_cast<SvnSatatusModel*>(sourceModel());
+        SvnStatusModel *src = qobject_cast<SvnStatusModel*>(sourceModel());
         const SvnSatatusElement &element = src->element(mapToSource(index).row());
         m_CheckSate[element.path] = value.value<Qt::CheckState>();
 
@@ -57,7 +57,7 @@ bool DatSatatusModel::setData(const QModelIndex &index, const QVariant &value, i
 
 bool DatSatatusModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
-    SvnSatatusModel *src = qobject_cast<SvnSatatusModel*>(sourceModel());
+    SvnStatusModel *src = qobject_cast<SvnStatusModel*>(sourceModel());
     const SvnSatatusElement &element = src->element(source_row);
 
     return element.path.contains(".dat", Qt::CaseInsensitive);
@@ -93,12 +93,12 @@ ActionPage::ActionPage(QWidget *parent) :
     ui->setupUi(this);
     ui->widget->layout()->setMargin(0);
 
-    m_pModel = new SvnSatatusModel(this);
+    m_pModel = new SvnStatusModel(this);
     m_pStatusModel = new DatSatatusModel(this);
     m_pStatusModel->setSourceModel(m_pModel);
 
     ui->listView->setModel(m_pStatusModel);
-    ui->listView->setModelColumn(SvnSatatusModel::fld_FileName);
+    ui->listView->setModelColumn(SvnStatusModel::fld_FileName);
 
     ui->localRadio->setChecked(true);
 
@@ -157,12 +157,12 @@ void ActionPage::initializePage()
     if (m_pModel)
         delete m_pModel;
 
-    m_pModel = new SvnSatatusModel(this);
+    m_pModel = new SvnStatusModel(this);
     m_pStatusModel->setSourceModel(m_pModel);
     m_pStatusModel->resetCheckstate();
 
     ui->listView->setModel(m_pStatusModel);
-    ui->listView->setModelColumn(SvnSatatusModel::fld_FileName);
+    ui->listView->setModelColumn(SvnStatusModel::fld_FileName);
 
     wizard()->button(QWizard::CustomButton2)->setVisible(false);
 }

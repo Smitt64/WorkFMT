@@ -16,6 +16,7 @@ class WordContentPage;
 class QTextDocument;
 class WordPreviewRegPage;
 class OperationWizardPage;
+class SettingsSelectionPage;
 class RegParmWizard : public QWizard
 {
     Q_OBJECT
@@ -25,6 +26,7 @@ public:
     {
         PageAction = 0,
         PageConnection,
+        PageSettingsSelection,
         PageViewDat,
         PageEnterWordTable,
         PageWordPreviewReg,
@@ -49,14 +51,15 @@ public:
 
     void resetDatModel();
     QAbstractItemModel *datModel();
+    QSqlDatabase datDatabase() const;
 
     QTextDocument *wordContentDocument();
 
     WordPreviewRegPage *wordPreviewRegPage() { return m_pWordPreviewRegPage; }
+    SettingsSelectionPage *settingsSelectionPage() { return m_pSettingsSelectionPage; }
 
 private slots:
     void onSettingsClicked();
-    void onRestartClicked();
 
 private:
     void setupUi();
@@ -64,6 +67,7 @@ private:
 
     ActionPage *m_pActionPage;
     ConnactionPage *m_pConnectionPage;
+    SettingsSelectionPage *m_pSettingsSelectionPage;
     ViewDatPage *m_pViewPage;
     WordContentPage *m_pWordContentPage;
     WordPreviewRegPage *m_pWordPreviewRegPage;

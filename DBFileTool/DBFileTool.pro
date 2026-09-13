@@ -44,6 +44,7 @@ SOURCES += main.cpp \
     export/pgexporter.cpp \
     exportobject.cpp \
     exportpage.cpp \
+    importobject.cpp \
     loghighlighter.cpp \
     oraconnectionpage.cpp \
     selectactionpage.cpp \
@@ -74,6 +75,7 @@ HEADERS += \
     export/pgexporter.h \
     exportobject.h \
     exportpage.h \
+    importobject.h \
     loghighlighter.h \
     oraconnectionpage.h \
     selectactionpage.h \
@@ -96,3 +98,10 @@ else:unix: LIBS += -L$$OUT_PWD/../ToolsRuntimeProj/ToolsRuntime/ -lToolsRuntime
 
 INCLUDEPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../DiffToScriptlib/release/ -lDiffToScriptlib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../DiffToScriptlib/debug/ -lDiffToScriptlib
+else:unix: LIBS += -L$$OUT_PWD/../DiffToScriptlib/ -lDiffToScriptlib
+
+INCLUDEPATH += $$PWD/../DiffToScriptlib
+DEPENDPATH += $$PWD/../DiffToScriptlib

@@ -5,6 +5,7 @@
 #include <QAbstractItemModel>
 #include <QSharedPointer>
 #include "fmtlib_global.h"
+#include <QIcon>
 
 class FmtTable;
 class FmtField;
@@ -65,6 +66,8 @@ signals:
 private:
     void setFieldPropertyChanged(const FmtField *fld, const qint16 &prop);
     FmtTable *pTable;
+
+    QPixmap m_SettingsIcon, m_CreateIcon;
 };
 
 #endif // FMTFILDSMODEL_H

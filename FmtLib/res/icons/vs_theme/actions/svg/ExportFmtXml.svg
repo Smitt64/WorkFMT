@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <defs>
+    <style>.icon-canvas-transparent,.icon-vs-out{fill:#f6f6f6;}.icon-canvas-transparent{opacity:0;}.icon-vs-fg{fill:#f0eff1;}.icon-vs-bg{fill:#424242;}</style>
+  </defs>
+  <title>XMLFile_16x</title>
+  <path class="icon-canvas-transparent" d="M16,0V16H0V0Z"/>
+  <path class="icon-vs-out" d="M15,4.379V16H2V14.2l-2-2V11.8l2-2V0h8.621Z"/>
+  <path class="icon-vs-fg" d="M12.793,5H10V2.207ZM9,6V2H4V8h6.2L13,10.8V6Zm4,8v-.8l-.8.8Z"/>
+  <path class="icon-vs-bg" d="M10.207,1H3V8.8L3.8,8H4V2H9V6h4v4.8l1,1v-7ZM10,5V2.207L12.793,5Zm3,8.2,1-1V15H11.2l1-1H13ZM4.77,9.854,2.624,12,4.77,14.146l-.707.707L1.209,12,4.063,9.146ZM7.736,8.814l.929.371-2.4,6-.929-.371ZM12.791,12,9.937,14.854l-.707-.707L11.376,12,9.23,9.854l.707-.707Z"/>
+  <path class="icon-canvas-transparent" d="M 9.193 -0.442 L 9.193 7.96 L 0 7.96 L 0 -0.442 L 9.193 -0.442 Z" id="canvas" style="stroke-width: 1;"/>
+  <path class="icon-vs-out" d="M 3.328 0.02 L 4.953 1.505 L 4.21 2.184 L 6.033 2.184 C 7.775 2.184 9.193 3.479 9.193 5.072 C 9.193 6.664 7.775 7.96 6.033 7.96 L 5.458 7.96 L 5.458 5.859 L 6.033 5.859 C 6.508 5.859 6.895 5.506 6.895 5.072 C 6.895 4.638 6.508 4.284 6.033 4.284 L 4.21 4.284 L 4.953 4.963 L 3.328 6.448 L 0 3.406 L 0 3.062 L 3.328 0.02 Z" id="outline" style="stroke-width: 1;"/>
+  <path class="icon-vs-action-blue" d="M 3.328 0.762 L 4.141 1.505 L 2.823 2.709 L 6.033 2.709 C 7.458 2.709 8.618 3.769 8.618 5.072 C 8.618 6.375 7.458 7.435 6.033 7.435 L 6.033 6.385 C 6.825 6.385 7.469 5.796 7.469 5.072 C 7.469 4.348 6.825 3.759 6.033 3.759 L 2.823 3.759 L 4.141 4.963 L 3.328 5.706 L 0.624 3.234 L 3.328 0.762 Z" id="iconBg" style="fill: rgb(0, 83, 156); stroke-width: 1;"/>
+</svg>

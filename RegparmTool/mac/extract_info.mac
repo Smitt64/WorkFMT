@@ -8,29 +8,62 @@ private macro BoolStrToBool(str)
     return false;
 end;
 
+private macro TypeFromTypeName(typeName)
+    var upperType = strToUpper(strTrimmed(typeName));
+
+    if (upperType == "INTEGER")
+        return 0;
+    elif (upperType == "DOUBLE")
+        return 1;
+    elif (upperType == "STRING")
+        return 2;
+    elif (upperType == "BINARY")
+        return 3;
+    elif (upperType == "FLAG")
+        return 4;
+    end;
+
+    return 0;
+end;
+
+class RegInfoData()
+    var fullName = "";
+    var typeName = "";
+    var type = 0;
+    var isGlobal = false;
+    var isNode = false;
+    var isSecurity = false;
+    var comment = "";
+    var defaultValue = "";
+    var template = "";
+end;
+
 private macro ReadCoreTable(Table, InfoObj)
     var i = 0;
-    
 
     while (i < Table.rows)
         var CellAttr = strTrimmed(Table.cellAt(i, 1).text);
         var Value = strTrimmed(Table.cellAt(i, 2).text);
 
         if (strContains(CellAttr, "Полное имя", true))
-            InfoObj.setFullName(Value);
+            InfoObj.fullName = Value;
         elif (strContains(CellAttr, "Тип", true))
-            InfoObj.setTypeName(Value);
+            InfoObj.typeName = Value;
+            InfoObj.type = TypeFromTypeName(Value);
         elif (strContains(CellAttr, "Комментарий", true))
-            InfoObj.setComment(Value);
+            InfoObj.comment = Value;
         elif (strContains(CellAttr, "Значение по умолчанию", true))
-            InfoObj.setDefaultValue(Value);
-        elif ( strContains(CellAttr, "Глобальная настройка", true) )
-            InfoObj.setIsGlobal(BoolStrToBool(Value));
-        elif ( strContains(CellAttr, "Узловая настройка", true))
-            InfoObj.setIsNode(BoolStrToBool(Value));
-        elif ( strContains(CellAttr, "Настройка безопасности", true) )
-            InfoObj.setIsSecurity(BoolStrToBool(Value));
+            InfoObj.defaultValue = Value;
+        elif (strContains(CellAttr, "Глобальная настройка", true))
+            InfoObj.isGlobal = BoolStrToBool(Value);
+        elif (strContains(CellAttr, "Узловая настройка", true))
+            InfoObj.isNode = BoolStrToBool(Value);
+        elif (strContains(CellAttr, "Настройка безопасности", true))
+            InfoObj.isSecurity = BoolStrToBool(Value);
+        elif (strContains(CellAttr, "Шаблон значения", true))
+            InfoObj.template = Value;
         end;
+
         i = i + 1;
     end;
 end;
@@ -41,7 +74,7 @@ macro ExtractRegInfo(DocumentTables)
     while (DocumentTables.hasNext())
         var Table = DocumentTables.next();
 
-        var InfoObj = RegInfoObj();
+        var InfoObj = RegInfoData();
         ReadCoreTable(Table, InfoObj);
         InfoArray[InfoArray.size] = InfoObj;
     end;

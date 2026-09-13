@@ -1,7 +1,8 @@
-#include "mainwindow.h"
+#include "mainwindow.h" // -------------------
 #include "fmtapplication.h"
 #include "fmtcore.h"
 #include "toolsruntime.h"
+#include "mdiproxystyle.h"
 #include <QDebug>
 #include <QApplication>
 #include <QMessageBox>
@@ -9,16 +10,33 @@
 #include <QCommandLineParser>
 #include <QSettings>
 #include <QDir>
-#include <QStyleFactory>
+#include "fmtribbonmainwindow.h"
+#include "IconThemeManager.h"
 
-static void ProcessRsreqOption(MainWindow *w, const QString &constringsdir);
+static void ProcessRsreqOption(FmtRibbonMainWindow *w, const QString &constringsdir);
 static void ProcessLoggingOption(FmtApplication *app, QCommandLineParser *parser, QCommandLineOption &logOption, QCommandLineOption &logruleOption);
+
+static void InitIconTheme()
+{
+    IconThemeManager::initialize("vs_theme");
+
+    /*#ifdef QT_DEBUG
+    IconThemeManager::addCustomPath("d:\\Work\\ResEditor\\RsResEditor\\res\\icons");
+#endif*/
+}
 
 int main(int argc, char **argv)
 {
+    //SetSysColor(COLOR_WINDOW, RGB(0x33, 0x33, 0x33));
     QDir settingsDir = QDir(argv[0]);
 
     FmtApplication a(argc, argv);
+
+    // Только после создания QApplication: без экземпляра applicationDirPath()
+    // пуст, и тема иконок ищется относительно рабочего каталога
+    InitIconTheme();
+
+    a.init();
 
     QCommandLineParser parser;
     QCommandLineOption helpOption = parser.addHelpOption();
@@ -45,13 +63,10 @@ int main(int argc, char **argv)
     parser.addOption(logOption);
     parser.addOption(logruleOption);
 
-    qDebug() << a.arguments();
     parser.process(a.arguments());
 
-    MainWindow *w = (MainWindow*)a.addMainWindow();
+    FmtRibbonMainWindow *w = a.addMainWindow<FmtRibbonMainWindow>();
     ProcessLoggingOption(&a, &parser, logOption, logruleOption);
-    a.init();
-    a.applyStyle();
 
     // строка подключения
     if (parser.isSet(connectionStringOption))
@@ -71,10 +86,12 @@ int main(int argc, char **argv)
         }
     }
 
+    w->ApplyRibbonProxy();
+
     return a.exec();
 }
 
-static void ProcessRsreqOption(MainWindow *w, const QString &constringsdir)
+static void ProcessRsreqOption(FmtRibbonMainWindow *w, const QString &constringsdir)
 {
     QDir d(constringsdir);
 

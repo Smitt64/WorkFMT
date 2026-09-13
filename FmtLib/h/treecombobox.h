@@ -3,10 +3,11 @@
 
 #include <QObject>
 #include <QComboBox>
+#include <SARibbon.h>
 #include "fmtlib_global.h"
 
 class QTreeView;
-class FMTLIBSHARED_EXPORT TreeComboBox : public QComboBox
+class FMTLIBSHARED_EXPORT TreeComboBox : public SARibbonComboBox
 {
     Q_OBJECT
 public:

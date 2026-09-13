@@ -201,12 +201,30 @@ DatViewer/build/
 
 DatViewer/debug/
 
-HfProjects/release/
+.qtcreator/
 
-DiffToScriptlib/release/
+HfProjects/debug/
 
 DatViewer/release/
 
+DiffToScriptlib/release/
+
+HfProjects/release/
+
 RegparmTool/release/
 
-HfProjects/debug/
+.claude/settings.json
+
+DiffToScript/__pycache__/
+
+__pycache__/
+
+*.FVZigC
+
+test_data/
+
+BuildTrig/build/
+
+BuildTrig/debug/
+
+build/

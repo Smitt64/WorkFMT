@@ -28,7 +28,7 @@ void FmtIndecesDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     QStyleOptionViewItem opt = option;
     if (!index.parent().isValid())
     {
-        painter->fillRect(option.rect, QColor(Qt::yellow).lighter(165));
+        painter->fillRect(option.rect, QColor("#d5f0e2")); // QColor(Qt::yellow).lighter(165)
 
         if (((opt.state & QStyle::State_MouseOver) || option.rect.contains(m_Point)) && index.column() == 0)
         {

@@ -138,6 +138,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     pActionExecutor = new ToolbarActionExecutor(this);
     windowActionsRegistry()->setRslExecutor(pActionExecutor);
+    windowActionsRegistry()->setCodeDialogStyle(FmtCodeTabStyle);
 
     windowActionsRegistry()->scanActions(ui->menuFile);
     windowActionsRegistry()->scanActions(ui->menuService);
@@ -309,7 +310,9 @@ void MainWindow::UpdateActions()
     ConnectionInfo *cur = currentConnection();
 
     if (!cur)
+    {
         return;
+    }
 
     if (cur->type() != ConnectionInfo::CON_ORA)
         ui->actionEditContent->setEnabled(false);

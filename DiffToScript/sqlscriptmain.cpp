@@ -980,8 +980,9 @@ QStringList SqlScriptMain::disableEnableAutoIncTrigger(ScriptTable* datTable, bo
 
 void SqlScriptMain::toScript(const JoinTable *joinTable, DatRecord *rec)
 {
-    for (QString& s: rec->values)
+    for (int i = 0; i < rec->values.count(); ++i)
     {
+        QString& s = rec->values[i];
         QString tmp = "'"; tmp += QChar(1); tmp += "'";
         if (s == tmp)
         {
@@ -1005,7 +1006,40 @@ void SqlScriptMain::toScript(const JoinTable *joinTable, DatRecord *rec)
             s = QString("%1(0)").arg(_dbSpelling->chr());
             continue;
         }
+
+        if (joinTable && i < joinTable->scriptTable->fields.count())
+        {
+            DiffField* fld = joinTable->scriptTable->fields[i];
+            if (fld->type == fmtt_STRING || fld->type == fmtt_SNR ||
+                fld->type == fmtt_CHR || fld->type == fmtt_UCHR)
+            {
+                s = replaceChr10(s);
+            }
+        }
     }
+}
+
+QString SqlScriptMain::replaceChr10(const QString& value) const
+{
+    if (!value.startsWith("'") || !value.endsWith("'"))
+        return value;
+
+    QString content = value.mid(1, value.length() - 2);
+    QStringList parts = content.split("chr(10)", Qt::KeepEmptyParts, Qt::CaseInsensitive);
+
+    if (parts.size() <= 1)
+        return value;
+
+    QStringList result;
+    for (int i = 0; i < parts.size(); ++i)
+    {
+        if (!parts[i].isEmpty())
+            result.append("'" + parts[i] + "'");
+        if (i < parts.size() - 1)
+            result.append(_dbSpelling->chr() + "(10)");
+    }
+
+    return result.join(" || ");
 }
 
 void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
@@ -1022,7 +1056,7 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
 
         if (type == fmtt_STRING || type == fmtt_SNR)
         {
-            if (rec->values[i].isEmpty() || rec->values[i].at(0) == QChar(1))
+            if (rec->values[i].isEmpty() || rec->values[i].at(0) == QChar(1) || rec->values[i] == "''")
             {
                 rec->values[i] = QString("%1(1)")
                         .arg(_dbSpelling->chr());

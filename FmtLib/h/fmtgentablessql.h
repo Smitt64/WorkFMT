@@ -12,7 +12,7 @@ public:
     virtual int getContentType() const { return HighlighterSql; }
 
     virtual GenHighlightingRuleList highlightingRuleList() const;
-    virtual QByteArray makeContent(FmtSharedTablePtr pTable);
+    virtual QMap<QString, QByteArray> makeContent(FmtSharedTablePtr pTable) Q_DECL_OVERRIDE;
 
 private:
     GenHighlightingRuleList m_HighlightingRuleList;

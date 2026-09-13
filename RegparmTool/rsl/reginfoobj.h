@@ -7,6 +7,7 @@
 #include <QSharedPointer>
 #include <QComboBox>
 #include <QStyledItemDelegate>
+#include <QJsonObject>
 
 class RegInfoObj : public QObject
 {
@@ -20,6 +21,7 @@ class RegInfoObj : public QObject
     Q_PROPERTY(bool isSecurity READ isSecurity WRITE setIsSecurity NOTIFY isSecurityChanged)
     Q_PROPERTY(QString comment READ comment WRITE setComment NOTIFY commentChanged)
     Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
+    Q_PROPERTY(QString regTemplate READ regTemplate WRITE setRegTemplate NOTIFY regTemplateChanged)
 
 public:
     Q_INVOKABLE RegInfoObj(QObject *parent = nullptr);
@@ -35,6 +37,7 @@ public:
     bool isSecurity() const;
     QString comment() const;
     QVariant defaultValue() const;
+    QString regTemplate() const;
 
     // Сеттеры
     Q_INVOKABLE void setFullName(const QString &fullName);
@@ -45,6 +48,10 @@ public:
     Q_INVOKABLE void setIsSecurity(bool isSecurity);
     Q_INVOKABLE void setComment(const QString &comment);
     Q_INVOKABLE void setDefaultValue(const QVariant &defaultValue);
+    Q_INVOKABLE void setRegTemplate(const QString &regTemplate);
+
+    // Статический метод создания из QJsonObject
+    static QSharedPointer<RegInfoObj> fromJson(const QJsonObject &obj);
 
     // Константы для типов
     enum Type {
@@ -71,6 +78,7 @@ signals:
     void isSecurityChanged();
     void commentChanged();
     void defaultValueChanged();
+    void regTemplateChanged();
 
 private:
     void updateTypeNameFromType();
@@ -87,6 +95,7 @@ private:
     QString m_comment;
     QVariant m_defaultValue;
     QString m_RegPath;
+    QString m_regTemplate;
 };
 
 QDebug operator<<(QDebug debug, const RegInfoObj &obj);
@@ -113,6 +122,7 @@ public:
         IsSecurityColumn,
         CommentColumn,
         DefaultValueColumn,
+        TemplateColumn,
 
         ColumnCount // Должен быть последним
     };

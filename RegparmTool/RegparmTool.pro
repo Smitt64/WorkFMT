@@ -18,14 +18,20 @@ SOURCES += \
     connactionpage.cpp \
     main.cpp \
     operation/addfromwordoperation.cpp \
+    operation/addregtodatoperation.cpp \
     operation/operationbase.cpp \
     operationwizardpage.cpp \
     regparmmodel/regparmitem.cpp \
     regparmmodel/regparmmodel.cpp \
     regparmmodel/regparmproxymodel.cpp \
+    regparmmodel/settingsvaluedelegate.cpp \
+    regparmmodel/settingstablemodel.cpp \
+    regparmoptionsdlg.cpp \
     regparmwizard.cpp \
     rsl/extractinfoexecutor.cpp \
     rsl/reginfoobj.cpp \
+    settingspathcompleter.cpp \
+    settingsselectionpage.cpp \
     viewdatpage.cpp \
     wordcontentpage.cpp \
     wordpreviewregpage.cpp
@@ -34,14 +40,20 @@ HEADERS += \
     actionpage.h \
     connactionpage.h \
     operation/addfromwordoperation.h \
+    operation/addregtodatoperation.h \
     operation/operationbase.h \
     operationwizardpage.h \
     regparmmodel/regparmitem.h \
     regparmmodel/regparmmodel.h \
     regparmmodel/regparmproxymodel.h \
+    regparmmodel/settingsvaluedelegate.h \
+    regparmmodel/settingstablemodel.h \
+    regparmoptionsdlg.h \
     regparmwizard.h \
     rsl/extractinfoexecutor.h \
     rsl/reginfoobj.h \
+    settingspathcompleter.h \
+    settingsselectionpage.h \
     viewdatpage.h \
     wordcontentpage.h \
     wordpreviewregpage.h
@@ -55,6 +67,7 @@ FORMS += \
     actionpage.ui \
     connactionpage.ui \
     operationwizardpage.ui \
+    settingsselectionpage.ui \
     viewdatpage.ui \
     wordcontentpage.ui \
     wordpreviewregpage.ui
@@ -69,6 +82,8 @@ DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 RESOURCES += \
     ../DiffToScript/res.qrc \
     regtool.qrc
+
+win32:RC_FILE = res/regparmtool.rc
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/release/ -lFmtLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FmtLib/debug/ -lFmtLib

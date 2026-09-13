@@ -130,20 +130,20 @@ QStringList GetNormalFileList(const QStringList files,
     return files;
 }
 
-SvnSatatusModel::VcsType detectVcsType(const QString &path)
+VcsType detectVcsType(const QString &path)
 {
     QDir dir(path);
 
     // Проверяем наличие каталога .git
     if (dir.exists(".git"))
     {
-        return SvnSatatusModel::VcsType::Git;
+        return VcsType::Git;
     }
 
     // Проверяем наличие каталога .svn
     if (dir.exists(".svn"))
     {
-        return SvnSatatusModel::VcsType::Svn;
+        return VcsType::Svn;
     }
 
     // Рекурсивно проверяем родительские каталоги для Git
@@ -153,13 +153,13 @@ SvnSatatusModel::VcsType detectVcsType(const QString &path)
         QDir currentDir(currentPath);
         if (currentDir.exists(".git"))
         {
-            return SvnSatatusModel::VcsType::Git;
+            return VcsType::Git;
         }
 
         // Для SVN проверяем только текущий каталог (не рекурсивно)
         if (currentPath == path && currentDir.exists(".svn"))
         {
-            return SvnSatatusModel::VcsType::Svn;
+            return VcsType::Svn;
         }
 
         // Поднимаемся на уровень выше
@@ -172,7 +172,7 @@ SvnSatatusModel::VcsType detectVcsType(const QString &path)
             break;
     }
 
-    return SvnSatatusModel::VcsType::None;
+    return VcsType::None;
 }
 
 QByteArray getGitDiff(const QString &path, const QString &file, const QString &revision)

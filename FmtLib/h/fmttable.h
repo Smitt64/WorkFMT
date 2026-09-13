@@ -196,7 +196,7 @@ public:
     Q_INVOKABLE int save();
     int safeSave(const bool &IgnoreWarnings);
     qint16 createDbTable(QString *err = Q_NULLPTR);
-    int dbInit(const QString &log = QString());
+    int dbInit(const QString &log = QString(), QString *errorOutput = Q_NULLPTR);
 
     Q_INVOKABLE bool checkErrors(ErrorsModel *e);
     Q_INVOKABLE ErrorsModel *lastErrors();

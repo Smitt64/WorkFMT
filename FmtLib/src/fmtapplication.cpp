@@ -30,7 +30,9 @@ LONG CALLBACK ExceptionFilter(PEXCEPTION_POINTERS pExInfo)
 #endif
 
 FmtApplication::FmtApplication(int &argc, char **argv)  :
-    QApplication(argc, argv)
+    QApplication(argc, argv),
+    pSettings(nullptr),
+    pTnsModel(nullptr)
 {
 #ifdef Q_OS_WIN
     hOldFilter = Q_NULLPTR;
@@ -39,6 +41,7 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     QDir current(QDir::current());
     QApplication::setApplicationName("WorkFMT");
     QApplication::setApplicationVersion(GetVersionNumberString());
+    setWindowIcon(QIcon("://app-icon.svg"));
 
     QDir settingsDir = QDir(qApp->applicationDirPath());
     pSettings = new QSettings(settingsDir.absoluteFilePath("fmtopt.ini"), QSettings::IniFormat, this);
@@ -55,10 +58,19 @@ FmtApplication::FmtApplication(int &argc, char **argv)  :
     toolLoggingCategoryListAdd(logCore());
     toolLoggingCategoryListAdd(logFmt());
     toolLoggingCategoryListAdd(logDbgHelp());
+
+    HighlighterStyle::inst()->loadStyle("://office2013_highlighter.json");
 }
 
 FmtApplication::~FmtApplication()
 {
+    qDeleteAll(m_pMainWindows);
+
+    if (pSettings)
+        delete pSettings;
+
+    if (pTnsModel)
+        delete pTnsModel;
 #ifdef Q_OS_WIN
     if (hOldFilter)
         SetUnhandledExceptionFilter(hOldFilter);
@@ -68,18 +80,23 @@ FmtApplication::~FmtApplication()
 
 void FmtApplication::applyStyle()
 {
-    QString styleName = pSettings->value("style").toString();
+    /*QString styleName = pSettings->value("style").toString();
     QStyle *style = QStyleFactory::create(styleName);
-    QApplication::setStyle(style);
+    QApplication::setStyle(style);*/
 }
 
 void FmtApplication::init()
 {
     pTnsModel = new OracleTnsListModel(this);
+
     FmtInit();
+    //toolLoadFonts();
 
     qCInfo(logCore()) << "Application path: " << qApp->applicationDirPath();
     qCInfo(logCore()) << "Current path: " << QDir::current().path();
+
+    // Загрузка перевода SARibbon из ресурсов ToolsRuntime
+    toolLoadTranslations();
 
     QDir trDir(applicationDirPath());
     if (trDir.cd("translations"))
@@ -96,12 +113,12 @@ void FmtApplication::init()
     else
         qCWarning(logCore()) << "Can't find translations folder";
 
-    initDbgHelp();
+    //initDbgHelp();
 
     registerFmtGenInterface<FmtGenCppTemplate>("FmtGenCppTemplate", tr("Шаблоны btrv"));
     registerFmtGenInterface<FmtGenTablesSql>("FmtGenTablesSql", tr("Скрипт TablesSql"));
-    registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate", tr("Объектный сервис ввода для TRsbParty"));
-    registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate", tr("Класс для импорта в RSL"));
+    registerFmtGenInterface<FmtGenInputServiceCppTemplate>("FmtGenInputServiceCppTemplate", tr("Rs-Core: Объектный сервис ввода для TRsbParty"));
+    registerFmtGenInterface<FmtGenCppClassTemplate>("FmtGenCppClassTemplate", tr("Rs-Core: Класс для импорта в RSL для TRsbParty"));
     registerFmtGenInterface<FmtGenHotFix>("FmtGenHotFix", tr("PL/SQL скрип наполнения fmt"));
 
     registerMassOpInterface<MassInitTableOperation>("MassInitTableOperation", tr("Создание таблиц/индексов"));

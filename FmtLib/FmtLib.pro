@@ -24,6 +24,7 @@ LIBS += -lversion
 CONFIG(debug, debug|release):DEFINES += FMT_DEBUG
 
 SOURCES += \
+    fmtapplicationwidget.cpp \
     options/externaltoolspage.cpp \
     options/fmtcommandspage.cpp \
     options/fmtoptionsdlg.cpp \
@@ -33,8 +34,13 @@ SOURCES += \
     rslexecutors/checksaveexecutor.cpp \
     rslexecutors/generatorrslexecutor.cpp \
     rslexecutors/toolbaractionexecutor.cpp \
+    src/core/colormanager.cpp \
+    src/core/encodingfixer.cpp \
+    src/core/fieldsplitterprocess.cpp \
     src/core/fmttablecomparemodel.cpp \
+    src/core/mdiproxystyle.cpp \
     src/debugconnect.cpp \
+    src/fmtribbonmainwindow.cpp \
     src/gensqltemplatedlg.cpp \
     src/core/fmtcore.cpp \
     src/connectioninfo.cpp \
@@ -46,6 +52,7 @@ SOURCES += \
     src/fmtworkwindow.cpp \
     src/mainwindow.cpp \
     src/massop/destribcreate/massdestribprogress.cpp \
+    src/models/generatorsproxymodel.cpp \
     src/models/odbctablemodel.cpp \
     src/models/odbctablemodeldelegate.cpp \
     src/models/tableobjectsmodel.cpp \
@@ -60,8 +67,12 @@ SOURCES += \
     src/widgets/comparefmt/comparexmlpage.cpp \
     src/widgets/filteredtablewidget.cpp \
     src/widgets/fmtsegmentflagsdlg.cpp \
+    src/widgets/fmtworkwindow/fmtcodetabbase.cpp \
+    src/widgets/fmtworkwindow/fmtsqltab.cpp \
+    src/widgets/fmtworkwindow/fmtwindowtabinterface.cpp \
     src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
+    src/widgets/sqlconvertorcategory.cpp \
     src/widgets/sqlconvertordlg.cpp \
     src/widgets/tablestructsqldlg.cpp \
     src/windowslistdlg.cpp \
@@ -205,7 +216,6 @@ FORMS += \
     ui/oracleauthdlg.ui \
     ui/tablesgroupsdlg.ui \
     ui/windowslistdlg.ui \
-    ui/fmtworkwndgen.ui \
     ui/gencppsettings.ui \
     ui/selectconnectiondlg.ui \
     ui/stringlistdlg.ui \
@@ -228,6 +238,8 @@ RESOURCES += \
     res/fmt.qrc
 
 HEADERS += \
+    fmtapplicationwidget.h \
+    h/fmtribbonmainwindow.h \
     h/gensqltemplatedlg.h \
     h/DataStructure.hpp \
     h/LockVar.hpp \
@@ -314,9 +326,14 @@ HEADERS += \
     rslexecutors/checksaveexecutor.h \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
+    src/core/colormanager.h \
+    src/core/encodingfixer.h \
+    src/core/fieldsplitterprocess.h \
     src/core/fmttablecomparemodel.h \
+    h/mdiproxystyle.h \
     src/debugconnect.h \
     src/massop/destribcreate/massdestribprogress.h \
+    src/models/generatorsproxymodel.h \
     src/models/tableobjectsmodel.h \
     src/queryeditor/queryeditor.h \
     src/widgets/comparefmt/comparecppstructpage.h \
@@ -367,7 +384,11 @@ HEADERS += \
     h/odbctablemodeldelegate.h \
     h/recentconnectionlist.h \
     h/tnsnames.h \
+    src/widgets/fmtworkwindow/fmtcodetabbase.h \
+    src/widgets/fmtworkwindow/fmtsqltab.h \
+    src/widgets/fmtworkwindow/fmtwindowtabinterface.h \
     src/widgets/guiconverterdlg.h \
+    src/widgets/sqlconvertorcategory.h \
     src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h \
     src/wizards/MassCompareTables/fmttablecollection.h \
@@ -393,6 +414,13 @@ DEPENDPATH += $$PWD/../ToolsRuntimeProj/ToolsRuntime
 OTHER_FILES += \
     $$PWD/mac
 
+ICONS_SRC =  \
+    $$PWD/../FmtLib/res/icons \
+    $$PWD/../ToolsRuntimeProj/ToolsRuntime/icons
+
+FONT_SRC =  \
+    $$PWD/../ToolsRuntimeProj/ToolsRuntime/fonts
+
 defineTest(copyToDestDir) {
     files = $$1
     dir = $$2
@@ -410,5 +438,7 @@ defineTest(copyToDestDir) {
 
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../bin/mac)
 copyToDestDir($$OTHER_FILES, $$OUT_PWD/../WorkFMT/debug/mac)
+copyToDestDir($$ICONS_SRC, $$OUT_PWD/../bin/resources/icons)
+copyToDestDir($$FONT_SRC, $$OUT_PWD/../bin/resources/fonts)
 
 OTHER_FILES += com.rs.fmt.workfmt.xml

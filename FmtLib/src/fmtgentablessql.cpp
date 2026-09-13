@@ -13,7 +13,7 @@ FmtGenTablesSql::~FmtGenTablesSql()
 
 }
 
-QByteArray FmtGenTablesSql::makeContent(FmtSharedTablePtr pTable)
+QMap<QString, QByteArray> FmtGenTablesSql::makeContent(FmtSharedTablePtr pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
@@ -39,7 +39,7 @@ QByteArray FmtGenTablesSql::makeContent(FmtSharedTablePtr pTable)
 
     m_HighlightingRuleList.append({QRegularExpression(QString("\\b%1\\b").arg(pTable->name())), FormatElemType});
 
-    return data;
+    return QMap<QString, QByteArray>{{QString(), data}};
 }
 
 GenHighlightingRuleList FmtGenTablesSql::highlightingRuleList() const

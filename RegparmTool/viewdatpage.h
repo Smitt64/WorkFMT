@@ -18,6 +18,7 @@ public:
     ~ViewDatPage();
 
     virtual void initializePage() Q_DECL_OVERRIDE;
+    virtual int nextId() const Q_DECL_OVERRIDE;
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
 
 protected:

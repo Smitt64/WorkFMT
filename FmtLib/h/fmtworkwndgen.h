@@ -2,17 +2,17 @@
 #define FMTWORKWNDGEN_H
 
 #include <QtWidgets>
+#include "src/widgets/fmtworkwindow/fmtcodetabbase.h"
 #include "fmtgeninterface.h"
-
-namespace Ui {
-class FmtWorkWndGen;
-}
 
 class GenInterfaceFactoryModel;
 class CodeEditor;
 class Highlighter;
 class GeneratorsProxyModel;
-class FmtWorkWndGen : public QMainWindow
+class QMdiSubWindow;
+class SARibbonCategory;
+class SARibbonPannel;
+class FmtWorkWndGen : public FmtCodeTabBase
 {
     Q_OBJECT
 
@@ -20,30 +20,32 @@ public:
     explicit FmtWorkWndGen(QWidget *parent = Q_NULLPTR);
     virtual ~FmtWorkWndGen();
 
+    void generate();
     void setTable(QSharedPointer<FmtTable> table);
+    void setInterfaceID(const QString &id);
+
+    const QString &interfaceId() const;
+
+    virtual QString ribbonCategoryName() const override;
+    virtual void initRibbonPanels() override;
+    virtual void activateRibbon() override;
+    virtual void deactivateRibbon() override;
+
+protected:
+    virtual void setupRibbonActions() override;
+    virtual void updateRibbonState() override;
 
 private slots:
-    void interfaceComboSelected(const QString &value);
-    void generate();
-    void onFinish(const QByteArray &data);
-    void onSave();
+    void onFinish(const QMap<QString, QByteArray> &data);
     void onProperty();
 
 private:
-    void UpdateSaveAction();
-    QString getInterfaceId() const;
-    Ui::FmtWorkWndGen *ui;
-    QComboBox *pGenType;
-    GenInterfaceFactoryModel *pGenModel;
-    GeneratorsProxyModel *pProxyModel;
+    QString m_InterfaceId;
+    FmtGenInterface *pInterface;
 
-    CodeEditor *pEditor;
-    QAction *pActionRun, *pActionProperty, *pActionSave;
-
-    QMap<QString, FmtGenInterface*> m_Interfaces;
     QSharedPointer<FmtTable> pTable;
 
-    Highlighter *pCurrentHighlighter;
+    QAction *m_pUpdateScripts;
 };
 
 #endif // FMTWORKWNDGEN_H

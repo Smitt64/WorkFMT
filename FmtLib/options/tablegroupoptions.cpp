@@ -8,7 +8,8 @@
 
 TableGroupOptions::TableGroupOptions(ConnectionInfo *connection, QWidget *parent)
     : OptionsPage(parent)
-    , ui(new Ui::TableGroupOptions)
+    , ui(new Ui::TableGroupOptions),
+    m_FlagSkipRealAdd(false)
 {
     ui->setupUi(this);
 
@@ -40,18 +41,22 @@ void TableGroupOptions::groupSelected(const int &index)
 
     if (!ExecuteQuery(query.data()))
     {
-        m_Tables->beginAddTables(tr("Загрузка сведений"), 0, TablesGroupProvider::instance()->getTablesCountInGroup(index));
+        m_FlagSkipRealAdd = true;
+        //m_Tables->beginAddTables(tr("Загрузка сведений"), 0, TablesGroupProvider::instance()->getTablesCountInGroup(index));
         while(query->next())
-        {
             m_Tables->userAddTable(query->value(1).toString());
-        }
+
+        m_FlagSkipRealAdd = false;
     }
 
-    m_Tables->endAddTables();
+    //m_Tables->endAddTables();
 }
 
 bool TableGroupOptions::addTable(const QString &table)
 {
+    if (m_FlagSkipRealAdd)
+        return true;
+
     return TablesGroupProvider::instance()->addTable(ui->comboBox->currentIndex(), table);
 }
 

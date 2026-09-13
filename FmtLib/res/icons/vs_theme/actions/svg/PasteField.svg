@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <style>.icon-canvas-transparent{opacity:0;fill:#f6f6f6}.icon-vs-out{fill:#f6f6f6}.icon-vs-bg{fill:#424242}.icon-vs-fg{fill:#f0eff1}</style>
+  <title>Paste_16x</title>
+  <g id="canvas" transform="matrix(1, 0, 0, 1, 0, 0.001622)">
+    <path class="icon-canvas-transparent" d="M16,16H0V0H16Z"/>
+  </g>
+  <g id="iconBg" transform="matrix(1, 0, 0, 1, 0, 0.001622)">
+    <path class="icon-vs-out" d="M6,16V15H1V2H4.171A3,3,0,0,1,9.829,2H13V6h2V16Z"/>
+    <path class="icon-vs-bg" d="M12,7V3H9A2,2,0,0,0,5,3H2V14H7v1h7V7ZM5,4H6V3A1,1,0,0,1,8,3V4H9V5H5ZM3,13V4H4V6h6V4h1V7H7v6Zm10,1H8V8h5Z"/>
+  </g>
+  <g id="iconFg" transform="matrix(1, 0, 0, 1, 0, 0.001622)">
+    <path class="icon-vs-fg" d="M5,4H6V3A1,1,0,0,1,8,3V4H9V5H5ZM3,13V4H4V6h6V4h1V7H7v6Zm10,1H8V8h5Z"/>
+  </g>
+  <path class="icon-canvas-transparent" d="M 16.017 16.588 L 3.856 16.588 L 3.856 5.289 L 16.017 5.289 L 16.017 16.588 Z" id="path-1" style="stroke-width: 1;"/>
+  <path class="icon-vs-out" d="M 4.616 15.882 L 4.616 5.995 L 16.017 5.995 L 16.017 15.882 L 4.616 15.882 Z" id="outline" style="stroke-width: 1;"/>
+  <path class="icon-vs-fg" d="M 6.138 13.057 L 8.417 13.057 L 8.417 14.471 L 6.138 14.471 L 6.138 13.057 Z M 6.138 12.351 L 8.417 12.351 L 8.417 10.94 L 6.138 10.94 L 6.138 12.351 Z M 6.138 10.232 L 8.417 10.232 L 8.417 8.82 L 6.138 8.82 L 6.138 10.232 Z M 9.176 14.471 L 11.458 14.471 L 11.458 13.057 L 9.176 13.057 L 9.176 14.471 Z M 9.176 12.351 L 11.458 12.351 L 11.458 10.94 L 9.176 10.94 L 9.176 12.351 Z M 9.176 10.232 L 11.458 10.232 L 11.458 8.82 L 9.176 8.82 L 9.176 10.232 Z M 12.217 14.471 L 14.498 14.471 L 14.498 13.057 L 12.217 13.057 L 12.217 14.471 Z M 12.217 12.351 L 14.498 12.351 L 14.498 10.94 L 12.217 10.94 L 12.217 12.351 Z M 12.217 8.82 L 12.217 10.232 L 14.498 10.232 L 14.498 8.82 L 12.217 8.82 Z" id="path-2" style="stroke-width: 1;"/>
+  <g id="group-1" transform="matrix(0.76006, 0, 0, 0.706154, 3.857563, 5.290499)" style="">
+    <path class="icon-vs-bg" d="M2 2v12h13V2H2zm4 11H3v-2h3v2zm0-3H3V8h3v2zm0-3H3V5h3v2zm4 6H7v-2h3v2zm0-3H7V8h3v2zm0-3H7V5h3v2zm4 6h-3v-2h3v2zm0-3h-3V8h3v2zm0-3h-3V5h3v2z"/>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <style>.icon-canvas-transparent{opacity:0;fill:#f6f6f6}.icon-vs-out{fill:#f6f6f6}.icon-vs-bg{fill:#424242}.icon-vs-fg{fill:#f0eff1}</style>
+  <path class="icon-canvas-transparent" d="M16 16H0V0h16v16z" id="canvas"/>
+  <path class="icon-vs-out" d="M1 15V1h15v14H1z" id="outline"/>
+  <path class="icon-vs-fg" d="M3 11h3v2H3v-2zm0-1h3V8H3v2zm0-3h3V5H3v2zm4 6h3v-2H7v2zm0-3h3V8H7v2zm0-3h3V5H7v2zm4 6h3v-2h-3v2zm0-3h3V8h-3v2zm0-5v2h3V5h-3z" id="iconFg"/>
+  <g id="iconBg">
+    <path class="icon-vs-bg" d="M2 2v12h13V2H2zm4 11H3v-2h3v2zm0-3H3V8h3v2zm0-3H3V5h3v2zm4 6H7v-2h3v2zm0-3H7V8h3v2zm0-3H7V5h3v2zm4 6h-3v-2h3v2zm0-3h-3V8h3v2zm0-3h-3V5h3v2z"/>
+  </g>
+  <title>XMLFile_16x</title>
+  <path class="icon-canvas-transparent" d="M 16.566 5.488 L 16.566 15.134 L 7.224 15.134 L 7.224 5.488 L 16.566 5.488 Z" style="stroke-width: 1;"/>
+  <path class="icon-vs-out" d="M 15.982 8.128 L 15.982 15.134 L 8.392 15.134 L 8.392 14.049 L 7.224 12.843 L 7.224 12.602 L 8.392 11.396 L 8.392 5.488 L 13.425 5.488 L 15.982 8.128 Z" style="stroke-width: 1;"/>
+  <path class="icon-vs-fg" d="M 14.693 8.502 L 13.062 8.502 L 13.062 6.818 L 14.693 8.502 Z M 12.479 9.105 L 12.479 6.694 L 9.559 6.694 L 9.559 10.311 L 13.179 10.311 L 14.814 11.999 L 14.814 9.105 L 12.479 9.105 Z M 14.814 13.928 L 14.814 13.446 L 14.347 13.928 L 14.814 13.928 Z" style="stroke-width: 1;"/>
+  <path class="icon-vs-bg" d="M 13.183 6.091 L 8.976 6.091 L 8.976 10.794 L 9.442 10.311 L 9.559 10.311 L 9.559 6.694 L 12.479 6.694 L 12.479 9.105 L 14.814 9.105 L 14.814 11.999 L 15.398 12.602 L 15.398 8.382 L 13.183 6.091 Z M 13.062 8.502 L 13.062 6.818 L 14.693 8.502 L 13.062 8.502 Z M 14.814 13.446 L 15.398 12.843 L 15.398 14.531 L 13.763 14.531 L 14.347 13.928 L 14.814 13.928 L 14.814 13.446 Z M 10.009 11.429 L 8.756 12.723 L 10.009 14.016 L 9.596 14.443 L 7.93 12.723 L 9.596 11.002 L 10.009 11.429 Z M 11.741 10.802 L 12.283 11.025 L 10.881 14.642 L 10.339 14.419 L 11.741 10.802 Z M 14.692 12.723 L 13.025 14.443 L 12.613 14.017 L 13.866 12.723 L 12.613 11.429 L 13.025 11.002 L 14.692 12.723 Z" style="stroke-width: 1;"/>
+</svg>

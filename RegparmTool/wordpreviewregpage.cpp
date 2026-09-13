@@ -54,6 +54,7 @@ void WordPreviewRegPage::setupTreeView()
     header->setSectionResizeMode(RegInfoObjModel::IsSecurityColumn, QHeaderView::Fixed);
     header->setSectionResizeMode(RegInfoObjModel::CommentColumn, QHeaderView::Interactive);
     header->setSectionResizeMode(RegInfoObjModel::DefaultValueColumn, QHeaderView::Interactive);
+    header->setSectionResizeMode(RegInfoObjModel::TemplateColumn, QHeaderView::Interactive);
 
     // Устанавливаем делегаты для редактирования
     ui->treeView->setItemDelegateForColumn(RegInfoObjModel::TypeNameColumn, new TypeComboBoxDelegate(this));
@@ -89,16 +90,20 @@ void WordPreviewRegPage::initializePage()
 
 void WordPreviewRegPage::adjustColumnsAfterDataLoad()
 {
-    // Автоподбор ширины для комментария и значения по умолчанию
+    // Автоподбор ширины для комментария, значения по умолчанию и шаблона
     ui->treeView->resizeColumnToContents(RegInfoObjModel::CommentColumn);
     ui->treeView->resizeColumnToContents(RegInfoObjModel::DefaultValueColumn);
+    ui->treeView->resizeColumnToContents(RegInfoObjModel::TemplateColumn);
 
-    // Ограничиваем максимальную ширину для комментария и значения
+    // Ограничиваем максимальную ширину для комментария, значения и шаблона
     int maxWidth = ui->treeView->width() / 3;
     if (ui->treeView->columnWidth(RegInfoObjModel::CommentColumn) > maxWidth) {
         ui->treeView->setColumnWidth(RegInfoObjModel::CommentColumn, maxWidth);
     }
     if (ui->treeView->columnWidth(RegInfoObjModel::DefaultValueColumn) > maxWidth) {
         ui->treeView->setColumnWidth(RegInfoObjModel::DefaultValueColumn, maxWidth);
+    }
+    if (ui->treeView->columnWidth(RegInfoObjModel::TemplateColumn) > maxWidth) {
+        ui->treeView->setColumnWidth(RegInfoObjModel::TemplateColumn, maxWidth);
     }
 }

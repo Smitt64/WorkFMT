@@ -10,7 +10,7 @@ class ActionPage;
 
 class QButtonGroup;
 class QSpinBox;
-class SvnSatatusModel;
+class SvnStatusModel;
 class DatSatatusModel;
 class ActionPage : public QWizardPage
 {
@@ -35,7 +35,7 @@ private:
     QSpinBox *fakeBtn;
 
     DatSatatusModel *m_pStatusModel;
-    SvnSatatusModel *m_pModel;
+    SvnStatusModel *m_pModel;
 };
 
 class DatSatatusModel : public QSortFilterProxyModel

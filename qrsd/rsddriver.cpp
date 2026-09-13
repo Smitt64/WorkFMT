@@ -67,6 +67,7 @@ bool RsdDriver::hasFeature(QSqlDriver::DriverFeature feature) const
     case QSqlDriver::PreparedQueries:
     case QSqlDriver::NamedPlaceholders:
     case QSqlDriver::LowPrecisionNumbers:
+    case QSqlDriver::BatchOperations:
         result = true;
         break;
     default:

@@ -10,14 +10,16 @@ static int Index = 0;
 
 TablesDockWidget::TablesDockWidget(QWidget *parent) :
     QMainWindow(parent),
+    pTables(Q_NULLPTR),
     pInitTableAction(Q_NULLPTR),
     pRebuildOffsets(Q_NULLPTR),
     pFilterByGroup(Q_NULLPTR)
 {
     pModel = Q_NULLPTR;
     pTables = new QListView(this);
-    pTables->setResizeMode(QListView::Adjust);
+    //pTables->setResizeMode(QListView::Adjust);
     pTables->setContextMenuPolicy(Qt::ActionsContextMenu);
+    pTables->setCurrentIndex(QModelIndex());
     setCentralWidget(pTables);
     setIconSize(QSize(16, 16));
 
@@ -27,6 +29,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
 
     pMainToolBar = addToolBar(tr("Фильтр"));
     pMainToolBar->setMovable(false);
+    pMainToolBar->setAutoFillBackground(true);
     pMainToolBar->addWidget(pFilterLabel);
     pMainToolBar->addWidget(pFilterEdit);
 
@@ -37,7 +40,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
     pFilterAction->setMenu(pFilterMenu);
     pMainToolBar->addWidget(pFilterAction);
 
-    pApplyFilterAction = pFilterMenu->addAction(QIcon(":/img/Filter2HS.png"), tr("Фильтр"), this, SLOT(filterTriggered(bool)));//new QAction(QIcon(":/img/Filter2HS.png"), tr("Фильтр"), this);
+    pApplyFilterAction = pFilterMenu->addAction(QIcon::fromTheme("Filter"), tr("Фильтр"), this, SLOT(filterTriggered(bool)));//new QAction(QIcon(":/img/Filter2HS.png"), tr("Фильтр"), this);
     pApplyFilterAction->setCheckable(true);
     connect(pApplyFilterAction, SIGNAL(triggered(bool)), SLOT(filterTriggered(bool)));
 
@@ -53,7 +56,7 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
     pAddToGroupAction = pFilterMenu->addAction(tr("Добавить в группу"));
     pCreateGroupAction = pFilterMenu->addAction(tr("Создать группу"));
     pFilterMenu->addSeparator();
-    pMuiltyLineText = pFilterMenu->addAction(QIcon(":/img/text.png"), tr("Из многострочногго текста"), this, SLOT(fromMuiltyLineText()));
+    pMuiltyLineText = pFilterMenu->addAction(QIcon::fromTheme("Text"), tr("Из многострочного текста"), this, SLOT(fromMuiltyLineText()));
 
     Index ++;
     QString name = QString("TablesDock%1").arg(Index);
@@ -63,6 +66,9 @@ TablesDockWidget::TablesDockWidget(QWidget *parent) :
     pFilterEdit->setEnabled(false);
     pTables->setEnabled(false);
     pTables->installEventFilter(this);
+    pTables->setIconSize(QSize(16, 16));
+    pTables->setResizeMode(QListView::Fixed);
+    pTables->setMouseTracking(true);
 
     connect(pFilterEdit, SIGNAL(textChanged(QString)), SLOT(filterTextChanged(QString)));
     connect(pFilterEdit, SIGNAL(returnPressed()), SLOT(filterReturnPressed()));
@@ -79,6 +85,7 @@ void TablesDockWidget::setModel(FmtTablesModel *model)
 {
     pTables->setModel(model);
     pModel = model;
+
     if (model)
     {
         pTables->setModelColumn(fnc_Name);
@@ -94,6 +101,9 @@ void TablesDockWidget::setModel(FmtTablesModel *model)
         pFilterEdit->setEnabled(false);
         pTables->setEnabled(false);
     }
+
+    connect(pTables->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SIGNAL(selectionChanged()));
+    connect(pTables, SIGNAL(clicked(QModelIndex)), SIGNAL(selectionChanged()));
 }
 
 void TablesDockWidget::filterTriggered(bool checked)
@@ -146,6 +156,7 @@ void TablesDockWidget::doubleClicked(const QModelIndex &index)
 
     if (id)
     {
+        emit selectionChanged();
         emit tableDbClicked(id);
     }
 }

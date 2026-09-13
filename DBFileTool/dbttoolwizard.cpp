@@ -14,6 +14,7 @@ DbtToolWizard::DbtToolWizard() :
 {
     setTitleFormat(Qt::RichText);
     setWindowTitle(tr("Мастер импорта/экспорта таблиц"));
+    setWindowIcon(QIcon("://res/dbfapp_icon.svg"));
     setMinimumSize(QSize(800, 600));
 
     m_pActionPage = new SelectActionPage(this);

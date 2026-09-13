@@ -11,6 +11,8 @@
 #include <QBitmap>
 #include <QUuid>
 
+static int GlobalId = 0;
+
 ConnectionInfo::ConnectionInfo(const QString &dbalias) :
     QObject(Q_NULLPTR),
     pModel(Q_NULLPTR),
@@ -22,8 +24,10 @@ ConnectionInfo::ConnectionInfo(const QString &dbalias) :
         _db = QSqlDatabase::database(m_Alias);
     pModel = addModel();
     //pModel->updateFmtList();
-    m_Color = GenerateColor();
+    m_Color = GenerateColor(this);
     m_Type = CON_NON;
+
+    m_GlobalId = ++GlobalId;
 }
 
 ConnectionInfo::~ConnectionInfo()
@@ -243,7 +247,15 @@ bool ConnectionInfo::open(const QString &drv, const QString &user, const QString
         if (isOracle())
             m_Type = CON_ORA;
         else if (isPostgre())
+        {
              m_Type = CON_POSTGRESQL;
+
+             QSettings params("HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI", QSettings::NativeFormat);
+             params.beginGroup(m_DSN);
+             m_Host = params.value("Servername").toString();
+             m_Port = params.value("Port").toInt();
+             params.endGroup();
+        }
         else if (isSqlite())
             m_Type = CON_SQLITE;
 
@@ -280,6 +292,7 @@ bool ConnectionInfo::openSqlite(const QString &filename)
     if (hr)
     {
         m_Type = CON_SQLITE;
+        m_DSN = fi.fileName();
         qCInfo(logCore()) << QString("Connected to %1").arg(fi.baseName());
     }
     else
@@ -344,15 +357,9 @@ ConnectionInfo::operator int() const
 
 bool ConnectionInfo::hasFeature(ConnectionInfo::ConnectionFeature feature) const
 {
-    bool result = true;
-    if (m_Type == CON_POSTGRESQL)
-    {
-        if (feature == ConnectionInfo::CanLoadUnloadDbf)
-            result = false;
-    }
-    /*if (m_Type == CON_ORA)
-        return true;
+    // Выгрузка/загрузка DAT поддерживается для Oracle и PostgreSQL, для SQLite — нет.
+    if (feature == CanLoadUnloadDbf && m_Type == CON_SQLITE)
+        return false;
 
-    return false;*/
-    return result;
+    return true;
 }

@@ -16,7 +16,7 @@ FmtGenHotFix::~FmtGenHotFix()
 
 }
 
-QByteArray FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
+QMap<QString, QByteArray> FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
 {
     QByteArray data;
     QTextStream stream(&data, QIODevice::WriteOnly);
@@ -174,5 +174,5 @@ QByteArray FmtGenHotFix::makeContent(QSharedPointer<FmtTable> pTable)
         stream << endl;
     }
 
-    return data;
+    return QMap<QString, QByteArray>{{QString(), data}};
 }

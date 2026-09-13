@@ -1,0 +1,892 @@
+﻿/*
+Тема, имитирующая Office 2013 в зеленом стиле
+начало набора ленты
+*/
+
+SARibbonMainWindow {
+    border-left: 2px solid #217346;
+    border-right: 2px solid #217346;
+    border-bottom: 2px solid #217346;
+    border-top: 3px solid #217346;
+}
+
+SARibbonMainWindow > QStatusBar {
+	background-color: #217346;
+	color: white;
+}
+
+/*SARibbonBar*/
+SARibbonBar {
+  background-color: white;
+  border: solid #707070;
+  color:#b2b2b2;
+}
+
+
+/*SARibbonQuickAccessBar*/
+SARibbonQuickAccessBar {
+  background-color: #d5f0e2;
+}
+
+/*SARibbonCtrlContainer*/
+SARibbonCtrlContainer {
+  background-color: transparent;
+}
+
+
+/*SARibbonStackedWidget*/
+SARibbonStackedWidget {
+  border: 1pt solid #c5d2e0;
+  border-top-width: 0px;
+  
+  border-bottom: 1px solid #217346;
+  padding: 0px
+}
+
+SARibbonStackedWidget:focus {
+  outline: none;
+}
+
+
+/*
+SARibbonSeparatorWidget
+Примечание: SARibbonSeparatorWidget использует color для цвета фона
+Для разных стилей разделителей в разных компонентах используйте SARibbonCategory > SARibbonSeparatorWidget
+*/
+SARibbonSeparatorWidget {
+  color: #bec0c2;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/*SARibbonCategory*/
+SARibbonCategory {
+  background-color: white;
+}
+SARibbonCategory:focus {
+  outline: none;
+}
+
+/*
+SARibbonCategory下的SARibbonSeparatorWidget
+Примечание: SARibbonSeparatorWidget использует color для цвета фона
+*/
+SARibbonCategory > SARibbonSeparatorWidget {
+  color: #bec0c2;
+  margin-top:3px;
+  margin-bottom:3px;
+}
+
+/*SARibbonPannel*/
+
+SARibbonPannel {
+  background-color: white;
+  border: none;
+  color: #666666;
+}
+
+SARibbonPannel > SARibbonButtonGroupWidget {
+  border: 1px solid #DD0E00;
+  /* c2d0df */
+}
+/*SARibbonButtonGroupWidget*/
+SARibbonButtonGroupWidget {
+  background-color: transparent;
+}
+
+/*SARibbonPannelLabel Заголовок панели*/
+
+SARibbonPannelLabel {
+    background-color: transparent;
+    color: #666666;
+}
+
+/*SARibbonPannelOptionButton*/
+
+SARibbonPannelOptionButton {
+  background-color: transparent;
+  color: #333;
+}
+
+SARibbonPannelOptionButton:hover {
+  background-color: #d5f0e2;
+  border: 0px;
+}
+
+
+/*SARibbonApplicationButton*/
+SARibbonApplicationButton {
+  color: white;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  background-color: #217346;
+}
+
+SARibbonApplicationButton:hover {
+  background-color: #2e8b57;
+}
+
+SARibbonApplicationButton:pressed {
+  background-color: #1a5c38;
+}
+
+SARibbonApplicationButton:focus {
+  outline: none;
+}
+
+SARibbonApplicationButton::menu-indicator {
+  width:0px;
+}
+
+/*SARibbonTabBar*/
+SARibbonTabBar {
+  background-color: transparent;
+}
+
+
+SARibbonTabBar::tab {
+  color: #217346;
+  border: 1px solid transparent;
+  background: transparent;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-left: 5px;
+  margin-bottom: 0px;
+  min-width: 50px;
+}
+
+SARibbonTabBar::tab:selected {
+  color: #217346;
+  background: white;
+  border-top:1px solid #c5d2e0;
+  border-right:1px solid #c5d2e0;
+  border-left:1px solid #c5d2e0;
+  border-bottom:1px solid white;
+}
+
+SARibbonTabBar::tab:hover:!selected {
+    color: #217346;
+    background: white;
+    border-top:1px solid #c5d2e0;
+    border-right:1px solid #c5d2e0;
+    border-left:1px solid #c5d2e0;
+    border-bottom:1px solid white;
+}
+
+
+/*SARibbonToolButton*/
+/* 
+Фон SARibbonToolButton должен совпадать с цветом панели или категории
+Нельзя устанавливать transparent, иначе кнопки в режиме ActionMenu не отобразятся правильно
+*/
+SARibbonToolButton {
+  border: none;
+  color: #333;
+  background-color: white;
+}
+
+SARibbonToolButton:focus {
+  border: 1px solid #d5f0e2;
+  color: #333;
+  background-color: #fcfdfe;
+}
+
+SARibbonToolButton:pressed {
+  color: #000;
+  border: 1px solid #34a852;
+  background-color: #a8e6bd;
+}
+
+SARibbonToolButton:checked {
+  color: #333;
+  border: 1px solid #d5f0e2;
+  background-color: #d5f0e2;
+}
+
+SARibbonToolButton:hover {
+  color: #000;
+  border: 1px solid #c2e8d1;
+  background-color: #d5f0e2;
+}
+
+/*SARibbonControlButton*/
+
+SARibbonControlButton {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: #333;
+}
+
+SARibbonControlButton:pressed {
+  border: 1px solid #34a852;
+  background-color: #a8e6bd;
+}
+
+SARibbonControlButton:checked {
+  border: 1px solid #d5f0e2;
+  background-color: #d5f0e2;
+}
+
+SARibbonControlButton:hover {
+  border: 1px solid #c2e8d1;
+  background-color: #d5f0e2;
+}
+
+/* Кнопка с боковой стрелкой меню (свойство sideMenuArrow):
+   расширяем кнопку padding'ом справа, стрелку рисуем в этой области,
+   чтобы она не перекрывала иконку. Картинка стрелки общая для
+   InstantPopup и MenuButtonPopup - выглядят одинаково */
+SARibbonControlButton[sideMenuArrow="true"] {
+  padding-right: 16px;
+}
+
+SARibbonControlButton[sideMenuArrow="true"]::menu-indicator {
+  image: url(:/SARibbon/image/resource/ArrowDown.png);
+  subcontrol-position: right center;
+  subcontrol-origin: padding;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+}
+
+SARibbonGalleryButton {
+  border: 1px solid #d5f0e2;
+}
+
+/*SARibbonMenu*/
+
+SARibbonMenu {
+  color: #333;
+  background-color: #FCFCFC;
+  border: 1px solid #c2d0df;
+}
+
+SARibbonMenu::item {
+  padding: 5px 5px 5px 5px;
+  background-color: transparent;
+}
+
+SARibbonMenu::item:selected {
+  background-color: #d5f0e2;
+}
+
+SARibbonMenu::item:hover {
+  color: #000;
+  background-color: #d5f0e2;
+  border: 1px solid #c2e8d1;
+}
+
+SARibbonMenu::icon {
+  margin-left: 1px;
+}
+
+/*SARibbonGallery*/
+
+SARibbonGallery {
+  border: 1px solid #c2d0df;
+  background-color: transparent;
+  color: #333;
+}
+
+/*SARibbonGalleryGroup*/
+
+SARibbonGalleryGroup {
+  show-decoration-selected: 1;
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #c2d0df;
+}
+
+SARibbonGalleryGroup::item:selected {
+  background-color: #a8e6bd;
+  color: black;
+}
+
+SARibbonGalleryGroup::item:hover {
+  border: 1px solid #c2e8d1;
+  background-color: #d5f0e2;
+}
+
+/*RibbonGalleryViewport*/
+
+SARibbonGalleryViewport {
+  background-color: #ffffff;
+}
+
+/*SARibbonLineEdit*/
+
+SARibbonLineEdit {
+  border: 1px solid #C0C2C4;
+  background: #FFF;
+  selection-background-color: #a8e6bd;
+  selection-color: #000;
+}
+
+/*SARibbonComboBox*/
+
+SARibbonComboBox {
+  border: 1px solid #c2d0df;
+  background-color: white;
+}
+
+SARibbonComboBox:hover {
+  border: 1px solid #34a852;
+  color: #000;
+}
+
+SARibbonComboBox:editable {
+  color: #000;
+  background: white;
+  selection-background-color: #a8e6bd;
+  selection-color: #000;
+}
+
+SARibbonComboBox::drop-down {
+  subcontrol-origin: padding;
+  subcontrol-position: top right;
+  width: 1em;
+  border: none;
+}
+
+SARibbonComboBox::drop-down:hover {
+  border: 1px solid #FDEEB3;
+  background-color: #a8e6bd;
+}
+
+SARibbonComboBox::down-arrow {
+  image: url(:/SARibbon/image/resource/ArrowDown.png);
+}
+
+/*SARibbonSeparatorWidget*/
+
+SARibbonSeparatorWidget {
+  background-color: white;
+}
+
+SARibbonCategoryScrollButton {
+  border: 1px solid #c5d2e0;
+  color: #333;
+  background-color: white;
+}
+
+SARibbonCategoryScrollButton[arrowType="3"] {
+  border-right-width: 1px;
+}
+
+SARibbonCategoryScrollButton[arrowType="4"] {
+  border-left-width: 1px;
+}
+
+SARibbonCategoryScrollButton:hover {
+  color: #000000;
+  background-color: #d5f0e2;
+}
+
+/*SARibbonSystemToolButton*/
+
+SARibbonSystemToolButton {
+  background-color: transparent; 
+  border:none;
+  margin-top: 2px;
+}
+
+SARibbonSystemToolButton:focus {
+  outline: none;
+}
+/*Min*/
+SARibbonSystemToolButton#SAMinimizeWindowButton {
+  background-position:center;
+  background-repeat: no-repeat;
+  background-image: url(:/SARibbon/image/resource/Titlebar_Min.svg);
+}
+SARibbonSystemToolButton#SAMinimizeWindowButton:hover{
+  background-color: #e5e5e5;
+}
+SARibbonSystemToolButton#SAMinimizeWindowButton:pressed{
+  background-color: #cacacb;
+}
+/*Max*/
+SARibbonSystemToolButton#SAMaximizeWindowButton {
+    background-position:center;
+    background-repeat: no-repeat;
+    background-image: url(:/SARibbon/image/resource/Titlebar_Max.svg);
+}
+SARibbonSystemToolButton#SAMaximizeWindowButton:hover {
+    background-color: #e5e5e5;
+}
+SARibbonSystemToolButton#SAMaximizeWindowButton:checked {
+    background-image: url(:/SARibbon/image/resource/Titlebar_Normal.svg) center;
+}
+
+/*Close*/
+SARibbonSystemToolButton#SACloseWindowButton {
+    background-position:center;
+    background-repeat: no-repeat;
+    background-image: url(:/SARibbon/image/resource/Titlebar_Close.svg);
+    margin-right: 2px;
+    /*border-right: 2px solid #217346;
+        padding-right: 4px;
+	margin-top: 2px;*/
+}
+
+SARibbonSystemToolButton#SACloseWindowButton:hover {
+  background-color: #e81123;
+}
+SARibbonSystemToolButton#SACloseWindowButton:pressed {
+    background-color: #f1707a;
+}
+
+SARibbonMainWindow {
+    border-left: 2px solid #217346;
+    border-right: 2px solid #217346;
+    border-bottom: 2px solid #217346;
+    border-top: 3px solid #217346;
+}
+
+QDockWidget {
+	border: 2px solid #217346;
+	background-color: #F8F8F8;
+}
+
+QDockWidget::title {
+    background-color: #f8f8f8;
+    color: #666666;
+    border: 1px solid #c5d2e0;
+    border-bottom: none;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    padding: 6px 12px;
+    text-align: left;
+    font-weight: normal;
+    font-size: 9pt;
+    font-family: 'Segoe UI';
+}
+
+QDockWidget:focus::title {
+    background-color: white;
+    color: #217346;
+    font-weight: bold;
+    border: 1px solid #c5d2e0;
+    border-bottom: 1px solid white;
+    border-top: 2px solid #217346;
+}
+
+QDockWidget::title:hover {
+    background-color: #e6f2fc;
+    color: #217346;
+    border: 1px solid #a8e6bd;
+    border-bottom: none;
+}
+
+QDockWidget::float-button {
+    background-color: transparent;
+    border: 1px solid transparent;
+    icon-size: 12px;
+    margin-right: 2px;
+}
+
+QDockWidget::float-button:hover {
+    background-color: #d5f0e2;
+    border: 1px solid #217346;
+    border-radius: 2px;
+}
+
+QDockWidget::close-button {
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+QDockWidget::close-button:hover {
+    background-color: #e81123;
+    border: 1px solid #d01020;
+    border-radius: 2px;
+}
+
+QDockWidget > QWidget {
+    border: none;
+}
+
+QDockWidget ColoredTabWidget::pane {
+    border: 1px solid #217346;
+	border: none;
+    background-color: white;
+}
+
+ColoredTabWidget {
+	background-color: white;
+	color: #217346;
+	border: none;
+}
+
+SARibbonMainWindow > QTabBar {
+    background-color: #F8F8F8;
+	color: #217346;
+	border: none;
+}
+
+TablesDockWidget QTabBar::tab {
+    background-color: #f8f8f8;
+    color: #333333;
+    border: 1px solid #c5d2e0;
+    border-bottom: none;
+    padding: 4px 10px;
+    margin-right: 1px;
+    font-size: 8pt;
+}
+
+TablesDockWidget QTabBar::tab:selected {
+    background-color: white;
+    color: #217346;
+    border: 1px solid #217346;
+    border-bottom: 1px solid white;
+}
+
+TablesDockWidget QTabBar::tab:hover:!selected {
+    background-color: #e6f2fc;
+    color: #217346;
+}
+
+QMainWindow::separator {
+	background: #F8F8F8;
+	width: 5px;
+	height: 5px;
+}
+
+QMainWindow::separator:hover {
+	background: #e6f2fc;
+}
+
+QStatusBar QLabel {
+	color: white;
+}
+
+TablesDock QToolBar {
+	background-color: white;
+}
+
+/* Стили для QListView - добавлены для соответствия зеленому стилю Office 2013 */
+TablesDockWidget > QListView {
+    background-color: white;
+    border: 1px solid #c5d2e0;
+    border-radius: 2px;
+    color: #333333;
+    outline: none;
+    font-family: 'Segoe UI';
+    font-size: 9pt;
+    /* Фиксируем размеры элементов для корректного отображения иконок */
+    padding: 0px;
+    margin: 0px;
+    show-decoration-selected: 1;
+}
+
+/* Важно: устанавливаем фиксированные размеры для элементов в обычном состоянии */
+TablesDockWidget > QListView::item {
+    background-color: transparent;
+    color: #333333;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 4px 8px;
+    margin: 1px;
+    /* Фиксируем высоту элемента для стабильного размера иконок */
+    height: 18px;
+    /* Отключаем растягивание по ширине */
+    qproperty-iconSize: 16px;
+}
+
+/* Особые настройки для иконок */
+TablesDockWidget > QListView::item QIcon {
+    margin-right: 0px;
+}
+
+/* Стиль элемента при наведении - ВОТ ЗДЕСЬ ИКОНКИ ВЫГЛЯДЯТ КОРРЕКТНО */
+TablesDockWidget > QListView::item:hover {
+    background-color: #d5f0e2;
+    border: 1px solid #c2e8d1;
+    color: #000000;
+    /* При наведении границы элемента фиксируются */
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Стиль выбранного элемента */
+TablesDockWidget > QListView::item:selected {
+    background-color: #a8e6bd;
+    color: #000000;
+    border: 1px solid #34a852;
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Стиль выбранного элемента с фокусом */
+TablesDockWidget > QListView::item:selected:focus {
+    background-color: #a8e6bd;
+    color: #000000;
+    border: 1px solid #34a852;
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Стиль элемента при наведении, когда уже выбран */
+TablesDockWidget > QListView::item:selected:hover {
+    background-color: #9ad6ac;
+    color: #000000;
+    border: 1px solid #2e8b57;
+    padding: 4px 8px;
+    margin: 1px;
+    height: 18px;
+}
+
+/* Альтернативные цвета строк (через делегат в коде) */
+TablesDockWidget > QListView::item:alternate {
+    background-color: #f8f8f8;
+}
+
+/* Выделение текста в элементах */
+TablesDockWidget > QListView::item:selected:!active {
+    background-color: #e0f0e6;
+    color: #333333;
+}
+
+/* Стиль для отключенного элемента */
+TablesDockWidget > QListView::item:disabled {
+    color: #b2b2b2;
+    background-color: transparent;
+}
+
+/* Убрать пунктирный прямоугольник фокуса по умолчанию */
+TablesDockWidget > QListView:focus {
+    border: 1px solid #217346;
+}
+
+/* Дополнительный фикс для проблем с размерами иконок */
+TablesDockWidget > QListView::indicator {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+
+/* Базовый стиль для всех контекстных меню */
+QMenu {
+    background-color: #ffffff;
+    border: 1px solid #c5d2e0;
+    color: #333333;
+    font-family: 'Segoe UI';
+    font-size: 9pt;
+    padding: 1px 0px; /* Уменьшено сверху и снизу */
+    margin: 0px;
+}
+
+/* Элементы меню */
+QMenu::item {
+    background-color: transparent;
+    color: #333333;
+    padding: 4px 25px 4px 25px; /* Уменьшено сверху и снизу, было 5px */
+    margin: 0px 1px;
+    border: 1px solid transparent;
+    min-height: 20px; /* Уменьшена минимальная высота, было 22px */
+    font-weight: normal;
+}
+
+/* Элемент меню с иконкой - специальные отступы */
+QMenu::item:has-icon {
+    padding-left: 28px; /* Немного уменьшено, было 30px */
+}
+
+/* Элемент меню по умолчанию - ЖИРНЫЙ ШРИФТ */
+QMenu::item[default="true"] {
+    font-weight: bold;
+    color: #217346;
+}
+
+/* Элемент меню при наведении */
+QMenu::item:selected {
+    background-color: #d5f0e2;
+    color: #000000;
+    border: 1px solid #c2e8d1;
+}
+
+/* Элемент меню по умолчанию при наведении */
+QMenu::item[default="true"]:selected {
+    font-weight: bold;
+    color: #1a5c38;
+    background-color: #d5f0e2;
+}
+
+/* Элемент меню с включенным состоянием */
+QMenu::item:enabled {
+    color: #333333;
+}
+
+/* Элемент меню с отключенным состоянием */
+QMenu::item:disabled {
+    color: #b2b2b2;
+    background-color: transparent;
+    font-weight: normal;
+}
+
+/* Элемент меню с отключенным состоянием и по умолчанию */
+QMenu::item[default="true"]:disabled {
+    color: #94b09c;
+    font-weight: normal;
+}
+
+/* Стиль для иконки в меню */
+QMenu::icon {
+    position: absolute;
+    left: 4px; /* Немного уменьшен отступ */
+    width: 16px;
+    height: 16px;
+}
+
+/* Элемент меню с галочкой (checked) */
+QMenu::item:checked {
+    background-color: #e8f5ee;
+    border: 1px solid #c2e8d1;
+}
+
+/* Стиль для разделителя в меню */
+QMenu::separator {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 3px 10px; /* Уменьшено сверху и снизу, было 4px */
+}
+
+/* Подменю (меню второго уровня) */
+QMenu::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+/* Стрелка подменю - позиционируем справа */
+QMenu::right-arrow {
+    image: url(:/SARibbon/image/resource/ArrowRight.png);
+    width: 8px;
+    height: 8px;
+    margin-right: 5px;
+}
+
+/* Галочка выбранного элемента */
+QMenu::indicator:checked {
+    image: url(:/SARibbon/image/resource/Checkmark.svg);
+    background-color: transparent;
+    margin-left: 2px; /* Уменьшено, было 3px */
+}
+
+/* Радиокнопка в меню */
+QMenu::indicator:exclusive:checked {
+    image: url(:/SARibbon/image/resource/RadioChecked.svg);
+    margin-left: 2px; /* Уменьшено, было 3px */
+}
+
+QMenu::indicator:exclusive:unchecked {
+    image: url(:/SARibbon/image/resource/RadioUnchecked.svg);
+    margin-left: 2px; /* Уменьшено, было 3px */
+}
+
+/* Специальные стили для иконок в меню */
+QMenu::item:has-icon:checked {
+    padding-left: 28px; /* Уменьшено, было 30px */
+}
+
+/* Стили для подменю */
+QMenu QMenu {
+    background-color: #ffffff;
+    border: 1px solid #c5d2e0;
+    margin-left: 1px; /* Уменьшено, было 2px */
+}
+
+/* Стиль для заголовка меню (например, в каскадных меню) */
+QMenu::title {
+    background-color: #f0f0f0;
+    color: #666666;
+    padding: 4px 10px; /* Уменьшено сверху и снизу, было 5px */
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Стиль для акселераторов (горячих клавиш) в меню */
+QMenu::item:selected QLabel {
+    color: #000000;
+}
+
+QMenu::item:!selected QLabel {
+    color: #666666;
+}
+
+/* Элемент меню по умолчанию - акселератор */
+QMenu::item[default="true"] QLabel {
+    color: #217346;
+    font-weight: bold;
+}
+
+QMenu::item[default="true"]:selected QLabel {
+    color: #1a5c38;
+}
+
+QMenu::item:default {
+    font-weight: bold; /* Bold the default action */
+}
+
+/* Стиль для меню в панелях инструментов */
+QToolBar > QMenu {
+    border: 1px solid #c5d2e0;
+    margin-top: 2px; /* Уменьшено, было 3px */
+}
+
+/* Стиль для меню в QComboBox */
+QComboBox QMenu {
+    min-width: 180px; /* Немного уменьшено, было 200px */
+}
+
+/* Стиль для меню в QPushButton */
+QPushButton::menu-indicator {
+    width: 14px; /* Уменьшено, было 16px */
+    height: 14px; /* Уменьшено, было 16px */
+    subcontrol-position: right center;
+}
+
+/* Стиль для меню в QMenuBar (основное меню приложения) */
+QMenuBar {
+    background-color: #f8f8f8;
+    border: none;
+    color: #333333;
+    font-family: 'Segoe UI';
+    font-size: 9pt;
+    padding: 2px 0px; /* Добавлены небольшие отступы */
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 15px; /* Уменьшено сверху и снизу, было 5px */
+    margin: 0px 1px;
+    border: 1px solid transparent;
+    min-height: 18px; /* Добавлена минимальная высота */
+}
+
+QMenuBar::item:selected {
+    background-color: #d5f0e2;
+    border: 1px solid #c2e8d1;
+    color: #000000;
+}
+
+QMenuBar::item:pressed {
+    background-color: #a8e6bd;
+    border: 1px solid #34a852;
+}
+
+/* Элемент меню в QMenuBar по умолчанию */
+QMenuBar::item[default="true"] {
+    font-weight: bold;
+    color: #217346;
+}
+
+/* Стрелка вправо для каскадных меню в QMenuBar */
+QMenuBar::right-arrow {
+    image: url(:/SARibbon/image/resource/ArrowDown.png);
+    width: 8px;
+    height: 8px;
+    margin-left: 5px;
+}

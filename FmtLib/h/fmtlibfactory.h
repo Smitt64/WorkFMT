@@ -88,6 +88,9 @@ public:
 
     QString getAlias(const IdType &id) const
     {
+        if (!_FmtLibFactory.contains(id))
+            return QString();
+
         return _FmtLibFactory[id]->alias();
     }
 

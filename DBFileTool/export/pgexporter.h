@@ -16,7 +16,8 @@ protected:
     virtual QString getOrderByClause(const QString &table) override;
     virtual bool hasLargeObjectFields(const QString &table) override;
     virtual QString formatValueForSqlLoader(const QVariant &value,
-                                           const QString &columnType) override;
+                                            const ColumnInfo &col,
+                                            const bool &isNull) override;
     virtual QString getSelectQuery(const QString &table,
                                    const QStringList &columns) override;
     virtual QString getTableExistsQuery(const QString &table) override;
@@ -25,9 +26,32 @@ protected:
 
     virtual bool loadTableMetadataImpl(const QString &table, QList<ColumnInfo> &columns);
 
+    // Импорт в PostgreSQL
+    virtual bool prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual bool importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual QVariant formatValueForInsert(const QString &rawValue, const ColumnInfo &col) override;
+    virtual bool finalizeImport(const QString &table) override;
+
 private:
     QString mapPostgresTypeToOracleType(const QString &pgType);
     QStringList getPrimaryKeyColumns(const QString &table);
+
+    bool parseRecFile(const QString &recFilePath, QStringList &clobValues);
+    QString unquoteString(const QString &value) const;
+    bool importInlineFile(const QString &datFilePath, const QString &pgTable, const QList<ColumnInfo> &columns);
+    bool importSplitFile(const QString &datFilePath, const QString &pgTable,
+                         const QList<ColumnInfo> &columns,
+                         const QList<int> &clobIndexes,
+                         const QString &recFilePath);
+
+    // Пакетная вставка накопленного чанка строк (значения сгруппированы по колонкам).
+    bool flushInsertBatch(const QString &insertSql,
+                          QVector<QVariantList> &columnValues);
+
+    bool setTriggersEnabled(const QString &table, bool enabled);
+
+    // Проверка, что колонка является PostgreSQL BYTEA (hex-данные нужно обернуть в glob_func.hextoraw(...)).
+    bool isByteaColumn(const ColumnInfo &col) const;
 };
 
 #endif // PGXPORTER_H

@@ -9,6 +9,12 @@ FmtFildsModel::FmtFildsModel(FmtTable *parent) :
     QAbstractItemModel((QObject*)parent)
 {
     pTable = parent;
+
+    QIcon SettingsIcon = QIcon::fromTheme("SettingsPanel");
+    QIcon CreateIcon = QIcon::fromTheme("Create");
+
+    m_SettingsIcon = SettingsIcon.pixmap(QSize(64, 64));
+    m_CreateIcon = CreateIcon.pixmap(QSize(64, 64));
 }
 
 FmtFildsModel::~FmtFildsModel()
@@ -296,7 +302,7 @@ Qt::ItemFlags FmtFildsModel::flags(const QModelIndex &index) const
 QVariant FmtFildsModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     static QStringList headers = QStringList()
-            << "Имя столбца" << "Тип" << "Длина" << "Комментарий" << "Имя столбца в БД" << "";//<< "⚙";
+            << "Имя столбца" << "Тип" << "Длина" << "Комментарий" << "Имя столбца в БД" << "";
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
         return headers.at(section);
 
@@ -307,7 +313,7 @@ QVariant FmtFildsModel::headerData(int section, Qt::Orientation orientation, int
             if (role == Qt::DisplayRole)
                 return QString();//QString("✳");
             if (role == Qt::DecorationRole)
-                return QPixmap(":/img/new.png");
+                return m_CreateIcon;
             if (role == Qt::FontRole)
                 return QFont("Arial", 10);
         }
@@ -317,7 +323,7 @@ QVariant FmtFildsModel::headerData(int section, Qt::Orientation orientation, int
         if (section == 5)
         {
             if (role == Qt::DecorationRole)
-                return QPixmap(":/img/dialog1.png");
+                return m_SettingsIcon;
             else if(role == Qt::TextAlignmentRole)
                 return Qt::AlignCenter;
         }

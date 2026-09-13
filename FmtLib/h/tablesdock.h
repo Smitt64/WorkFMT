@@ -8,6 +8,8 @@
 class FmtTablesModel;
 class TablesDockWidget;
 class ConnectionInfo;
+class ColoredTabWidget;
+class AddTabToolButton;
 class FMTLIBSHARED_EXPORT TablesDock : public QDockWidget
 {
     Q_OBJECT
@@ -26,6 +28,7 @@ public slots:
     void forceRepaint();
 
 signals:
+    void selectionChanged();
     void tableDbClicked(quint32);
 
 private slots:
@@ -33,11 +36,10 @@ private slots:
 
 private:
     void addFilterTab();
-    QTabWidget *pTabBar;
+    ColoredTabWidget *pTabBar;
     ConnectionInfo *pInfo;
     QAbstractItemDelegate *pDelegate;
-    QPushButton *pAddButton;
-    QFrame *pBtnContainer;
+    AddTabToolButton *pAddButton;
     QHBoxLayout *pLayout;
     QList<TablesDockWidget*> pWidget;
     QObject *pEventFilter;

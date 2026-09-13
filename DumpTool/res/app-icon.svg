@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <rect width="16" height="16" rx="3" fill="#6b4c9a"/>
+  <rect x="3" y="3" width="10" height="10" rx="1" fill="#ffffff"/>
+  <!-- Верх эллипса цилиндра -->
+  <ellipse cx="8" cy="5.5" rx="2.5" ry="0.9" fill="none" stroke="#6b4c9a" stroke-width="1"/>
+  <!-- Левая боковая линия -->
+  <line x1="5.5" y1="5.5" x2="5.5" y2="10.2" stroke="#6b4c9a" stroke-width="1" stroke-linecap="round"/>
+  <!-- Правая боковая линия -->
+  <line x1="10.5" y1="5.5" x2="10.5" y2="10.2" stroke="#6b4c9a" stroke-width="1" stroke-linecap="round"/>
+  <!-- Нижняя дуга цилиндра -->
+  <path d="M 5.5 10.2 A 2.5 0.9 0 0 0 10.5 10.2" fill="none" stroke="#6b4c9a" stroke-width="1"/>
+  <!-- Средняя линия -->
+  <line x1="5.5" y1="7.8" x2="10.5" y2="7.8" stroke="#6b4c9a" stroke-width="0.8" stroke-linecap="round"/>
+</svg>

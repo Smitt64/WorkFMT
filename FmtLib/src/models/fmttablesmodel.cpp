@@ -2,14 +2,20 @@
 #include "fmtcore.h"
 #include <QtSql>
 #include <QDebug>
+#include <QIcon>
+#include <QMetaType>
 
 FmtTablesModel::FmtTablesModel(ConnectionInfo *ConInfo, QObject *parent) :
     QSqlQueryModel(parent),
     pQuery(Q_NULLPTR)
 {
+    if (QMetaType::type("QIcon") == QMetaType::UnknownType)
+        qRegisterMetaType<QIcon>("QIcon");
+
     pInfo = ConInfo;
-    tableIcon = QIcon(":/table");
-    tmpTableIcon = QIcon(":/tablet");
+    tableIcon = QIcon::fromTheme("Table");
+    tmpTableIcon = QIcon::fromTheme("TemporalTable");
+    recTableIcon = QIcon::fromTheme("FmtRecord");
 }
 
 FmtTablesModel::~FmtTablesModel()
@@ -112,7 +118,20 @@ QVariant FmtTablesModel::data(const QModelIndex &item, int role) const
         QSqlRecord rec = record(item.row());
         QVariant comment = rec.value(fnc_Comment);
 
-        return comment.toString();
+        qint32 Flags = rec.value(fnc_Flags).toInt();
+        if (hasTemporaryFlag(Flags))
+        {
+            return QString("Временная: %1")
+                .arg(comment.toString());
+        }
+        else if (hasRecordFlag(Flags))
+        {
+            return QString("Структура: %1")
+                .arg(comment.toString());
+        }
+
+        return QString("Таблица: %1")
+            .arg(comment.toString());
     }
 
     if (role == Qt::DecorationRole)
@@ -122,6 +141,8 @@ QVariant FmtTablesModel::data(const QModelIndex &item, int role) const
 
         if (hasTemporaryFlag(Flags))
             return QVariant::fromValue(tmpTableIcon);
+        else if (hasRecordFlag(Flags))
+            return QVariant::fromValue(recTableIcon);
         else
             return QVariant::fromValue(tableIcon);
     }

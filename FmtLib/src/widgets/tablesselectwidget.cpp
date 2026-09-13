@@ -5,6 +5,8 @@
 
 TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *parent) : QWidget(parent)
 {
+    m_TableIcon = QIcon::fromTheme("TableGroup");
+
     pAddFunc = Q_NULLPTR;
     pRemFunc = Q_NULLPTR;
     pDstModel = new QStandardItemModel(this);
@@ -28,22 +30,45 @@ TablesSelectWidget::TablesSelectWidget(ConnectionInfo *connection, QWidget *pare
 
     addButton = new QPushButton(this);
     addButton->setObjectName(QStringLiteral("addButton"));
-    addButton->setIcon(QIcon(":/img/RightArrowHS.png"));
+    addButton->setToolTip(tr("Переместить выбранные таблицы\nиз левого списка в правый"));
+
+    if (!QIcon::hasThemeIcon("MoveRight"))
+        addButton->setIcon(QIcon(":/img/RightArrowHS.png"));
+    else
+        addButton->setIcon(QIcon::fromTheme("MoveRight"));
 
     addAllButton = new QPushButton(this);
     addAllButton->setObjectName(QStringLiteral("addAllButton"));
-    addAllButton->setIcon(QIcon(":/img/DoubleRightArrowHS.png"));
+    //addAllButton->setIcon(QIcon(":/img/DoubleRightArrowHS.png"));
+    addAllButton->setToolTip(tr("Переместить все доступные таблицы\nиз левого списка в правый"));
+
+    if (!QIcon::hasThemeIcon("MoveRightAll"))
+        addAllButton->setIcon(QIcon(":/img/DoubleRightArrowHS.png"));
+    else
+        addAllButton->setIcon(QIcon::fromTheme("MoveRightAll"));
 
     verticalLayout->addWidget(addButton);
     verticalLayout->addWidget(addAllButton);
 
     removeButton = new QPushButton(this);
     removeButton->setObjectName(QStringLiteral("removeButton"));
-    removeButton->setIcon(QIcon(":/img/LeftArrowHS.png"));
+    //removeButton->setIcon(QIcon(":/img/LeftArrowHS.png"));
+    removeButton->setToolTip(tr("Переместить выбранные таблицы\nиз правого списка в левый"));
+
+    if (!QIcon::hasThemeIcon("MoveLeft"))
+        removeButton->setIcon(QIcon(":/img/LeftArrowHS.png"));
+    else
+        removeButton->setIcon(QIcon::fromTheme("MoveLeft"));
 
     removeAllButton = new QPushButton(this);
     removeAllButton->setObjectName(QStringLiteral("removeAllButton"));
-    removeAllButton->setIcon(QIcon(":/img/DoubleLeftArrowHS.png"));
+    //removeAllButton->setIcon(QIcon(":/img/DoubleLeftArrowHS.png"));
+    removeAllButton->setToolTip(tr("Переместить все таблицы\nиз правого списка в левый"));
+
+    if (!QIcon::hasThemeIcon("MoveLeftAll"))
+        removeAllButton->setIcon(QIcon(":/img/DoubleLeftArrowHS.png"));
+    else
+        removeAllButton->setIcon(QIcon::fromTheme("MoveLeftAll"));
 
     hLine = new QFrame(this);
     hLine->setFrameShape(QFrame::HLine);
@@ -183,9 +208,14 @@ void TablesSelectWidget::CopyToDstList(const QModelIndex &index)
 
         QStandardItem *item = new QStandardItem();
         item->setData(index.data(Qt::DisplayRole), Qt::DisplayRole);
-        item->setData(index.data(Qt::DecorationRole), Qt::DecorationRole);
         item->setData(index.data(Qt::UserRole), Qt::UserRole);
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+        if (m_TableIcon.isNull())
+            item->setData(index.data(Qt::DecorationRole), Qt::DecorationRole);
+        else
+            item->setIcon(m_TableIcon);
+
         pDstModel->appendRow(item);
         emit tableAdded(table);
         emit selectionChanged();
@@ -263,25 +293,34 @@ void TablesSelectWidget::beginAddTables(const QString &msg, const int &min, cons
 
 void TablesSelectWidget::endAddTables()
 {
-    pUserAddDlg->close();
-    delete pUserAddDlg;
-    pUserAddDlg = NULL;
+    if (pUserAddDlg)
+    {
+        pUserAddDlg->close();
+        delete pUserAddDlg;
+        pUserAddDlg = NULL;
+    }
 }
 
 bool TablesSelectWidget::userAddTable(const QString &table)
 {
     bool result = true;
 
-    if (pUserAddDlg->wasCanceled())
+    if (pUserAddDlg && pUserAddDlg->wasCanceled())
         result = false;
 
     if (result)
     {
-        pUserAddDlg->setValue(m_UserAddIndex);
+        if (pUserAddDlg)
+            pUserAddDlg->setValue(m_UserAddIndex);
 
         QStandardItem *item = new QStandardItem();
         item->setData(table, Qt::DisplayRole);
-        item->setData(QIcon(":/table"), Qt::DecorationRole);
+
+        if (m_TableIcon.isNull())
+            item->setData(QIcon(":/table"), Qt::DecorationRole);
+        else
+            item->setIcon(m_TableIcon);
+
         item->setData(table, Qt::UserRole);
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         pDstModel->appendRow(item);
@@ -373,7 +412,12 @@ void TablesSelectWidget::addTable(const QString &tableName)
 
     QStandardItem *item = new QStandardItem();
     item->setData(tableName, Qt::DisplayRole);
-    item->setData(QIcon(":/table"), Qt::DecorationRole);
+
+    if (m_TableIcon.isNull())
+        item->setData(QIcon(":/table"), Qt::DecorationRole);
+    else
+        item->setIcon(m_TableIcon);
+
     item->setData(tableName, Qt::UserRole);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     pDstModel->appendRow(item);

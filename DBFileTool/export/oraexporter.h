@@ -16,7 +16,8 @@ protected:
     virtual QString getOrderByClause(const QString &table) override;
     virtual bool hasLargeObjectFields(const QString &table) override;
     virtual QString formatValueForSqlLoader(const QVariant &value,
-                                           const QString &columnType) override;
+                                            const ColumnInfo &col,
+                                            const bool &isNull) override;
     virtual QString getSelectQuery(const QString &table,
                                    const QStringList &columns) override;
     virtual QString getTableExistsQuery(const QString &table) override;
@@ -24,6 +25,11 @@ protected:
     virtual QString getLimitClause(int limit = 1) override;
 
     virtual bool loadTableMetadataImpl(const QString &table, QList<ColumnInfo> &columns);
+
+    // Заглушки для импорта - Oracle использует внешний sqlloader
+    virtual bool prepareTargetTable(const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual bool importDataFile(const QString &datFilePath, const QString &table, const QList<ColumnInfo> &columns) override;
+    virtual QVariant formatValueForInsert(const QString &rawValue, const ColumnInfo &col) override;
 
 private:
     QStringList getPrimaryKeyColumns(const QString &table);

@@ -42,6 +42,15 @@ void ViewDatPage::initializePage()
         ui->treeView->resizeColumnToContents(i);
 }
 
+int ViewDatPage::nextId() const
+{
+    const RegParmWizard *wzrd = qobject_cast<const RegParmWizard*>(wizard());
+    if (wzrd && wzrd->selectedAction() == RegParmWizard::ActionViewDat)
+        return -1; // Для режима просмотра DAT страница выбора настроек не нужна
+
+    return QWizardPage::nextId();
+}
+
 bool ViewDatPage::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->lineEdit && event->type() == QEvent::KeyPress)

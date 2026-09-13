@@ -1,5 +1,4 @@
 #include "h/fmtworkwndgen.h"
-#include "ui_fmtworkwndgen.h"
 #include "fmtgeninterface.h"
 #include "geninterfacefactorymodel.h"
 #include <codeeditor/codeeditor.h>
@@ -12,246 +11,25 @@
 #include <QDir>
 #include <QRegularExpression>
 #include "rslexecutors/generatorrslexecutor.h"
-
-typedef struct
-{
-    QString macro;
-    QString alias;
-    QString highlighter;
-}GeneratorsMacroElement;
-
-class GenMacroExecutor : public FmtGenInterface
-{
-public:
-    GenMacroExecutor(const GeneratorsMacroElement *element) :
-        FmtGenInterface()
-    {
-        m_Data = *element;
-    }
-
-    virtual ~GenMacroExecutor()
-    {
-
-    }
-
-protected:
-    virtual QByteArray makeContent(FmtSharedTablePtr pTable)
-    {
-        GeneratorRslExecutor executor(m_Data.macro, pTable.data());
-        executor.execute();
-
-        return executor.data();
-    }
-
-private:
-    GeneratorsMacroElement m_Data;
-};
-
-class GeneratorsProxyModel : public QAbstractProxyModel
-{
-public:
-    GeneratorsProxyModel(QObject* parent = nullptr) :
-        QAbstractProxyModel(parent)
-    {
-        QDir appdir(qApp->applicationDirPath());
-
-        if (appdir.cd("mac") && appdir.cd("fmtcore") && appdir.cd("generators"))
-        {
-            QFileInfoList generators = appdir.entryInfoList({"*.mac"}, QDir::Files);
-
-            for (const QFileInfo &info : generators)
-            {
-                m_MacroList.append({info.absoluteFilePath(), info.baseName()});
-                ReadFileInfo(m_MacroList.back());
-            }
-        }
-    }
-
-    QString ReadValue(const QString &value, const QString &content)
-    {
-        int pos = content.indexOf(value + ":");
-
-        if (pos!= -1) 
-        {
-            int pos2 = content.indexOf("\n", pos);
-            return content.mid(pos + value.length() + 1, pos2 - pos - value.length() - 1).simplified().trimmed();
-        }
-
-        return QString();
-    }
-
-    void ReadFileInfo(GeneratorsMacroElement &elem)
-    {
-        QFile f(elem.macro);
-        if (f.open(QIODevice::ReadOnly))
-        {
-            QRegularExpression rx("\\/\\*[\\s\\S]*?\\*\\/");
-
-            QTextStream stream(&f);
-            stream.setCodec("IBM 866");
-            QString content = stream.readAll();
-
-            QRegularExpressionMatch match = rx.match(content);
-            if (match.hasMatch())
-            {
-                QString matched = match.captured();
-
-                elem.alias = ReadValue("Title", matched);
-                elem.highlighter = ReadValue("Highlighter", matched);
-            }
-            f.close();
-        }
-    }
-
-    virtual ~GeneratorsProxyModel()
-    {
-
-    }
-
-    virtual QModelIndex parent(const QModelIndex &index) const Q_DECL_OVERRIDE
-    {
-        return QModelIndex();
-    }
-
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE
-    {
-        if (parent.isValid())
-            return 0;
-
-        return sourceModel()->columnCount();
-    }
-
-    virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const Q_DECL_OVERRIDE
-    {
-        if(!sourceModel())
-            return QModelIndex();
-
-        return index(sourceIndex.row(), sourceIndex.column(), QModelIndex());
-    }
-
-    virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const Q_DECL_OVERRIDE
-    {
-        if(!sourceModel())
-            return QModelIndex();
-
-        if (proxyIndex.row() < sourceModel()->rowCount())
-            return sourceModel()->index(proxyIndex.row(), proxyIndex.column());
-
-        return QModelIndex();
-    }
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE
-    {
-        if (!sourceModel() || parent.isValid())
-            return 0;
-
-        return sourceModel()->rowCount() + m_MacroList.size();
-    }
-
-    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE
-    {
-        if (parent.isValid())
-            return QModelIndex();
-
-        return createIndex(row, column);
-    }
-
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const
-    {
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren;
-    }
-
-    virtual bool hasChildren(const QModelIndex &parent = QModelIndex())
-    {
-        return false;
-    }
-
-    virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE
-    {
-        if (index.row() < sourceModel()->rowCount())
-        {
-            if (role == Qt::DisplayRole)
-                return sourceModel()->data(mapToSource(index), role);
-            else if (role == Qt::DecorationRole)
-                return QIcon(":/img/codewin.png");
-
-            return sourceModel()->data(mapToSource(index), role);
-        }
-        else
-        {
-            int idx = index.row() - sourceModel()->rowCount();
-            if (role == Qt::DisplayRole)
-            {
-                if (index.column() == GenInterfaceFactoryModel::FieldAlias)
-                    return m_MacroList[idx].alias;
-                else
-                    return QString("macro:%1").arg(m_MacroList[idx].macro);
-            }
-            else if (role == Qt::EditRole)
-            {
-                if (index.column() == GenInterfaceFactoryModel::FieldAlias)
-                    return m_MacroList[idx].macro;
-            }
-            else if (role == Qt::DecorationRole)
-                return QIcon(":/img/script.png");
-        }
-
-        return QVariant();
-    }
-
-    GeneratorsMacroElement getMacroElement(const QModelIndex &index)
-    {
-        if (index.row() >= sourceModel()->rowCount())
-            return m_MacroList[sourceModel()->rowCount() - index.row()];
-
-        return GeneratorsMacroElement();
-    }
-
-private:
-    QList<GeneratorsMacroElement> m_MacroList;
-};
+#include "src/models/generatorsproxymodel.h"
+#include <QMdiArea>
+#include <SARibbon.h>
+#include <toolsruntime.h>
 
 FmtWorkWndGen::FmtWorkWndGen(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::FmtWorkWndGen),
-    pCurrentHighlighter(nullptr)
+    FmtCodeTabBase(parent),
+    pInterface(nullptr),
+    m_pUpdateScripts(nullptr)
 {
-    ui->setupUi(this);
-
-    pGenType = new QComboBox(this);
-    ui->toolBar->addWidget(pGenType);
-
-    pActionProperty = ui->toolBar->addAction(QIcon(":/img/Properties.png"), tr("Параметры"));
-    pActionSave = ui->toolBar->addAction(QIcon(":/save"), tr("Сохранить"));
-    ui->toolBar->addSeparator();
-    pActionRun = ui->toolBar->addAction(QIcon(":/img/FormRunHS.png"), tr("Сгенерировать"));
-
-    connect(pGenType, SIGNAL(currentIndexChanged(QString)), SLOT(interfaceComboSelected(QString)));
-    connect(pActionRun, SIGNAL(triggered(bool)), SLOT(generate()));
-
-    pGenModel = new GenInterfaceFactoryModel(this);
-    pProxyModel = new GeneratorsProxyModel(this);
-    pProxyModel->setSourceModel(pGenModel);
-
-    pGenType->setModel(pProxyModel);//->addItems(fmtGenInterfaces());
-    pGenType->setModelColumn(GenInterfaceFactoryModel::FieldAlias);
-
-    pEditor = new CodeEditor(this);
-    pEditor->setReadOnly(true);
-    pEditor->setWordWrapMode(QTextOption::NoWrap);
-
-    setCentralWidget(pEditor);
-    UpdateSaveAction();
-    ToolApplyHighlighter(pEditor, HighlighterCpp);
-    pEditor->rehighlight();
-
-    connect(pActionSave, SIGNAL(triggered(bool)), SLOT(onSave()));
-    connect(pActionProperty, SIGNAL(triggered(bool)), SLOT(onProperty()));
+    pContainer->setToolTip(tr("Область отображения сгенерированного кода"));
 }
 
 FmtWorkWndGen::~FmtWorkWndGen()
 {
-    delete ui;
+    qDeleteAll(m_pWindowsList);
+    m_pWindowsList.clear();
+    m_pWindows.clear();
+    delete pInterface;
 }
 
 void FmtWorkWndGen::setTable(QSharedPointer<FmtTable> table)
@@ -259,132 +37,211 @@ void FmtWorkWndGen::setTable(QSharedPointer<FmtTable> table)
     pTable = table;
 }
 
-QString FmtWorkWndGen::getInterfaceId() const
+const QString &FmtWorkWndGen::interfaceId() const
 {
-    int index = pGenType->currentIndex();
-    QString id = pProxyModel->data(pProxyModel->index(index, GenInterfaceFactoryModel::FieldKey), Qt::DisplayRole).toString();
-    return id;
+    return m_InterfaceId;
 }
 
-void FmtWorkWndGen::onFinish(const QByteArray &data)
+void FmtWorkWndGen::setInterfaceID(const QString &id)
 {
-    QString id = getInterfaceId();
-    FmtGenInterface *pInterface = m_Interfaces[id];
-    ToolApplyHighlighter(pEditor, pInterface->getContentType());
+    m_InterfaceId = id;
 
-    if (pEditor->highlighter())
-    {
-        pEditor->highlighter()->addType(pTable->name());
-        pEditor->highlighter()->addHighlightingRules(pInterface->highlightingRuleList());
-        pEditor->rehighlight();
-    }
-
-    pEditor->setPlainText(QString::fromLocal8Bit(data));
-    pActionRun->setEnabled(true);
-    UpdateSaveAction();
-}
-
-void FmtWorkWndGen::interfaceComboSelected(const QString &value)
-{
-    Q_UNUSED(value);
-    const QString id = getInterfaceId();
-
+    QString interfaceDescription;
     if (!id.startsWith("macro:"))
     {
-        FmtGenInterface *pInterface = Q_NULLPTR;
-
-        if (m_Interfaces.contains(id))
-            pInterface = m_Interfaces[id];
-        else
-        {
-            pInterface = fmtGenInterfaceCreate(id);
-            m_Interfaces[id] = pInterface;
-        }
-
-        connect(pInterface, SIGNAL(finish(QByteArray)), SLOT(onFinish(QByteArray)));
-        pActionProperty->setEnabled(pInterface->hasPropertes());
+        pInterface = fmtGenInterfaceCreate(id);
+        interfaceDescription = tr("Генератор кода: %1").arg(fmtGenInterfaceAlias(id));
     }
     else
     {
-        QModelIndex start = pProxyModel->index(0, 0);
-        QModelIndexList lst = pProxyModel->match(start, Qt::DisplayRole, id);
+        GeneratorsProxyModel model;
+        GeneratorsMacroElement element = model.getMacroElement(m_InterfaceId);
+        GetGenMacroExecutor(&element, &pInterface);
+        interfaceDescription = tr("Макрос: %1").arg(element.alias);
+    }
 
-        if (!lst.isEmpty())
+    setToolTip(interfaceDescription);
+
+    QStringList tabsNames = pInterface->tabs();
+    if (!tabsNames.isEmpty())
+    {
+        for (const auto &tab : tabsNames)
         {
-            QModelIndex index = lst.first();
-
-            GeneratorsMacroElement element = pProxyModel->getMacroElement(index);
-
-            GenMacroExecutor *pMacroExecutor = Q_NULLPTR;
-
-            if (m_Interfaces.contains(id))
-                pMacroExecutor = dynamic_cast<GenMacroExecutor*>(m_Interfaces[id]);
-            else
-            {
-                pMacroExecutor = new GenMacroExecutor(&element);
-                m_Interfaces[id] = pMacroExecutor;
-
-                connect(m_Interfaces[id], SIGNAL(finish(QByteArray)), SLOT(onFinish(QByteArray)));
-                pActionProperty->setEnabled(m_Interfaces[id]->hasPropertes());
-            }
+            QMdiSubWindow *wnd = AddTab(tab);
+            wnd->setToolTip(tr("Результат генерации: %1 - %2").arg(interfaceDescription, tab));
         }
     }
+    else
+    {
+        QString tab = fmtGenInterfaceAlias(m_InterfaceId);
+        QMdiSubWindow *wnd = AddTab(tab);
+        wnd->setToolTip(tr("Результат генерации: %1").arg(interfaceDescription));
+    }
+
+    connect(pInterface, &FmtGenInterface::finish, this, &FmtWorkWndGen::onFinish);
+
+    updateRibbonState();
+}
+
+void FmtWorkWndGen::onFinish(const QMap<QString, QByteArray> &data)
+{
+    QList<QMdiSubWindow*> windows = pContainer->subWindowList();
+    for (auto wnd : windows)
+    {
+        CodeEditor *pCode = qobject_cast<CodeEditor*>(wnd->widget());
+        pCode->clear();
+    }
+
+    auto SetCodeToTab = [=](QMdiSubWindow *window, const QByteArray &data)
+    {
+        CodeEditor *pCode = qobject_cast<CodeEditor*>(window->widget());
+        QString codeText = QString::fromLocal8Bit(data);
+        pCode->setPlainText(codeText);
+
+        setHighlighter(pCode, pInterface->getContentType());
+
+        if (pCode->highlighter())
+        {
+            pCode->highlighter()->addType(pTable->name());
+            pCode->highlighter()->addHighlightingRules(pInterface->highlightingRuleList());
+            pCode->rehighlight();
+        }
+
+        // Добавляем информацию о размере сгенерированного кода
+        int lineCount = codeText.count('\n') + 1;
+        int charCount = codeText.length();
+        pCode->setToolTip(tr("Сгенерированный код: %1 строк, %2 символов").arg(lineCount).arg(charCount));
+    };
+
+    if (data.size() > 1 && !data.contains(QString()))
+    {
+        QMapIterator<QString, QByteArray> iter(data);
+        while (iter.hasNext())
+        {
+            auto item = iter.next();
+            QString TabName = item.key();
+
+            if (m_pWindows.contains(TabName))
+                SetCodeToTab(m_pWindows[TabName], item.value());
+        }
+    }
+    else
+        SetCodeToTab(m_pWindowsList[0], data[QString()]);
+
+    pContainer->setActiveSubWindow(m_pWindowsList[0]);
+    m_pUpdateScripts->setEnabled(true);
+
+    // Показываем уведомление об успешной генерации
+    QToolTip::showText(QCursor::pos(),
+                       tr("Генерация кода завершена успешно"),
+                       this, QRect(), 2000);
+
+    updateRibbonState();
 }
 
 void FmtWorkWndGen::generate()
 {
-    const QString id = getInterfaceId();
+    m_pUpdateScripts->setEnabled(false);
 
-    m_Interfaces[getInterfaceId()]->start(pTable);
-    pActionRun->setEnabled(false);
-}
+    // Показываем уведомление о начале генерации
+    QToolTip::showText(QCursor::pos(),
+                       tr("Генерация кода..."),
+                       this, QRect(), 1000);
 
-void FmtWorkWndGen::UpdateSaveAction()
-{
-    if (pEditor->toPlainText().isEmpty())
-        pActionSave->setEnabled(false);
-    else
-        pActionSave->setEnabled(true);
+    pInterface->start(pTable);
 }
 
 void FmtWorkWndGen::onProperty()
 {
-    const QString id = getInterfaceId();
+    /*const QString id = getInterfaceId();
 
     if (!id.startsWith("macro:"))
     {
         m_Interfaces[id]->propertyEditor(this);
+    }*/
+}
+
+QString FmtWorkWndGen::ribbonCategoryName() const
+{
+    return tr("Код");
+}
+
+void FmtWorkWndGen::initRibbonPanels()
+{
+    FmtCodeTabBase::initRibbonPanels();
+
+    // Добавляем описание для категории
+    if (m_pRibbonCategory)
+    {
+        QString categoryDescription;
+        if (!m_InterfaceId.startsWith("macro:"))
+            categoryDescription = tr("Инструменты для работы с генератором кода: %1").arg(fmtGenInterfaceAlias(m_InterfaceId));
+        else
+        {
+            GeneratorsProxyModel model;
+            GeneratorsMacroElement element = model.getMacroElement(m_InterfaceId);
+            categoryDescription = tr("Инструменты для работы с макросом: %1").arg(element.alias);
+        }
+        m_pRibbonCategory->setToolTip(categoryDescription);
     }
 }
 
-void FmtWorkWndGen::onSave()
+void FmtWorkWndGen::activateRibbon()
 {
-    QString filter;
-    FmtGenInterface *pInterface = m_Interfaces[getInterfaceId()];
+    FmtCodeTabBase::activateRibbon();
+    updateRibbonState();
+}
 
-    switch(pInterface->getContentType())
+void FmtWorkWndGen::deactivateRibbon()
+{
+    FmtCodeTabBase::deactivateRibbon();
+}
+
+void FmtWorkWndGen::updateRibbonState()
+{
+    FmtCodeTabBase::updateRibbonState();
+
+    // Обновляем состояние кнопки обновления
+    if (m_pUpdateScripts)
     {
-    case HighlighterSql:
-        filter = "Sql files(*.sql)";
-        break;
-    case HighlighterCpp:
-        filter = "C++ files(*.c *.cpp *.h *.hpp)";
-        break;
-    default:
-        filter = "Text files(*.txt)";
+        bool hasActiveWindow = (pContainer->currentSubWindow() != nullptr);
+        m_pUpdateScripts->setEnabled(hasActiveWindow);
+    }
+}
+
+void FmtWorkWndGen::setupRibbonActions()
+{
+    m_pActionPannel->addSeparator();
+
+    m_pUpdateScripts = createAction(tr("Обновить"), "UpdatedScript");
+    toolAddActionWithTooltip(m_pUpdateScripts,
+                             tr("Заново сгенерировать код на основе текущей структуры таблицы"),
+                             QKeySequence::Refresh);
+    m_pActionPannel->addLargeAction(m_pUpdateScripts);
+    m_pUpdateScripts->setEnabled(false);
+
+    // Добавляем информацию о текущем генераторе в панель
+    if (!m_InterfaceId.isEmpty())
+    {
+        QString generatorInfo;
+        if (!m_InterfaceId.startsWith("macro:"))
+            generatorInfo = tr("Генератор: %1").arg(fmtGenInterfaceAlias(m_InterfaceId));
+        else
+        {
+            GeneratorsProxyModel model;
+            GeneratorsMacroElement element = model.getMacroElement(m_InterfaceId);
+            generatorInfo = tr("Макрос: %1").arg(element.alias);
+        }
+
+        // Создаем информационную метку
+        QLabel *infoLabel = new QLabel(generatorInfo, this);
+        infoLabel->setToolTip(tr("Текущий активный генератор/макрос"));
+        infoLabel->setStyleSheet("QLabel { padding: 5px; background-color: #f0f0f0; border-radius: 3px; }");
+        m_pActionPannel->addWidget(infoLabel, SARibbonPannelItem::Large);
     }
 
-    QString fname = QFileDialog::getSaveFileName(this, QString(), QString(), filter);
-
-    if (fname.isEmpty())
-        return;
-
-    QFile f(fname);
-    if (f.open(QIODevice::WriteOnly))
+    connect(m_pUpdateScripts, &QAction::triggered, [=]()
     {
-        QTextStream stream(&f);
-        stream.setCodec("IBM 866");
-        stream << pEditor->toPlainText();
-        f.close();
-    }
+        generate();
+    });
 }

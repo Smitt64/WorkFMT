@@ -2,13 +2,19 @@
 #include "dbfileobject.h"
 #include <QApplication>
 #include "task.h"
+#include "iconthememanager.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("DBFileTool");
     QCoreApplication::setOrganizationDomain("DBFileTool");
     QCoreApplication::setApplicationName("DBFileTool");
+
     QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
+
+    // Только после создания QApplication: без экземпляра applicationDirPath()
+    // пуст, и тема иконок ищется относительно рабочего каталога
+    IconThemeManager::initialize("vs_theme");
 
     QDir current(QDir::current());
     app->addLibraryPath(QFileInfo(QCoreApplication::applicationFilePath()).path());

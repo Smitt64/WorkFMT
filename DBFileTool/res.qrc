@@ -6,5 +6,6 @@
         <file alias="oraocci11">res/oraocci11.dll</file>
         <file>res/KeyQuery.sql</file>
         <file>res/BlobTemplate.sql</file>
+        <file>res/dbfapp_icon.svg</file>
     </qresource>
 </RCC>

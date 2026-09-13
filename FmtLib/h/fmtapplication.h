@@ -8,6 +8,7 @@
 #include <QTranslator>
 #include "fmtlib_global.h"
 #include "OracleTnsListModel.h"
+#include <type_traits>
 #ifdef Q_OS_WIN
 #include <QLibrary>
 #include <windows.h>
@@ -25,6 +26,18 @@ public:
     virtual ~FmtApplication();
 
     QMainWindow *addMainWindow();
+    template<class T>T *addMainWindow()
+    {
+        static_assert(std::is_base_of<QMainWindow, T>::value,
+                      "Class must be derived from QMainWindow");
+
+        T *w = new T();
+        w->show();
+
+        m_pMainWindows.append(w);
+
+        return w;
+    }
 
     QSettings *settings();
     virtual bool notify(QObject *receiver, QEvent *e);
@@ -48,6 +61,8 @@ private:
     QSettings *pSettings;
     OracleTnsListModel *pTnsModel;
     QTranslator qt_translator;
+
+    QList<QMainWindow*> m_pMainWindows;
 };
 
 #endif // FMTAPPLICATION_H

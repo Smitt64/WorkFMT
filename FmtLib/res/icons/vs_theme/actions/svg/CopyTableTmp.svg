@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <style>.icon-canvas-transparent{opacity:0;fill:#f6f6f6}.icon-vs-out{fill:#f6f6f6}.icon-vs-bg{fill:#424242}.icon-vs-fg{fill:#f0eff1}</style>
+  <path class="icon-canvas-transparent" d="M16 16H0V0h16v16z" id="canvas"/>
+  <path class="icon-vs-out" d="M1 15V1h15v14H1z" id="outline"/>
+  <path class="icon-vs-fg" d="M3 11h3v2H3v-2zm0-1h3V8H3v2zm0-3h3V5H3v2zm4 6h3v-2H7v2zm0-3h3V8H7v2zm0-3h3V5H7v2zm4 6h3v-2h-3v2zm0-3h3V8h-3v2zm0-5v2h3V5h-3z" id="iconFg"/>
+  <g id="iconBg">
+    <path class="icon-vs-bg" d="M2 2v12h13V2H2zm4 11H3v-2h3v2zm0-3H3V8h3v2zm0-3H3V5h3v2zm4 6H7v-2h3v2zm0-3H7V8h3v2zm0-3H7V5h3v2zm4 6h-3v-2h3v2zm0-3h-3V8h3v2zm0-3h-3V5h3v2z"/>
+  </g>
+  <path class="icon-asx-grey" d="M 13.242 7.025 L 12.595 7.025 L 10.659 4.961 L 6.975 4.961 L 6.975 13.903 L 9.557 13.903 L 9.557 15.967 L 16.013 15.967 L 16.013 9.978 L 13.242 7.025 Z M 13.431 8.199 L 14.911 9.776 L 13.431 9.776 L 13.431 8.199 Z M 7.62 13.216 L 7.62 5.649 L 10.391 5.649 L 11.683 7.025 L 9.557 7.025 L 9.557 13.216 L 7.62 13.216 Z M 10.202 15.279 L 10.202 7.713 L 12.786 7.713 L 12.786 10.464 L 15.368 10.464 L 15.368 15.279 L 10.202 15.279 Z" style="fill: rgb(113, 113, 113); stroke-width: 1;"/>
+</svg>

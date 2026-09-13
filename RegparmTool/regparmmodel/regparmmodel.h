@@ -4,6 +4,7 @@
 #include <QAbstractItemModel>
 #include <QSqlDatabase>
 #include <QIcon>
+#include <QHash>
 #include "regparmitem.h"
 
 class RegParmModel : public QAbstractItemModel
@@ -38,11 +39,14 @@ public:
 private:
     void setupModelData();
     void loadChildItems(RegParmItem *parentItem, qint64 parentId = 0);
+    bool hasBlobColumn() const;
 
     QSqlDatabase m_database;
     RegParmItem *m_rootItem;
     QIcon m_branchIcon;
     QIcon m_leafIcon;
+    bool m_hasValBlob = false;
+    mutable QHash<qint64, bool> m_childrenCache;
 };
 
 Q_DECLARE_OPAQUE_POINTER(RegParmModel)
