@@ -1797,6 +1797,17 @@ QString FmtCapitalizeField(const QString &undecoratedfield, bool force)
     if (!settings()->value("AutoCamelCase", true).toBool() && !force)
         return undecoratedfield;
 
+    // Быстрый путь: постоянный процесс-сплиттер, запущенный при старте
+    // приложения (запрос уходит в stdin, результат читается из stdout)
+    FieldSplitterProcess *splitter = fieldSplitterProcessInstance();
+    if (splitter->isReady())
+    {
+        const QStringList res = splitter->splitFields({undecoratedfield});
+        if (!res.isEmpty() && !res.first().isEmpty())
+            return res.first();
+    }
+
+    // Медленный fallback: разовый запуск CapitalizeField.exe
     QString result = undecoratedfield;
     QScopedPointer<QProcess> proc(new QProcess());
     proc->setProgram(toolFullFileNameFromDir("CapitalizeField.exe"));
@@ -1821,8 +1832,11 @@ QStringList FmtCapitalizeField(const QStringList &undecoratedfield, bool force)
     if (!settings()->value("AutoCamelCase", true).toBool() && !force)
         return result;
 
-    result.clear();
-    result = fieldSplitterProcessInstance()->splitFields(undecoratedfield);
+    // Если постоянный процесс-сплиттер не готов или вернул пустоту,
+    // оставляем исходные имена
+    QStringList splitted = fieldSplitterProcessInstance()->splitFields(undecoratedfield);
+    if (!splitted.isEmpty())
+        result = splitted;
 
     return result;
 }

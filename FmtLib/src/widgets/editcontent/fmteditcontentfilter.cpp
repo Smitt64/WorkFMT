@@ -80,7 +80,7 @@ FmtEditContentFilter::FmtEditContentFilter(FmtSharedTablePtr table, QWidget *par
 {
     ui->setupUi(this);
     pEditor = new CodeEditor(this);
-    ToolApplyHighlighter(pEditor, HighlighterSql);
+    ToolApplyHighlighter(pEditor, HighlighterSql, FmtCodeTabStyle);
 
     pTable = table;
     ui->verticalLayout_3->addWidget(pEditor);

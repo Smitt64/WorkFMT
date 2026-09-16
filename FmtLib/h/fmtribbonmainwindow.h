@@ -119,7 +119,7 @@ private:
     QAction *m_pActionImport, *m_pActionImportDir, *m_pActionExport, *m_pActionAbout;
 
     QMenu *m_pMenuCreate;
-    QAction *m_pActionCreate, *m_pActionCreateGroup, *m_pActionCreateText, *m_pActionCreateXml;
+    QAction *m_pActionCreate, *m_pActionCreateGroup, *m_pActionCreateText, *m_pActionCreateSql, *m_pActionCreateXml;
     QAction *m_pActionCopyTable, *m_pActionCopyTableTmp, *m_pActionCopyTableTo, *m_pActionDeleteFmt;
     QAction *m_pActionEdit, *m_pFakeActionInit, *m_pFakeUnloadToDbf, *m_pFakeLoadFromDbf;
     QAction *m_pFakeCreateTablesSql, *m_pFakeCreateDiffToScript;

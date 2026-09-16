@@ -6,6 +6,7 @@
 #include "fmtapplicationwidget.h"
 #include "fmtfromrichtext.h"
 #include "fmtimpexpwrp.h"
+#include "fmtfield.h"
 #include "fmttable.h"
 #include "fmttablelistdelegate.h"
 #include "fmtworkwindow.h"
@@ -21,6 +22,7 @@
 #include "src/debugconnect.h"
 #include "src/widgets/guiconverterdlg.h"
 #include "src/widgets/sqlconvertordlg.h"
+#include "src/widgets/createtablefromsqldlg.h"
 #include "stringlistdlg.h"
 #include "subwindowsmodel.h"
 #include "tablesdock.h"
@@ -389,6 +391,11 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
                              Qt::SHIFT + Qt::CTRL + Qt::Key_N);
     m_pMenuCreate->addAction(m_pActionCreateText);
 
+    m_pActionCreateSql = createAction(tr("Создать из кода create table"), "CreateTableFromSql");
+    toolAddActionWithTooltip(m_pActionCreateSql,
+                             tr("Создать таблицу на основе кода create table"));
+    m_pMenuCreate->addAction(m_pActionCreateSql);
+
     m_pActionCreateXml = createAction(tr("Cоздать из xml"), "CreateTableFromXml");
     toolAddActionWithTooltip(m_pActionCreateXml,
                              tr("Создать запись на основе XML файла с описанием таблицы"));
@@ -612,6 +619,28 @@ void FmtRibbonMainWindow::InitMainRibbonTab()
             QMdiSubWindow *wnd = CreateDocument(table);
             wnd->show();
         }
+    });
+
+    connect(m_pActionCreateSql, &QAction::triggered, [=]()
+    {
+        ConnectionInfo *current = CurrentConnection();
+
+        if (!current)
+            return;
+
+        CreateTableFromSqlDlg dlg(this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+
+        const CreateTableSqlResult &result = dlg.result();
+        if (result.fields.isEmpty())
+            return;
+
+        QSharedPointer<FmtTable> table = CreateTableSqlParser::createTable(
+                    current, result, dlg.tableName(), dlg.tableComment());
+
+        QMdiSubWindow *wnd = CreateDocument(table);
+        wnd->show();
     });
 
     connect(m_pActionCreateXml, &QAction::triggered, [=]()
@@ -1280,6 +1309,7 @@ void FmtRibbonMainWindow::UpdateActions()
     m_pActionImportDir->setEnabled(HasConnection);
 
     m_pActionCreateGroup->setEnabled(HasConnection);
+    m_pActionCreateSql->setEnabled(HasConnection);
     m_pActionCopyTable->setEnabled(HasConnection && HasSelectedTable);
     m_pActionCopyTableTmp->setEnabled(HasConnection && HasSelectedTable);
     m_pActionCopyTableTo->setEnabled(HasConnection && HasSelectedTable);

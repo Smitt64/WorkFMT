@@ -2,6 +2,7 @@
 #include "ui_dataselectdialog.h"
 #include <codeeditor/codeeditor.h>
 #include <codeeditor/codehighlighter.h>
+#include "fmtcore.h"
 #include <QtSql>
 
 DataSelectDialog::DataSelectDialog(QWidget *parent) :
@@ -11,7 +12,7 @@ DataSelectDialog::DataSelectDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     pEditor = new CodeEditor(this);
-    ToolApplyHighlighter(pEditor, HighlighterSql);
+    ToolApplyHighlighter(pEditor, HighlighterSql, FmtCodeTabStyle);
 
     ui->tabWidget->addTab(pEditor, tr("Запрос"));
 

@@ -3,6 +3,7 @@
 #include "ui_comparexmlpage.h"
 #include "codeeditor/codeeditor.h"
 #include "codeeditor/codehighlighter.h"
+#include "fmtcore.h"
 #include <QDebug>
 
 CompareXmlPage::CompareXmlPage(QWidget *parent)
@@ -27,8 +28,8 @@ CompareXmlPage::CompareXmlPage(QWidget *parent)
 
     setTitle(tr("Дамп из xml"));
     ToolApplyHighlighter(m_pXmlCodeEditor, HighlighterXml);
-    ToolApplyHighlighter(m_pOraCodeEditor, HighlighterSql);
-    ToolApplyHighlighter(m_pPgCodeEditor, HighlighterSql);
+    ToolApplyHighlighter(m_pOraCodeEditor, HighlighterSql, FmtCodeTabStyle);
+    ToolApplyHighlighter(m_pPgCodeEditor, HighlighterSql, FmtCodeTabStyle);
 
     registerField("XmlDump", m_pXmlCodeEditor, "plainText");
 }

@@ -6,6 +6,7 @@
 #include "fmtsegment.h"
 #include "fmtfield.h"
 #include "codeeditor/codehighlighter.h"
+#include "fmtcore.h"
 #include <QIcon>
 #include <QButtonGroup>
 #include <QCompleter>
@@ -483,7 +484,7 @@ ExistsConditionPage::ExistsConditionPage(QWidget *parent)
 
     setupButtons();
     setupCompleter();
-    ToolApplyHighlighter(ui->plainTextEdit, HighlighterSql);
+    ToolApplyHighlighter(ui->plainTextEdit, HighlighterSql, FmtCodeTabStyle);
 
     // Устанавливаем placeholder text (временно пустой, заполнится в initializePage)
     ui->plainTextEdit->setPlaceholderText("Введите условие проверки существования записи...");

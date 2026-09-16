@@ -2,6 +2,7 @@
 #include "ui_sqlconvertordlg.h"
 #include "codeeditor/codeeditor.h"
 #include "codeeditor/codehighlighter.h"
+#include "fmtcore.h"
 #include "toolsqlconverter.h"
 #include <QSplitter>
 #include <QPushButton>
@@ -46,8 +47,8 @@ SqlConvertorDlg::SqlConvertorDlg(QWidget *parent) :
     m_pResult = new CodeEditor(this);
     m_pLog = new QPlainTextEdit(this);
 
-    ToolApplyHighlighter(m_pSource, HighlighterSql);
-    ToolApplyHighlighter(m_pResult, HighlighterSql);
+    ToolApplyHighlighter(m_pSource, HighlighterSql, FmtCodeTabStyle);
+    ToolApplyHighlighter(m_pResult, HighlighterSql, FmtCodeTabStyle);
 
     // Настраиваем редакторы
     m_pSource->setPlaceholderText("Введите SQL-запрос...");

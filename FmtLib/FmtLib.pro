@@ -35,6 +35,7 @@ SOURCES += \
     rslexecutors/generatorrslexecutor.cpp \
     rslexecutors/toolbaractionexecutor.cpp \
     src/core/colormanager.cpp \
+    src/core/createtablesqlparser.cpp \
     src/core/encodingfixer.cpp \
     src/core/fieldsplitterprocess.cpp \
     src/core/fmttablecomparemodel.cpp \
@@ -73,6 +74,7 @@ SOURCES += \
     src/widgets/guiconverterdlg.cpp \
     src/widgets/selectfolderdlg.cpp \
     src/widgets/sqlconvertorcategory.cpp \
+    src/widgets/createtablefromsqldlg.cpp \
     src/widgets/sqlconvertordlg.cpp \
     src/widgets/tablestructsqldlg.cpp \
     src/windowslistdlg.cpp \
@@ -327,6 +329,7 @@ HEADERS += \
     rslexecutors/generatorrslexecutor.h \
     rslexecutors/toolbaractionexecutor.h \
     src/core/colormanager.h \
+    src/core/createtablesqlparser.h \
     src/core/encodingfixer.h \
     src/core/fieldsplitterprocess.h \
     src/core/fmttablecomparemodel.h \
@@ -389,6 +392,7 @@ HEADERS += \
     src/widgets/fmtworkwindow/fmtwindowtabinterface.h \
     src/widgets/guiconverterdlg.h \
     src/widgets/sqlconvertorcategory.h \
+    src/widgets/createtablefromsqldlg.h \
     src/widgets/sqlconvertordlg.h \
     src/widgets/tablestructsqldlg.h \
     src/wizards/MassCompareTables/fmttablecollection.h \

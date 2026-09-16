@@ -1,6 +1,7 @@
 #include "richtexttoinsertresultpage.h"
 #include "codeeditor/codeeditor.h"
 #include "codeeditor/codehighlighter.h"
+#include "fmtcore.h"
 #include "richtexttoinsertwizard.h"
 #include "richtexttoinsertrun.h"
 #include <QPushButton>
@@ -43,7 +44,7 @@ void RichTextToInsertResultPage::setupUI()
     m_pTextEdit->setReadOnly(true);
     m_pTextEdit->setPlaceholderText(tr("Здесь будет отображен сгенерированный PL/SQL код"));
     mainLayout->addWidget(m_pTextEdit);
-    ToolApplyHighlighter(m_pTextEdit, HighlighterSql);
+    ToolApplyHighlighter(m_pTextEdit, HighlighterSql, FmtCodeTabStyle);
 
     // Кнопка копирования
     m_pCopyButton = new QPushButton(tr("Копировать в буфер обмена"), this);

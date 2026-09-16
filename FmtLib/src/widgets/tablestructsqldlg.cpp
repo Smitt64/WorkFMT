@@ -3,6 +3,7 @@
 #include "src/models/tableobjectsmodel.h"
 #include "codeeditor/codeeditor.h"
 #include "codeeditor/codehighlighter.h"
+#include "fmtcore.h"
 #include <QSettings>
 #include <QTextStream>
 #include "fmtapplication.h"
@@ -52,7 +53,7 @@ TableStructSqlDlg::TableStructSqlDlg(ConnectionInfo *connection, const QString &
     m_pModel.reset(new TableObjectsModel(connection, tableName));
     ui->treeView->setModel(m_pModel.data());
 
-    ToolApplyHighlighter(ui->plainTextEdit, HighlighterSql);
+    ToolApplyHighlighter(ui->plainTextEdit, HighlighterSql, FmtCodeTabStyle);
 
     ui->treeView->expandAll();
     connect(ui->treeView, &QTreeView::clicked, this, &TableStructSqlDlg::onTreeItemClicked);
