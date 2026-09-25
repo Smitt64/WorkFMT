@@ -433,7 +433,8 @@ namespace
     {
         static const QRegularExpression rxPg(
                     "\\b(?:SMALLSERIAL|BIGSERIAL|SERIAL|BYTEA|BOOLEAN|BOOL|TIMESTAMPTZ|TIMETZ|"
-                    "JSONB|JSON|XML|CHARACTER\\s+VARYING|DOUBLE\\s+PRECISION)\\b|"
+                    "JSONB|JSON|XML|CHARACTER\\s+VARYING|DOUBLE\\s+PRECISION|"
+                    "INT2|INT4|INT8|FLOAT4|FLOAT8|BPCHAR)\\b|"
                     "CREATE\\s+(?:UNLOGGED|TEMP)\\s+TABLE|::",
                     QRegularExpression::CaseInsensitiveOption);
         static const QRegularExpression rxOra(
