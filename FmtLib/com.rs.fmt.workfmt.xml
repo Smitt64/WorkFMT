@@ -1,5 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <changelog project="Work Fmt">
+    <version ver="1.0.8.6">
+        <add>Команда &quot;Создать по коду create table&quot; научилась распознавать синтаксис PostgreSQL: типы полей (serial, varchar/text, numeric, timestamp, bytea и др.) маппятся на типы FMT по карте типов, поддерживаются create temp/unlogged table, inline-ограничения (primary key, unique, check, references) и индексы с using/concurrently/only;</add>
+        <add>В диалоге команды &quot;Создать по коду create table&quot; добавлен выбор диалекта входного запроса (автоопределение, Oracle, PostgreSQL);</add>
+    </version>
     <version ver="1.0.8.5">
         <add>Добавлена команда &quot;Создать по коду create table&quot;: парсинг SQL-запроса, заполнение названия таблицы, комментария, полей с типами и размерами, а также восстановление индексов из скрипта;</add>
     </version>

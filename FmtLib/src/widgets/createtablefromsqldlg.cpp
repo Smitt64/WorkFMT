@@ -8,6 +8,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QComboBox>
 #include <QPushButton>
 #include <QMessageBox>
 #include <QDialogButtonBox>
@@ -28,15 +29,22 @@ CreateTableFromSqlDlg::CreateTableFromSqlDlg(QWidget *parent) :
 
     mainLayout->addWidget(m_pEditor, 1);
 
-    // Имя таблицы и комментарий
+    // Диалект входного запроса: по умолчанию определяется автоматически
     QGridLayout *paramsLayout = new QGridLayout();
-    paramsLayout->addWidget(new QLabel(tr("Название таблицы:"), this), 0, 0);
-    m_pNameEdit = new QLineEdit(this);
-    paramsLayout->addWidget(m_pNameEdit, 0, 1);
+    paramsLayout->addWidget(new QLabel(tr("Диалект:"), this), 0, 0);
+    m_pDialectCombo = new QComboBox(this);
+    m_pDialectCombo->addItem(tr("Определять автоматически"), CreateTableSqlParser::DialectAuto);
+    m_pDialectCombo->addItem(QStringLiteral("Oracle"), CreateTableSqlParser::DialectOracle);
+    m_pDialectCombo->addItem(QStringLiteral("PostgreSQL"), CreateTableSqlParser::DialectPostgres);
+    paramsLayout->addWidget(m_pDialectCombo, 0, 1);
 
-    paramsLayout->addWidget(new QLabel(tr("Комментарий:"), this), 1, 0);
+    paramsLayout->addWidget(new QLabel(tr("Название таблицы:"), this), 1, 0);
+    m_pNameEdit = new QLineEdit(this);
+    paramsLayout->addWidget(m_pNameEdit, 1, 1);
+
+    paramsLayout->addWidget(new QLabel(tr("Комментарий:"), this), 2, 0);
     m_pCommentEdit = new QLineEdit(this);
-    paramsLayout->addWidget(m_pCommentEdit, 1, 1);
+    paramsLayout->addWidget(m_pCommentEdit, 2, 1);
 
     mainLayout->addLayout(paramsLayout);
 
@@ -84,7 +92,25 @@ QString CreateTableFromSqlDlg::tableComment() const
 void CreateTableFromSqlDlg::updateFieldsInfo(int count)
 {
     if (count > 0)
-        m_pFieldsLabel->setText(tr("Распознано полей: %1").arg(count));
+    {
+        QString dialectName;
+        switch (m_Result.dialect)
+        {
+        case CreateTableSqlParser::DialectPostgres:
+            dialectName = QStringLiteral("PostgreSQL");
+            break;
+        case CreateTableSqlParser::DialectOracle:
+            dialectName = QStringLiteral("Oracle");
+            break;
+        default:
+            break;
+        }
+
+        if (!dialectName.isEmpty())
+            m_pFieldsLabel->setText(tr("Распознано полей: %1 (%2)").arg(count).arg(dialectName));
+        else
+            m_pFieldsLabel->setText(tr("Распознано полей: %1").arg(count));
+    }
     else
         m_pFieldsLabel->clear();
 }
@@ -101,7 +127,8 @@ bool CreateTableFromSqlDlg::parseSql()
     }
 
     CreateTableSqlResult parsed;
-    if (!CreateTableSqlParser::parse(sql, parsed))
+    const int dialect = m_pDialectCombo->currentData().toInt();
+    if (!CreateTableSqlParser::parse(sql, parsed, dialect))
     {
         QMessageBox::critical(this, QString(), tr("Ошибка разбора запроса: %1").arg(parsed.error));
         m_pOkButton->setEnabled(false);

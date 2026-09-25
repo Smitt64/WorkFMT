@@ -9,6 +9,7 @@ class CodeEditor;
 class QLineEdit;
 class QLabel;
 class QPushButton;
+class QComboBox;
 
 /**
  * @brief Диалог создания записи по коду create table.
@@ -39,6 +40,7 @@ private:
     void updateFieldsInfo(int count);
 
     CodeEditor *m_pEditor;
+    QComboBox *m_pDialectCombo;
     QLineEdit *m_pNameEdit;
     QLineEdit *m_pCommentEdit;
     QLabel *m_pFieldsLabel;

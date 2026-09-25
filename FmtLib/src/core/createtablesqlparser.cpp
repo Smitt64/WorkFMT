@@ -67,7 +67,8 @@ namespace
 
     // NUMBER(p, s) / NUMERIC(p, s) / DECIMAL(p, s): точность уходит в decpoint,
     // размер остаётся стандартным для fmtt_NUMERIC
-    bool matchNumericDecl(const QString &upper, qint16 &outType, qint32 &outSize, qint16 &outDecpoint)
+    bool matchNumericDecl(const QString &upper, qint16 &outType, qint32 &outSize, qint16 &outDecpoint,
+                          bool postgres = false)
     {
         static const QRegularExpression rx(
                     "^(NUMBER|NUMERIC|DECIMAL)\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)$",
@@ -80,7 +81,9 @@ namespace
         const int precision = match.captured(2).toInt();
         const int scale = match.captured(3).toInt();
 
-        if (!match.captured(1).compare(QLatin1String("NUMBER"), Qt::CaseInsensitive))
+        // NUMBER — Oracle, NUMERIC/DECIMAL в Postgres ведут себя так же;
+        // канонические размеры MONEY/NUMERIC из карты типов FMT (см. FmtTypesMap.json)
+        if (postgres || !match.captured(1).compare(QLatin1String("NUMBER"), Qt::CaseInsensitive))
         {
             // NUMBER(32,12) — каноническая запись дефолтного NUMERIC из карты
             // типов FMT. В fmt_dump такие поля лежат с decpoint=0, scale=12
@@ -224,8 +227,98 @@ namespace
         return false;
     }
 
-    // Является ли фрагмент декларацией BLOB/CLOB
-    bool mapBlobType(const QString &decl, qint16 &blobType)
+    // Определение типа и размера поля по фрагменту PostgreSQL-декларации.
+    // Соответствие типов — по карте FmtTypesMap.json (поле pgType):
+    //   INT/SMALLINT -> INTEGER, LONG -> INTEGER, BIGINT -> BIGINT,
+    //   FLOAT -> FLOAT(24), DOUBLE -> FLOAT(53), MONEY -> NUMERIC(19, 4),
+    //   STRING/SNR -> VARCHAR, DATE/TIME -> TIMESTAMP, CHR -> CHAR,
+    //   UCHR -> BYTEA, NUMERIC -> NUMERIC(32, 12)
+    bool mapPostgresType(const QString &decl, qint16 &type, qint32 &size, qint16 &decpoint)
+    {
+        // Длина строки по умолчанию: TEXT в Postgres не ограничена,
+        // для FMT берём разумный дефолт с запасом на завершающий ноль
+        const qint32 DEFAULT_TEXT_LEN = 255;
+
+        const QString upper = decl.simplified().toUpper();
+        decpoint = 0;
+
+        if (matchNumericDecl(upper, type, size, decpoint, true))
+            return true;
+
+        if (matchDecl(upper, "^VARCHAR\\s*\\((\\d+)\\)$", fmtt_STRING, true, type, size))
+        {
+            size++; // строка FMT хранит размер с запасом на завершающий ноль
+            return true;
+        }
+        if (matchDecl(upper, "^CHARACTER\\s+VARYING\\s*\\((\\d+)\\)$", fmtt_STRING, true, type, size))
+        {
+            size++;
+            return true;
+        }
+        // TEXT — строка без явного размера
+        if (matchDecl(upper, "^TEXT$", fmtt_STRING, true, type, size))
+        {
+            size = DEFAULT_TEXT_LEN + 1;
+            return true;
+        }
+        // CHAR(1) обычно флаговое поле, CHAR(n>1) — строка
+        if (matchDecl(upper, "^(?:CHAR|CHARACTER|BPCHAR)\\s*\\((\\d+)\\)$", fmtt_CHR, true, type, size))
+        {
+            if (size > 1)
+            {
+                type = fmtt_STRING;
+                size++;
+            }
+            return true;
+        }
+        // SERIAL — автоинкрементное целое: smallserial/int2 -> INT,
+        // serial/int4 -> LONG, bigserial/int8 -> BIGINT
+        if (matchDecl(upper, "^(?:SMALLINT|INT2|SMALLSERIAL|SERIAL2)$", fmtt_INT, false, type, size))
+            return true;
+        if (matchDecl(upper, "^(?:INTEGER|INT|INT4|SERIAL|SERIAL4)$", fmtt_LONG, false, type, size))
+            return true;
+        if (matchDecl(upper, "^(?:BIGINT|INT8|BIGSERIAL|SERIAL8)$", fmtt_BIGINT, false, type, size))
+            return true;
+        if (matchDecl(upper, "^(?:REAL|FLOAT4)$", fmtt_FLOAT, false, type, size))
+            return true;
+        if (matchDecl(upper, "^(?:DOUBLE\\s+PRECISION|FLOAT8)$", fmtt_DOUBLE, false, type, size))
+            return true;
+        if (matchDecl(upper, "^FLOAT\\s*\\((\\d+)\\)$", fmtt_FLOAT, true, type, size))
+        {
+            if (size > 24)
+                type = fmtt_DOUBLE;
+            size = fmtTypeSize(type);
+            return true;
+        }
+        if (matchDecl(upper, "^FLOAT$", fmtt_FLOAT, false, type, size))
+            return true;
+        // NUMERIC/DECIMAL без точности — произвольная разрядность
+        if (matchDecl(upper, "^(?:NUMERIC|DECIMAL)$", fmtt_NUMERIC, false, type, size))
+            return true;
+        // Денежный тип Postgres напрямую соответствует fmtt_MONEY
+        if (matchDecl(upper, "^MONEY$", fmtt_MONEY, false, type, size))
+            return true;
+        // BOOLEAN -> флаговое CHAR(1) (fmtk_Elogical)
+        if (matchDecl(upper, "^(?:BOOLEAN|BOOL)$", fmtt_CHR, false, type, size))
+            return true;
+        if (matchDecl(upper, "^DATE$", fmtt_DATE, false, type, size))
+            return true;
+        // TIMESTAMP [(p)] [WITH|WITHOUT TIME ZONE] — так DATE представлен в Postgres
+        if (matchDecl(upper, "^TIMESTAMP(?:\\s*\\(\\d*\\))?(?:\\s+(?:WITH|WITHOUT)\\s+TIME\\s+ZONE)?$", fmtt_DATE, false, type, size))
+            return true;
+        if (matchDecl(upper, "^TIMESTAMPTZ$", fmtt_DATE, false, type, size))
+            return true;
+        // TIME [(p)] [WITH|WITHOUT TIME ZONE]
+        if (matchDecl(upper, "^TIME(?:\\s*\\(\\d*\\))?(?:\\s+(?:WITH|WITHOUT)\\s+TIME\\s+ZONE)?$", fmtt_TIME, false, type, size))
+            return true;
+        if (matchDecl(upper, "^TIMETZ$", fmtt_TIME, false, type, size))
+            return true;
+
+        return false;
+    }
+
+    // Является ли фрагмент декларацией BLOB/CLOB (или их Postgres-аналогов)
+    bool mapBlobType(const QString &decl, qint16 &blobType, bool postgres = false)
     {
         const QString upper = decl.simplified().toUpper();
 
@@ -238,6 +331,23 @@ namespace
         {
             blobType = BT_CLOB;
             return true;
+        }
+
+        if (postgres)
+        {
+            // BYTEA в Postgres — аналог BLOB (см. PostgresExporter)
+            if (upper == QLatin1String("BYTEA"))
+            {
+                blobType = BT_BLOB_VAR;
+                return true;
+            }
+            // Документные типы Postgres храним как CLOB
+            if (upper == QLatin1String("JSON") || upper == QLatin1String("JSONB") ||
+                    upper == QLatin1String("XML"))
+            {
+                blobType = BT_CLOB;
+                return true;
+            }
         }
 
         return false;
@@ -313,6 +423,33 @@ namespace
         return quoted.isEmpty() ? match.captured(plainGroup) : quoted;
     }
 
+    // Автоопределение диалекта по маркерам текста запроса.
+    // Postgres: serial-типы, bytea, text, boolean, character varying,
+    // double precision, create temp/unlogged table, касты "::".
+    // Oracle: varchar2, number, raw, clob/blob-колонки, global temporary,
+    // storage/tablespace и т.п. Неоднозначный текст считаем Oracle
+    // (поведение до появления поддержки Postgres)
+    int detectDialect(const QString &text)
+    {
+        static const QRegularExpression rxPg(
+                    "\\b(?:SMALLSERIAL|BIGSERIAL|SERIAL|BYTEA|BOOLEAN|BOOL|TIMESTAMPTZ|TIMETZ|"
+                    "JSONB|JSON|XML|CHARACTER\\s+VARYING|DOUBLE\\s+PRECISION)\\b|"
+                    "CREATE\\s+(?:UNLOGGED|TEMP)\\s+TABLE|::",
+                    QRegularExpression::CaseInsensitiveOption);
+        static const QRegularExpression rxOra(
+                    "\\b(?:VARCHAR2|NVARCHAR2|NUMBER|RAW|CLOB|BLOB|NLOB|GLOBAL\\s+TEMPORARY|"
+                    "TABLESPACE|STORAGE|PCTFREE|PCTUSED|INITRANS|MAXTRANS)\\b",
+                    QRegularExpression::CaseInsensitiveOption);
+
+        const bool hasPg = rxPg.match(text).hasMatch();
+        const bool hasOra = rxOra.match(text).hasMatch();
+
+        if (hasPg && !hasOra)
+            return CreateTableSqlParser::DialectPostgres;
+
+        return CreateTableSqlParser::DialectOracle;
+    }
+
     // Паттерн необязательного префикса схемы: любой идентификатор с точкой.
     // Не привязываемся к схеме из CREATE TABLE — в COMMENT ON она может
     // быть указана, а в CREATE TABLE нет (и наоборот)
@@ -373,18 +510,28 @@ namespace
 
     // Разобрать индексы из "CREATE [UNIQUE] INDEX [schema.]idx
     // ON [schema.]tbl (col [ASC|DESC], ...) <хвост STORAGE/TABLESPACE...>"
-    // Индексы, созданные для другой таблицы, пропускаются
+    // Индексы, созданные для другой таблицы, пропускаются.
+    // Postgres-варианты: CREATE UNIQUE INDEX CONCURRENTLY ... ON ONLY tbl
+    // USING btree (...)
     void parseIndeces(const QString &sqlText, const QString &tableName,
-                      QList<CreateTableSqlIndex> &indeces)
+                      QList<CreateTableSqlIndex> &indeces, bool postgres)
     {
-        static const QRegularExpression rxIndex(
-                    "CREATE\\s+(UNIQUE\\s+)?INDEX\\s+"
-                    "(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*))"
-                    "(?:\\s*\\.\\s*(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*)))?"
-                    "\\s+ON\\s+"
-                    "(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*))"
-                    "(?:\\s*\\.\\s*(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*)))?"
-                    "\\s*\\(",
+        // Номера захватов общие для обоих диалектов; Postgres-модификаторы
+        // добавлены незахватывающими группами
+        const QString indexNamePattern =
+                postgres ? "(?:CONCURRENTLY\\s+)?(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*))"
+                          : "(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*))";
+
+        const QRegularExpression rxIndex(
+                    QString("CREATE\\s+(UNIQUE\\s+)?INDEX\\s+%1"
+                            "(?:\\s*\\.\\s*(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*)))?"
+                            "\\s+ON\\s+%2"
+                            "(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*))"
+                            "(?:\\s*\\.\\s*(?:\"([^\"]+)\"|([A-Za-z][A-Za-z0-9_$#]*)))?"
+                            "%3\\s*\\(")
+                    .arg(indexNamePattern,
+                         postgres ? "(?:ONLY\\s+)?" : QString(),
+                         postgres ? "(?:\\s+USING\\s+\\w+)?" : QString()),
                     QRegularExpression::CaseInsensitiveOption);
 
         QRegularExpressionMatchIterator it = rxIndex.globalMatch(sqlText);
@@ -496,7 +643,7 @@ namespace
 
 namespace CreateTableSqlParser
 {
-    bool parse(const QString &sqlText, CreateTableSqlResult &result)
+    bool parse(const QString &sqlText, CreateTableSqlResult &result, int dialect)
     {
         result = CreateTableSqlResult();
 
@@ -504,12 +651,21 @@ namespace CreateTableSqlParser
         QString text = sqlText;
         text.remove(QRegularExpression("/\\*.*\\*/", QRegularExpression::DotMatchesEverythingOption));
 
-        // Ищем CREATE TABLE (в том числе GLOBAL TEMPORARY), возможно в схеме
+        if (dialect == DialectAuto)
+            dialect = detectDialect(text);
+        result.dialect = dialect;
+
+        const bool isPostgres = (dialect == DialectPostgres);
+
+        // Ищем CREATE TABLE. Временная: Oracle GLOBAL TEMPORARY TABLE,
+        // Postgres TEMP/TEMPORARY TABLE. Postgres UNLOGGED TABLE
+        // обрабатываем как обычную таблицу
         QRegularExpression rxCreate(
-                    "CREATE\\s+(?:GLOBAL\\s+)?TEMPORARY\\s+TABLE\\s+",
+                    "CREATE\\s+(?:GLOBAL\\s+)?TEMP(?:ORARY)?\\s+TABLE\\s+",
                     QRegularExpression::CaseInsensitiveOption);
         QRegularExpression rxCreatePlain(
-                    "CREATE\\s+TABLE\\s+",
+                    isPostgres ? "CREATE\\s+(?:UNLOGGED\\s+)?TABLE\\s+"
+                               : "CREATE\\s+TABLE\\s+",
                     QRegularExpression::CaseInsensitiveOption);
 
         QRegularExpressionMatch match = rxCreate.match(text);
@@ -597,8 +753,9 @@ namespace CreateTableSqlParser
             if (decl.isEmpty())
                 continue;
 
-            // Пропускаем ограничения (PK, FK, UNIQUE, CHECK, CONSTRAINT)
-            if (decl.contains(QRegularExpression("^(CONSTRAINT|PRIMARY\\s+KEY|FOREIGN\\s+KEY|UNIQUE|CHECK|SUPPLEMENTAL\\s+LOG)\\b",
+            // Пропускаем ограничения (PK, FK, UNIQUE, CHECK, CONSTRAINT).
+            // EXCLUDE — Postgres-аналог CHECK для операторных классов
+            if (decl.contains(QRegularExpression("^(CONSTRAINT|PRIMARY\\s+KEY|FOREIGN\\s+KEY|UNIQUE|CHECK|EXCLUDE|SUPPLEMENTAL\\s+LOG)\\b",
                                                  QRegularExpression::CaseInsensitiveOption)))
                 continue;
 
@@ -611,19 +768,35 @@ namespace CreateTableSqlParser
 
             QString typeOnly = fldTypeDecl.simplified();
 
-            // Отсекаем завершающие модификаторы декларации: ENABLE, NOT NULL/NULL
-            typeOnly.remove(QRegularExpression("\\s+ENABLE\\s*$",
-                                               QRegularExpression::CaseInsensitiveOption));
-            typeOnly.remove(QRegularExpression("\\s+NOT\\s+NULL\\s*$",
-                                               QRegularExpression::CaseInsensitiveOption));
-            typeOnly.remove(QRegularExpression("\\s+NULL\\s*$",
-                                               QRegularExpression::CaseInsensitiveOption));
+            if (isPostgres)
+            {
+                // Postgres-модификаторы колонки: отсекаем всё начиная с
+                // первого из них, чтобы "integer NOT NULL DEFAULT 0 PRIMARY KEY"
+                // превратилось в "integer"
+                static const QRegularExpression rxModifiers(
+                            "\\s+(?:NOT\\s+NULL|NULL|DEFAULT|PRIMARY\\s+KEY|UNIQUE|CHECK|"
+                            "REFERENCES|COLLATE|GENERATED)\\b",
+                            QRegularExpression::CaseInsensitiveOption);
+                const int modifierPos = typeOnly.indexOf(rxModifiers);
+                if (modifierPos != -1)
+                    typeOnly = typeOnly.left(modifierPos);
+            }
+            else
+            {
+                // Отсекаем завершающие модификаторы декларации: ENABLE, NOT NULL/NULL
+                typeOnly.remove(QRegularExpression("\\s+ENABLE\\s*$",
+                                                   QRegularExpression::CaseInsensitiveOption));
+                typeOnly.remove(QRegularExpression("\\s+NOT\\s+NULL\\s*$",
+                                                   QRegularExpression::CaseInsensitiveOption));
+                typeOnly.remove(QRegularExpression("\\s+NULL\\s*$",
+                                                   QRegularExpression::CaseInsensitiveOption));
 
-            // DEFAULT <выражение> — отсекаем всё начиная с DEFAULT
-            int defaultPos = typeOnly.indexOf(QRegularExpression("\\s+DEFAULT\\s+",
-                                                                 QRegularExpression::CaseInsensitiveOption));
-            if (defaultPos != -1)
-                typeOnly = typeOnly.left(defaultPos);
+                // DEFAULT <выражение> — отсекаем всё начиная с DEFAULT
+                int defaultPos = typeOnly.indexOf(QRegularExpression("\\s+DEFAULT\\s+",
+                                                                     QRegularExpression::CaseInsensitiveOption));
+                if (defaultPos != -1)
+                    typeOnly = typeOnly.left(defaultPos);
+            }
 
             typeOnly = typeOnly.simplified();
 
@@ -639,7 +812,7 @@ namespace CreateTableSqlParser
             // BLOB/CLOB-колонка (t_fmtblobdata_xxx) — не поле, а параметр
             // самой FMT-таблицы; в список полей не добавляем
             qint16 blobType = 0;
-            if (mapBlobType(typeOnly, blobType))
+            if (mapBlobType(typeOnly, blobType, isPostgres))
             {
                 result.hasBlob = true;
                 result.blobType = blobType;
@@ -649,7 +822,11 @@ namespace CreateTableSqlParser
             CreateTableSqlField field;
             field.name = fldName;
 
-            if (!mapOracleType(typeOnly, field.type, field.size, field.decpoint))
+            const bool typeMapped = isPostgres
+                    ? mapPostgresType(typeOnly, field.type, field.size, field.decpoint)
+                    : mapOracleType(typeOnly, field.type, field.size, field.decpoint);
+
+            if (!typeMapped)
             {
                 result.error = QObject::tr("Неизвестный тип поля %1: %2").arg(fldName, typeOnly);
                 return false;
@@ -676,7 +853,7 @@ namespace CreateTableSqlParser
         }
 
         // Индексы из CREATE [UNIQUE] INDEX ... ON <таблица>
-        parseIndeces(text, result.tableName, result.indeces);
+        parseIndeces(text, result.tableName, result.indeces, isPostgres);
 
         return true;
     }

@@ -43,6 +43,8 @@ struct CreateTableSqlResult
     QString tableName;
     QString comment;
     bool isTemporary; // GLOBAL TEMPORARY TABLE -> флаг fmtnf_Temp у FmtTable
+    // Диалект, которым был распознан запрос (Dialect*, валиден после parse)
+    int dialect;
     QList<CreateTableSqlField> fields;
 
     // Индексы из CREATE [UNIQUE] INDEX ... ON <таблица> (...)
@@ -57,6 +59,7 @@ struct CreateTableSqlResult
 
     CreateTableSqlResult() :
         isTemporary(false),
+        dialect(0), // DialectAuto
         hasBlob(false),
         blobType(0)
     {
@@ -65,7 +68,16 @@ struct CreateTableSqlResult
 
 namespace CreateTableSqlParser
 {
-    bool parse(const QString &sqlText, CreateTableSqlResult &result);
+    // Диалект входного SQL. DialectAuto — определить по маркерам текста запроса
+    enum Dialect
+    {
+        DialectAuto = 0,
+        DialectOracle,
+        DialectPostgres
+    };
+
+    bool parse(const QString &sqlText, CreateTableSqlResult &result,
+               int dialect = DialectAuto);
 
     // Создаёт FmtTable по результату разбора: имя, комментарий, флаг
     // GLOBAL TEMPORARY, blob-параметры таблицы и поля с типами/размерами
