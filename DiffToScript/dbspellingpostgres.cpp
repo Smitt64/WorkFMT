@@ -41,7 +41,7 @@ QString DbSpellingPostgres::nvl()
 
 QString DbSpellingPostgres::toBlob(const QString& value)
 {
-    return QString("decode(%1, 'hex')").arg(value);
+    return QString("glob_func.hextoraw(%1)").arg(value);
 }
 
 QString DbSpellingPostgres::blobTypeName(const int &type)

@@ -1062,7 +1062,9 @@ void SqlScriptMain::stringSpelling(const JoinTable *joinTable, DatRecord *rec)
                         .arg(_dbSpelling->chr());
             }
         }
-        else if (type == fmtt_CHR || type == fmtt_UCHR)
+        else if (type == fmtt_UCHR)
+            rec->values[i] = _dbSpelling->toBlob(rec->values[i]);
+        else if (type == fmtt_CHR)
         {
             if (rec->values[i].isEmpty() || rec->values[i].at(0) == QChar(0) || rec->values[i].at(0) == QChar(2) || rec->values[i] == "''")
             {

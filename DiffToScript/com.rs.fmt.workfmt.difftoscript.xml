@@ -1,5 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <changelog project="Diff to Script">
+    <version ver="1.0.2.3">
+        <fix>Исправлена передача параметров в raw поля</fix>
+    </version>
     <version ver="1.0.2.2">
         <add>Для таблицы DLNS_MULTYSELECT_DBT (макрос DLNS_MULTYSELECT.mac): Первоначальная реализация макроса</add>
         <add>Для таблицы DLNS_REFTOHIGHRISK_DBT (макрос DLNS_REFTOHIGHRISK.mac): Первоначальная реализация макроса</add>
